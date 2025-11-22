@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+.npm
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Large zip files and extracted folders (keep originals elsewhere)
+gg.zip
+gg/
+d3_bubble_force/
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo

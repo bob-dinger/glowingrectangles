@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Bubble Force - Pareto (80/20)</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        #vis {
+            width: 600px;
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 600px;
+            height: 600px;
+        }
+        .bubble {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            cursor: pointer;
+            opacity: 0.9;
+        }
+        .bubble:hover {
+            opacity: 1;
+            stroke-width: 2.5px;
+        }
+        text {
+            fill: #fff;
+            pointer-events: none;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pareto Distribution (80/20 Rule)</h1>
+    <p class="description">20% of bubbles represent 80% of total size</p>
+    <div id="vis"></div>
+
+    <script>
+        const width = 600;
+        const height = 600;
+
+        // Generate Pareto (80/20) data
+        function generateParetoData(n) {
+            const data = [];
+            const totalSize = 10000;
+
+            // Top 20% get 80% of total
+            const top20Count = Math.floor(n * 0.2);
+            const bottom80Count = n - top20Count;
+
+            const top20Total = totalSize * 0.8;
+            const bottom80Total = totalSize * 0.2;
+
+            // Generate top 20%
+            for (let i = 0; i < top20Count; i++) {
+                const size = (top20Total / top20Count) * (0.8 + Math.random() * 0.4);
+                data.push({
+                    id: i + 1,
+                    size: size,
+                    group: 'top20'
+                });
+            }
+
+            // Generate bottom 80%
+            for (let i = 0; i < bottom80Count; i++) {
+                const size = (bottom80Total / bottom80Count) * (0.5 + Math.random() * 1.0);
+                data.push({
+                    id: top20Count + i + 1,
+                    size: size,
+                    group: 'bottom80'
+                });
+            }
+
+            return data;
+        }
+
+        // Generate the data
+        const rawData = generateParetoData(100);
+
+        // Create nodes with varying radius
+        const maxSize = d3.max(rawData, d => d.size);
+        const radiusScale = d3.scaleSqrt()
+            .domain([0, maxSize])
+            .range([0, 30]);
+
+        const nodes = rawData.map((d, i) => {
+            // Start top 20% closer to center
+            let startX, startY;
+            if (d.group === 'top20') {
+                startX = width / 2 + (Math.random() - 0.5) * 150;
+                startY = height / 2 + (Math.random() - 0.5) * 150;
+            } else {
+                startX = Math.random() * width;
+                startY = Math.random() * height;
+            }
+
+            return {
+                id: d.id,
+                radius: radiusScale(d.size),
+                size: d.size,
+                group: d.group,
+                x: startX,
+                y: startY
+            };
+        });
+
+        console.log('Nodes created:', nodes.length);
+
+        // Color scale - gold for top 20%, gray for bottom 80%
+        const colorScale = d3.scaleOrdinal()
+            .domain(['top20', 'bottom80'])
+            .range(['#F59E0B', '#6B7280']);
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        console.log('SVG created');
+
+        // Create groups for each bubble
+        const elements = svg.selectAll('.bubble-group')
+            .data(nodes, d => d.id)
+            .enter()
+            .append('g')
+            .attr('class', 'bubble-group');
+
+        // Add circles
+        const bubbles = elements
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', d => colorScale(d.group));
+
+        // Add labels
+        const labels = elements
+            .append('text')
+            .attr('dy', '.3em')
+            .style('text-anchor', 'middle')
+            .style('font-size', d => Math.min(d.radius / 2.5, 12) + 'px')
+            .text(d => d.radius > 10 ? d.id : '');
+
+        console.log('Bubbles and labels created');
+
+        // Charge function
+        function charge(d) {
+            return -Math.pow(d.radius, 2.0) * 0.03;
+        }
+
+        // Custom centering force - stronger for top 20%
+        function customXForce(d) {
+            const strength = d.group === 'top20' ? 0.08 : 0.05;
+            return strength;
+        }
+
+        function customYForce(d) {
+            const strength = d.group === 'top20' ? 0.08 : 0.05;
+            return strength;
+        }
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(charge))
+            .force('x', d3.forceX().strength(customXForce).x(width / 2))
+            .force('y', d3.forceY().strength(customYForce).y(height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 2))
+            .on('tick', ticked);
+
+        console.log('Simulation started');
+
+        // Tick function
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        }
+    </script>
+</body>
+</html>

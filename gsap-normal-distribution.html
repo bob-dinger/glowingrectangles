@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSAP Force Graph - Normal Distribution</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #canvas-container {
+            position: relative;
+            background-color: #0a0a0a;
+            border-radius: 8px;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Normal Distribution</h1>
+    <p class="description">More uniform sizes with slightly larger nodes in center</p>
+    <div id="canvas-container">
+        <canvas id="canvas" width="960" height="600"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Box-Muller transform for normal distribution
+        function normalRandom(mean = 0, stdDev = 1) {
+            const u1 = Math.random();
+            const u2 = Math.random();
+            const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+            return z0 * stdDev + mean;
+        }
+
+        // Generate normal distribution data
+        function generateNormalData(n) {
+            const nodes = [];
+
+            for (let i = 0; i < n; i++) {
+                // Normal distribution with mean at 20, std dev of 8
+                let radius = normalRandom(20, 8);
+
+                // Clamp between 5 and 35
+                radius = Math.max(5, Math.min(35, radius));
+
+                nodes.push({
+                    id: i,
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: 0,
+                    vy: 0,
+                    radius: radius,
+                    color: `hsl(${180 + radius * 3}, 70%, 60%)`
+                });
+            }
+
+            return nodes;
+        }
+
+        // Generate links
+        function generateLinks(nodes, avgLinks = 3) {
+            const links = [];
+            const n = nodes.length;
+
+            for (let i = 0; i < n; i++) {
+                const numLinks = Math.floor(Math.random() * avgLinks) + 1;
+                for (let j = 0; j < numLinks; j++) {
+                    const target = Math.floor(Math.random() * n);
+                    if (target !== i) {
+                        links.push({
+                            source: i,
+                            target: target
+                        });
+                    }
+                }
+            }
+
+            return links;
+        }
+
+        const nodes = generateNormalData(100);
+        const links = generateLinks(nodes);
+
+        // Physics parameters
+        const centerForce = 0.01;
+        const repulsion = 500;
+        const damping = 0.9;
+        const linkStrength = 0.02;
+        const linkDistance = 60;
+
+        // Dragging
+        let draggedNode = null;
+        let mouseX = 0;
+        let mouseY = 0;
+
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+
+            for (let node of nodes) {
+                const dx = mouseX - node.x;
+                const dy = mouseY - node.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < node.radius) {
+                    draggedNode = node;
+                    break;
+                }
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            draggedNode = null;
+        });
+
+        // Physics update
+        function updatePhysics() {
+            // Apply forces
+            for (let node of nodes) {
+                if (node === draggedNode) {
+                    node.x = mouseX;
+                    node.y = mouseY;
+                    node.vx = 0;
+                    node.vy = 0;
+                    continue;
+                }
+
+                // Center force
+                const dx = width / 2 - node.x;
+                const dy = height / 2 - node.y;
+                node.vx += dx * centerForce;
+                node.vy += dy * centerForce;
+
+                // Repulsion between nodes
+                for (let other of nodes) {
+                    if (node === other) continue;
+
+                    const dx = other.x - node.x;
+                    const dy = other.y - node.y;
+                    const distSq = dx * dx + dy * dy;
+                    const minDist = node.radius + other.radius;
+
+                    if (distSq < minDist * minDist * 4) {
+                        const dist = Math.sqrt(distSq) || 1;
+                        const force = repulsion / (distSq || 1);
+                        node.vx -= (dx / dist) * force;
+                        node.vy -= (dy / dist) * force;
+                    }
+                }
+
+                // Link forces
+                for (let link of links) {
+                    const source = nodes[link.source];
+                    const target = nodes[link.target];
+
+                    if (node === source) {
+                        const dx = target.x - source.x;
+                        const dy = target.y - source.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                        const force = (dist - linkDistance) * linkStrength;
+                        node.vx += (dx / dist) * force;
+                        node.vy += (dy / dist) * force;
+                    }
+
+                    if (node === target) {
+                        const dx = source.x - target.x;
+                        const dy = source.y - target.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                        const force = (dist - linkDistance) * linkStrength;
+                        node.vx += (dx / dist) * force;
+                        node.vy += (dy / dist) * force;
+                    }
+                }
+
+                // Apply velocity with damping
+                node.vx *= damping;
+                node.vy *= damping;
+                node.x += node.vx;
+                node.y += node.vy;
+
+                // Keep in bounds
+                node.x = Math.max(node.radius, Math.min(width - node.radius, node.x));
+                node.y = Math.max(node.radius, Math.min(height - node.radius, node.y));
+            }
+        }
+
+        // Render
+        function render() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw links
+            ctx.strokeStyle = 'rgba(153, 153, 153, 0.3)';
+            ctx.lineWidth = 1;
+            for (let link of links) {
+                const source = nodes[link.source];
+                const target = nodes[link.target];
+                ctx.beginPath();
+                ctx.moveTo(source.x, source.y);
+                ctx.lineTo(target.x, target.y);
+                ctx.stroke();
+            }
+
+            // Draw nodes
+            for (let node of nodes) {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                ctx.fillStyle = node.color;
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+        }
+
+        // Animation loop using GSAP ticker
+        gsap.ticker.add(() => {
+            updatePhysics();
+            render();
+        });
+
+        // Initial animation - nodes grow in
+        gsap.from(nodes, {
+            duration: 1.5,
+            radius: 0,
+            stagger: 0.01,
+            ease: "elastic.out(1, 0.5)",
+            onUpdate: render
+        });
+    </script>
+</body>
+</html>

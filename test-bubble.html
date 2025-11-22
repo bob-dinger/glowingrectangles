@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Bubble</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #vis {
+            width: 960px;
+            margin: 20px auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Bubble Chart</h1>
+    <p id="status">Loading D3...</p>
+    <div id="vis"></div>
+
+    <script>
+        console.log('Script started');
+        document.getElementById('status').textContent = 'D3 version: ' + d3.version;
+
+        // Simple test data
+        const testData = [
+            { id: 1, size: 100 },
+            { id: 2, size: 50 },
+            { id: 3, size: 75 }
+        ];
+
+        console.log('Test data:', testData);
+
+        const width = 960;
+        const height = 600;
+
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        console.log('SVG created');
+
+        const circles = svg.selectAll('circle')
+            .data(testData)
+            .enter()
+            .append('circle')
+            .attr('cx', (d, i) => 200 + i * 200)
+            .attr('cy', 300)
+            .attr('r', d => d.size)
+            .attr('fill', 'steelblue')
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2);
+
+        console.log('Circles created');
+        document.getElementById('status').textContent = 'Test complete - you should see 3 circles';
+    </script>
+</body>
+</html>

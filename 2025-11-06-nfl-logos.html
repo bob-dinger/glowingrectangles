@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Created: 2025-11-06 -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Teams - Force Diagram</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0a0a0a;
+            font-family: 'Arial', sans-serif;
+        }
+
+        svg {
+            border: 1px solid #333;
+        }
+
+        .link {
+            stroke: #888;
+            stroke-width: 2px;
+        }
+
+        .team-circle {
+            stroke: #fff;
+            stroke-width: 2px;
+            cursor: pointer;
+        }
+
+        .center-circle {
+            stroke: #fff;
+            stroke-width: 3px;
+            filter: drop-shadow(0 0 8px #fff);
+        }
+    </style>
+</head>
+<body>
+    <svg width="600" height="600"></svg>
+
+    <script>
+        const width = 600;
+        const height = 600;
+
+        const svg = d3.select("svg");
+
+        // NFL teams with logo URLs from ESPN
+        const teams = [
+            { id: 0, name: "NFL", logo: "https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png", isCenter: true, value: 80 },
+            { id: 1, name: "Cardinals", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ari.png", value: 40 },
+            { id: 2, name: "Falcons", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/atl.png", value: 40 },
+            { id: 3, name: "Ravens", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png", value: 40 },
+            { id: 4, name: "Bills", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png", value: 40 },
+            { id: 5, name: "Panthers", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/car.png", value: 40 },
+            { id: 6, name: "Bears", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/chi.png", value: 40 },
+            { id: 7, name: "Bengals", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/cin.png", value: 40 },
+            { id: 8, name: "Browns", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/cle.png", value: 40 },
+            { id: 9, name: "Cowboys", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/dal.png", value: 40 },
+            { id: 10, name: "Broncos", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/den.png", value: 40 },
+            { id: 11, name: "Lions", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/det.png", value: 40 },
+            { id: 12, name: "Packers", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png", value: 40 },
+            { id: 13, name: "Texans", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png", value: 40 },
+            { id: 14, name: "Colts", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ind.png", value: 40 },
+            { id: 15, name: "Jaguars", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/jax.png", value: 40 },
+            { id: 16, name: "Chiefs", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png", value: 40 },
+            { id: 17, name: "Raiders", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lv.png", value: 40 },
+            { id: 18, name: "Chargers", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lac.png", value: 40 },
+            { id: 19, name: "Rams", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png", value: 40 },
+            { id: 20, name: "Dolphins", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png", value: 40 },
+            { id: 21, name: "Vikings", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/min.png", value: 40 },
+            { id: 22, name: "Patriots", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png", value: 40 },
+            { id: 23, name: "Saints", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/no.png", value: 40 },
+            { id: 24, name: "Giants", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png", value: 40 },
+            { id: 25, name: "Jets", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png", value: 40 },
+            { id: 26, name: "Eagles", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png", value: 40 },
+            { id: 27, name: "Steelers", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png", value: 40 },
+            { id: 28, name: "49ers", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png", value: 40 },
+            { id: 29, name: "Seahawks", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png", value: 40 },
+            { id: 30, name: "Buccaneers", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/tb.png", value: 40 },
+            { id: 31, name: "Titans", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ten.png", value: 40 },
+            { id: 32, name: "Commanders", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png", value: 40 }
+        ];
+
+        // Create links: all teams connect to NFL center
+        const links = [];
+        for (let i = 1; i < teams.length; i++) {
+            links.push({
+                source: 0,
+                target: i
+            });
+        }
+
+        // Create scale for radius
+        const radiusScale = d3.scaleSqrt()
+            .domain([0, 100])
+            .range([0, 50]);
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(teams)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(200))
+            .force("charge", d3.forceManyBody().strength(-500))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(d => radiusScale(d.value) + 5));
+
+        // Create links with random opacity
+        const link = svg.append("g")
+            .selectAll("line")
+            .data(links)
+            .join("line")
+            .attr("class", "link")
+            .attr("stroke-opacity", () => Math.random() * 0.6 + 0.3); // Random between 0.3-0.9
+
+        // Create defs for image patterns
+        const defs = svg.append("defs");
+
+        teams.forEach(team => {
+            const pattern = defs.append("pattern")
+                .attr("id", `logo-${team.id}`)
+                .attr("width", 1)
+                .attr("height", 1)
+                .attr("patternContentUnits", "objectBoundingBox");
+
+            pattern.append("image")
+                .attr("href", team.logo)
+                .attr("width", 1)
+                .attr("height", 1)
+                .attr("preserveAspectRatio", "xMidYMid slice");
+        });
+
+        // Create nodes with logo fills
+        const node = svg.append("g")
+            .selectAll("circle")
+            .data(teams)
+            .join("circle")
+            .attr("class", d => d.isCenter ? "center-circle" : "team-circle")
+            .attr("r", d => radiusScale(d.value))
+            .attr("fill", d => `url(#logo-${d.id})`)
+            .call(drag(simulation));
+
+        // Add hover effect
+        node.on("mouseover", function(event, d) {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("stroke-width", d.isCenter ? 5 : 4)
+                .attr("r", radiusScale(d.value) * 1.15);
+        })
+        .on("mouseout", function(event, d) {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("stroke-width", d.isCenter ? 3 : 2)
+                .attr("r", radiusScale(d.value));
+        });
+
+        // Update positions on tick
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
+        });
+
+        // Drag functionality
+        function drag(simulation) {
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+
+            return d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended);
+        }
+    </script>
+</body>
+</html>

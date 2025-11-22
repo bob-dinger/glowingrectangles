@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Bubble Force - Polarized</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        #vis {
+            width: 600px;
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 600px;
+            height: 600px;
+        }
+        .bubble {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            cursor: pointer;
+            opacity: 0.9;
+        }
+        .bubble:hover {
+            opacity: 1;
+            stroke-width: 2.5px;
+        }
+        text {
+            fill: #fff;
+            pointer-events: none;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Polarized Distribution</h1>
+    <p class="description">Everything at extremes - very large or very small, nothing in middle</p>
+    <div id="vis"></div>
+
+    <script>
+        const width = 600;
+        const height = 600;
+
+        // Generate polarized data - only extremes
+        function generatePolarizedData(n) {
+            const data = [];
+            for (let i = 0; i < n; i++) {
+                let size;
+                // 50% very small, 50% very large
+                if (Math.random() < 0.5) {
+                    // Very small (5-150)
+                    size = 5 + Math.random() * 145;
+                } else {
+                    // Very large (650-1000)
+                    size = 650 + Math.random() * 350;
+                }
+
+                data.push({
+                    id: i + 1,
+                    size: size,
+                    extreme: size < 400 ? 'small' : 'large'
+                });
+            }
+            return data;
+        }
+
+        // Generate the data
+        const rawData = generatePolarizedData(100);
+
+        // Create nodes with varying radius
+        const maxSize = d3.max(rawData, d => d.size);
+        const radiusScale = d3.scaleSqrt()
+            .domain([0, maxSize])
+            .range([0, 30]);
+
+        const nodes = rawData.map(d => ({
+            id: d.id,
+            radius: radiusScale(d.size),
+            size: d.size,
+            extreme: d.extreme,
+            x: Math.random() * width,
+            y: Math.random() * height
+        }));
+
+        console.log('Nodes created:', nodes.length);
+
+        // Color scale - purple for small, orange for large
+        const colorScale = d3.scaleOrdinal()
+            .domain(['small', 'large'])
+            .range(['#8B5CF6', '#F59E0B']);
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        console.log('SVG created');
+
+        // Create groups for each bubble
+        const elements = svg.selectAll('.bubble-group')
+            .data(nodes, d => d.id)
+            .enter()
+            .append('g')
+            .attr('class', 'bubble-group');
+
+        // Add circles
+        const bubbles = elements
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', d => colorScale(d.extreme));
+
+        // Add labels
+        const labels = elements
+            .append('text')
+            .attr('dy', '.3em')
+            .style('text-anchor', 'middle')
+            .style('font-size', d => Math.min(d.radius / 2.5, 12) + 'px')
+            .text(d => d.radius > 10 ? d.id : '');
+
+        console.log('Bubbles and labels created');
+
+        // Charge function
+        function charge(d) {
+            return -Math.pow(d.radius, 2.0) * 0.03;
+        }
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(charge))
+            .force('x', d3.forceX().strength(0.05).x(width / 2))
+            .force('y', d3.forceY().strength(0.05).y(height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 2))
+            .on('tick', ticked);
+
+        console.log('Simulation started');
+
+        // Tick function
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        }
+    </script>
+</body>
+</html>

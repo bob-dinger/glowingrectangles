@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Created: 2025-11-06 -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rings - D3.js</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0a0a0a;
+            font-family: 'Arial', sans-serif;
+        }
+
+        svg {
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <svg width="600" height="600"></svg>
+
+    <script>
+        const width = 600;
+        const height = 600;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        const svg = d3.select("svg");
+
+        // Purple ring (100px radius from center)
+        svg.append("circle")
+            .attr("cx", centerX)
+            .attr("cy", centerY)
+            .attr("r", 100)
+            .attr("fill", "none")
+            .attr("stroke", "#aa44ff")
+            .attr("stroke-width", 3);
+
+        // Small center circle that floats
+        const centerCircle = svg.append("circle")
+            .attr("cx", centerX)
+            .attr("cy", centerY)
+            .attr("r", 10)
+            .attr("fill", "#ffffff")
+            .attr("stroke", "#fff")
+            .attr("stroke-width", 2);
+
+        // Animate the center circle to float around
+        function floatCenter() {
+            const randomX = centerX + (Math.random() - 0.5) * 40; // ±20px from center
+            const randomY = centerY + (Math.random() - 0.5) * 40; // ±20px from center
+            const duration = 2000 + Math.random() * 1000; // 2-3 seconds
+
+            centerCircle
+                .transition()
+                .duration(duration)
+                .ease(d3.easeSinInOut)
+                .attr("cx", randomX)
+                .attr("cy", randomY)
+                .on("end", floatCenter); // Loop continuously
+        }
+
+        floatCenter(); // Start the animation
+    </script>
+</body>
+</html>

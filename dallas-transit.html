@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dallas Transit - Force Diagram</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0a1628;
+            font-family: 'Arial', sans-serif;
+        }
+
+        svg {
+            border: 1px solid #ccc;
+            background: #ffffff;
+        }
+
+        .node {
+            stroke: #fff;
+            stroke-width: 2.5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .link {
+            stroke: #666;
+            stroke-opacity: 0.4;
+            stroke-width: 2px;
+        }
+
+        .label {
+            fill: #fff;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            font-size: 13px;
+            pointer-events: none;
+            font-weight: bold;
+            text-shadow:
+                -1px -1px 2px rgba(0,0,0,0.8),
+                1px -1px 2px rgba(0,0,0,0.8),
+                -1px 1px 2px rgba(0,0,0,0.8),
+                1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .center-label {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <svg width="600" height="600"></svg>
+
+    <script>
+        const width = 600;
+        const height = 600;
+
+        const svg = d3.select("svg");
+
+        // Define locations - outer nodes 65% the size of center node
+        const locations = [
+            { id: 0, name: "Union Station", value: 50, color: "#ff4444", isCenter: true },
+            { id: 1, name: "DFW", value: 32.5, color: "#ff8c00" }, // Orange
+            { id: 2, name: "Zoo", value: 32.5, color: "#dc143c" }, // Red
+            { id: 3, name: "Fair Park", value: 32.5, color: "#228b22" }, // Forest Green
+            { id: 4, name: "Carrollton", value: 32.5, color: "#90ee90" }, // Light Green
+            { id: 5, name: "Plano", value: 32.5, color: "#cc5500" }, // Burnt Orange
+            { id: 6, name: "White Rock", value: 32.5, color: "#4169e1" }, // Royal Blue
+            { id: 7, name: "UNT-Dallas", value: 32.5, color: "#1e90ff" }, // Dodger Blue
+            { id: 8, name: "Uptown", value: 32.5, color: "#800000" }, // Maroon
+            { id: 9, name: "Bishop Arts", value: 32.5, color: "#9370db" }, // Purple
+            { id: 10, name: "Fort Worth", value: 32.5, color: "#000080" } // Navy
+        ];
+
+        // Create links: all locations connect to Union Station
+        const links = [];
+        for (let i = 1; i < locations.length; i++) {
+            links.push({
+                source: 0,
+                target: i
+            });
+        }
+
+        // Create scale for radius based on value
+        const radiusScale = d3.scaleSqrt()
+            .domain([0, 100])
+            .range([0, 60]);
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(locations)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(180))
+            .force("charge", d3.forceManyBody().strength(-400))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(d => radiusScale(d.value) + 10));
+
+        // Create links
+        const link = svg.append("g")
+            .selectAll("line")
+            .data(links)
+            .join("line")
+            .attr("class", "link");
+
+        // Create nodes
+        const node = svg.append("g")
+            .selectAll("circle")
+            .data(locations)
+            .join("circle")
+            .attr("class", "node")
+            .attr("r", d => radiusScale(d.value))
+            .attr("fill", d => d.color)
+            .call(drag(simulation));
+
+        // Add labels
+        const label = svg.append("g")
+            .selectAll("text")
+            .data(locations)
+            .join("text")
+            .attr("class", d => d.isCenter ? "label center-label" : "label")
+            .text(d => d.name);
+
+        // Add hover effect with scale
+        node.on("mouseover", function(event, d) {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("stroke-width", 5)
+                .attr("r", radiusScale(d.value) * 1.1);
+        })
+        .on("mouseout", function(event, d) {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("stroke-width", 2.5)
+                .attr("r", radiusScale(d.value));
+        });
+
+        // Update positions on tick
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
+
+            label
+                .attr("x", d => d.x)
+                .attr("y", d => d.y);
+        });
+
+        // Drag functionality
+        function drag(simulation) {
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+
+            return d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended);
+        }
+    </script>
+</body>
+</html>

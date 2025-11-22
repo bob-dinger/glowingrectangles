@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Bubble Force - Power Law Distribution</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        #vis {
+            width: 600px;
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 600px;
+            height: 600px;
+        }
+        .bubble {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            cursor: pointer;
+            opacity: 0.9;
+        }
+        .bubble:hover {
+            opacity: 1;
+            stroke-width: 2.5px;
+        }
+        text {
+            fill: #fff;
+            pointer-events: none;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Power Law Distribution - Bubble Force</h1>
+    <p class="description">5 huge bubbles, some medium, mostly tiny ones</p>
+    <div id="vis"></div>
+
+    <script>
+        const width = 600;
+        const height = 600;
+
+        // Box-Muller transform for normal distribution
+        function normalRandom(mean = 0, stdDev = 1) {
+            const u1 = Math.random();
+            const u2 = Math.random();
+            const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+            return z0 * stdDev + mean;
+        }
+
+        // Generate power law distribution data (100 points)
+        function generatePowerLawData(n) {
+            const data = [];
+            const alpha = 1.5;
+            const values = [];
+
+            for (let i = 0; i < n; i++) {
+                const u = Math.random();
+                const value = Math.pow(1 - u, -1/alpha);
+                values.push(value);
+            }
+
+            const maxValue = Math.max(...values);
+            const minValue = Math.min(...values);
+
+            values.forEach((value, i) => {
+                const normalizedValue = (value - minValue) / (maxValue - minValue);
+                const size = 5 + normalizedValue * 995;
+
+                data.push({
+                    id: i + 1,
+                    size: size,
+                    value: value
+                });
+            });
+
+            data.sort((a, b) => b.size - a.size);
+            return data;
+        }
+
+        // Generate the data
+        const rawData = generatePowerLawData(100);
+
+        // Create nodes
+        const maxSize = d3.max(rawData, d => d.size);
+        const radiusScale = d3.scaleSqrt()
+            .domain([0, maxSize])
+            .range([0, 30]);
+
+        const nodes = rawData.map((d, i) => {
+            // Start larger bubbles closer to center
+            let startX, startY;
+            if (i < 5) {
+                // Top 5 largest - start very close to center
+                startX = width / 2 + (Math.random() - 0.5) * 100;
+                startY = height / 2 + (Math.random() - 0.5) * 100;
+            } else if (i < 20) {
+                // Medium bubbles - start in middle ring
+                startX = width / 2 + (Math.random() - 0.5) * 300;
+                startY = height / 2 + (Math.random() - 0.5) * 300;
+            } else {
+                // Smaller bubbles - can start anywhere
+                startX = Math.random() * width;
+                startY = Math.random() * height;
+            }
+
+            return {
+                id: d.id,
+                radius: radiusScale(d.size),
+                size: d.size,
+                x: startX,
+                y: startY
+            };
+        });
+
+        console.log('Nodes created:', nodes.length);
+
+        // Color scale
+        const colorScale = d3.scaleSequential(d3.interpolatePlasma)
+            .domain([0, 80]);
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        console.log('SVG created');
+
+        // Create groups for each bubble
+        const elements = svg.selectAll('.bubble-group')
+            .data(nodes, d => d.id)
+            .enter()
+            .append('g')
+            .attr('class', 'bubble-group');
+
+        // Add circles
+        const bubbles = elements
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', d => colorScale(d.radius));
+
+        // Add labels
+        const labels = elements
+            .append('text')
+            .attr('dy', '.3em')
+            .style('text-anchor', 'middle')
+            .style('font-size', d => Math.min(d.radius / 2, 14) + 'px')
+            .text(d => d.radius > 15 ? d.id : '');
+
+        console.log('Bubbles and labels created');
+
+        // Charge function
+        function charge(d) {
+            return -Math.pow(d.radius, 2.0) * 0.03;
+        }
+
+        // Custom centering force - stronger for larger bubbles
+        function customXForce(d) {
+            // Larger bubbles have stronger pull to center
+            const strength = 0.02 + (d.radius / 80) * 0.08;
+            return strength;
+        }
+
+        function customYForce(d) {
+            const strength = 0.02 + (d.radius / 80) * 0.08;
+            return strength;
+        }
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(charge))
+            .force('x', d3.forceX().strength(customXForce).x(width / 2))
+            .force('y', d3.forceY().strength(customYForce).y(height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 2))
+            .on('tick', ticked);
+
+        console.log('Simulation started');
+
+        // Tick function
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        }
+    </script>
+</body>
+</html>

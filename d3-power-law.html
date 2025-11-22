@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Force Graph - Power Law Distribution</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+        }
+        .node {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            cursor: pointer;
+        }
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Power Law Distribution</h1>
+    <p class="description">5 huge nodes, some medium nodes, mostly tiny nodes</p>
+    <svg width="960" height="600"></svg>
+
+    <script>
+        // Generate power law distribution
+        function generatePowerLawData(n) {
+            const nodes = [];
+
+            // Generate values following power law (Pareto distribution)
+            const alpha = 1.5; // Shape parameter
+            const values = [];
+
+            for (let i = 0; i < n; i++) {
+                // Inverse transform sampling for Pareto distribution
+                const u = Math.random();
+                const value = Math.pow(1 - u, -1/alpha);
+                values.push(value);
+            }
+
+            // Normalize values to get reasonable node sizes
+            const maxValue = Math.max(...values);
+            const minValue = Math.min(...values);
+
+            values.forEach((value, i) => {
+                // Map to radius between 3 and 50
+                const normalizedValue = (value - minValue) / (maxValue - minValue);
+                const radius = 3 + normalizedValue * 47;
+
+                nodes.push({
+                    id: i,
+                    radius: radius,
+                    value: value
+                });
+            });
+
+            // Sort by value to ensure biggest nodes are created first
+            nodes.sort((a, b) => b.value - a.value);
+
+            return nodes;
+        }
+
+        // Generate links (connect some nodes randomly)
+        function generateLinks(nodes, linkDensity = 0.03) {
+            const links = [];
+            const n = nodes.length;
+
+            // Preferential attachment - larger nodes get more connections
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    // Higher probability for connecting to larger nodes
+                    const prob = (nodes[i].value + nodes[j].value) * linkDensity / 100;
+                    if (Math.random() < prob) {
+                        links.push({
+                            source: nodes[i].id,
+                            target: nodes[j].id
+                        });
+                    }
+                }
+            }
+
+            return links;
+        }
+
+        const nodes = generatePowerLawData(100);
+        const links = generateLinks(nodes);
+
+        const svg = d3.select("svg");
+        const width = +svg.attr("width");
+        const height = +svg.attr("height");
+
+        // Color scale based on node size
+        const colorScale = d3.scaleSequential(d3.interpolateViridis)
+            .domain([0, d3.max(nodes, d => d.radius)]);
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(50))
+            .force("charge", d3.forceManyBody().strength(-100))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(d => d.radius + 2));
+
+        // Create links
+        const link = svg.append("g")
+            .selectAll("line")
+            .data(links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        // Create nodes
+        const node = svg.append("g")
+            .selectAll("circle")
+            .data(nodes)
+            .enter().append("circle")
+            .attr("class", "node")
+            .attr("r", d => d.radius)
+            .attr("fill", d => colorScale(d.radius))
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        // Add tooltip
+        node.append("title")
+            .text(d => `Node ${d.id}\nRadius: ${d.radius.toFixed(2)}`);
+
+        // Update positions on each tick
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
+        });
+
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+    </script>
+</body>
+</html>

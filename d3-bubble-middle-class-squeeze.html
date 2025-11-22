@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Bubble Force - Middle Class Squeeze</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        #controls {
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 5px;
+        }
+        button:hover {
+            background-color: #2563EB;
+        }
+        button:disabled {
+            background-color: #4B5563;
+            cursor: not-allowed;
+        }
+        #status {
+            color: #10B981;
+            font-size: 12px;
+            margin-top: 5px;
+            min-height: 20px;
+        }
+        #vis {
+            width: 600px;
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 600px;
+            height: 600px;
+        }
+        .bubble {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            cursor: pointer;
+            opacity: 0.9;
+        }
+        .bubble:hover {
+            opacity: 1;
+            stroke-width: 2.5px;
+        }
+        text {
+            fill: #fff;
+            pointer-events: none;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Middle Class Squeeze: Uniform → Polarized</h1>
+    <p class="description">Watch equality collapse into extremes - the middle disappears</p>
+    <div id="controls">
+        <button id="startBtn">Start Transformation</button>
+        <button id="resetBtn">Reset</button>
+    </div>
+    <div id="status"></div>
+    <div id="vis"></div>
+
+    <script>
+        const width = 600;
+        const height = 600;
+
+        let nodes = [];
+        let bubbles, labels, simulation, svg;
+        let isAnimating = false;
+
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusDiv = document.getElementById('status');
+
+        // Generate initial uniform data
+        function generateUniformData(n) {
+            const data = [];
+            for (let i = 0; i < n; i++) {
+                data.push({
+                    id: i + 1,
+                    size: 500,  // All start the same
+                    targetSize: 500
+                });
+            }
+            return data;
+        }
+
+        // Generate polarized targets
+        function generatePolarizedTargets(nodes) {
+            nodes.forEach((node, i) => {
+                // 50% go small, 50% go large
+                if (i < 50) {
+                    node.targetSize = 50 + Math.random() * 100;  // Small: 50-150
+                    node.targetExtreme = 'small';
+                } else {
+                    node.targetSize = 700 + Math.random() * 300;  // Large: 700-1000
+                    node.targetExtreme = 'large';
+                }
+            });
+        }
+
+        // Initialize visualization
+        function init() {
+            const rawData = generateUniformData(100);
+
+            // Shuffle for random assignment
+            rawData.sort(() => Math.random() - 0.5);
+
+            const maxSize = 1000;
+            const radiusScale = d3.scaleSqrt()
+                .domain([0, maxSize])
+                .range([0, 30]);
+
+            nodes = rawData.map(d => ({
+                id: d.id,
+                size: d.size,
+                targetSize: d.targetSize,
+                radius: radiusScale(d.size),
+                targetRadius: radiusScale(d.targetSize),
+                extreme: 'middle',
+                targetExtreme: 'middle',
+                x: Math.random() * width,
+                y: Math.random() * height
+            }));
+
+            // Set up polarized targets
+            generatePolarizedTargets(nodes);
+            nodes.forEach(node => {
+                const radiusScale = d3.scaleSqrt()
+                    .domain([0, 1000])
+                    .range([0, 30]);
+                node.targetRadius = radiusScale(node.targetSize);
+            });
+
+            // Create SVG
+            svg = d3.select('#vis')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Create groups for each bubble
+            const elements = svg.selectAll('.bubble-group')
+                .data(nodes, d => d.id)
+                .enter()
+                .append('g')
+                .attr('class', 'bubble-group');
+
+            // Add circles
+            bubbles = elements
+                .append('circle')
+                .attr('class', 'bubble')
+                .attr('r', d => d.radius)
+                .attr('fill', '#6B46C1');  // Start purple (uniform)
+
+            // Add labels
+            labels = elements
+                .append('text')
+                .attr('dy', '.3em')
+                .style('text-anchor', 'middle')
+                .style('font-size', d => Math.min(d.radius / 2.5, 12) + 'px')
+                .text(d => d.radius > 10 ? d.id : '');
+
+            // Charge function
+            function charge(d) {
+                return -Math.pow(d.radius, 2.0) * 0.03;
+            }
+
+            // Create force simulation
+            simulation = d3.forceSimulation(nodes)
+                .force('charge', d3.forceManyBody().strength(charge))
+                .force('x', d3.forceX().strength(0.05).x(width / 2))
+                .force('y', d3.forceY().strength(0.05).y(height / 2))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 2))
+                .on('tick', ticked);
+
+            statusDiv.textContent = 'Ready - All equal, all purple';
+        }
+
+        // Tick function
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        }
+
+        // Animate transformation
+        function startTransformation() {
+            if (isAnimating) return;
+            isAnimating = true;
+            startBtn.disabled = true;
+            resetBtn.disabled = true;
+
+            statusDiv.textContent = 'Transforming... watch the middle disappear';
+
+            // Color scale for polarized
+            const colorScale = d3.scaleOrdinal()
+                .domain(['small', 'large'])
+                .range(['#8B5CF6', '#F59E0B']);  // Purple for small, orange for large
+
+            // Transition sizes and colors over 8 seconds
+            const duration = 8000;
+
+            bubbles.transition()
+                .duration(duration)
+                .ease(d3.easeCubicInOut)
+                .attr('r', d => d.targetRadius)
+                .attr('fill', d => colorScale(d.targetExtreme))
+                .on('end', function(d, i) {
+                    // Update actual node data
+                    nodes[i].radius = nodes[i].targetRadius;
+                    nodes[i].size = nodes[i].targetSize;
+                    nodes[i].extreme = nodes[i].targetExtreme;
+
+                    // Restart simulation with new sizes
+                    simulation.force('collision', d3.forceCollide().radius(d => d.radius + 2));
+                    simulation.alpha(0.3).restart();
+                });
+
+            // Update labels
+            labels.transition()
+                .duration(duration)
+                .style('font-size', d => Math.min(d.targetRadius / 2.5, 12) + 'px')
+                .style('opacity', d => d.targetRadius > 10 ? 1 : 0);
+
+            // After animation completes
+            setTimeout(() => {
+                isAnimating = false;
+                startBtn.disabled = true;
+                resetBtn.disabled = false;
+                statusDiv.textContent = 'Complete - The middle class has vanished';
+            }, duration + 100);
+        }
+
+        // Reset
+        function reset() {
+            svg.remove();
+            startBtn.disabled = false;
+            resetBtn.disabled = false;
+            isAnimating = false;
+            init();
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startTransformation);
+        resetBtn.addEventListener('click', reset);
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
