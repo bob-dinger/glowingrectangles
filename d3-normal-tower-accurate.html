@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Normal Distribution Tower - Mathematically Accurate</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        #container {
+            width: 960px;
+            margin: 0 auto;
+        }
+        svg {
+            border: 1px solid #333;
+            width: 960px;
+            height: 600px;
+            background-color: #0a0a0a;
+            border-radius: 8px;
+        }
+        circle {
+            opacity: 0.85;
+        }
+        circle:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Normal Distribution Tower - Mathematically Accurate</h1>
+    <p class="description">Bell curve calculated using actual normal PDF - gray (middle 90%), red extremes (5% each side)</p>
+    <div id="container">
+        <svg></svg>
+    </div>
+
+    <script>
+        // Normal distribution probability density function
+        function normalPDF(x, mean = 0, stdDev = 1) {
+            const coefficient = 1 / (stdDev * Math.sqrt(2 * Math.PI));
+            const exponent = -Math.pow(x - mean, 2) / (2 * Math.pow(stdDev, 2));
+            return coefficient * Math.exp(exponent);
+        }
+
+        // Generate mathematically accurate tower heights
+        const numColumns = 64;
+        const mean = 0;
+        const stdDev = 1;
+        const xRange = 3; // -3 to +3 standard deviations (covers 99.7% of data)
+
+        let tower = [];
+        let maxHeight = 0;
+
+        // Calculate height for each column based on normal PDF
+        for (let i = 0; i < numColumns; i++) {
+            // Map column index to x-value in standard deviations
+            const x = -xRange + (i / (numColumns - 1)) * (2 * xRange);
+            const probability = normalPDF(x, mean, stdDev);
+            tower.push(probability);
+            maxHeight = Math.max(maxHeight, probability);
+        }
+
+        // Normalize to reasonable pixel heights (max ~40 dots high)
+        const maxDots = 40;
+        tower = tower.map(p => Math.round((p / maxHeight) * maxDots));
+
+        console.log('Tower heights:', tower);
+
+        // Calculate total dots
+        const totalDots = tower.reduce((sum, count) => sum + count, 0);
+        const dotsPerSide = Math.floor(totalDots * 0.05); // 5% on each side
+
+        console.log(`Total dots: ${totalDots}, Each red side: ${dotsPerSide} dots (5%)`);
+
+        let svg = document.querySelector('svg');
+        let dotCounter = 0;
+
+        tower.forEach((dots, columnIdx) => {
+            for (let i = 0; i < dots; i++) {
+                let circle = document.createElementNS('http://www.w3.org/2000/svg', "circle");
+                circle.setAttribute("r", 7);
+                circle.setAttribute("cx", (columnIdx * 15) + 10);
+                circle.setAttribute("cy", 590 - (i * 15));
+                circle.setAttribute("class", `column${columnIdx}`);
+
+                // Color by counting total dots from left to right
+                // First 5% = red (left), last 5% = red (right), middle 90% = gray
+                if (dotCounter < dotsPerSide) {
+                    circle.setAttribute("fill", "#EF4444");  // Red - left 5%
+                } else if (dotCounter >= totalDots - dotsPerSide) {
+                    circle.setAttribute("fill", "#EF4444");  // Red - right 5%
+                } else {
+                    circle.setAttribute("fill", "#6B7280");  // Gray - middle 90%
+                }
+
+                svg.prepend(circle);
+                dotCounter++;
+            }
+        });
+
+        // Draw standard deviation markers
+        const markerY = 595;
+        const centerX = (numColumns / 2) * 15;
+
+        // Mark -2σ, -1σ, mean, +1σ, +2σ
+        [-2, -1, 0, 1, 2].forEach(sigma => {
+            const xPos = centerX + (sigma * (numColumns / 6) * 15);
+
+            let line = document.createElementNS('http://www.w3.org/2000/svg', "line");
+            line.setAttribute("x1", xPos);
+            line.setAttribute("y1", markerY - 5);
+            line.setAttribute("x2", xPos);
+            line.setAttribute("y2", markerY + 5);
+            line.setAttribute("stroke", "#3B82F6");
+            line.setAttribute("stroke-width", 2);
+            svg.appendChild(line);
+
+            let text = document.createElementNS('http://www.w3.org/2000/svg', "text");
+            text.setAttribute("x", xPos);
+            text.setAttribute("y", markerY + 20);
+            text.setAttribute("fill", "#3B82F6");
+            text.setAttribute("font-size", "10");
+            text.setAttribute("text-anchor", "middle");
+            text.textContent = sigma === 0 ? "μ" : `${sigma > 0 ? '+' : ''}${sigma}σ`;
+            svg.appendChild(text);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Funnel</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 600px;
+        }
+        #canvas {
+            background: #0a0a0a;
+            border-radius: 8px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .play-btn {
+            background: linear-gradient(90deg, #8B5CF6, #EF4444);
+            color: white;
+        }
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+        .reset-btn {
+            background: #333;
+            color: #aaa;
+        }
+        .reset-btn:hover {
+            background: #444;
+            color: #fff;
+        }
+        .trait-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            max-width: 800px;
+        }
+        .trait-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        .trait-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .trait-dot.good { background: #22C55E; }
+        .trait-dot.bad { background: #EF4444; }
+        .trait-label.good { color: #22C55E; }
+        .trait-label.bad { color: #EF4444; }
+        .stats {
+            display: flex;
+            gap: 40px;
+            margin: 20px 0;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-value.entered { color: #8B5CF6; }
+        .stat-value.elected { color: #EF4444; }
+        .stat-value.rejected { color: #22C55E; }
+        .info {
+            max-width: 700px;
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px 25px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .info p {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+        .info strong {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <h1>The Funnel</h1>
+    <p class="subtitle">What traits does the political system select FOR? Watch as normal people enter and see who makes it through.</p>
+
+    <div class="controls">
+        <button class="play-btn" id="playBtn">▶ Run Selection</button>
+        <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <svg id="canvas" width="900" height="600"></svg>
+
+    <div class="trait-legend">
+        <div class="trait-item">
+            <div class="trait-dot good"></div>
+            <span class="trait-label good">Humility</span>
+        </div>
+        <div class="trait-item">
+            <div class="trait-dot good"></div>
+            <span class="trait-label good">Empathy</span>
+        </div>
+        <div class="trait-item">
+            <div class="trait-dot good"></div>
+            <span class="trait-label good">Honesty</span>
+        </div>
+        <div class="trait-item">
+            <div class="trait-dot bad"></div>
+            <span class="trait-label bad">Narcissism</span>
+        </div>
+        <div class="trait-item">
+            <div class="trait-dot bad"></div>
+            <span class="trait-label bad">Shamelessness</span>
+        </div>
+        <div class="trait-item">
+            <div class="trait-dot bad"></div>
+            <span class="trait-label bad">Fame-seeking</span>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value entered" id="entered">0</div>
+            <div class="stat-label">Entered Funnel</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value elected" id="elected">0</div>
+            <div class="stat-label">Made It Through</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value rejected" id="rejected">0</div>
+            <div class="stat-label">Filtered Out</div>
+        </div>
+    </div>
+
+    <div class="info">
+        <p><strong>What you're seeing:</strong> Normal people (mixed green/red traits) enter the funnel at top. The political system filters them. Notice which colors make it through: the system selects FOR narcissism, shamelessness, and fame-seeking. Humble, empathetic, honest people get filtered OUT.</p>
+    </div>
+
+    <script>
+        const width = 900;
+        const height = 600;
+
+        const svg = d3.select('#canvas');
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Funnel shape
+        const funnelTop = 80;
+        const funnelBottom = 520;
+        const funnelTopWidth = 700;
+        const funnelBottomWidth = 100;
+        const funnelCenterX = width / 2;
+
+        // Draw funnel
+        const funnelPath = `
+            M ${funnelCenterX - funnelTopWidth/2} ${funnelTop}
+            L ${funnelCenterX - funnelBottomWidth/2} ${funnelBottom}
+            L ${funnelCenterX + funnelBottomWidth/2} ${funnelBottom}
+            L ${funnelCenterX + funnelTopWidth/2} ${funnelTop}
+            Z
+        `;
+
+        svg.append('path')
+            .attr('d', funnelPath)
+            .attr('fill', '#1a1a1a')
+            .attr('stroke', '#333')
+            .attr('stroke-width', 2);
+
+        // Labels on funnel
+        const stages = [
+            { y: 120, label: 'Decides to Run', filter: 'Requires: Ego' },
+            { y: 200, label: 'Primary Campaign', filter: 'Rewards: Attacks' },
+            { y: 280, label: 'Media Attention', filter: 'Rewards: Outrage' },
+            { y: 360, label: 'Fundraising', filter: 'Requires: Shamelessness' },
+            { y: 440, label: 'General Election', filter: 'Rewards: Fame' }
+        ];
+
+        stages.forEach(stage => {
+            const funnelWidthAtY = funnelTopWidth - (funnelTopWidth - funnelBottomWidth) * ((stage.y - funnelTop) / (funnelBottom - funnelTop));
+
+            svg.append('line')
+                .attr('x1', funnelCenterX - funnelWidthAtY/2 + 10)
+                .attr('x2', funnelCenterX + funnelWidthAtY/2 - 10)
+                .attr('y1', stage.y)
+                .attr('y2', stage.y)
+                .attr('stroke', '#333')
+                .attr('stroke-dasharray', '5,5');
+
+            svg.append('text')
+                .attr('x', funnelCenterX)
+                .attr('y', stage.y - 15)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#666')
+                .attr('font-size', '11px')
+                .text(stage.label);
+
+            svg.append('text')
+                .attr('x', funnelCenterX)
+                .attr('y', stage.y + 20)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#EF4444')
+                .attr('font-size', '10px')
+                .attr('opacity', 0.7)
+                .text(stage.filter);
+        });
+
+        // "ELECTED" label at bottom
+        svg.append('text')
+            .attr('x', funnelCenterX)
+            .attr('y', funnelBottom + 40)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '16px')
+            .attr('font-weight', 'bold')
+            .text('ELECTED');
+
+        // People (particles)
+        let people = [];
+        let enteredCount = 0;
+        let electedCount = 0;
+        let rejectedCount = 0;
+
+        function createPerson() {
+            // Traits: higher = more of that trait
+            // Good traits make you LESS likely to enter/survive
+            // Bad traits make you MORE likely to survive
+            const humility = Math.random();
+            const empathy = Math.random();
+            const honesty = Math.random();
+            const narcissism = Math.random();
+            const shamelessness = Math.random();
+            const fameSeeking = Math.random();
+
+            // Calculate "political fitness" - bad traits help, good traits hurt
+            const fitness = (narcissism + shamelessness + fameSeeking) - (humility + empathy + honesty) * 0.5;
+
+            // Color based on dominant traits
+            const goodScore = humility + empathy + honesty;
+            const badScore = narcissism + shamelessness + fameSeeking;
+            const ratio = badScore / (goodScore + badScore);
+
+            return {
+                id: people.length,
+                x: funnelCenterX + (Math.random() - 0.5) * (funnelTopWidth - 100),
+                y: funnelTop + 20,
+                vx: 0,
+                vy: 1 + Math.random(),
+                fitness: fitness,
+                color: d3.interpolateRgb('#22C55E', '#EF4444')(ratio),
+                radius: 5,
+                alive: true,
+                stage: 0
+            };
+        }
+
+        let isPlaying = false;
+        let animationTimer = null;
+        let spawnTimer = null;
+
+        function getFunnelWidthAtY(y) {
+            if (y < funnelTop) return funnelTopWidth;
+            if (y > funnelBottom) return funnelBottomWidth;
+            return funnelTopWidth - (funnelTopWidth - funnelBottomWidth) * ((y - funnelTop) / (funnelBottom - funnelTop));
+        }
+
+        function update() {
+            // Update people
+            people.forEach(p => {
+                if (!p.alive) return;
+
+                // Move down
+                p.y += p.vy;
+                p.x += p.vx;
+
+                // Bounce off funnel walls
+                const funnelWidth = getFunnelWidthAtY(p.y);
+                const leftWall = funnelCenterX - funnelWidth / 2;
+                const rightWall = funnelCenterX + funnelWidth / 2;
+
+                if (p.x < leftWall + p.radius) {
+                    p.x = leftWall + p.radius;
+                    p.vx = Math.abs(p.vx) * 0.5;
+                }
+                if (p.x > rightWall - p.radius) {
+                    p.x = rightWall - p.radius;
+                    p.vx = -Math.abs(p.vx) * 0.5;
+                }
+
+                // Check stages - filtering happens here
+                stages.forEach((stage, i) => {
+                    if (p.y > stage.y && p.stage === i) {
+                        p.stage = i + 1;
+
+                        // Filter check: need higher fitness to pass each stage
+                        const threshold = -0.5 + (i * 0.3); // Gets harder each stage
+                        if (p.fitness < threshold) {
+                            // Rejected - fly off to the side
+                            p.alive = false;
+                            p.vx = (p.x < funnelCenterX ? -1 : 1) * (3 + Math.random() * 3);
+                            p.vy = -2;
+                            rejectedCount++;
+                            updateStats();
+                        }
+                    }
+                });
+
+                // Made it through!
+                if (p.y > funnelBottom && p.alive) {
+                    p.alive = false;
+                    electedCount++;
+                    updateStats();
+                }
+
+                // Random horizontal movement
+                p.vx += (Math.random() - 0.5) * 0.3;
+                p.vx *= 0.95;
+            });
+
+            // Remove dead particles that are off screen
+            people = people.filter(p => p.y < height + 50 && p.x > -50 && p.x < width + 50);
+
+            // Draw
+            const circles = svg.selectAll('.person')
+                .data(people, d => d.id);
+
+            circles.enter()
+                .append('circle')
+                .attr('class', 'person')
+                .attr('r', d => d.radius)
+                .attr('fill', d => d.color)
+                .attr('opacity', 0.8)
+                .merge(circles)
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('opacity', d => d.alive ? 0.8 : 0.4);
+
+            circles.exit().remove();
+
+            animationTimer = requestAnimationFrame(update);
+        }
+
+        function spawnPerson() {
+            if (!isPlaying) return;
+
+            const person = createPerson();
+            people.push(person);
+            enteredCount++;
+            updateStats();
+
+            spawnTimer = setTimeout(spawnPerson, 200 + Math.random() * 300);
+        }
+
+        function updateStats() {
+            document.getElementById('entered').textContent = enteredCount;
+            document.getElementById('elected').textContent = electedCount;
+            document.getElementById('rejected').textContent = rejectedCount;
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                isPlaying = false;
+                cancelAnimationFrame(animationTimer);
+                clearTimeout(spawnTimer);
+                playBtn.textContent = '▶ Resume';
+            } else {
+                isPlaying = true;
+                playBtn.textContent = '⏸ Pause';
+                update();
+                spawnPerson();
+            }
+        });
+
+        function reset() {
+            isPlaying = false;
+            cancelAnimationFrame(animationTimer);
+            clearTimeout(spawnTimer);
+
+            people = [];
+            enteredCount = 0;
+            electedCount = 0;
+            rejectedCount = 0;
+
+            svg.selectAll('.person').remove();
+
+            playBtn.textContent = '▶ Run Selection';
+            updateStats();
+        }
+
+        resetBtn.addEventListener('click', reset);
+        updateStats();
+    </script>
+</body>
+</html>

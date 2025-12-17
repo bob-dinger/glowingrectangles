@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Attention Economy of Power</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 15px 0;
+            text-align: center;
+            font-size: 13px;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .insight {
+            color: #888;
+            font-size: 12px;
+            margin-top: 15px;
+            max-width: 700px;
+            text-align: center;
+            line-height: 1.6;
+        }
+        .highlight {
+            color: #10B981;
+        }
+        .controls {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        button:hover {
+            background-color: #444;
+        }
+        button.active {
+            background-color: #10B981;
+            border-color: #10B981;
+        }
+        .legend {
+            color: #888;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>The Attention Economy of Power</h1>
+    <p class="description">
+        Bubble size = political attention (lobbying dollars, media access, regulatory capture).
+        The big bubbles in the center have all the power. The tiny ones on the edge have none.
+    </p>
+
+    <div class="controls">
+        <button class="active" data-industry="higher-ed">Higher Education</button>
+        <button data-industry="healthcare">Healthcare</button>
+        <button data-industry="defense">Defense</button>
+        <button data-industry="finance">Finance</button>
+        <button data-industry="pharma">Pharma</button>
+    </div>
+
+    <div id="vis"></div>
+
+    <div class="legend">
+        Bubble area = share of political attention | Position from center = power to influence policy
+    </div>
+
+    <p class="insight">
+        <span class="highlight">The pattern is universal:</span> In every industry, a handful of players capture almost all the attention.
+        Everyone else is noise at the margins. This is why "the people" rarely win policy fights.
+    </p>
+
+    <script>
+        const width = 700;
+        const height = 700;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Industry data - each industry has concentrated beneficiaries and diffuse losers
+        const industries = {
+            'higher-ed': {
+                title: 'Higher Education',
+                color: '#EF4444',
+                beneficiaries: [
+                    { name: 'Harvard', value: 50, label: true },
+                    { name: 'Yale', value: 35, label: true },
+                    { name: 'Stanford', value: 35, label: true },
+                    { name: 'Princeton', value: 30, label: true },
+                    { name: 'MIT', value: 28, label: true },
+                    { name: 'Columbia', value: 25 },
+                    { name: 'U Penn', value: 24 },
+                    { name: 'Duke', value: 22 },
+                    { name: 'Northwestern', value: 20 },
+                    { name: 'U Chicago', value: 20 },
+                    { name: 'Sallie Mae', value: 40, label: true },
+                    { name: 'Navient', value: 35, label: true },
+                    { name: 'NAICU Lobby', value: 25 },
+                    { name: 'ACE Lobby', value: 22 },
+                    { name: 'Accreditors', value: 18 },
+                ],
+                diffuse: { count: 500, label: 'Students & Taxpayers', valueEach: 0.3 }
+            },
+            'healthcare': {
+                title: 'Healthcare',
+                color: '#3B82F6',
+                beneficiaries: [
+                    { name: 'UnitedHealth', value: 60, label: true },
+                    { name: 'Anthem', value: 45, label: true },
+                    { name: 'CVS/Aetna', value: 42, label: true },
+                    { name: 'Cigna', value: 38, label: true },
+                    { name: 'Humana', value: 32, label: true },
+                    { name: 'HCA', value: 28 },
+                    { name: 'AMA Lobby', value: 35, label: true },
+                    { name: 'PhRMA', value: 40, label: true },
+                    { name: 'AHIP', value: 25 },
+                    { name: 'AHA', value: 22 },
+                ],
+                diffuse: { count: 500, label: 'Patients & Workers', valueEach: 0.3 }
+            },
+            'defense': {
+                title: 'Defense Industry',
+                color: '#8B5CF6',
+                beneficiaries: [
+                    { name: 'Lockheed', value: 70, label: true },
+                    { name: 'Boeing', value: 55, label: true },
+                    { name: 'Raytheon', value: 50, label: true },
+                    { name: 'Northrop', value: 45, label: true },
+                    { name: 'General Dynamics', value: 40, label: true },
+                    { name: 'L3Harris', value: 30 },
+                    { name: 'BAE Systems', value: 28 },
+                    { name: 'Huntington Ingalls', value: 25 },
+                    { name: 'Leidos', value: 22 },
+                    { name: 'NDIA Lobby', value: 20 },
+                ],
+                diffuse: { count: 500, label: 'Taxpayers', valueEach: 0.3 }
+            },
+            'finance': {
+                title: 'Financial Industry',
+                color: '#F59E0B',
+                beneficiaries: [
+                    { name: 'JPMorgan', value: 65, label: true },
+                    { name: 'Goldman Sachs', value: 55, label: true },
+                    { name: 'Bank of America', value: 50, label: true },
+                    { name: 'Citigroup', value: 45, label: true },
+                    { name: 'Morgan Stanley', value: 40, label: true },
+                    { name: 'Wells Fargo', value: 38 },
+                    { name: 'BlackRock', value: 50, label: true },
+                    { name: 'Vanguard', value: 35 },
+                    { name: 'ABA Lobby', value: 25 },
+                    { name: 'SIFMA', value: 22 },
+                ],
+                diffuse: { count: 500, label: 'Depositors & Investors', valueEach: 0.3 }
+            },
+            'pharma': {
+                title: 'Pharmaceutical Industry',
+                color: '#EC4899',
+                beneficiaries: [
+                    { name: 'Pfizer', value: 55, label: true },
+                    { name: 'J&J', value: 50, label: true },
+                    { name: 'Merck', value: 45, label: true },
+                    { name: 'AbbVie', value: 42, label: true },
+                    { name: 'Eli Lilly', value: 40, label: true },
+                    { name: 'Bristol-Myers', value: 35 },
+                    { name: 'Novartis', value: 33 },
+                    { name: 'Roche', value: 30 },
+                    { name: 'AstraZeneca', value: 28 },
+                    { name: 'PhRMA Lobby', value: 45, label: true },
+                ],
+                diffuse: { count: 500, label: 'Patients & Insurers', valueEach: 0.3 }
+            }
+        };
+
+        let currentIndustry = 'higher-ed';
+        let simulation = null;
+        let nodes = [];
+
+        // Scale for bubble radius
+        const radiusScale = d3.scaleSqrt()
+            .domain([0.3, 70])
+            .range([2, 50]);
+
+        function generateNodes(industryKey) {
+            const industry = industries[industryKey];
+            const newNodes = [];
+
+            // Add beneficiaries (big bubbles)
+            industry.beneficiaries.forEach((b, i) => {
+                newNodes.push({
+                    id: b.name,
+                    name: b.name,
+                    value: b.value,
+                    radius: radiusScale(b.value),
+                    type: 'beneficiary',
+                    label: b.label || false,
+                    color: industry.color
+                });
+            });
+
+            // Add diffuse group (tiny bubbles)
+            for (let i = 0; i < industry.diffuse.count; i++) {
+                newNodes.push({
+                    id: `diffuse-${i}`,
+                    name: industry.diffuse.label,
+                    value: industry.diffuse.valueEach,
+                    radius: radiusScale(industry.diffuse.valueEach),
+                    type: 'diffuse',
+                    label: false,
+                    color: '#4B5563'
+                });
+            }
+
+            return newNodes;
+        }
+
+        function updateVisualization(industryKey) {
+            currentIndustry = industryKey;
+            const industry = industries[industryKey];
+
+            // Update button states
+            document.querySelectorAll('.controls button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.industry === industryKey);
+            });
+
+            // Generate new nodes
+            nodes = generateNodes(industryKey);
+
+            // Clear existing
+            svg.selectAll('*').remove();
+
+            // Create simulation
+            simulation = d3.forceSimulation(nodes)
+                .force('charge', d3.forceManyBody().strength(d => d.type === 'beneficiary' ? -d.radius * 2 : -1))
+                .force('center', d3.forceCenter(centerX, centerY))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 1).strength(0.9))
+                .force('radial', d3.forceRadial(d => d.type === 'beneficiary' ? 0 : 280, centerX, centerY).strength(d => d.type === 'beneficiary' ? 0.3 : 0.1))
+                .on('tick', ticked);
+
+            // Draw bubbles
+            const bubbles = svg.selectAll('circle')
+                .data(nodes)
+                .enter()
+                .append('circle')
+                .attr('r', d => d.radius)
+                .attr('fill', d => d.color)
+                .attr('stroke', d => d.type === 'beneficiary' ? 'rgba(255,255,255,0.3)' : 'none')
+                .attr('stroke-width', d => d.type === 'beneficiary' ? 1 : 0)
+                .attr('opacity', d => d.type === 'beneficiary' ? 0.9 : 0.5);
+
+            // Labels for big bubbles
+            const labels = svg.selectAll('text.label')
+                .data(nodes.filter(d => d.label))
+                .enter()
+                .append('text')
+                .attr('class', 'label')
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#fff')
+                .attr('font-size', d => Math.max(8, d.radius / 3))
+                .attr('font-weight', 'bold')
+                .attr('pointer-events', 'none')
+                .text(d => d.name);
+
+            // Title in center background
+            svg.append('text')
+                .attr('class', 'title-bg')
+                .attr('x', centerX)
+                .attr('y', 40)
+                .attr('text-anchor', 'middle')
+                .attr('fill', industry.color)
+                .attr('font-size', '16px')
+                .attr('font-weight', 'bold')
+                .attr('opacity', 0.8)
+                .text(industry.title);
+
+            // Annotation for diffuse
+            svg.append('text')
+                .attr('class', 'diffuse-label')
+                .attr('x', centerX)
+                .attr('y', height - 30)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#666')
+                .attr('font-size', '11px')
+                .text(`The 500 tiny dots = millions of ${industry.diffuse.label.toLowerCase()} with no voice`);
+
+            function ticked() {
+                bubbles
+                    .attr('cx', d => d.x = Math.max(d.radius, Math.min(width - d.radius, d.x)))
+                    .attr('cy', d => d.y = Math.max(d.radius, Math.min(height - d.radius, d.y)));
+
+                labels
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y + 4);
+            }
+        }
+
+        // Button handlers
+        document.querySelectorAll('.controls button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                updateVisualization(btn.dataset.industry);
+            });
+        });
+
+        // Initialize
+        updateVisualization('higher-ed');
+    </script>
+</body>
+</html>

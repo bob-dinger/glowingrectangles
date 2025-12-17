@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offensive Lineup 2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #111;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .field {
+            background: #1a472a;
+            width: 800px;
+            height: 500px;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .los {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #fff;
+            opacity: 0.6;
+        }
+        .yard-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #fff;
+            opacity: 0.15;
+        }
+        .player {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            border: 3px solid #fff;
+        }
+        .player.center {
+            background: #6b7280;
+        }
+        .player.oline {
+            background: #6b7280;
+        }
+        .player.qb {
+            background: #ef4444;
+        }
+        .player.rb {
+            background: #3b82f6;
+        }
+        .player.wr {
+            background: #22c55e;
+        }
+        .label {
+            position: absolute;
+            font-size: 11px;
+            color: #888;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="field">
+        <!-- Yard lines -->
+        <div class="yard-line" style="top: 20%;"></div>
+        <div class="yard-line" style="top: 35%;"></div>
+        <div class="los"></div>
+        <div class="yard-line" style="top: 65%;"></div>
+        <div class="yard-line" style="top: 80%;"></div>
+
+        <!-- Center in the middle -->
+        <div class="player center" style="left: 400px; top: 48%;">C</div>
+
+        <!-- 4 O-linemen bunched at far right -->
+        <div class="player oline" style="left: 740px; top: 48%;">TE</div>
+        <div class="player oline" style="left: 690px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 640px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 590px; top: 48%;">OL</div>
+
+        <!-- QB and RB in shotgun -->
+        <div class="player qb" style="left: 400px; top: 62%;">QB</div>
+        <div class="player rb" style="left: 590px; top: 62%;">RB</div>
+
+        <!-- OL moved next to WRs on left side -->
+        <div class="player oline" style="left: 270px; top: 48%;">OL</div>
+
+        <!-- 3 receivers on the LEFT side (outside on line, inside 2 off) -->
+        <div class="player wr" style="left: 220px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 120px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 50px; top: 48%;">WR</div>
+    </div>
+</body>
+</html>

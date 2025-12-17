@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Bubble Force - Filter Bubble Divergence</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+        #controls {
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 5px;
+        }
+        button:hover {
+            background-color: #2563EB;
+        }
+        button:disabled {
+            background-color: #4B5563;
+            cursor: not-allowed;
+        }
+        #status {
+            color: #10B981;
+            font-size: 12px;
+            margin-top: 5px;
+            min-height: 20px;
+        }
+        #vis {
+            width: 600px;
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 600px;
+            height: 600px;
+        }
+        .bubble {
+            stroke: #fff;
+            stroke-width: 0.5px;
+            cursor: pointer;
+            opacity: 0.9;
+        }
+        .bubble:hover {
+            opacity: 1;
+            stroke-width: 1.5px;
+        }
+        .legend {
+            color: #aaaaaa;
+            font-size: 11px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Filter Bubble Divergence</h1>
+    <p class="description">
+        500 people start with the same news. Algorithms gradually push each person into their own
+        information bubble. Watch shared reality fragment into 500 separate realities.
+    </p>
+    <div id="controls">
+        <button id="startBtn">Start Divergence</button>
+        <button id="resetBtn">Reset</button>
+    </div>
+    <div id="status"></div>
+    <div id="vis"></div>
+    <div class="legend">
+        Each bubble = 1 person. Color = their unique information diet.
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 600;
+        const numPeople = 500;
+
+        let nodes = [];
+        let bubbles, simulation, svg;
+        let isAnimating = false;
+
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusDiv = document.getElementById('status');
+
+        // Shared starting color - everyone sees the same news
+        const sharedColor = '#6B46C1';  // Purple - unified information
+
+        // Generate initial data - everyone same color
+        function generateInitialData(n) {
+            const data = [];
+            for (let i = 0; i < n; i++) {
+                // Each person gets a unique target hue (0-360)
+                const targetHue = (i / n) * 360;
+                data.push({
+                    id: i + 1,
+                    targetHue: targetHue,
+                    // Add some variation in divergence speed
+                    divergenceSpeed: 0.5 + Math.random() * 0.5
+                });
+            }
+            return data;
+        }
+
+        // Initialize visualization
+        function init() {
+            const rawData = generateInitialData(numPeople);
+
+            // Shuffle for random placement
+            rawData.sort(() => Math.random() - 0.5);
+
+            // All bubbles same small size
+            const radius = 8;
+
+            nodes = rawData.map(d => ({
+                id: d.id,
+                radius: radius,
+                targetHue: d.targetHue,
+                currentHue: 270,  // Start at purple (270 degrees)
+                divergenceSpeed: d.divergenceSpeed,
+                x: Math.random() * width,
+                y: Math.random() * height
+            }));
+
+            // Create SVG
+            svg = d3.select('#vis')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Add circles directly (no groups needed for simple bubbles)
+            bubbles = svg.selectAll('.bubble')
+                .data(nodes, d => d.id)
+                .enter()
+                .append('circle')
+                .attr('class', 'bubble')
+                .attr('r', d => d.radius)
+                .attr('fill', sharedColor);
+
+            // Charge function - lighter for many small bubbles
+            function charge(d) {
+                return -Math.pow(d.radius, 2.0) * 0.02;
+            }
+
+            // Create force simulation
+            simulation = d3.forceSimulation(nodes)
+                .force('charge', d3.forceManyBody().strength(charge))
+                .force('x', d3.forceX().strength(0.03).x(width / 2))
+                .force('y', d3.forceY().strength(0.03).y(height / 2))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 1))
+                .on('tick', ticked);
+
+            statusDiv.textContent = 'Ready - Everyone shares the same information reality';
+        }
+
+        // Tick function
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+        }
+
+        // Animate the divergence
+        function startDivergence() {
+            if (isAnimating) return;
+            isAnimating = true;
+            startBtn.disabled = true;
+            resetBtn.disabled = true;
+
+            statusDiv.textContent = 'Diverging... algorithms personalize each feed';
+
+            const duration = 10000;  // 10 seconds total
+            const startTime = Date.now();
+
+            function animateFrame() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Ease function for smooth animation
+                const easedProgress = d3.easeCubicInOut(progress);
+
+                // Update each bubble's color based on progress
+                bubbles.attr('fill', d => {
+                    // Interpolate from shared purple (270) to unique target hue
+                    const currentHue = 270 + (d.targetHue - 270) * easedProgress * d.divergenceSpeed;
+                    d.currentHue = currentHue;
+                    return `hsl(${currentHue}, 70%, 55%)`;
+                });
+
+                // Update status with progress
+                const percentComplete = Math.round(progress * 100);
+                if (progress < 0.25) {
+                    statusDiv.textContent = `${percentComplete}% - Slight personalization beginning...`;
+                } else if (progress < 0.5) {
+                    statusDiv.textContent = `${percentComplete}% - Feeds starting to diverge...`;
+                } else if (progress < 0.75) {
+                    statusDiv.textContent = `${percentComplete}% - Information bubbles forming...`;
+                } else if (progress < 1) {
+                    statusDiv.textContent = `${percentComplete}% - Realities fragmenting...`;
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateFrame);
+                } else {
+                    // Animation complete
+                    isAnimating = false;
+                    startBtn.disabled = true;
+                    resetBtn.disabled = false;
+                    statusDiv.textContent = 'Complete - 500 people, 500 different realities. No shared truth.';
+                }
+            }
+
+            requestAnimationFrame(animateFrame);
+        }
+
+        // Reset
+        function reset() {
+            svg.remove();
+            startBtn.disabled = false;
+            resetBtn.disabled = false;
+            isAnimating = false;
+            init();
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startDivergence);
+        resetBtn.addEventListener('click', reset);
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

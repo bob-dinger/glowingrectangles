@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bliss Symbolics</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            line-height: 1.6;
+        }
+        h1 {
+            font-size: 36px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+        .section {
+            max-width: 1200px;
+            margin: 0 auto 60px auto;
+        }
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #3B82F6;
+        }
+        .intro {
+            font-size: 16px;
+            color: #ccc;
+            max-width: 800px;
+            margin: 0 auto 40px auto;
+            text-align: center;
+        }
+        .symbols-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 25px;
+        }
+        .symbol-card {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        .symbol-card svg {
+            margin-bottom: 10px;
+        }
+        .symbol-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .symbol-meaning {
+            font-size: 12px;
+            color: #888;
+        }
+        .combo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        .combo-card {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+        }
+        .combo-equation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .combo-operator {
+            font-size: 24px;
+            color: #666;
+        }
+        .combo-result {
+            font-size: 18px;
+            font-weight: bold;
+            color: #22C55E;
+        }
+        .combo-explanation {
+            font-size: 13px;
+            color: #888;
+            margin-top: 10px;
+        }
+        .history {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .history p {
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+        .history strong {
+            color: #fff;
+        }
+        .indicator-section {
+            margin-top: 40px;
+        }
+        .indicator-row {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .indicator-example {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px 20px;
+        }
+        .indicator-label {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bliss Symbolics</h1>
+    <p class="subtitle">A Universal Visual Language</p>
+
+    <p class="intro">
+        Created by Charles K. Bliss in the 1940s, Bliss Symbolics is a semantic writing system
+        where simple geometric shapes combine to represent meanings directly—not sounds or words
+        from any spoken language. Like building blocks, a small set of elements creates thousands of concepts.
+    </p>
+
+    <div class="section">
+        <h2>Basic Elements</h2>
+        <p style="color: #888; margin-bottom: 20px;">The foundation: simple shapes that carry core meanings</p>
+        <div class="symbols-grid" id="basic-elements"></div>
+    </div>
+
+    <div class="section">
+        <h2>Pointers & Indicators</h2>
+        <p style="color: #888; margin-bottom: 20px;">Small marks that modify meaning</p>
+        <div class="symbols-grid" id="indicators"></div>
+    </div>
+
+    <div class="section">
+        <h2>How Symbols Combine</h2>
+        <p style="color: #888; margin-bottom: 20px;">Elements join together logically to create new meanings</p>
+        <div class="combo-grid" id="combinations"></div>
+    </div>
+
+    <div class="section">
+        <h2>Position Matters</h2>
+        <p style="color: #888; margin-bottom: 20px;">Where elements sit relative to each other changes meaning</p>
+        <div class="combo-grid" id="positions"></div>
+    </div>
+
+    <div class="section">
+        <h2>The Story of Bliss</h2>
+        <div class="history">
+            <p>
+                <strong>Charles K. Bliss</strong> (1897–1985) was born Karl Kasiel Blitz in Austria-Hungary.
+                A Jewish refugee who survived the concentration camps, he witnessed firsthand how language
+                barriers and nationalist ideologies fueled hatred and war.
+            </p>
+            <p>
+                Inspired by Chinese characters—where people speaking mutually unintelligible dialects could
+                still communicate through writing—Bliss spent years developing a universal visual language.
+                He called it <strong>Semantography</strong>: writing based on meaning, not sound.
+            </p>
+            <p>
+                His dream was ambitious: a second written language for all humanity, transcending the barriers
+                of spoken tongues. He published his system in 1949, but it was largely ignored.
+            </p>
+            <p>
+                Then in 1971, a team at the Ontario Crippled Children's Centre (now Holland Bloorview)
+                discovered his work. They realized Bliss symbols were perfect for children with cerebral
+                palsy who couldn't speak—the logical, visual system was easier to learn than traditional writing.
+            </p>
+            <p>
+                <strong>The irony:</strong> Bliss had envisioned his symbols uniting humanity across cultures.
+                Instead, they became a powerful tool for augmentative and alternative communication (AAC),
+                giving voice to those who had none. He was initially bitter about this "limited" use, but
+                eventually came to appreciate the profound impact his work had on individual lives.
+            </p>
+            <p>
+                Today, Blissymbols are used worldwide in AAC, and the system contains over 5,000 authorized symbols
+                managed by Blissymbolics Communication International.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const svgNS = "http://www.w3.org/2000/svg";
+
+        function createSVG(width = 80, height = 80) {
+            const svg = document.createElementNS(svgNS, 'svg');
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            svg.setAttribute('viewBox', '0 0 80 80');
+            return svg;
+        }
+
+        function drawLine(svg, x1, y1, x2, y2, color = '#fff', strokeWidth = 3) {
+            const line = document.createElementNS(svgNS, 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke', color);
+            line.setAttribute('stroke-width', strokeWidth);
+            line.setAttribute('stroke-linecap', 'round');
+            svg.appendChild(line);
+        }
+
+        function drawCircle(svg, cx, cy, r, fill = 'none', stroke = '#fff', strokeWidth = 3) {
+            const circle = document.createElementNS(svgNS, 'circle');
+            circle.setAttribute('cx', cx);
+            circle.setAttribute('cy', cy);
+            circle.setAttribute('r', r);
+            circle.setAttribute('fill', fill);
+            circle.setAttribute('stroke', stroke);
+            circle.setAttribute('stroke-width', strokeWidth);
+            svg.appendChild(circle);
+        }
+
+        function drawRect(svg, x, y, w, h, fill = 'none', stroke = '#fff', strokeWidth = 3) {
+            const rect = document.createElementNS(svgNS, 'rect');
+            rect.setAttribute('x', x);
+            rect.setAttribute('y', y);
+            rect.setAttribute('width', w);
+            rect.setAttribute('height', h);
+            rect.setAttribute('fill', fill);
+            rect.setAttribute('stroke', stroke);
+            rect.setAttribute('stroke-width', strokeWidth);
+            svg.appendChild(rect);
+        }
+
+        function drawTriangle(svg, x, y, size, direction = 'up', fill = 'none', stroke = '#fff', strokeWidth = 3) {
+            const path = document.createElementNS(svgNS, 'path');
+            let d;
+            if (direction === 'up') {
+                d = `M ${x} ${y - size} L ${x - size} ${y + size} L ${x + size} ${y + size} Z`;
+            } else if (direction === 'down') {
+                d = `M ${x} ${y + size} L ${x - size} ${y - size} L ${x + size} ${y - size} Z`;
+            }
+            path.setAttribute('d', d);
+            path.setAttribute('fill', fill);
+            path.setAttribute('stroke', stroke);
+            path.setAttribute('stroke-width', strokeWidth);
+            path.setAttribute('stroke-linejoin', 'round');
+            svg.appendChild(path);
+        }
+
+        function drawHeart(svg, cx, cy, size, fill = 'none', stroke = '#fff', strokeWidth = 3) {
+            const path = document.createElementNS(svgNS, 'path');
+            const s = size;
+            const d = `M ${cx} ${cy + s * 0.8}
+                       C ${cx - s * 1.5} ${cy - s * 0.2} ${cx - s * 0.8} ${cy - s} ${cx} ${cy - s * 0.3}
+                       C ${cx + s * 0.8} ${cy - s} ${cx + s * 1.5} ${cy - s * 0.2} ${cx} ${cy + s * 0.8} Z`;
+            path.setAttribute('d', d);
+            path.setAttribute('fill', fill);
+            path.setAttribute('stroke', stroke);
+            path.setAttribute('stroke-width', strokeWidth);
+            svg.appendChild(path);
+        }
+
+        function drawArrow(svg, x1, y1, x2, y2, color = '#fff', strokeWidth = 3) {
+            drawLine(svg, x1, y1, x2, y2, color, strokeWidth);
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const headLen = 10;
+            drawLine(svg, x2, y2,
+                x2 - headLen * Math.cos(angle - Math.PI / 6),
+                y2 - headLen * Math.sin(angle - Math.PI / 6), color, strokeWidth);
+            drawLine(svg, x2, y2,
+                x2 - headLen * Math.cos(angle + Math.PI / 6),
+                y2 - headLen * Math.sin(angle + Math.PI / 6), color, strokeWidth);
+        }
+
+        // Basic Elements
+        const basicElements = [
+            {
+                name: 'Person',
+                meaning: 'Human being',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 20, 10);
+                    drawLine(svg, 40, 30, 40, 55);
+                    drawLine(svg, 40, 55, 25, 75);
+                    drawLine(svg, 40, 55, 55, 75);
+                    drawLine(svg, 40, 40, 25, 50);
+                    drawLine(svg, 40, 40, 55, 50);
+                }
+            },
+            {
+                name: 'Sun / Day',
+                meaning: 'Light, time',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 40, 15);
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i * Math.PI * 2) / 8;
+                        const x1 = 40 + 22 * Math.cos(angle);
+                        const y1 = 40 + 22 * Math.sin(angle);
+                        const x2 = 40 + 32 * Math.cos(angle);
+                        const y2 = 40 + 32 * Math.sin(angle);
+                        drawLine(svg, x1, y1, x2, y2);
+                    }
+                }
+            },
+            {
+                name: 'Earth / Ground',
+                meaning: 'Ground, land',
+                draw: (svg) => {
+                    drawLine(svg, 10, 50, 70, 50);
+                }
+            },
+            {
+                name: 'Sky',
+                meaning: 'Above, heaven',
+                draw: (svg) => {
+                    drawLine(svg, 10, 30, 70, 30);
+                }
+            },
+            {
+                name: 'Water',
+                meaning: 'Liquid, flow',
+                draw: (svg) => {
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', 'M 10 40 Q 25 30, 40 40 Q 55 50, 70 40');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '3');
+                    svg.appendChild(path);
+                }
+            },
+            {
+                name: 'Fire',
+                meaning: 'Heat, energy',
+                draw: (svg) => {
+                    drawTriangle(svg, 40, 40, 20, 'up');
+                }
+            },
+            {
+                name: 'Enclosure',
+                meaning: 'Container, building',
+                draw: (svg) => {
+                    drawRect(svg, 20, 25, 40, 35);
+                }
+            },
+            {
+                name: 'Heart / Feeling',
+                meaning: 'Emotion, love',
+                draw: (svg) => {
+                    drawHeart(svg, 40, 40, 18, 'none', '#fff', 3);
+                }
+            },
+            {
+                name: 'Mind',
+                meaning: 'Thought, brain',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 35, 18);
+                    drawLine(svg, 40, 53, 40, 65);
+                }
+            },
+            {
+                name: 'Mouth',
+                meaning: 'Speech, opening',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 40, 12, 'none', '#fff', 3);
+                    drawLine(svg, 28, 40, 52, 40);
+                }
+            },
+            {
+                name: 'Eye',
+                meaning: 'See, vision',
+                draw: (svg) => {
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', 'M 15 40 Q 40 20, 65 40 Q 40 60, 15 40');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '3');
+                    svg.appendChild(path);
+                    drawCircle(svg, 40, 40, 6, '#fff', '#fff', 0);
+                }
+            },
+            {
+                name: 'Ear',
+                meaning: 'Hear, listen',
+                draw: (svg) => {
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', 'M 45 20 Q 65 40, 45 60 M 45 30 Q 55 40, 45 50');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '3');
+                    svg.appendChild(path);
+                }
+            }
+        ];
+
+        // Indicators
+        const indicators = [
+            {
+                name: 'Action (verb)',
+                meaning: 'Adds movement/doing',
+                draw: (svg) => {
+                    drawTriangle(svg, 40, 45, 12, 'up', '#3B82F6', '#3B82F6', 0);
+                }
+            },
+            {
+                name: 'Thing (noun)',
+                meaning: 'Makes it a thing',
+                draw: (svg) => {
+                    drawRect(svg, 30, 35, 20, 15, '#22C55E', '#22C55E', 0);
+                }
+            },
+            {
+                name: 'Description',
+                meaning: 'Adjective/adverb',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 42, 8, '#F59E0B', '#F59E0B', 0);
+                }
+            },
+            {
+                name: 'Plural',
+                meaning: 'More than one',
+                draw: (svg) => {
+                    drawLine(svg, 30, 50, 30, 35);
+                    drawLine(svg, 40, 50, 40, 35);
+                    drawLine(svg, 50, 50, 50, 35);
+                }
+            },
+            {
+                name: 'Intensity Up',
+                meaning: 'More, very',
+                draw: (svg) => {
+                    drawArrow(svg, 40, 60, 40, 25);
+                }
+            },
+            {
+                name: 'Intensity Down',
+                meaning: 'Less, slightly',
+                draw: (svg) => {
+                    drawArrow(svg, 40, 25, 40, 60);
+                }
+            }
+        ];
+
+        // Combinations
+        const combinations = [
+            {
+                result: 'House / Home',
+                explanation: 'A building (enclosure) that protects from sky (weather)',
+                draw1: (svg) => { drawRect(svg, 20, 25, 40, 35); },
+                draw2: (svg) => { drawLine(svg, 10, 30, 70, 30); },
+                drawResult: (svg) => {
+                    drawRect(svg, 20, 35, 40, 30);
+                    drawLine(svg, 20, 35, 40, 15);
+                    drawLine(svg, 40, 15, 60, 35);
+                }
+            },
+            {
+                result: 'Happy',
+                explanation: 'Heart/feeling going upward (elevated)',
+                draw1: (svg) => { drawHeart(svg, 40, 45, 15, 'none', '#fff', 3); },
+                draw2: (svg) => { drawArrow(svg, 40, 60, 40, 25); },
+                drawResult: (svg) => {
+                    drawHeart(svg, 40, 50, 12, 'none', '#fff', 3);
+                    drawArrow(svg, 40, 35, 40, 15);
+                }
+            },
+            {
+                result: 'Sad',
+                explanation: 'Heart/feeling going downward (depressed)',
+                draw1: (svg) => { drawHeart(svg, 40, 45, 15, 'none', '#fff', 3); },
+                draw2: (svg) => { drawArrow(svg, 40, 25, 40, 60); },
+                drawResult: (svg) => {
+                    drawHeart(svg, 40, 35, 12, 'none', '#fff', 3);
+                    drawArrow(svg, 40, 50, 40, 70);
+                }
+            },
+            {
+                result: 'Water + Person = Swim',
+                explanation: 'Person in/with water',
+                draw1: (svg) => {
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', 'M 10 40 Q 25 30, 40 40 Q 55 50, 70 40');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '3');
+                    svg.appendChild(path);
+                },
+                draw2: (svg) => {
+                    drawCircle(svg, 40, 25, 8);
+                    drawLine(svg, 40, 33, 40, 50);
+                    drawLine(svg, 40, 50, 30, 65);
+                    drawLine(svg, 40, 50, 50, 65);
+                    drawLine(svg, 40, 38, 28, 45);
+                    drawLine(svg, 40, 38, 52, 45);
+                },
+                drawResult: (svg) => {
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', 'M 10 50 Q 25 40, 40 50 Q 55 60, 70 50');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '3');
+                    svg.appendChild(path);
+                    drawCircle(svg, 40, 28, 7);
+                    drawLine(svg, 40, 35, 40, 48);
+                    drawLine(svg, 40, 40, 28, 48);
+                    drawLine(svg, 40, 40, 52, 48);
+                }
+            },
+            {
+                result: 'Knowledge',
+                explanation: 'Mind combined with book/learning',
+                draw1: (svg) => {
+                    drawCircle(svg, 40, 35, 15);
+                    drawLine(svg, 40, 50, 40, 60);
+                },
+                draw2: (svg) => {
+                    drawRect(svg, 25, 25, 30, 35);
+                    drawLine(svg, 40, 25, 40, 60);
+                },
+                drawResult: (svg) => {
+                    drawCircle(svg, 40, 28, 12);
+                    drawLine(svg, 40, 40, 40, 48);
+                    drawRect(svg, 28, 52, 24, 18);
+                    drawLine(svg, 40, 52, 40, 70);
+                }
+            },
+            {
+                result: 'Food / Eat',
+                explanation: 'Mouth combined with earth (things that grow)',
+                draw1: (svg) => {
+                    drawCircle(svg, 40, 40, 12);
+                    drawLine(svg, 28, 40, 52, 40);
+                },
+                draw2: (svg) => {
+                    drawLine(svg, 10, 50, 70, 50);
+                },
+                drawResult: (svg) => {
+                    drawCircle(svg, 40, 35, 10);
+                    drawLine(svg, 30, 35, 50, 35);
+                    drawLine(svg, 15, 55, 65, 55);
+                    drawArrow(svg, 40, 48, 40, 55);
+                }
+            }
+        ];
+
+        // Position examples
+        const positions = [
+            {
+                result: 'Above vs Below',
+                explanation: 'Same elements, different vertical position = opposite meanings',
+                draw1: (svg) => {
+                    drawLine(svg, 15, 50, 65, 50, '#666');
+                    drawCircle(svg, 40, 30, 10);
+                    const label = document.createElementNS(svgNS, 'text');
+                    label.setAttribute('x', 40);
+                    label.setAttribute('y', 75);
+                    label.setAttribute('text-anchor', 'middle');
+                    label.setAttribute('fill', '#888');
+                    label.setAttribute('font-size', '10');
+                    label.textContent = 'above';
+                    svg.appendChild(label);
+                },
+                draw2: (svg) => {
+                    drawLine(svg, 15, 30, 65, 30, '#666');
+                    drawCircle(svg, 40, 50, 10);
+                    const label = document.createElementNS(svgNS, 'text');
+                    label.setAttribute('x', 40);
+                    label.setAttribute('y', 75);
+                    label.setAttribute('text-anchor', 'middle');
+                    label.setAttribute('fill', '#888');
+                    label.setAttribute('font-size', '10');
+                    label.textContent = 'below';
+                    svg.appendChild(label);
+                },
+                drawResult: null
+            },
+            {
+                result: 'Before vs After',
+                explanation: 'Horizontal position indicates time sequence',
+                draw1: (svg) => {
+                    drawLine(svg, 50, 20, 50, 60, '#666');
+                    drawCircle(svg, 30, 40, 10);
+                    const label = document.createElementNS(svgNS, 'text');
+                    label.setAttribute('x', 40);
+                    label.setAttribute('y', 75);
+                    label.setAttribute('text-anchor', 'middle');
+                    label.setAttribute('fill', '#888');
+                    label.setAttribute('font-size', '10');
+                    label.textContent = 'before';
+                    svg.appendChild(label);
+                },
+                draw2: (svg) => {
+                    drawLine(svg, 30, 20, 30, 60, '#666');
+                    drawCircle(svg, 50, 40, 10);
+                    const label = document.createElementNS(svgNS, 'text');
+                    label.setAttribute('x', 40);
+                    label.setAttribute('y', 75);
+                    label.setAttribute('text-anchor', 'middle');
+                    label.setAttribute('fill', '#888');
+                    label.setAttribute('font-size', '10');
+                    label.textContent = 'after';
+                    svg.appendChild(label);
+                },
+                drawResult: null
+            },
+            {
+                result: 'Inside vs Outside',
+                explanation: 'Position relative to enclosure changes meaning',
+                draw1: (svg) => {
+                    drawRect(svg, 20, 20, 40, 40);
+                    drawCircle(svg, 40, 40, 8, '#fff');
+                    const label = document.createElementNS(svgNS, 'text');
+                    label.setAttribute('x', 40);
+                    label.setAttribute('y', 75);
+                    label.setAttribute('text-anchor', 'middle');
+                    label.setAttribute('fill', '#888');
+                    label.setAttribute('font-size', '10');
+                    label.textContent = 'inside';
+                    svg.appendChild(label);
+                },
+                draw2: (svg) => {
+                    drawRect(svg, 25, 20, 35, 40);
+                    drawCircle(svg, 12, 40, 8, '#fff');
+                    const label = document.createElementNS(svgNS, 'text');
+                    label.setAttribute('x', 40);
+                    label.setAttribute('y', 75);
+                    label.setAttribute('text-anchor', 'middle');
+                    label.setAttribute('fill', '#888');
+                    label.setAttribute('font-size', '10');
+                    label.textContent = 'outside';
+                    svg.appendChild(label);
+                },
+                drawResult: null
+            }
+        ];
+
+        // Render basic elements
+        const basicContainer = document.getElementById('basic-elements');
+        basicElements.forEach(elem => {
+            const card = document.createElement('div');
+            card.className = 'symbol-card';
+            const svg = createSVG();
+            elem.draw(svg);
+            card.appendChild(svg);
+            card.innerHTML += `<div class="symbol-name">${elem.name}</div>`;
+            card.innerHTML += `<div class="symbol-meaning">${elem.meaning}</div>`;
+            basicContainer.appendChild(card);
+        });
+
+        // Render indicators
+        const indicatorContainer = document.getElementById('indicators');
+        indicators.forEach(elem => {
+            const card = document.createElement('div');
+            card.className = 'symbol-card';
+            const svg = createSVG();
+            elem.draw(svg);
+            card.appendChild(svg);
+            card.innerHTML += `<div class="symbol-name">${elem.name}</div>`;
+            card.innerHTML += `<div class="symbol-meaning">${elem.meaning}</div>`;
+            indicatorContainer.appendChild(card);
+        });
+
+        // Render combinations
+        const comboContainer = document.getElementById('combinations');
+        combinations.forEach(combo => {
+            const card = document.createElement('div');
+            card.className = 'combo-card';
+
+            const equation = document.createElement('div');
+            equation.className = 'combo-equation';
+
+            const svg1 = createSVG(60, 60);
+            combo.draw1(svg1);
+            equation.appendChild(svg1);
+
+            const plus = document.createElement('span');
+            plus.className = 'combo-operator';
+            plus.textContent = '+';
+            equation.appendChild(plus);
+
+            const svg2 = createSVG(60, 60);
+            combo.draw2(svg2);
+            equation.appendChild(svg2);
+
+            const equals = document.createElement('span');
+            equals.className = 'combo-operator';
+            equals.textContent = '=';
+            equation.appendChild(equals);
+
+            const svg3 = createSVG(60, 60);
+            combo.drawResult(svg3);
+            equation.appendChild(svg3);
+
+            card.appendChild(equation);
+
+            const result = document.createElement('div');
+            result.className = 'combo-result';
+            result.textContent = combo.result;
+            card.appendChild(result);
+
+            const explanation = document.createElement('div');
+            explanation.className = 'combo-explanation';
+            explanation.textContent = combo.explanation;
+            card.appendChild(explanation);
+
+            comboContainer.appendChild(card);
+        });
+
+        // Render position examples
+        const posContainer = document.getElementById('positions');
+        positions.forEach(pos => {
+            const card = document.createElement('div');
+            card.className = 'combo-card';
+
+            const equation = document.createElement('div');
+            equation.className = 'combo-equation';
+
+            const svg1 = createSVG(70, 80);
+            pos.draw1(svg1);
+            equation.appendChild(svg1);
+
+            const vs = document.createElement('span');
+            vs.className = 'combo-operator';
+            vs.textContent = 'vs';
+            equation.appendChild(vs);
+
+            const svg2 = createSVG(70, 80);
+            pos.draw2(svg2);
+            equation.appendChild(svg2);
+
+            card.appendChild(equation);
+
+            const result = document.createElement('div');
+            result.className = 'combo-result';
+            result.textContent = pos.result;
+            card.appendChild(result);
+
+            const explanation = document.createElement('div');
+            explanation.className = 'combo-explanation';
+            explanation.textContent = pos.explanation;
+            card.appendChild(explanation);
+
+            posContainer.appendChild(card);
+        });
+    </script>
+</body>
+</html>

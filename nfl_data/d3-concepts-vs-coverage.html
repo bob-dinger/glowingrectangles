@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passing Concepts vs Coverage</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            text-align: center;
+        }
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            padding: 10px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn:hover {
+            background: #252525;
+            border-color: #444;
+        }
+        .btn.active {
+            background: #1e3a5f;
+            border-color: #3b82f6;
+        }
+        .btn.offense.active {
+            background: #1e3a5f;
+            border-color: #3b82f6;
+        }
+        .btn.defense.active {
+            background: #5f1e1e;
+            border-color: #ef4444;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 30px;
+        }
+        .field-area {
+            flex: 1;
+        }
+        .field-container {
+            background: #1a472a;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+        }
+        .verdict-banner {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 10;
+        }
+        .verdict-banner.good {
+            background: rgba(34, 197, 94, 0.9);
+            color: #fff;
+        }
+        .verdict-banner.bad {
+            background: rgba(239, 68, 68, 0.9);
+            color: #fff;
+        }
+        .verdict-banner.neutral {
+            background: rgba(234, 179, 8, 0.9);
+            color: #000;
+        }
+        .info-panel {
+            width: 380px;
+            flex-shrink: 0;
+        }
+        .panel-section {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .panel-section h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+        }
+        .panel-section h3.offense {
+            color: #3b82f6;
+        }
+        .panel-section h3.defense {
+            color: #ef4444;
+        }
+        .explanation {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+        .explanation strong {
+            color: #fff;
+        }
+        .key-matchup {
+            background: #252525;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+        }
+        .key-matchup .label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .vulnerable-spot {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #3b82f6;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 2px;
+        }
+        .hot-route {
+            color: #4ade80;
+            font-weight: bold;
+        }
+        .coverage-shell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .shell-diagram {
+            width: 60px;
+            height: 40px;
+            background: #252525;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #ef4444;
+        }
+        .shell-name {
+            font-size: 14px;
+        }
+        .matchup-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 20px;
+        }
+        .matchup-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .matchup-cell:hover {
+            transform: scale(1.1);
+        }
+        .matchup-cell.good { background: #166534; }
+        .matchup-cell.neutral { background: #854d0e; }
+        .matchup-cell.bad { background: #991b1b; }
+        .grid-label {
+            font-size: 10px;
+            color: #888;
+            text-align: center;
+        }
+        .grid-label.row {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <h1>Concepts vs Coverage</h1>
+    <p class="subtitle">See why certain plays beat certain defenses — and why some get blown up</p>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Offensive Concept</label>
+            <div class="btn-group" id="offense-btns"></div>
+        </div>
+        <div class="control-group">
+            <label>Defensive Coverage</label>
+            <div class="btn-group" id="defense-btns"></div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="field-area">
+            <div class="field-container">
+                <div class="verdict-banner" id="verdict"></div>
+                <svg id="field" width="800" height="550"></svg>
+            </div>
+        </div>
+        <div class="info-panel">
+            <div class="panel-section">
+                <h3 class="offense" id="offense-title">Mesh</h3>
+                <div class="explanation" id="offense-explanation"></div>
+            </div>
+            <div class="panel-section">
+                <h3 class="defense" id="defense-title">Cover 2</h3>
+                <div class="explanation" id="defense-explanation"></div>
+            </div>
+            <div class="panel-section">
+                <h3>Why This Matchup?</h3>
+                <div class="explanation" id="matchup-explanation"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Offensive concepts
+        const concepts = {
+            mesh: {
+                name: "Mesh",
+                description: "Two receivers run shallow crossing routes at 5-6 yards, creating natural 'picks' on man coverage. If defenders trail, the crossers come wide open.",
+                players: [
+                    { pos: "QB", x: 50, y: 78, label: "QB" },
+                    { pos: "RB", x: 42, y: 74, label: "RB" },
+                    { pos: "C", x: 50, y: 62 }, { pos: "LG", x: 42, y: 62 }, { pos: "RG", x: 58, y: 62 },
+                    { pos: "LT", x: 34, y: 62 }, { pos: "RT", x: 66, y: 62 },
+                    { pos: "X", x: 10, y: 60, label: "X" },
+                    { pos: "Z", x: 90, y: 60, label: "Z" },
+                    { pos: "Y", x: 72, y: 62, label: "Y" },
+                    { pos: "H", x: 28, y: 62, label: "H" }
+                ],
+                routes: [
+                    { from: "X", path: [[10,60], [35,48], [70,48]], color: "#3b82f6", label: "Shallow" },
+                    { from: "Z", path: [[90,60], [65,48], [30,48]], color: "#3b82f6", label: "Shallow" },
+                    { from: "Y", path: [[72,62], [85,30]], color: "#22c55e", label: "Corner" },
+                    { from: "H", path: [[28,62], [12,52]], color: "#f59e0b", label: "Flat" }
+                ],
+                beatsMan: true,
+                beatsZone: "neutral"
+            },
+            smash: {
+                name: "Smash",
+                description: "A high-low concept on the corner. The outside receiver runs a 5-yard hitch, the slot runs a corner route over the top. Forces the CB to choose one.",
+                players: [
+                    { pos: "QB", x: 50, y: 78, label: "QB" },
+                    { pos: "RB", x: 42, y: 74, label: "RB" },
+                    { pos: "C", x: 50, y: 62 }, { pos: "LG", x: 42, y: 62 }, { pos: "RG", x: 58, y: 62 },
+                    { pos: "LT", x: 34, y: 62 }, { pos: "RT", x: 66, y: 62 },
+                    { pos: "X", x: 10, y: 60, label: "X" },
+                    { pos: "Z", x: 90, y: 60, label: "Z" },
+                    { pos: "Y", x: 72, y: 62, label: "Y" }
+                ],
+                routes: [
+                    { from: "Z", path: [[90,60], [90,52]], color: "#3b82f6", label: "Hitch" },
+                    { from: "Y", path: [[72,62], [72,50], [85,28]], color: "#22c55e", label: "Corner" }
+                ],
+                beatsMan: false,
+                beatsZone: true
+            },
+            flood: {
+                name: "Flood",
+                description: "Three receivers flood one side at three levels: flat (5 yds), out (10 yds), and corner/go (15+ yds). Outnumbers that side of the defense.",
+                players: [
+                    { pos: "QB", x: 50, y: 78, label: "QB" },
+                    { pos: "RB", x: 42, y: 74, label: "RB" },
+                    { pos: "C", x: 50, y: 62 }, { pos: "LG", x: 42, y: 62 }, { pos: "RG", x: 58, y: 62 },
+                    { pos: "LT", x: 34, y: 62 }, { pos: "RT", x: 66, y: 62 },
+                    { pos: "X", x: 10, y: 60, label: "X" },
+                    { pos: "Z", x: 90, y: 60, label: "Z" },
+                    { pos: "Y", x: 72, y: 62, label: "Y" }
+                ],
+                routes: [
+                    { from: "Z", path: [[90,60], [90,45], [80,22]], color: "#ef4444", label: "Corner" },
+                    { from: "Y", path: [[72,62], [88,42]], color: "#3b82f6", label: "Out" },
+                    { from: "RB", path: [[42,74], [55,62], [88,55]], color: "#22c55e", label: "Flat" },
+                    { from: "X", path: [[10,60], [10,25]], color: "#666", label: "Clear" }
+                ],
+                beatsMan: false,
+                beatsZone: true
+            },
+            fourVerts: {
+                name: "4 Verts",
+                description: "Four receivers run vertical routes, stretching the defense deep. Against 3-deep coverage, one receiver is always uncovered.",
+                players: [
+                    { pos: "QB", x: 50, y: 78, label: "QB" },
+                    { pos: "RB", x: 42, y: 74, label: "RB" },
+                    { pos: "C", x: 50, y: 62 }, { pos: "LG", x: 42, y: 62 }, { pos: "RG", x: 58, y: 62 },
+                    { pos: "LT", x: 34, y: 62 }, { pos: "RT", x: 66, y: 62 },
+                    { pos: "X", x: 10, y: 60, label: "X" },
+                    { pos: "Z", x: 90, y: 60, label: "Z" },
+                    { pos: "Y", x: 70, y: 62, label: "Y" },
+                    { pos: "H", x: 30, y: 62, label: "H" }
+                ],
+                routes: [
+                    { from: "X", path: [[10,60], [10,15]], color: "#ef4444", label: "Go" },
+                    { from: "Z", path: [[90,60], [90,15]], color: "#ef4444", label: "Go" },
+                    { from: "H", path: [[30,62], [35,15]], color: "#3b82f6", label: "Seam" },
+                    { from: "Y", path: [[70,62], [65,15]], color: "#3b82f6", label: "Seam" }
+                ],
+                beatsMan: "neutral",
+                beatsZone: "depends"
+            },
+            slant: {
+                name: "Slant",
+                description: "Quick-hitting slant routes break inside at 5 yards. Gets the ball out fast, good vs press coverage and blitz.",
+                players: [
+                    { pos: "QB", x: 50, y: 78, label: "QB" },
+                    { pos: "RB", x: 42, y: 74, label: "RB" },
+                    { pos: "C", x: 50, y: 62 }, { pos: "LG", x: 42, y: 62 }, { pos: "RG", x: 58, y: 62 },
+                    { pos: "LT", x: 34, y: 62 }, { pos: "RT", x: 66, y: 62 },
+                    { pos: "X", x: 10, y: 60, label: "X" },
+                    { pos: "Z", x: 90, y: 60, label: "Z" },
+                    { pos: "Y", x: 72, y: 62, label: "Y" }
+                ],
+                routes: [
+                    { from: "X", path: [[10,60], [12,56], [30,46]], color: "#3b82f6", label: "Slant" },
+                    { from: "Z", path: [[90,60], [88,56], [70,46]], color: "#3b82f6", label: "Slant" },
+                    { from: "Y", path: [[72,62], [90,52]], color: "#22c55e", label: "Flat" }
+                ],
+                beatsMan: true,
+                beatsZone: "neutral"
+            },
+            post: {
+                name: "Post",
+                description: "Deep post route attacks the middle of the field. Designed to split the safeties in Cover 2 or beat single-high coverage.",
+                players: [
+                    { pos: "QB", x: 50, y: 78, label: "QB" },
+                    { pos: "RB", x: 42, y: 74, label: "RB" },
+                    { pos: "C", x: 50, y: 62 }, { pos: "LG", x: 42, y: 62 }, { pos: "RG", x: 58, y: 62 },
+                    { pos: "LT", x: 34, y: 62 }, { pos: "RT", x: 66, y: 62 },
+                    { pos: "X", x: 10, y: 60, label: "X" },
+                    { pos: "Z", x: 90, y: 60, label: "Z" },
+                    { pos: "Y", x: 72, y: 62, label: "Y" }
+                ],
+                routes: [
+                    { from: "X", path: [[10,60], [10,42], [40,18]], color: "#ef4444", label: "Post" },
+                    { from: "Z", path: [[90,60], [90,25]], color: "#666", label: "Go" },
+                    { from: "Y", path: [[72,62], [72,52]], color: "#3b82f6", label: "Hitch" }
+                ],
+                beatsMan: "neutral",
+                beatsZone: "depends"
+            }
+        };
+
+        // Defensive coverages
+        const coverages = {
+            cover0: {
+                name: "Cover 0",
+                shell: "0",
+                description: "Pure man coverage with no deep safety. All-out aggression — 6 or 7 rushers with everyone else in man. High risk, high reward.",
+                weakness: "No help over the top. One missed tackle or good route = touchdown.",
+                players: [
+                    { pos: "CB", x: 12, y: 58, label: "CB", man: "X" },
+                    { pos: "CB", x: 88, y: 58, label: "CB", man: "Z" },
+                    { pos: "NCB", x: 72, y: 55, label: "N", man: "Y" },
+                    { pos: "LB", x: 35, y: 50, label: "LB" },
+                    { pos: "LB", x: 50, y: 50, label: "LB" },
+                    { pos: "LB", x: 65, y: 50, label: "LB" }
+                ],
+                zones: []
+            },
+            cover1: {
+                name: "Cover 1",
+                shell: "1",
+                description: "Man coverage with a single deep safety. The safety provides help over the top, allowing CBs to play more aggressively.",
+                weakness: "Seam routes between the CB and safety. Crossing routes can create picks.",
+                players: [
+                    { pos: "FS", x: 50, y: 20, label: "FS" },
+                    { pos: "CB", x: 12, y: 58, label: "CB", man: "X" },
+                    { pos: "CB", x: 88, y: 58, label: "CB", man: "Z" },
+                    { pos: "NCB", x: 72, y: 55, label: "N", man: "Y" },
+                    { pos: "LB", x: 40, y: 50, label: "LB" },
+                    { pos: "LB", x: 60, y: 50, label: "LB" }
+                ],
+                zones: []
+            },
+            cover2: {
+                name: "Cover 2",
+                shell: "2",
+                description: "Two deep safeties split the field in half. Corners play the flats. Creates a 'hole' between the corner and safety.",
+                weakness: "The hole shot — deep outside between CB (in flat) and safety (deep half). Also vulnerable to smash and out routes.",
+                players: [
+                    { pos: "FS", x: 30, y: 18, label: "FS" },
+                    { pos: "SS", x: 70, y: 18, label: "SS" },
+                    { pos: "CB", x: 12, y: 52, label: "CB" },
+                    { pos: "CB", x: 88, y: 52, label: "CB" },
+                    { pos: "LB", x: 35, y: 45, label: "LB" },
+                    { pos: "LB", x: 50, y: 42, label: "MLB" },
+                    { pos: "LB", x: 65, y: 45, label: "LB" }
+                ],
+                zones: [
+                    { x: 25, y: 8, w: 25, h: 30, label: "Deep 1/2" },
+                    { x: 75, y: 8, w: 25, h: 30, label: "Deep 1/2" },
+                    { x: 10, y: 40, w: 15, h: 20, label: "Flat" },
+                    { x: 90, y: 40, w: 15, h: 20, label: "Flat" }
+                ]
+            },
+            cover3: {
+                name: "Cover 3",
+                shell: "3",
+                description: "Three deep defenders (2 corners + free safety) each cover a third of the field. Four underneath zone defenders.",
+                weakness: "Four verticals — 4 receivers vs 3 deep. Also vulnerable to flood concepts and the seams.",
+                players: [
+                    { pos: "FS", x: 50, y: 15, label: "FS" },
+                    { pos: "CB", x: 15, y: 25, label: "CB" },
+                    { pos: "CB", x: 85, y: 25, label: "CB" },
+                    { pos: "SS", x: 70, y: 45, label: "SS" },
+                    { pos: "LB", x: 30, y: 48, label: "LB" },
+                    { pos: "LB", x: 50, y: 45, label: "MLB" },
+                    { pos: "LB", x: 65, y: 48, label: "LB" }
+                ],
+                zones: [
+                    { x: 15, y: 8, w: 22, h: 35, label: "Deep 1/3" },
+                    { x: 50, y: 8, w: 22, h: 35, label: "Deep 1/3" },
+                    { x: 85, y: 8, w: 22, h: 35, label: "Deep 1/3" }
+                ]
+            },
+            cover4: {
+                name: "Cover 4",
+                shell: "4",
+                description: "Four deep defenders (2 safeties + 2 corners) each cover a quarter of the field. Very safe vs deep passes.",
+                weakness: "Vulnerable underneath — only 3 defenders for the short/intermediate zones. Dig and curl routes find holes.",
+                players: [
+                    { pos: "FS", x: 35, y: 18, label: "FS" },
+                    { pos: "SS", x: 65, y: 18, label: "SS" },
+                    { pos: "CB", x: 12, y: 28, label: "CB" },
+                    { pos: "CB", x: 88, y: 28, label: "CB" },
+                    { pos: "LB", x: 35, y: 48, label: "LB" },
+                    { pos: "LB", x: 50, y: 45, label: "MLB" },
+                    { pos: "LB", x: 65, y: 48, label: "LB" }
+                ],
+                zones: [
+                    { x: 12, y: 8, w: 20, h: 40, label: "1/4" },
+                    { x: 37, y: 8, w: 20, h: 40, label: "1/4" },
+                    { x: 63, y: 8, w: 20, h: 40, label: "1/4" },
+                    { x: 88, y: 8, w: 20, h: 40, label: "1/4" }
+                ]
+            },
+            cover6: {
+                name: "Cover 6",
+                shell: "6",
+                description: "Combination coverage — Cover 4 to one side, Cover 2 to the other. Adjusts strength to the offensive formation.",
+                weakness: "The Cover 2 side has the same hole shot vulnerability. QBs read the coverage and attack the weak side.",
+                players: [
+                    { pos: "FS", x: 30, y: 18, label: "FS" },
+                    { pos: "SS", x: 60, y: 22, label: "SS" },
+                    { pos: "CB", x: 12, y: 50, label: "CB" },
+                    { pos: "CB", x: 88, y: 28, label: "CB" },
+                    { pos: "LB", x: 35, y: 48, label: "LB" },
+                    { pos: "LB", x: 50, y: 45, label: "MLB" },
+                    { pos: "LB", x: 70, y: 42, label: "LB" }
+                ],
+                zones: [
+                    { x: 25, y: 8, w: 20, h: 30, label: "1/2" },
+                    { x: 70, y: 8, w: 18, h: 38, label: "1/4" },
+                    { x: 92, y: 8, w: 15, h: 38, label: "1/4" }
+                ]
+            }
+        };
+
+        // Matchup explanations
+        const matchups = {
+            "mesh_cover0": {
+                verdict: "good",
+                explanation: "Mesh <strong>destroys</strong> Cover 0. The crossing routes create natural picks, and with no safety help, one freed receiver = big play. The defense is gambling everything on getting pressure before the mesh point."
+            },
+            "mesh_cover1": {
+                verdict: "good",
+                explanation: "Mesh is <strong>excellent</strong> vs Cover 1. The shallow crosses create traffic and rubs. The single high safety can't help on horizontal routes. If the LBs don't collision the crossers, someone's open."
+            },
+            "mesh_cover2": {
+                verdict: "neutral",
+                explanation: "Mesh is <strong>OK</strong> vs Cover 2. The crossers will find soft spots in the zone, but the underneath defenders can wall off the routes. The corner route can attack the hole in Cover 2."
+            },
+            "mesh_cover3": {
+                verdict: "neutral",
+                explanation: "Mesh is <strong>decent</strong> vs Cover 3. The four underneath defenders can match the crossers, but there are windows. Not the ideal play call but can work."
+            },
+            "mesh_cover4": {
+                verdict: "good",
+                explanation: "Mesh <strong>works well</strong> vs Cover 4. Only 3 underneath defenders means the crossers find big holes in the zone. The defense is built to stop deep balls, not shallow crosses."
+            },
+            "mesh_cover6": {
+                verdict: "neutral",
+                explanation: "Mesh is <strong>average</strong> vs Cover 6. Depends which side you attack. The Cover 2 side has softer underneath zones to exploit."
+            },
+            "smash_cover0": {
+                verdict: "bad",
+                explanation: "Smash <strong>struggles</strong> vs Cover 0. It's a zone-beater that relies on putting the corner in conflict. In man, each receiver is just covered — no conflict created."
+            },
+            "smash_cover1": {
+                verdict: "bad",
+                explanation: "Smash is <strong>not ideal</strong> vs Cover 1. The man coverage doesn't create the high-low conflict. The safety can help on the corner route. Better options exist."
+            },
+            "smash_cover2": {
+                verdict: "good",
+                explanation: "Smash <strong>destroys</strong> Cover 2. The corner is forced to choose: cover the hitch (and give up the corner route behind him) or sink with the corner route (and give up the hitch). Classic Cover 2 beater."
+            },
+            "smash_cover3": {
+                verdict: "good",
+                explanation: "Smash is <strong>effective</strong> vs Cover 3. The corner has deep third responsibility but the hitch sits in front of him. If he jumps it, the corner route is open in the void."
+            },
+            "smash_cover4": {
+                verdict: "neutral",
+                explanation: "Smash is <strong>tougher</strong> vs Cover 4. The corner can play the hitch while the safety covers the corner route. Less conflict created, but the hitch can still get open."
+            },
+            "smash_cover6": {
+                verdict: "good",
+                explanation: "Smash <strong>attacks the Cover 2 side</strong> effectively. Read the coverage pre-snap and run smash to the side showing Cover 2."
+            },
+            "flood_cover0": {
+                verdict: "neutral",
+                explanation: "Flood is <strong>risky</strong> vs Cover 0. Man coverage with the blitz means you need to get the ball out quick. If there's time, someone's open, but the pressure may arrive first."
+            },
+            "flood_cover1": {
+                verdict: "neutral",
+                explanation: "Flood is <strong>average</strong> vs Cover 1. Each level is covered in man, but the RB to the flat can win if the LB doesn't carry him. Not the ideal matchup."
+            },
+            "flood_cover2": {
+                verdict: "good",
+                explanation: "Flood is <strong>great</strong> vs Cover 2. You're putting 3 receivers vs 2 defenders (corner + safety). Someone's always open — usually the deep corner route in the hole."
+            },
+            "flood_cover3": {
+                verdict: "good",
+                explanation: "Flood <strong>beats</strong> Cover 3. The flat defender has to choose between the flat and the out. The corner has the deep third but the out sits in front of him. High-low created."
+            },
+            "flood_cover4": {
+                verdict: "neutral",
+                explanation: "Flood is <strong>tougher</strong> vs Cover 4. The 4 deep defenders handle the vertical stretch, and the underneath is tighter. Can work but not ideal."
+            },
+            "flood_cover6": {
+                verdict: "good",
+                explanation: "Flood <strong>works</strong> vs Cover 6. Attack the Cover 2 side with the flood concept to create the 3-on-2 advantage."
+            },
+            "fourVerts_cover0": {
+                verdict: "good",
+                explanation: "Four Verts can <strong>score big</strong> vs Cover 0. With no safety, if any receiver wins their 1-on-1 matchup, it's a touchdown. High variance — either a sack or a bomb."
+            },
+            "fourVerts_cover1": {
+                verdict: "neutral",
+                explanation: "Four Verts is <strong>contested</strong> vs Cover 1. The single safety can help on the seams, but the outside receivers can win. Depends on the WR/CB matchups."
+            },
+            "fourVerts_cover2": {
+                verdict: "neutral",
+                explanation: "Four Verts is <strong>risky</strong> vs Cover 2. The two deep safeties cover the outside verticals. The seams can split them, but it requires a perfect throw."
+            },
+            "fourVerts_cover3": {
+                verdict: "good",
+                explanation: "Four Verts <strong>beats</strong> Cover 3. Four receivers deep vs 3 defenders = math advantage. The seams especially stress the single high safety. Classic Cover 3 killer."
+            },
+            "fourVerts_cover4": {
+                verdict: "bad",
+                explanation: "Four Verts is <strong>a bad idea</strong> vs Cover 4. Four deep defenders vs four deep routes = even numbers. Cover 4 is literally designed to stop this play."
+            },
+            "fourVerts_cover6": {
+                verdict: "neutral",
+                explanation: "Four Verts is <strong>mixed</strong> vs Cover 6. The Cover 4 side handles it well, but the Cover 2 side can be exploited down the seam."
+            },
+            "slant_cover0": {
+                verdict: "good",
+                explanation: "Slant is <strong>the hot route</strong> vs Cover 0. Ball comes out in under 2 seconds — before the blitz arrives. Quick slant beats man coverage if the WR wins inside."
+            },
+            "slant_cover1": {
+                verdict: "good",
+                explanation: "Slant is <strong>effective</strong> vs Cover 1. The quick inside break is hard to cover in man. Safety help is too deep to affect a 5-yard slant. A staple vs man coverage."
+            },
+            "slant_cover2": {
+                verdict: "neutral",
+                explanation: "Slant is <strong>OK</strong> vs Cover 2. The slant runs into the underneath zone defenders. Can work in the seams, but the LBs can wall it off."
+            },
+            "slant_cover3": {
+                verdict: "neutral",
+                explanation: "Slant is <strong>average</strong> vs Cover 3. Four underneath defenders are waiting. The slant has to find a window between them."
+            },
+            "slant_cover4": {
+                verdict: "good",
+                explanation: "Slant <strong>works</strong> vs Cover 4. Only 3 underneath defenders means more space for the slants. Cover 4 sells out to stop deep balls, not quick game."
+            },
+            "slant_cover6": {
+                verdict: "neutral",
+                explanation: "Slant is <strong>average</strong> vs Cover 6. Depends on the underneath deployment. Quick game can work but it's not exploiting a specific weakness."
+            },
+            "post_cover0": {
+                verdict: "good",
+                explanation: "Post can be <strong>a bomb</strong> vs Cover 0. No safety help means if the WR beats the corner, it's 6 points. But you need time to throw it — and the blitz is coming."
+            },
+            "post_cover1": {
+                verdict: "bad",
+                explanation: "Post is <strong>dangerous</strong> vs Cover 1. The single high safety sits right in the post's path. You're throwing into the teeth of the coverage."
+            },
+            "post_cover2": {
+                verdict: "good",
+                explanation: "Post <strong>splits the safeties</strong> in Cover 2. The deep middle is the hole in Cover 2, and the post attacks it directly. Has to be on time before the safeties close."
+            },
+            "post_cover3": {
+                verdict: "bad",
+                explanation: "Post is <strong>dangerous</strong> vs Cover 3. The free safety is sitting deep middle, right where the post is going. You're throwing into his zone."
+            },
+            "post_cover4": {
+                verdict: "neutral",
+                explanation: "Post is <strong>contested</strong> vs Cover 4. The inside safety can carry it, but there's a window between the safety zones. Requires precision."
+            },
+            "post_cover6": {
+                verdict: "neutral",
+                explanation: "Post is <strong>situational</strong> vs Cover 6. Attack the Cover 2 side where the hole between safeties exists."
+            }
+        };
+
+        let selectedConcept = 'mesh';
+        let selectedCoverage = 'cover2';
+
+        // Create buttons
+        const offenseBtns = document.getElementById('offense-btns');
+        Object.keys(concepts).forEach(key => {
+            const btn = document.createElement('button');
+            btn.className = 'btn offense' + (key === selectedConcept ? ' active' : '');
+            btn.textContent = concepts[key].name;
+            btn.onclick = () => {
+                selectedConcept = key;
+                document.querySelectorAll('.btn.offense').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                render();
+            };
+            offenseBtns.appendChild(btn);
+        });
+
+        const defenseBtns = document.getElementById('defense-btns');
+        Object.keys(coverages).forEach(key => {
+            const btn = document.createElement('button');
+            btn.className = 'btn defense' + (key === selectedCoverage ? ' active' : '');
+            btn.textContent = coverages[key].name;
+            btn.onclick = () => {
+                selectedCoverage = key;
+                document.querySelectorAll('.btn.defense').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                render();
+            };
+            defenseBtns.appendChild(btn);
+        });
+
+        function render() {
+            renderField();
+            renderInfo();
+        }
+
+        function renderField() {
+            const svg = d3.select('#field');
+            svg.selectAll('*').remove();
+
+            const concept = concepts[selectedConcept];
+            const coverage = coverages[selectedCoverage];
+
+            const width = 800;
+            const height = 550;
+            const padding = 30;
+
+            // Field
+            svg.append('rect')
+                .attr('x', padding)
+                .attr('y', padding)
+                .attr('width', width - padding * 2)
+                .attr('height', height - padding * 2)
+                .attr('fill', '#1a472a')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
+
+            // Yard lines
+            for (let pct = 20; pct <= 80; pct += 15) {
+                const y = padding + (height - padding * 2) * (pct / 100);
+                svg.append('line')
+                    .attr('x1', padding)
+                    .attr('x2', width - padding)
+                    .attr('y1', y)
+                    .attr('y2', y)
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 1)
+                    .attr('opacity', 0.2);
+            }
+
+            // Scale helpers
+            const xScale = x => padding + (width - padding * 2) * (x / 100);
+            const yScale = y => padding + (height - padding * 2) * (y / 100);
+
+            // Line of scrimmage
+            const losY = yScale(60);
+            svg.append('line')
+                .attr('x1', padding)
+                .attr('x2', width - padding)
+                .attr('y1', losY)
+                .attr('y2', losY)
+                .attr('stroke', '#3b82f6')
+                .attr('stroke-width', 3)
+                .attr('opacity', 0.8);
+
+            // Draw coverage zones (semi-transparent)
+            coverage.zones.forEach(zone => {
+                svg.append('rect')
+                    .attr('x', xScale(zone.x - zone.w/2))
+                    .attr('y', yScale(zone.y))
+                    .attr('width', (width - padding * 2) * (zone.w / 100))
+                    .attr('height', (height - padding * 2) * (zone.h / 100))
+                    .attr('fill', '#ef4444')
+                    .attr('opacity', 0.15)
+                    .attr('stroke', '#ef4444')
+                    .attr('stroke-width', 1)
+                    .attr('stroke-dasharray', '4,4');
+
+                svg.append('text')
+                    .attr('x', xScale(zone.x))
+                    .attr('y', yScale(zone.y + zone.h/2))
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#ef4444')
+                    .attr('font-size', '10px')
+                    .attr('opacity', 0.6)
+                    .text(zone.label);
+            });
+
+            // Draw routes
+            concept.routes.forEach(route => {
+                const pathData = route.path.map((p, i) => {
+                    return (i === 0 ? 'M' : 'L') + xScale(p[0]) + ',' + yScale(p[1]);
+                }).join(' ');
+
+                svg.append('path')
+                    .attr('d', pathData)
+                    .attr('fill', 'none')
+                    .attr('stroke', route.color)
+                    .attr('stroke-width', 4)
+                    .attr('stroke-linecap', 'round')
+                    .attr('stroke-linejoin', 'round')
+                    .attr('opacity', 0.9);
+
+                // Arrow
+                const last = route.path[route.path.length - 1];
+                const prev = route.path[route.path.length - 2];
+                const angle = Math.atan2(last[1] - prev[1], last[0] - prev[0]);
+
+                svg.append('polygon')
+                    .attr('points', '0,-6 12,0 0,6')
+                    .attr('fill', route.color)
+                    .attr('transform', `translate(${xScale(last[0])},${yScale(last[1])}) rotate(${angle * 180 / Math.PI})`);
+
+                // Route label
+                const midIdx = Math.floor(route.path.length / 2);
+                const labelPoint = route.path[midIdx];
+                svg.append('text')
+                    .attr('x', xScale(labelPoint[0]))
+                    .attr('y', yScale(labelPoint[1]) - 10)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#fff')
+                    .attr('font-size', '11px')
+                    .attr('font-weight', 'bold')
+                    .style('text-shadow', '1px 1px 2px #000')
+                    .text(route.label);
+            });
+
+            // Draw offensive players
+            concept.players.forEach(player => {
+                const x = xScale(player.x);
+                const y = yScale(player.y);
+                const isLineman = ['C', 'LG', 'RG', 'LT', 'RT'].includes(player.pos);
+
+                if (isLineman) {
+                    svg.append('rect')
+                        .attr('x', x - 12)
+                        .attr('y', y - 12)
+                        .attr('width', 24)
+                        .attr('height', 24)
+                        .attr('fill', '#1e3a5f')
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 2);
+                } else {
+                    svg.append('circle')
+                        .attr('cx', x)
+                        .attr('cy', y)
+                        .attr('r', 14)
+                        .attr('fill', player.pos === 'QB' ? '#2563eb' : '#1e3a5f')
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 2);
+                }
+
+                if (player.label) {
+                    svg.append('text')
+                        .attr('x', x)
+                        .attr('y', y + 4)
+                        .attr('text-anchor', 'middle')
+                        .attr('fill', '#fff')
+                        .attr('font-size', '11px')
+                        .attr('font-weight', 'bold')
+                        .text(player.label);
+                }
+            });
+
+            // Draw defensive players
+            coverage.players.forEach(player => {
+                const x = xScale(player.x);
+                const y = yScale(player.y);
+
+                svg.append('circle')
+                    .attr('cx', x)
+                    .attr('cy', y)
+                    .attr('r', 14)
+                    .attr('fill', '#991b1b')
+                    .attr('stroke', '#fca5a5')
+                    .attr('stroke-width', 2);
+
+                svg.append('text')
+                    .attr('x', x)
+                    .attr('y', y + 4)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#fff')
+                    .attr('font-size', '10px')
+                    .attr('font-weight', 'bold')
+                    .text(player.label);
+            });
+
+            // Update verdict banner
+            const matchupKey = `${selectedConcept}_${selectedCoverage}`;
+            const matchup = matchups[matchupKey] || { verdict: 'neutral', explanation: 'No specific analysis available.' };
+
+            const verdict = document.getElementById('verdict');
+            verdict.className = 'verdict-banner ' + matchup.verdict;
+            verdict.textContent = matchup.verdict === 'good' ? 'OFFENSE WINS' :
+                                  matchup.verdict === 'bad' ? 'DEFENSE WINS' : 'EVEN MATCHUP';
+        }
+
+        function renderInfo() {
+            const concept = concepts[selectedConcept];
+            const coverage = coverages[selectedCoverage];
+            const matchupKey = `${selectedConcept}_${selectedCoverage}`;
+            const matchup = matchups[matchupKey] || { verdict: 'neutral', explanation: 'No specific analysis available.' };
+
+            document.getElementById('offense-title').textContent = concept.name;
+            document.getElementById('offense-explanation').innerHTML = concept.description;
+
+            document.getElementById('defense-title').textContent = coverage.name;
+            document.getElementById('defense-explanation').innerHTML = `
+                <div class="coverage-shell">
+                    <div class="shell-diagram">${coverage.shell}</div>
+                    <div class="shell-name">${coverage.name}</div>
+                </div>
+                ${coverage.description}
+                <div class="key-matchup">
+                    <div class="label">Weakness</div>
+                    ${coverage.weakness}
+                </div>
+            `;
+
+            document.getElementById('matchup-explanation').innerHTML = matchup.explanation;
+        }
+
+        // Initial render
+        render();
+    </script>
+</body>
+</html>

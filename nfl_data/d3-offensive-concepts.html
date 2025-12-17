@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Passing Concepts - Erhardt-Perkins System</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 30px;
+        }
+        .concept-list {
+            width: 280px;
+            flex-shrink: 0;
+        }
+        .concept-btn {
+            display: block;
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .concept-btn:hover {
+            background: #252525;
+            border-color: #444;
+        }
+        .concept-btn.active {
+            background: #1e3a5f;
+            border-color: #3b82f6;
+        }
+        .concept-btn .name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .concept-btn .desc {
+            color: #888;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .main-area {
+            flex: 1;
+        }
+        .field-container {
+            background: #1a472a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .concept-details {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .concept-details h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .concept-details .reads {
+            margin-top: 15px;
+        }
+        .concept-details .read-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #252525;
+            border-radius: 4px;
+        }
+        .read-num {
+            width: 28px;
+            height: 28px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .read-text {
+            flex: 1;
+        }
+        .read-text .route-name {
+            font-weight: bold;
+            color: #4ade80;
+        }
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #888;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .category-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 20px 0 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>NFL Passing Concepts</h1>
+    <p class="subtitle">Erhardt-Perkins System — The concept stays the same regardless of formation</p>
+
+    <div class="container">
+        <div class="concept-list">
+            <div class="category-label">High-Low Concepts</div>
+            <div id="concept-buttons"></div>
+        </div>
+        <div class="main-area">
+            <div class="field-container">
+                <svg id="field" width="700" height="500"></svg>
+            </div>
+            <div class="concept-details" id="details"></div>
+        </div>
+    </div>
+
+    <script>
+        const concepts = [
+            {
+                name: "Mesh",
+                category: "high-low",
+                description: "Two receivers run shallow crossing routes, creating a 'rub' or pick. The mesh point is typically 5-6 yards deep.",
+                whenToUse: "Great vs man coverage. The crossing routes create natural picks.",
+                reads: [
+                    { num: 1, text: "Watch the mesh point - if defenders collide, one receiver comes open" },
+                    { num: 2, text: "Flat route as a checkdown if mesh is covered" },
+                    { num: 3, text: "Corner route stretches the defense vertically" }
+                ],
+                players: [
+                    { pos: "QB", x: 50, y: 82, label: "QB" },
+                    { pos: "RB", x: 42, y: 78, label: "RB" },
+                    { pos: "C", x: 50, y: 65 },
+                    { pos: "LG", x: 42, y: 65 },
+                    { pos: "RG", x: 58, y: 65 },
+                    { pos: "LT", x: 34, y: 65 },
+                    { pos: "RT", x: 66, y: 65 },
+                    { pos: "X", x: 10, y: 62, label: "X" },
+                    { pos: "Z", x: 90, y: 62, label: "Z" },
+                    { pos: "Y", x: 72, y: 65, label: "Y" },
+                    { pos: "H", x: 28, y: 65, label: "H" }
+                ],
+                routes: [
+                    { from: "X", path: [[10,62], [35,45], [70,45]], color: "#ef4444", label: "Shallow Cross" },
+                    { from: "Z", path: [[90,62], [65,45], [30,45]], color: "#3b82f6", label: "Shallow Cross" },
+                    { from: "Y", path: [[72,65], [85,30]], color: "#22c55e", label: "Corner" },
+                    { from: "H", path: [[28,65], [15,50]], color: "#f59e0b", label: "Flat" },
+                    { from: "RB", path: [[42,78], [42,60], [55,50]], color: "#a855f7", label: "Check Release" }
+                ]
+            },
+            {
+                name: "Smash",
+                category: "high-low",
+                description: "A two-man concept that creates a high-low read on the corner. Hitch underneath, corner route over the top.",
+                whenToUse: "Excellent vs Cover 2. Forces the corner to choose between the hitch and the corner route.",
+                reads: [
+                    { num: 1, text: "Read the corner - if he sinks with the corner route, throw the hitch" },
+                    { num: 2, text: "If corner jumps the hitch, throw the corner route behind him" }
+                ],
+                players: [
+                    { pos: "QB", x: 50, y: 82, label: "QB" },
+                    { pos: "RB", x: 42, y: 78, label: "RB" },
+                    { pos: "C", x: 50, y: 65 },
+                    { pos: "LG", x: 42, y: 65 },
+                    { pos: "RG", x: 58, y: 65 },
+                    { pos: "LT", x: 34, y: 65 },
+                    { pos: "RT", x: 66, y: 65 },
+                    { pos: "X", x: 10, y: 62, label: "X" },
+                    { pos: "Z", x: 90, y: 62, label: "Z" },
+                    { pos: "Y", x: 72, y: 65, label: "Y" }
+                ],
+                routes: [
+                    { from: "X", path: [[10,62], [10,52]], color: "#ef4444", label: "Hitch", depth: "5 yds" },
+                    { from: "Z", path: [[90,62], [90,50], [78,25]], color: "#3b82f6", label: "Corner", depth: "12-15 yds" },
+                    { from: "Y", path: [[72,65], [72,55]], color: "#22c55e", label: "Hitch" }
+                ]
+            },
+            {
+                name: "Flood",
+                category: "high-low",
+                description: "Three receivers to one side at three different levels - flat, intermediate, and deep. Overloads one side of the field.",
+                whenToUse: "Beats Cover 3. Three routes vs two defenders on the outside.",
+                reads: [
+                    { num: 1, text: "Read the flat defender - if he drops, throw flat" },
+                    { num: 2, text: "If flat defender jumps flat route, hit the out/dig" },
+                    { num: 3, text: "Corner route is the shot if single high safety" }
+                ],
+                players: [
+                    { pos: "QB", x: 50, y: 82, label: "QB" },
+                    { pos: "RB", x: 42, y: 78, label: "RB" },
+                    { pos: "C", x: 50, y: 65 },
+                    { pos: "LG", x: 42, y: 65 },
+                    { pos: "RG", x: 58, y: 65 },
+                    { pos: "LT", x: 34, y: 65 },
+                    { pos: "RT", x: 66, y: 65 },
+                    { pos: "X", x: 10, y: 62, label: "X" },
+                    { pos: "Z", x: 90, y: 62, label: "Z" },
+                    { pos: "Y", x: 72, y: 65, label: "Y" }
+                ],
+                routes: [
+                    { from: "Z", path: [[90,62], [90,45], [78,20]], color: "#ef4444", label: "Corner (Deep)" },
+                    { from: "Y", path: [[72,65], [85,45]], color: "#3b82f6", label: "Out (Mid)" },
+                    { from: "RB", path: [[42,78], [55,65], [85,58]], color: "#22c55e", label: "Flat (Short)" },
+                    { from: "X", path: [[10,62], [10,30]], color: "#f59e0b", label: "Clearing Go" }
+                ]
+            },
+            {
+                name: "Levels",
+                category: "high-low",
+                description: "Two crossing routes at different depths - one shallow (5-6 yds), one intermediate (10-12 yds). Creates horizontal stretch.",
+                whenToUse: "Great vs zone coverage. Forces linebackers to choose which crosser to cover.",
+                reads: [
+                    { num: 1, text: "Read the middle linebacker" },
+                    { num: 2, text: "If LB drops deep, throw shallow cross" },
+                    { num: 3, text: "If LB jumps shallow, throw dig behind him" }
+                ],
+                players: [
+                    { pos: "QB", x: 50, y: 82, label: "QB" },
+                    { pos: "RB", x: 42, y: 78, label: "RB" },
+                    { pos: "C", x: 50, y: 65 },
+                    { pos: "LG", x: 42, y: 65 },
+                    { pos: "RG", x: 58, y: 65 },
+                    { pos: "LT", x: 34, y: 65 },
+                    { pos: "RT", x: 66, y: 65 },
+                    { pos: "X", x: 10, y: 62, label: "X" },
+                    { pos: "Z", x: 90, y: 62, label: "Z" },
+                    { pos: "Y", x: 72, y: 65, label: "Y" }
+                ],
+                routes: [
+                    { from: "Y", path: [[72,65], [72,55], [25,55]], color: "#ef4444", label: "Shallow Cross (5-6 yds)" },
+                    { from: "Z", path: [[90,62], [90,50], [80,38], [25,38]], color: "#3b82f6", label: "Dig (10-12 yds)" },
+                    { from: "X", path: [[10,62], [10,25]], color: "#22c55e", label: "Go/Clear" }
+                ]
+            },
+            {
+                name: "Dagger",
+                category: "high-low",
+                description: "Post-dig combination. Deep post clears out the safety, dig comes open underneath in the hole.",
+                whenToUse: "Attacks Cover 2 and Cover 4. The post occupies the safety while the dig finds the void.",
+                reads: [
+                    { num: 1, text: "Safety is the key - if safety stays high, throw dig" },
+                    { num: 2, text: "If safety bites on dig, post is open deep" },
+                    { num: 3, text: "Check down to RB if both are covered" }
+                ],
+                players: [
+                    { pos: "QB", x: 50, y: 82, label: "QB" },
+                    { pos: "RB", x: 42, y: 78, label: "RB" },
+                    { pos: "C", x: 50, y: 65 },
+                    { pos: "LG", x: 42, y: 65 },
+                    { pos: "RG", x: 58, y: 65 },
+                    { pos: "LT", x: 34, y: 65 },
+                    { pos: "RT", x: 66, y: 65 },
+                    { pos: "X", x: 10, y: 62, label: "X" },
+                    { pos: "Z", x: 90, y: 62, label: "Z" },
+                    { pos: "Y", x: 72, y: 65, label: "Y" }
+                ],
+                routes: [
+                    { from: "X", path: [[10,62], [10,40], [35,15]], color: "#ef4444", label: "Post (Clears safety)" },
+                    { from: "Y", path: [[72,65], [72,50], [60,38], [30,38]], color: "#3b82f6", label: "Dig (12-15 yds)" },
+                    { from: "Z", path: [[90,62], [90,25]], color: "#22c55e", label: "Go/Clear" },
+                    { from: "RB", path: [[42,78], [25,65]], color: "#f59e0b", label: "Check Release" }
+                ]
+            },
+            {
+                name: "Four Verticals",
+                category: "vertical",
+                description: "Four receivers run vertical routes, stretching the defense deep. Receivers read coverage and adjust.",
+                whenToUse: "Attacks single-high (Cover 1, Cover 3). Four verts vs 3 deep defenders = someone's open.",
+                reads: [
+                    { num: 1, text: "Outside receivers run 'go' routes up the sideline" },
+                    { num: 2, text: "Inside receivers read the safeties and find the hole" },
+                    { num: 3, text: "If Cover 2, bend routes inside behind the corners" }
+                ],
+                players: [
+                    { pos: "QB", x: 50, y: 82, label: "QB" },
+                    { pos: "RB", x: 42, y: 78, label: "RB" },
+                    { pos: "C", x: 50, y: 65 },
+                    { pos: "LG", x: 42, y: 65 },
+                    { pos: "RG", x: 58, y: 65 },
+                    { pos: "LT", x: 34, y: 65 },
+                    { pos: "RT", x: 66, y: 65 },
+                    { pos: "X", x: 10, y: 62, label: "X" },
+                    { pos: "Z", x: 90, y: 62, label: "Z" },
+                    { pos: "Y", x: 72, y: 65, label: "Y" },
+                    { pos: "H", x: 28, y: 65, label: "H" }
+                ],
+                routes: [
+                    { from: "X", path: [[10,62], [10,15]], color: "#ef4444", label: "Go" },
+                    { from: "Z", path: [[90,62], [90,15]], color: "#3b82f6", label: "Go" },
+                    { from: "H", path: [[28,65], [35,15]], color: "#22c55e", label: "Seam" },
+                    { from: "Y", path: [[72,65], [65,15]], color: "#f59e0b", label: "Seam" }
+                ]
+            },
+            {
+                name: "Slant-Flat",
+                category: "quick",
+                description: "Quick game concept. Slant inside with a flat route outside. Creates a quick horizontal stretch.",
+                whenToUse: "Great vs press coverage and blitz. Ball comes out fast.",
+                reads: [
+                    { num: 1, text: "Pre-snap read the corner - press or off?" },
+                    { num: 2, text: "If corner plays inside, throw flat" },
+                    { num: 3, text: "If corner widens to flat, throw slant" }
+                ],
+                players: [
+                    { pos: "QB", x: 50, y: 82, label: "QB" },
+                    { pos: "RB", x: 42, y: 78, label: "RB" },
+                    { pos: "C", x: 50, y: 65 },
+                    { pos: "LG", x: 42, y: 65 },
+                    { pos: "RG", x: 58, y: 65 },
+                    { pos: "LT", x: 34, y: 65 },
+                    { pos: "RT", x: 66, y: 65 },
+                    { pos: "X", x: 10, y: 62, label: "X" },
+                    { pos: "Z", x: 90, y: 62, label: "Z" },
+                    { pos: "Y", x: 72, y: 65, label: "Y" }
+                ],
+                routes: [
+                    { from: "Z", path: [[90,62], [88,58], [70,48]], color: "#ef4444", label: "Slant" },
+                    { from: "Y", path: [[72,65], [90,55]], color: "#3b82f6", label: "Flat" },
+                    { from: "X", path: [[10,62], [12,58], [30,48]], color: "#22c55e", label: "Slant" }
+                ]
+            },
+            {
+                name: "Stick",
+                category: "quick",
+                description: "Three-man concept: flat, stick (6 yd hitch), and corner/wheel. Creates triangle stretch.",
+                whenToUse: "Reliable vs any coverage. Always an answer based on LB leverage.",
+                reads: [
+                    { num: 1, text: "Read the flat defender (usually a linebacker)" },
+                    { num: 2, text: "If LB widens to flat, throw stick" },
+                    { num: 3, text: "If LB sits on stick, throw flat" }
+                ],
+                players: [
+                    { pos: "QB", x: 50, y: 82, label: "QB" },
+                    { pos: "RB", x: 42, y: 78, label: "RB" },
+                    { pos: "C", x: 50, y: 65 },
+                    { pos: "LG", x: 42, y: 65 },
+                    { pos: "RG", x: 58, y: 65 },
+                    { pos: "LT", x: 34, y: 65 },
+                    { pos: "RT", x: 66, y: 65 },
+                    { pos: "X", x: 10, y: 62, label: "X" },
+                    { pos: "Z", x: 90, y: 62, label: "Z" },
+                    { pos: "Y", x: 72, y: 65, label: "Y" }
+                ],
+                routes: [
+                    { from: "Y", path: [[72,65], [75,55]], color: "#ef4444", label: "Stick (6 yds)" },
+                    { from: "RB", path: [[42,78], [55,65], [85,58]], color: "#3b82f6", label: "Flat" },
+                    { from: "Z", path: [[90,62], [90,50], [78,25]], color: "#22c55e", label: "Corner" },
+                    { from: "X", path: [[10,62], [10,30]], color: "#f59e0b", label: "Clear" }
+                ]
+            }
+        ];
+
+        let selectedConcept = concepts[0];
+
+        // Create buttons
+        const buttonContainer = document.getElementById('concept-buttons');
+        let currentCategory = '';
+
+        concepts.forEach((concept, i) => {
+            if (concept.category !== currentCategory) {
+                if (currentCategory !== '') {
+                    const label = document.createElement('div');
+                    label.className = 'category-label';
+                    label.textContent = concept.category === 'vertical' ? 'Vertical Concepts' :
+                                        concept.category === 'quick' ? 'Quick Game' : '';
+                    if (label.textContent) buttonContainer.appendChild(label);
+                }
+                currentCategory = concept.category;
+            }
+
+            const btn = document.createElement('button');
+            btn.className = 'concept-btn' + (i === 0 ? ' active' : '');
+            btn.innerHTML = `<div class="name">${concept.name}</div><div class="desc">${concept.description.substring(0, 60)}...</div>`;
+            btn.onclick = () => selectConcept(concept, btn);
+            buttonContainer.appendChild(btn);
+        });
+
+        function selectConcept(concept, btn) {
+            selectedConcept = concept;
+            document.querySelectorAll('.concept-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderField();
+            renderDetails();
+        }
+
+        function renderField() {
+            const svg = d3.select('#field');
+            svg.selectAll('*').remove();
+
+            const width = 700;
+            const height = 500;
+            const padding = 20;
+
+            // Field background
+            svg.append('rect')
+                .attr('x', padding)
+                .attr('y', padding)
+                .attr('width', width - padding * 2)
+                .attr('height', height - padding * 2)
+                .attr('fill', '#1a472a')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
+
+            // Yard lines
+            const yardLinePositions = [20, 35, 50, 65, 80]; // Percentage positions
+            yardLinePositions.forEach(pct => {
+                const y = padding + (height - padding * 2) * (pct / 100);
+                svg.append('line')
+                    .attr('x1', padding)
+                    .attr('x2', width - padding)
+                    .attr('y1', y)
+                    .attr('y2', y)
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 1)
+                    .attr('opacity', 0.3);
+            });
+
+            // Hash marks
+            const hashLeft = width * 0.35;
+            const hashRight = width * 0.65;
+            for (let pct = 15; pct <= 85; pct += 5) {
+                const y = padding + (height - padding * 2) * (pct / 100);
+                svg.append('line')
+                    .attr('x1', hashLeft - 5)
+                    .attr('x2', hashLeft + 5)
+                    .attr('y1', y)
+                    .attr('y2', y)
+                    .attr('stroke', '#fff')
+                    .attr('opacity', 0.3);
+                svg.append('line')
+                    .attr('x1', hashRight - 5)
+                    .attr('x2', hashRight + 5)
+                    .attr('y1', y)
+                    .attr('y2', y)
+                    .attr('stroke', '#fff')
+                    .attr('opacity', 0.3);
+            }
+
+            // Line of scrimmage
+            const losY = padding + (height - padding * 2) * 0.65;
+            svg.append('line')
+                .attr('x1', padding)
+                .attr('x2', width - padding)
+                .attr('y1', losY)
+                .attr('y2', losY)
+                .attr('stroke', '#3b82f6')
+                .attr('stroke-width', 3)
+                .attr('opacity', 0.7);
+
+            svg.append('text')
+                .attr('x', width - padding - 5)
+                .attr('y', losY - 5)
+                .attr('text-anchor', 'end')
+                .attr('fill', '#3b82f6')
+                .attr('font-size', '10px')
+                .text('LINE OF SCRIMMAGE');
+
+            // Scale helpers
+            const xScale = x => padding + (width - padding * 2) * (x / 100);
+            const yScale = y => padding + (height - padding * 2) * (y / 100);
+
+            // Draw routes first (so they appear behind players)
+            selectedConcept.routes.forEach(route => {
+                const pathData = route.path.map((p, i) => {
+                    const x = xScale(p[0]);
+                    const y = yScale(p[1]);
+                    return (i === 0 ? 'M' : 'L') + x + ',' + y;
+                }).join(' ');
+
+                // Route line
+                svg.append('path')
+                    .attr('d', pathData)
+                    .attr('fill', 'none')
+                    .attr('stroke', route.color)
+                    .attr('stroke-width', 3)
+                    .attr('stroke-linecap', 'round')
+                    .attr('stroke-linejoin', 'round');
+
+                // Arrow at end
+                const lastPoint = route.path[route.path.length - 1];
+                const prevPoint = route.path[route.path.length - 2];
+                const angle = Math.atan2(lastPoint[1] - prevPoint[1], lastPoint[0] - prevPoint[0]);
+
+                const arrowX = xScale(lastPoint[0]);
+                const arrowY = yScale(lastPoint[1]);
+
+                svg.append('polygon')
+                    .attr('points', '0,-5 10,0 0,5')
+                    .attr('fill', route.color)
+                    .attr('transform', `translate(${arrowX},${arrowY}) rotate(${angle * 180 / Math.PI})`);
+
+                // Route label
+                const midIdx = Math.floor(route.path.length / 2);
+                const labelPoint = route.path[midIdx];
+                svg.append('text')
+                    .attr('x', xScale(labelPoint[0]))
+                    .attr('y', yScale(labelPoint[1]) - 8)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', route.color)
+                    .attr('font-size', '10px')
+                    .attr('font-weight', 'bold')
+                    .text(route.label);
+            });
+
+            // Draw players
+            selectedConcept.players.forEach(player => {
+                const x = xScale(player.x);
+                const y = yScale(player.y);
+                const isLineman = ['C', 'LG', 'RG', 'LT', 'RT'].includes(player.pos);
+
+                if (isLineman) {
+                    // Square for linemen
+                    svg.append('rect')
+                        .attr('x', x - 12)
+                        .attr('y', y - 12)
+                        .attr('width', 24)
+                        .attr('height', 24)
+                        .attr('fill', '#1e3a5f')
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 2);
+                } else {
+                    // Circle for skill positions
+                    svg.append('circle')
+                        .attr('cx', x)
+                        .attr('cy', y)
+                        .attr('r', 14)
+                        .attr('fill', player.pos === 'QB' ? '#dc2626' : '#1e3a5f')
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 2);
+                }
+
+                // Label
+                if (player.label) {
+                    svg.append('text')
+                        .attr('x', x)
+                        .attr('y', y + 4)
+                        .attr('text-anchor', 'middle')
+                        .attr('fill', '#fff')
+                        .attr('font-size', '11px')
+                        .attr('font-weight', 'bold')
+                        .text(player.label);
+                }
+            });
+        }
+
+        function renderDetails() {
+            const details = document.getElementById('details');
+
+            let readsHtml = selectedConcept.reads.map(r => `
+                <div class="read-item">
+                    <div class="read-num">${r.num}</div>
+                    <div class="read-text">${r.text}</div>
+                </div>
+            `).join('');
+
+            details.innerHTML = `
+                <h2>${selectedConcept.name}</h2>
+                <p>${selectedConcept.description}</p>
+                <p style="margin-top:10px;color:#4ade80"><strong>When to use:</strong> ${selectedConcept.whenToUse}</p>
+                <div class="reads">
+                    <strong>QB Progression:</strong>
+                    ${readsHtml}
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <svg width="20" height="20"><rect x="2" y="2" width="16" height="16" fill="#1e3a5f" stroke="#fff" stroke-width="2"/></svg>
+                        <span>Offensive Line</span>
+                    </div>
+                    <div class="legend-item">
+                        <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="#1e3a5f" stroke="#fff" stroke-width="2"/></svg>
+                        <span>Skill Position</span>
+                    </div>
+                    <div class="legend-item">
+                        <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="#dc2626" stroke="#fff" stroke-width="2"/></svg>
+                        <span>Quarterback</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initial render
+        renderField();
+        renderDetails();
+    </script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Student's Share of Attention</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+            max-width: 550px;
+            line-height: 1.5;
+        }
+        #controls {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        button:hover {
+            background-color: #444;
+        }
+        button.active {
+            background-color: #F59E0B;
+            border-color: #F59E0B;
+        }
+        #vis {
+            width: 600px;
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 600px;
+            height: 600px;
+        }
+        .stage-label {
+            color: #888;
+            font-size: 14px;
+            margin-top: 15px;
+            text-align: center;
+            min-height: 50px;
+        }
+        .highlight {
+            color: #F59E0B;
+        }
+    </style>
+</head>
+<body>
+    <h1>A Student's Share of Attention</h1>
+    <p class="description">
+        30 students. Opacity = share of teacher's attention.<br>
+        Watch what happens in reality.
+    </p>
+
+    <div id="controls">
+        <button id="btn-equal" class="active">1. Equal Share</button>
+        <button id="btn-reality">2. Reality</button>
+        <button id="btn-volunteer">3. + Volunteer</button>
+    </div>
+
+    <div id="vis"></div>
+
+    <div class="stage-label" id="stage-label">
+        Each student gets 3.3% of the teacher's attention. Barely visible.
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 600;
+
+        const numKids = 30;
+        const radius = 32;
+        const baseOpacity = 1 / numKids; // 3.3%
+
+        // Define which kids are "attention hogs" and which fade
+        const attentionHogs = [3, 7, 12, 22, 27]; // 5 kids who demand attention
+        const quietKids = [0, 5, 9, 14, 18, 21, 25, 29]; // 8 quiet kids who fade
+        const volunteerKid = 14; // one of the quiet kids gets a volunteer
+
+        // Create nodes
+        const nodes = [];
+        for (let i = 0; i < numKids; i++) {
+            nodes.push({
+                id: i,
+                radius: radius,
+                baseOpacity: baseOpacity,
+                currentOpacity: baseOpacity,
+                isHog: attentionHogs.includes(i),
+                isQuiet: quietKids.includes(i),
+                isVolunteerKid: i === volunteerKid,
+                x: Math.random() * width,
+                y: Math.random() * height
+            });
+        }
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Create bubble elements
+        const bubbles = svg.selectAll('.bubble')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', '#3B82F6')
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 1.5)
+            .attr('opacity', baseOpacity);
+
+        // Force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(-50))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 3))
+            .on('tick', ticked);
+
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+        }
+
+        // Stage functions
+        function showEqual() {
+            gsap.to(bubbles.nodes(), {
+                attr: { opacity: baseOpacity, fill: '#3B82F6' },
+                duration: 0.8,
+                ease: 'power2.out'
+            });
+            document.getElementById('stage-label').innerHTML =
+                'Each student gets <strong>3.3%</strong> of the teacher\'s attention. Barely visible.';
+        }
+
+        function showReality() {
+            // Attention hogs pulse and take more
+            nodes.forEach((node, i) => {
+                const el = bubbles.nodes()[i];
+                if (node.isHog) {
+                    // Hogs get 3x attention, pulsing
+                    gsap.to(el, {
+                        attr: { opacity: 0.25, fill: '#EF4444' },
+                        duration: 0.5,
+                        ease: 'power2.out'
+                    });
+                    gsap.to(el, {
+                        attr: { opacity: 0.15 },
+                        duration: 0.8,
+                        repeat: -1,
+                        yoyo: true,
+                        ease: 'sine.inOut'
+                    });
+                } else if (node.isQuiet) {
+                    // Quiet kids fade to almost nothing
+                    gsap.killTweensOf(el);
+                    gsap.to(el, {
+                        attr: { opacity: 0.02, fill: '#3B82F6' },
+                        duration: 1,
+                        ease: 'power2.out'
+                    });
+                } else {
+                    // Average kids get slightly less
+                    gsap.killTweensOf(el);
+                    gsap.to(el, {
+                        attr: { opacity: 0.05, fill: '#3B82F6' },
+                        duration: 0.8,
+                        ease: 'power2.out'
+                    });
+                }
+            });
+            document.getElementById('stage-label').innerHTML =
+                '<span style="color: #EF4444;">5 students</span> demand attention. ' +
+                '<span style="color: #3B82F6; opacity: 0.5;">The quiet ones</span> disappear.';
+        }
+
+        function showVolunteer() {
+            // First show reality state
+            nodes.forEach((node, i) => {
+                const el = bubbles.nodes()[i];
+                if (node.isHog) {
+                    gsap.to(el, {
+                        attr: { opacity: 0.15, fill: '#EF4444' },
+                        duration: 0.3
+                    });
+                    gsap.to(el, {
+                        attr: { opacity: 0.1 },
+                        duration: 0.8,
+                        repeat: -1,
+                        yoyo: true,
+                        ease: 'sine.inOut',
+                        delay: 0.3
+                    });
+                } else if (node.isVolunteerKid) {
+                    // This kid gets the volunteer - lights up!
+                    gsap.killTweensOf(el);
+                    gsap.to(el, {
+                        attr: { opacity: 1, fill: '#F59E0B' },
+                        duration: 1.2,
+                        ease: 'power2.out',
+                        delay: 0.5
+                    });
+                } else if (node.isQuiet) {
+                    gsap.killTweensOf(el);
+                    gsap.to(el, {
+                        attr: { opacity: 0.02, fill: '#3B82F6' },
+                        duration: 0.5
+                    });
+                } else {
+                    gsap.killTweensOf(el);
+                    gsap.to(el, {
+                        attr: { opacity: 0.05, fill: '#3B82F6' },
+                        duration: 0.5
+                    });
+                }
+            });
+            document.getElementById('stage-label').innerHTML =
+                '<span class="highlight">One volunteer. One quiet kid. 30 minutes.</span><br>' +
+                'From invisible to seen.';
+        }
+
+        // Button handlers
+        document.getElementById('btn-equal').addEventListener('click', function() {
+            document.querySelectorAll('#controls button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            // Kill all animations first
+            bubbles.nodes().forEach(el => gsap.killTweensOf(el));
+            showEqual();
+        });
+
+        document.getElementById('btn-reality').addEventListener('click', function() {
+            document.querySelectorAll('#controls button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            // Kill all animations first
+            bubbles.nodes().forEach(el => gsap.killTweensOf(el));
+            showReality();
+        });
+
+        document.getElementById('btn-volunteer').addEventListener('click', function() {
+            document.querySelectorAll('#controls button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            // Kill all animations first
+            bubbles.nodes().forEach(el => gsap.killTweensOf(el));
+            showVolunteer();
+        });
+
+        // Start with equal
+        showEqual();
+    </script>
+</body>
+</html>

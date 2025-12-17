@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race to the Bottom</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 600px;
+        }
+        #canvas {
+            background: #0a0a0a;
+            border-radius: 8px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .play-btn {
+            background: linear-gradient(90deg, #F59E0B, #EF4444);
+            color: white;
+        }
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+        .reset-btn {
+            background: #333;
+            color: #aaa;
+        }
+        .reset-btn:hover {
+            background: #444;
+            color: #fff;
+        }
+        .axis-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .axis-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 900px;
+            margin-top: 5px;
+        }
+        .y-axis-label {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            position: absolute;
+            left: calc(50% - 480px);
+            margin-top: 200px;
+        }
+        .leaderboard {
+            display: flex;
+            gap: 30px;
+            margin: 25px 0;
+        }
+        .leader {
+            text-align: center;
+            padding: 15px 25px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .leader.first {
+            border-color: #F59E0B;
+            background: linear-gradient(180deg, #1a1a1a 0%, #1f1a0f 100%);
+        }
+        .leader-rank {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .leader-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .leader-followers {
+            font-size: 24px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        .leader-integrity {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .info {
+            max-width: 700px;
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px 25px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .info p {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+        .info strong {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Race to the Bottom</h1>
+    <p class="subtitle">10 candidates compete for attention. Moderate statements get ignored. Outrageous ones go viral. Who wins?</p>
+
+    <div class="controls">
+        <button class="play-btn" id="playBtn">▶ Run Election</button>
+        <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <svg id="canvas" width="900" height="400"></svg>
+
+    <div class="axis-labels">
+        <span class="axis-label">← Moderate</span>
+        <span class="axis-label">Extreme →</span>
+    </div>
+
+    <div class="leaderboard">
+        <div class="leader first">
+            <div class="leader-rank">1st Place</div>
+            <div class="leader-name" id="first">—</div>
+            <div class="leader-followers" id="firstFollowers">0</div>
+            <div class="leader-integrity">Integrity: <span id="firstIntegrity">100%</span></div>
+        </div>
+        <div class="leader">
+            <div class="leader-rank">2nd Place</div>
+            <div class="leader-name" id="second">—</div>
+            <div class="leader-followers" id="secondFollowers">0</div>
+            <div class="leader-integrity">Integrity: <span id="secondIntegrity">100%</span></div>
+        </div>
+        <div class="leader">
+            <div class="leader-rank">3rd Place</div>
+            <div class="leader-name" id="third">—</div>
+            <div class="leader-followers" id="thirdFollowers">0</div>
+            <div class="leader-integrity">Integrity: <span id="thirdIntegrity">100%</span></div>
+        </div>
+    </div>
+
+    <div class="info">
+        <p><strong>What you're seeing:</strong> Each dot is a candidate. X-axis shows how extreme their rhetoric is. Y-axis shows their follower count. Watch as candidates learn: moderate = invisible, extreme = viral. The "winners" have the lowest integrity.</p>
+    </div>
+
+    <script>
+        const width = 900;
+        const height = 400;
+        const margin = { top: 40, right: 40, bottom: 40, left: 60 };
+
+        const svg = d3.select('#canvas');
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        const names = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Wilson', 'Moore'];
+
+        // Create candidates
+        let candidates = names.map((name, i) => ({
+            id: i,
+            name: name,
+            extremism: 0.1 + Math.random() * 0.2, // Start somewhat moderate
+            followers: 1000 + Math.random() * 2000,
+            integrity: 100,
+            willingness: 0.3 + Math.random() * 0.7 // How willing to go extreme
+        }));
+
+        // Scales
+        const xScale = d3.scaleLinear().domain([0, 1]).range([margin.left, width - margin.right]);
+        const yScale = d3.scaleLinear().domain([0, 500000]).range([height - margin.bottom, margin.top]);
+
+        // Draw axes
+        svg.append('line')
+            .attr('x1', margin.left)
+            .attr('x2', width - margin.right)
+            .attr('y1', height - margin.bottom)
+            .attr('y2', height - margin.bottom)
+            .attr('stroke', '#333');
+
+        svg.append('line')
+            .attr('x1', margin.left)
+            .attr('x2', margin.left)
+            .attr('y1', margin.top)
+            .attr('y2', height - margin.bottom)
+            .attr('stroke', '#333');
+
+        // Y axis label
+        svg.append('text')
+            .attr('x', 20)
+            .attr('y', height / 2)
+            .attr('fill', '#666')
+            .attr('font-size', '11px')
+            .attr('transform', `rotate(-90, 20, ${height/2})`)
+            .text('FOLLOWERS');
+
+        // Draw candidates
+        const dots = svg.selectAll('.candidate')
+            .data(candidates)
+            .enter()
+            .append('circle')
+            .attr('class', 'candidate')
+            .attr('cx', d => xScale(d.extremism))
+            .attr('cy', d => yScale(d.followers))
+            .attr('r', 8)
+            .attr('fill', d => d3.interpolateRgb('#22C55E', '#EF4444')(d.extremism))
+            .attr('opacity', 0.8);
+
+        const labels = svg.selectAll('.label')
+            .data(candidates)
+            .enter()
+            .append('text')
+            .attr('class', 'label')
+            .attr('x', d => xScale(d.extremism))
+            .attr('y', d => yScale(d.followers) - 12)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#888')
+            .attr('font-size', '10px')
+            .text(d => d.name);
+
+        let isPlaying = false;
+        let animationTimer = null;
+        let round = 0;
+
+        function updateLeaderboard() {
+            const sorted = [...candidates].sort((a, b) => b.followers - a.followers);
+
+            document.getElementById('first').textContent = sorted[0].name;
+            document.getElementById('firstFollowers').textContent = Math.round(sorted[0].followers).toLocaleString();
+            document.getElementById('firstIntegrity').textContent = Math.round(sorted[0].integrity) + '%';
+
+            document.getElementById('second').textContent = sorted[1].name;
+            document.getElementById('secondFollowers').textContent = Math.round(sorted[1].followers).toLocaleString();
+            document.getElementById('secondIntegrity').textContent = Math.round(sorted[1].integrity) + '%';
+
+            document.getElementById('third').textContent = sorted[2].name;
+            document.getElementById('thirdFollowers').textContent = Math.round(sorted[2].followers).toLocaleString();
+            document.getElementById('thirdIntegrity').textContent = Math.round(sorted[2].integrity) + '%';
+        }
+
+        function simulate() {
+            round++;
+
+            candidates.forEach(c => {
+                // The algorithm: extreme statements get more engagement
+                const viralChance = c.extremism * c.extremism; // Quadratic reward for extremism
+                const moderateGrowth = 500 + Math.random() * 1000;
+                const viralGrowth = 10000 + Math.random() * 30000;
+
+                // Followers gained based on extremism
+                const growth = moderateGrowth + viralChance * viralGrowth;
+                c.followers += growth;
+
+                // See others succeeding, decide to go more extreme
+                const maxFollowers = Math.max(...candidates.map(x => x.followers));
+                if (c.followers < maxFollowers * 0.7) {
+                    // Falling behind - pressure to go more extreme
+                    c.extremism = Math.min(1, c.extremism + c.willingness * 0.05);
+                    c.integrity = Math.max(0, c.integrity - c.willingness * 3);
+                }
+
+                // Even leaders push further
+                if (c.followers >= maxFollowers * 0.9) {
+                    c.extremism = Math.min(1, c.extremism + 0.02);
+                    c.integrity = Math.max(0, c.integrity - 1);
+                }
+            });
+
+            // Update scale if needed
+            const maxF = Math.max(...candidates.map(c => c.followers));
+            yScale.domain([0, maxF * 1.1]);
+
+            // Update visuals
+            dots.transition()
+                .duration(200)
+                .attr('cx', d => xScale(d.extremism))
+                .attr('cy', d => yScale(d.followers))
+                .attr('r', d => 8 + d.followers / maxF * 12)
+                .attr('fill', d => d3.interpolateRgb('#22C55E', '#EF4444')(d.extremism));
+
+            labels.transition()
+                .duration(200)
+                .attr('x', d => xScale(d.extremism))
+                .attr('y', d => yScale(d.followers) - 15 - d.followers / maxF * 10);
+
+            updateLeaderboard();
+
+            if (round < 50) {
+                animationTimer = setTimeout(simulate, 200);
+            } else {
+                isPlaying = false;
+                playBtn.textContent = '▶ Run Again';
+            }
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                isPlaying = false;
+                clearTimeout(animationTimer);
+                playBtn.textContent = '▶ Resume';
+            } else {
+                if (round >= 50) {
+                    reset();
+                }
+                isPlaying = true;
+                playBtn.textContent = '⏸ Pause';
+                simulate();
+            }
+        });
+
+        function reset() {
+            isPlaying = false;
+            clearTimeout(animationTimer);
+            round = 0;
+
+            candidates = names.map((name, i) => ({
+                id: i,
+                name: name,
+                extremism: 0.1 + Math.random() * 0.2,
+                followers: 1000 + Math.random() * 2000,
+                integrity: 100,
+                willingness: 0.3 + Math.random() * 0.7
+            }));
+
+            yScale.domain([0, 500000]);
+
+            dots.data(candidates)
+                .transition()
+                .duration(500)
+                .attr('cx', d => xScale(d.extremism))
+                .attr('cy', d => yScale(d.followers))
+                .attr('r', 8)
+                .attr('fill', d => d3.interpolateRgb('#22C55E', '#EF4444')(d.extremism));
+
+            labels.data(candidates)
+                .transition()
+                .duration(500)
+                .attr('x', d => xScale(d.extremism))
+                .attr('y', d => yScale(d.followers) - 12);
+
+            playBtn.textContent = '▶ Run Election';
+            updateLeaderboard();
+        }
+
+        resetBtn.addEventListener('click', reset);
+        updateLeaderboard();
+    </script>
+</body>
+</html>

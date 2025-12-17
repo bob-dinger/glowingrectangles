@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ohio State: 1 President, 60,000 Students</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 13px;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .insight {
+            color: #888;
+            font-size: 12px;
+            margin-top: 15px;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.7;
+        }
+        .highlight {
+            color: #10B981;
+        }
+        .red {
+            color: #EF4444;
+        }
+        .stat-row {
+            display: flex;
+            gap: 30px;
+            margin-top: 15px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ohio State University: One Year</h1>
+    <p class="description">
+        1 president in the center. 60,000 students surrounding.<br>
+        Each dot is a real person paying real tuition.
+    </p>
+
+    <div id="vis"></div>
+
+    <div class="stat-row">
+        <div class="stat">
+            <div class="stat-number" style="color: #10B981;">$1.4M</div>
+            <div class="stat-label">President's salary</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number" style="color: #EF4444;">$12,485</div>
+            <div class="stat-label">In-state tuition (each)</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number" style="color: #EF4444;">$750M</div>
+            <div class="stat-label">Total student tuition</div>
+        </div>
+    </div>
+
+    <p class="insight">
+        <span class="highlight">The president</span> sets tuition, negotiates with legislators, shapes policy.<br>
+        <span class="red">Each student</span> is one of 60,000 - individually invisible, collectively paying $750 million.
+    </p>
+
+    <script>
+        const width = 700;
+        const height = 700;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const numStudents = 60000;
+        const presidentRadius = 40;
+        const studentRadius = 1.2;
+
+        // Generate student positions in a ring/spiral around center
+        const students = [];
+        const innerRadius = presidentRadius + 20;
+        const outerRadius = (width / 2) - 10;
+        const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+
+        for (let i = 0; i < numStudents; i++) {
+            // Distribute from inner to outer radius
+            const t = i / numStudents;
+            const r = innerRadius + (outerRadius - innerRadius) * Math.sqrt(t);
+            const theta = i * goldenAngle;
+
+            students.push({
+                x: centerX + r * Math.cos(theta),
+                y: centerY + r * Math.sin(theta)
+            });
+        }
+
+        // Draw students first (behind president)
+        svg.selectAll('.student')
+            .data(students)
+            .enter()
+            .append('circle')
+            .attr('class', 'student')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', studentRadius)
+            .attr('fill', '#EF4444')
+            .attr('opacity', 0.6);
+
+        // Draw president in center
+        svg.append('circle')
+            .attr('cx', centerX)
+            .attr('cy', centerY)
+            .attr('r', presidentRadius)
+            .attr('fill', '#10B981')
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2);
+
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', centerY - 5)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '11px')
+            .attr('font-weight', 'bold')
+            .text('President');
+
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', centerY + 10)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '9px')
+            .text('(1 person)');
+
+        // Label for students
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', 25)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '13px')
+            .attr('font-weight', 'bold')
+            .text('60,000 Students');
+
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', height - 15)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#666')
+            .attr('font-size', '10px')
+            .text('Each red dot = 1 student paying tuition');
+    </script>
+</body>
+</html>

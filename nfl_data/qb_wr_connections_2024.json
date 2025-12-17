@@ -1,0 +1,1762 @@
+[
+  {
+    "abbr": "ARI",
+    "name": "Arizona Cardinals",
+    "color": "#97233F",
+    "accent": "#000000",
+    "qb": {
+      "name": "Kyler Murray",
+      "attempts": 541,
+      "completions": 372,
+      "yards": 3851,
+      "tds": 21
+    },
+    "receivers": [
+      {
+        "name": "Trey McBride",
+        "pos": "TE",
+        "targets": 147,
+        "receptions": 111,
+        "yards": 1146,
+        "tds": 2
+      },
+      {
+        "name": "Marvin Harrison",
+        "pos": "WR",
+        "targets": 116,
+        "receptions": 62,
+        "yards": 885,
+        "tds": 8
+      },
+      {
+        "name": "James Conner",
+        "pos": "RB",
+        "targets": 55,
+        "receptions": 47,
+        "yards": 414,
+        "tds": 1
+      },
+      {
+        "name": "Michael Wilson",
+        "pos": "WR",
+        "targets": 71,
+        "receptions": 47,
+        "yards": 548,
+        "tds": 4
+      },
+      {
+        "name": "Greg Dortch",
+        "pos": "WR",
+        "targets": 50,
+        "receptions": 37,
+        "yards": 342,
+        "tds": 3
+      }
+    ]
+  },
+  {
+    "abbr": "ATL",
+    "name": "Atlanta Falcons",
+    "color": "#A71930",
+    "accent": "#000000",
+    "qb": {
+      "name": "Kirk Cousins",
+      "attempts": 453,
+      "completions": 303,
+      "yards": 3508,
+      "tds": 18
+    },
+    "receivers": [
+      {
+        "name": "Drake London",
+        "pos": "WR",
+        "targets": 158,
+        "receptions": 100,
+        "yards": 1271,
+        "tds": 9
+      },
+      {
+        "name": "Darnell Mooney",
+        "pos": "WR",
+        "targets": 106,
+        "receptions": 64,
+        "yards": 992,
+        "tds": 5
+      },
+      {
+        "name": "Ray-Ray McCloud",
+        "pos": "WR",
+        "targets": 87,
+        "receptions": 62,
+        "yards": 686,
+        "tds": 1
+      },
+      {
+        "name": "Bijan Robinson",
+        "pos": "RB",
+        "targets": 72,
+        "receptions": 61,
+        "yards": 431,
+        "tds": 1
+      },
+      {
+        "name": "Kyle Pitts",
+        "pos": "TE",
+        "targets": 74,
+        "receptions": 47,
+        "yards": 602,
+        "tds": 4
+      }
+    ]
+  },
+  {
+    "abbr": "BAL",
+    "name": "Baltimore Ravens",
+    "color": "#241773",
+    "accent": "#9E7C0C",
+    "qb": {
+      "name": "Lamar Jackson",
+      "attempts": 474,
+      "completions": 316,
+      "yards": 4172,
+      "tds": 41
+    },
+    "receivers": [
+      {
+        "name": "Zay Flowers",
+        "pos": "WR",
+        "targets": 116,
+        "receptions": 74,
+        "yards": 1059,
+        "tds": 4
+      },
+      {
+        "name": "Mark Andrews",
+        "pos": "TE",
+        "targets": 69,
+        "receptions": 55,
+        "yards": 673,
+        "tds": 11
+      },
+      {
+        "name": "Rashod Bateman",
+        "pos": "WR",
+        "targets": 72,
+        "receptions": 45,
+        "yards": 756,
+        "tds": 9
+      },
+      {
+        "name": "Justice Hill",
+        "pos": "RB",
+        "targets": 51,
+        "receptions": 42,
+        "yards": 383,
+        "tds": 3
+      },
+      {
+        "name": "Isaiah Likely",
+        "pos": "TE",
+        "targets": 58,
+        "receptions": 42,
+        "yards": 477,
+        "tds": 6
+      }
+    ]
+  },
+  {
+    "abbr": "BUF",
+    "name": "Buffalo Bills",
+    "color": "#00338D",
+    "accent": "#C60C30",
+    "qb": {
+      "name": "Josh Allen",
+      "attempts": 483,
+      "completions": 307,
+      "yards": 3731,
+      "tds": 28
+    },
+    "receivers": [
+      {
+        "name": "Khalil Shakir",
+        "pos": "WR",
+        "targets": 100,
+        "receptions": 76,
+        "yards": 821,
+        "tds": 4
+      },
+      {
+        "name": "Amari Cooper",
+        "pos": "WR",
+        "targets": 85,
+        "receptions": 44,
+        "yards": 547,
+        "tds": 4
+      },
+      {
+        "name": "Dalton Kincaid",
+        "pos": "TE",
+        "targets": 75,
+        "receptions": 44,
+        "yards": 448,
+        "tds": 2
+      },
+      {
+        "name": "James Cook",
+        "pos": "RB",
+        "targets": 38,
+        "receptions": 32,
+        "yards": 258,
+        "tds": 2
+      },
+      {
+        "name": "Curtis Samuel",
+        "pos": "WR",
+        "targets": 46,
+        "receptions": 31,
+        "yards": 253,
+        "tds": 1
+      }
+    ]
+  },
+  {
+    "abbr": "CAR",
+    "name": "Carolina Panthers",
+    "color": "#0085CA",
+    "accent": "#101820",
+    "qb": {
+      "name": "Bryce Young",
+      "attempts": 384,
+      "completions": 234,
+      "yards": 2403,
+      "tds": 15
+    },
+    "receivers": [
+      {
+        "name": "Xavier Legette",
+        "pos": "WR",
+        "targets": 84,
+        "receptions": 49,
+        "yards": 497,
+        "tds": 4
+      },
+      {
+        "name": "Adam Thielen",
+        "pos": "WR",
+        "targets": 62,
+        "receptions": 48,
+        "yards": 615,
+        "tds": 5
+      },
+      {
+        "name": "Chuba Hubbard",
+        "pos": "RB",
+        "targets": 54,
+        "receptions": 43,
+        "yards": 171,
+        "tds": 1
+      },
+      {
+        "name": "Ja'Tavion Sanders",
+        "pos": "TE",
+        "targets": 43,
+        "receptions": 33,
+        "yards": 342,
+        "tds": 1
+      },
+      {
+        "name": "David Moore",
+        "pos": "WR",
+        "targets": 57,
+        "receptions": 32,
+        "yards": 351,
+        "tds": 3
+      }
+    ]
+  },
+  {
+    "abbr": "CHI",
+    "name": "Chicago Bears",
+    "color": "#C83803",
+    "accent": "#0B162A",
+    "qb": {
+      "name": "Caleb Williams",
+      "attempts": 562,
+      "completions": 351,
+      "yards": 3541,
+      "tds": 20
+    },
+    "receivers": [
+      {
+        "name": "D.J. Moore",
+        "pos": "WR",
+        "targets": 140,
+        "receptions": 98,
+        "yards": 966,
+        "tds": 6
+      },
+      {
+        "name": "Keenan Allen",
+        "pos": "WR",
+        "targets": 121,
+        "receptions": 70,
+        "yards": 744,
+        "tds": 7
+      },
+      {
+        "name": "Rome Odunze",
+        "pos": "WR",
+        "targets": 101,
+        "receptions": 54,
+        "yards": 734,
+        "tds": 3
+      },
+      {
+        "name": "Cole Kmet",
+        "pos": "TE",
+        "targets": 55,
+        "receptions": 47,
+        "yards": 474,
+        "tds": 4
+      },
+      {
+        "name": "D'Andre Swift",
+        "pos": "RB",
+        "targets": 52,
+        "receptions": 42,
+        "yards": 386,
+        "tds": 0
+      }
+    ]
+  },
+  {
+    "abbr": "CIN",
+    "name": "Cincinnati Bengals",
+    "color": "#FB4F14",
+    "accent": "#000000",
+    "qb": {
+      "name": "Joe Burrow",
+      "attempts": 652,
+      "completions": 460,
+      "yards": 4918,
+      "tds": 43
+    },
+    "receivers": [
+      {
+        "name": "Ja'Marr Chase",
+        "pos": "WR",
+        "targets": 175,
+        "receptions": 127,
+        "yards": 1708,
+        "tds": 17
+      },
+      {
+        "name": "Tee Higgins",
+        "pos": "WR",
+        "targets": 109,
+        "receptions": 73,
+        "yards": 911,
+        "tds": 10
+      },
+      {
+        "name": "Mike Gesicki",
+        "pos": "TE",
+        "targets": 83,
+        "receptions": 65,
+        "yards": 665,
+        "tds": 2
+      },
+      {
+        "name": "Chase Brown",
+        "pos": "RB",
+        "targets": 65,
+        "receptions": 54,
+        "yards": 360,
+        "tds": 4
+      },
+      {
+        "name": "Andrei Iosivas",
+        "pos": "WR",
+        "targets": 61,
+        "receptions": 36,
+        "yards": 479,
+        "tds": 6
+      }
+    ]
+  },
+  {
+    "abbr": "CLE",
+    "name": "Cleveland Browns",
+    "color": "#311D00",
+    "accent": "#FF3C00",
+    "qb": {
+      "name": "Jameis Winston",
+      "attempts": 296,
+      "completions": 181,
+      "yards": 2121,
+      "tds": 13
+    },
+    "receivers": [
+      {
+        "name": "Jerry Jeudy",
+        "pos": "WR",
+        "targets": 145,
+        "receptions": 90,
+        "yards": 1229,
+        "tds": 4
+      },
+      {
+        "name": "David Njoku",
+        "pos": "TE",
+        "targets": 97,
+        "receptions": 64,
+        "yards": 505,
+        "tds": 5
+      },
+      {
+        "name": "Elijah Moore",
+        "pos": "WR",
+        "targets": 102,
+        "receptions": 61,
+        "yards": 538,
+        "tds": 1
+      },
+      {
+        "name": "Jordan Akins",
+        "pos": "TE",
+        "targets": 58,
+        "receptions": 40,
+        "yards": 390,
+        "tds": 2
+      },
+      {
+        "name": "Jerome Ford",
+        "pos": "RB",
+        "targets": 43,
+        "receptions": 37,
+        "yards": 225,
+        "tds": 0
+      }
+    ]
+  },
+  {
+    "abbr": "DAL",
+    "name": "Dallas Cowboys",
+    "color": "#003594",
+    "accent": "#869397",
+    "qb": {
+      "name": "Cooper Rush",
+      "attempts": 308,
+      "completions": 187,
+      "yards": 1844,
+      "tds": 12
+    },
+    "receivers": [
+      {
+        "name": "CeeDee Lamb",
+        "pos": "WR",
+        "targets": 152,
+        "receptions": 101,
+        "yards": 1194,
+        "tds": 6
+      },
+      {
+        "name": "Jake Ferguson",
+        "pos": "TE",
+        "targets": 86,
+        "receptions": 59,
+        "yards": 494,
+        "tds": 0
+      },
+      {
+        "name": "Jalen Tolbert",
+        "pos": "WR",
+        "targets": 79,
+        "receptions": 49,
+        "yards": 610,
+        "tds": 7
+      },
+      {
+        "name": "Rico Dowdle",
+        "pos": "RB",
+        "targets": 49,
+        "receptions": 39,
+        "yards": 249,
+        "tds": 3
+      },
+      {
+        "name": "Kavontae Turpin",
+        "pos": "WR",
+        "targets": 52,
+        "receptions": 31,
+        "yards": 420,
+        "tds": 2
+      }
+    ]
+  },
+  {
+    "abbr": "DEN",
+    "name": "Denver Broncos",
+    "color": "#FB4F14",
+    "accent": "#002244",
+    "qb": {
+      "name": "Bo Nix",
+      "attempts": 567,
+      "completions": 376,
+      "yards": 3775,
+      "tds": 29
+    },
+    "receivers": [
+      {
+        "name": "Courtland Sutton",
+        "pos": "WR",
+        "targets": 135,
+        "receptions": 81,
+        "yards": 1081,
+        "tds": 8
+      },
+      {
+        "name": "Javonte Williams",
+        "pos": "RB",
+        "targets": 70,
+        "receptions": 52,
+        "yards": 346,
+        "tds": 0
+      },
+      {
+        "name": "Devaughn Vele",
+        "pos": "WR",
+        "targets": 55,
+        "receptions": 41,
+        "yards": 475,
+        "tds": 3
+      },
+      {
+        "name": "Marvin Mims",
+        "pos": "WR",
+        "targets": 52,
+        "receptions": 39,
+        "yards": 503,
+        "tds": 6
+      },
+      {
+        "name": "Lil'Jordan Humphrey",
+        "pos": "WR",
+        "targets": 45,
+        "receptions": 31,
+        "yards": 293,
+        "tds": 1
+      }
+    ]
+  },
+  {
+    "abbr": "DET",
+    "name": "Detroit Lions",
+    "color": "#0076B6",
+    "accent": "#B0B7BC",
+    "qb": {
+      "name": "Jared Goff",
+      "attempts": 539,
+      "completions": 390,
+      "yards": 4629,
+      "tds": 37
+    },
+    "receivers": [
+      {
+        "name": "Amon-Ra St. Brown",
+        "pos": "WR",
+        "targets": 141,
+        "receptions": 115,
+        "yards": 1263,
+        "tds": 12
+      },
+      {
+        "name": "Sam LaPorta",
+        "pos": "TE",
+        "targets": 83,
+        "receptions": 60,
+        "yards": 726,
+        "tds": 7
+      },
+      {
+        "name": "Jameson Williams",
+        "pos": "WR",
+        "targets": 91,
+        "receptions": 58,
+        "yards": 1001,
+        "tds": 7
+      },
+      {
+        "name": "Jahmyr Gibbs",
+        "pos": "RB",
+        "targets": 63,
+        "receptions": 52,
+        "yards": 497,
+        "tds": 3
+      },
+      {
+        "name": "David Montgomery",
+        "pos": "RB",
+        "targets": 38,
+        "receptions": 36,
+        "yards": 341,
+        "tds": 0
+      }
+    ]
+  },
+  {
+    "abbr": "GB",
+    "name": "Green Bay Packers",
+    "color": "#203731",
+    "accent": "#FFB612",
+    "qb": {
+      "name": "Jordan Love",
+      "attempts": 425,
+      "completions": 268,
+      "yards": 3389,
+      "tds": 25
+    },
+    "receivers": [
+      {
+        "name": "Jayden Reed",
+        "pos": "WR",
+        "targets": 75,
+        "receptions": 55,
+        "yards": 857,
+        "tds": 6
+      },
+      {
+        "name": "Tucker Kraft",
+        "pos": "TE",
+        "targets": 70,
+        "receptions": 50,
+        "yards": 707,
+        "tds": 7
+      },
+      {
+        "name": "Romeo Doubs",
+        "pos": "WR",
+        "targets": 72,
+        "receptions": 46,
+        "yards": 601,
+        "tds": 4
+      },
+      {
+        "name": "Dontayvion Wicks",
+        "pos": "WR",
+        "targets": 76,
+        "receptions": 39,
+        "yards": 415,
+        "tds": 5
+      },
+      {
+        "name": "Josh Jacobs",
+        "pos": "RB",
+        "targets": 43,
+        "receptions": 36,
+        "yards": 342,
+        "tds": 1
+      }
+    ]
+  },
+  {
+    "abbr": "HOU",
+    "name": "Houston Texans",
+    "color": "#03202F",
+    "accent": "#A71930",
+    "qb": {
+      "name": "C.J. Stroud",
+      "attempts": 532,
+      "completions": 336,
+      "yards": 3727,
+      "tds": 20
+    },
+    "receivers": [
+      {
+        "name": "Nico Collins",
+        "pos": "WR",
+        "targets": 99,
+        "receptions": 68,
+        "yards": 1006,
+        "tds": 7
+      },
+      {
+        "name": "Dalton Schultz",
+        "pos": "TE",
+        "targets": 85,
+        "receptions": 53,
+        "yards": 532,
+        "tds": 2
+      },
+      {
+        "name": "Tank Dell",
+        "pos": "WR",
+        "targets": 81,
+        "receptions": 51,
+        "yards": 667,
+        "tds": 3
+      },
+      {
+        "name": "Stefon Diggs",
+        "pos": "WR",
+        "targets": 64,
+        "receptions": 47,
+        "yards": 496,
+        "tds": 3
+      },
+      {
+        "name": "Joe Mixon",
+        "pos": "RB",
+        "targets": 52,
+        "receptions": 36,
+        "yards": 309,
+        "tds": 1
+      }
+    ]
+  },
+  {
+    "abbr": "IND",
+    "name": "Indianapolis Colts",
+    "color": "#002C5F",
+    "accent": "#A2AAAD",
+    "qb": {
+      "name": "Anthony Richardson",
+      "attempts": 264,
+      "completions": 126,
+      "yards": 1814,
+      "tds": 8
+    },
+    "receivers": [
+      {
+        "name": "Josh Downs",
+        "pos": "WR",
+        "targets": 107,
+        "receptions": 72,
+        "yards": 803,
+        "tds": 5
+      },
+      {
+        "name": "Michael Pittman",
+        "pos": "WR",
+        "targets": 111,
+        "receptions": 69,
+        "yards": 808,
+        "tds": 3
+      },
+      {
+        "name": "Alec Pierce",
+        "pos": "WR",
+        "targets": 69,
+        "receptions": 37,
+        "yards": 824,
+        "tds": 7
+      },
+      {
+        "name": "Adonai Mitchell",
+        "pos": "WR",
+        "targets": 55,
+        "receptions": 23,
+        "yards": 312,
+        "tds": 0
+      },
+      {
+        "name": "Jonathan Taylor",
+        "pos": "RB",
+        "targets": 31,
+        "receptions": 18,
+        "yards": 136,
+        "tds": 1
+      }
+    ]
+  },
+  {
+    "abbr": "JAX",
+    "name": "Jacksonville Jaguars",
+    "color": "#101820",
+    "accent": "#D7A22A",
+    "qb": {
+      "name": "Trevor Lawrence",
+      "attempts": 284,
+      "completions": 172,
+      "yards": 2045,
+      "tds": 11
+    },
+    "receivers": [
+      {
+        "name": "Brian Thomas",
+        "pos": "WR",
+        "targets": 133,
+        "receptions": 87,
+        "yards": 1282,
+        "tds": 10
+      },
+      {
+        "name": "Evan Engram",
+        "pos": "TE",
+        "targets": 64,
+        "receptions": 47,
+        "yards": 365,
+        "tds": 1
+      },
+      {
+        "name": "Brenton Strange",
+        "pos": "TE",
+        "targets": 53,
+        "receptions": 40,
+        "yards": 411,
+        "tds": 2
+      },
+      {
+        "name": "Travis Etienne",
+        "pos": "RB",
+        "targets": 52,
+        "receptions": 39,
+        "yards": 254,
+        "tds": 0
+      },
+      {
+        "name": "Parker Washington",
+        "pos": "WR",
+        "targets": 51,
+        "receptions": 32,
+        "yards": 390,
+        "tds": 3
+      }
+    ]
+  },
+  {
+    "abbr": "KC",
+    "name": "Kansas City Chiefs",
+    "color": "#E31837",
+    "accent": "#FFB81C",
+    "qb": {
+      "name": "Patrick Mahomes",
+      "attempts": 581,
+      "completions": 392,
+      "yards": 3928,
+      "tds": 26
+    },
+    "receivers": [
+      {
+        "name": "Travis Kelce",
+        "pos": "TE",
+        "targets": 133,
+        "receptions": 97,
+        "yards": 823,
+        "tds": 3
+      },
+      {
+        "name": "Xavier Worthy",
+        "pos": "WR",
+        "targets": 98,
+        "receptions": 59,
+        "yards": 638,
+        "tds": 6
+      },
+      {
+        "name": "DeAndre Hopkins",
+        "pos": "WR",
+        "targets": 80,
+        "receptions": 56,
+        "yards": 610,
+        "tds": 5
+      },
+      {
+        "name": "Noah Gray",
+        "pos": "TE",
+        "targets": 49,
+        "receptions": 40,
+        "yards": 437,
+        "tds": 5
+      },
+      {
+        "name": "Samaje Perine",
+        "pos": "RB",
+        "targets": 35,
+        "receptions": 28,
+        "yards": 322,
+        "tds": 1
+      }
+    ]
+  },
+  {
+    "abbr": "LV",
+    "name": "Las Vegas Raiders",
+    "color": "#000000",
+    "accent": "#A5ACAF",
+    "qb": {
+      "name": "Gardner Minshew",
+      "attempts": 306,
+      "completions": 203,
+      "yards": 2013,
+      "tds": 9
+    },
+    "receivers": [
+      {
+        "name": "Brock Bowers",
+        "pos": "TE",
+        "targets": 153,
+        "receptions": 112,
+        "yards": 1194,
+        "tds": 5
+      },
+      {
+        "name": "Jakobi Meyers",
+        "pos": "WR",
+        "targets": 129,
+        "receptions": 87,
+        "yards": 1027,
+        "tds": 4
+      },
+      {
+        "name": "Tre Tucker",
+        "pos": "WR",
+        "targets": 81,
+        "receptions": 47,
+        "yards": 539,
+        "tds": 3
+      },
+      {
+        "name": "Ameer Abdullah",
+        "pos": "RB",
+        "targets": 47,
+        "receptions": 40,
+        "yards": 261,
+        "tds": 3
+      },
+      {
+        "name": "Alexander Mattison",
+        "pos": "RB",
+        "targets": 48,
+        "receptions": 36,
+        "yards": 294,
+        "tds": 1
+      }
+    ]
+  },
+  {
+    "abbr": "LAC",
+    "name": "Los Angeles Chargers",
+    "color": "#0080C6",
+    "accent": "#FFC20E",
+    "qb": {
+      "name": "Justin Herbert",
+      "attempts": 504,
+      "completions": 332,
+      "yards": 3870,
+      "tds": 23
+    },
+    "receivers": [
+      {
+        "name": "Ladd McConkey",
+        "pos": "WR",
+        "targets": 112,
+        "receptions": 82,
+        "yards": 1149,
+        "tds": 7
+      },
+      {
+        "name": "Quentin Johnston",
+        "pos": "WR",
+        "targets": 91,
+        "receptions": 55,
+        "yards": 711,
+        "tds": 8
+      },
+      {
+        "name": "Will Dissly",
+        "pos": "TE",
+        "targets": 64,
+        "receptions": 50,
+        "yards": 481,
+        "tds": 2
+      },
+      {
+        "name": "Josh Palmer",
+        "pos": "WR",
+        "targets": 65,
+        "receptions": 39,
+        "yards": 584,
+        "tds": 1
+      },
+      {
+        "name": "J.K. Dobbins",
+        "pos": "RB",
+        "targets": 38,
+        "receptions": 32,
+        "yards": 153,
+        "tds": 0
+      }
+    ]
+  },
+  {
+    "abbr": "LA",
+    "name": "Los Angeles Rams",
+    "color": "#003594",
+    "accent": "#FFA300",
+    "qb": {
+      "name": "Matthew Stafford",
+      "attempts": 517,
+      "completions": 340,
+      "yards": 3762,
+      "tds": 20
+    },
+    "receivers": [
+      {
+        "name": "Puka Nacua",
+        "pos": "WR",
+        "targets": 106,
+        "receptions": 79,
+        "yards": 990,
+        "tds": 3
+      },
+      {
+        "name": "Cooper Kupp",
+        "pos": "WR",
+        "targets": 100,
+        "receptions": 67,
+        "yards": 710,
+        "tds": 6
+      },
+      {
+        "name": "Tutu Atwell",
+        "pos": "WR",
+        "targets": 62,
+        "receptions": 42,
+        "yards": 562,
+        "tds": 0
+      },
+      {
+        "name": "Kyren Williams",
+        "pos": "RB",
+        "targets": 40,
+        "receptions": 34,
+        "yards": 182,
+        "tds": 2
+      },
+      {
+        "name": "Demarcus Robinson",
+        "pos": "WR",
+        "targets": 64,
+        "receptions": 31,
+        "yards": 505,
+        "tds": 7
+      }
+    ]
+  },
+  {
+    "abbr": "MIA",
+    "name": "Miami Dolphins",
+    "color": "#008E97",
+    "accent": "#FC4C02",
+    "qb": {
+      "name": "Tua Tagovailoa",
+      "attempts": 399,
+      "completions": 291,
+      "yards": 2867,
+      "tds": 19
+    },
+    "receivers": [
+      {
+        "name": "Jonnu Smith",
+        "pos": "TE",
+        "targets": 111,
+        "receptions": 88,
+        "yards": 884,
+        "tds": 8
+      },
+      {
+        "name": "Tyreek Hill",
+        "pos": "WR",
+        "targets": 122,
+        "receptions": 81,
+        "yards": 959,
+        "tds": 6
+      },
+      {
+        "name": "Devon Achane",
+        "pos": "RB",
+        "targets": 87,
+        "receptions": 78,
+        "yards": 592,
+        "tds": 6
+      },
+      {
+        "name": "Jaylen Waddle",
+        "pos": "WR",
+        "targets": 83,
+        "receptions": 58,
+        "yards": 744,
+        "tds": 2
+      },
+      {
+        "name": "Malik Washington",
+        "pos": "WR",
+        "targets": 36,
+        "receptions": 26,
+        "yards": 223,
+        "tds": 0
+      }
+    ]
+  },
+  {
+    "abbr": "MIN",
+    "name": "Minnesota Vikings",
+    "color": "#4F2683",
+    "accent": "#FFC62F",
+    "qb": {
+      "name": "Sam Darnold",
+      "attempts": 545,
+      "completions": 361,
+      "yards": 4319,
+      "tds": 35
+    },
+    "receivers": [
+      {
+        "name": "Justin Jefferson",
+        "pos": "WR",
+        "targets": 154,
+        "receptions": 103,
+        "yards": 1533,
+        "tds": 10
+      },
+      {
+        "name": "Jordan Addison",
+        "pos": "WR",
+        "targets": 99,
+        "receptions": 63,
+        "yards": 875,
+        "tds": 9
+      },
+      {
+        "name": "Aaron Jones",
+        "pos": "RB",
+        "targets": 62,
+        "receptions": 51,
+        "yards": 408,
+        "tds": 2
+      },
+      {
+        "name": "T.J. Hockenson",
+        "pos": "TE",
+        "targets": 62,
+        "receptions": 41,
+        "yards": 455,
+        "tds": 0
+      },
+      {
+        "name": "Jalen Nailor",
+        "pos": "WR",
+        "targets": 42,
+        "receptions": 28,
+        "yards": 414,
+        "tds": 6
+      }
+    ]
+  },
+  {
+    "abbr": "NE",
+    "name": "New England Patriots",
+    "color": "#002244",
+    "accent": "#C60C30",
+    "qb": {
+      "name": "Drake Maye",
+      "attempts": 338,
+      "completions": 225,
+      "yards": 2276,
+      "tds": 15
+    },
+    "receivers": [
+      {
+        "name": "Hunter Henry",
+        "pos": "TE",
+        "targets": 97,
+        "receptions": 66,
+        "yards": 674,
+        "tds": 2
+      },
+      {
+        "name": "Demario Douglas",
+        "pos": "WR",
+        "targets": 87,
+        "receptions": 66,
+        "yards": 621,
+        "tds": 3
+      },
+      {
+        "name": "Austin Hooper",
+        "pos": "TE",
+        "targets": 59,
+        "receptions": 45,
+        "yards": 476,
+        "tds": 3
+      },
+      {
+        "name": "Kayshon Boutte",
+        "pos": "WR",
+        "targets": 68,
+        "receptions": 43,
+        "yards": 589,
+        "tds": 3
+      },
+      {
+        "name": "Rhamondre Stevenson",
+        "pos": "RB",
+        "targets": 41,
+        "receptions": 33,
+        "yards": 168,
+        "tds": 1
+      }
+    ]
+  },
+  {
+    "abbr": "NO",
+    "name": "New Orleans Saints",
+    "color": "#D3BC8D",
+    "accent": "#101820",
+    "qb": {
+      "name": "Derek Carr",
+      "attempts": 279,
+      "completions": 189,
+      "yards": 2145,
+      "tds": 15
+    },
+    "receivers": [
+      {
+        "name": "Alvin Kamara",
+        "pos": "RB",
+        "targets": 89,
+        "receptions": 68,
+        "yards": 543,
+        "tds": 2
+      },
+      {
+        "name": "Juwan Johnson",
+        "pos": "TE",
+        "targets": 66,
+        "receptions": 50,
+        "yards": 548,
+        "tds": 3
+      },
+      {
+        "name": "Foster Moreau",
+        "pos": "TE",
+        "targets": 43,
+        "receptions": 32,
+        "yards": 413,
+        "tds": 5
+      },
+      {
+        "name": "Chris Olave",
+        "pos": "WR",
+        "targets": 44,
+        "receptions": 32,
+        "yards": 400,
+        "tds": 1
+      },
+      {
+        "name": "Taysom Hill",
+        "pos": "TE",
+        "targets": 31,
+        "receptions": 23,
+        "yards": 187,
+        "tds": 0
+      }
+    ]
+  },
+  {
+    "abbr": "NYG",
+    "name": "New York Giants",
+    "color": "#0B2265",
+    "accent": "#A71930",
+    "qb": {
+      "name": "Daniel Jones",
+      "attempts": 341,
+      "completions": 216,
+      "yards": 2070,
+      "tds": 8
+    },
+    "receivers": [
+      {
+        "name": "Malik Nabers",
+        "pos": "WR",
+        "targets": 170,
+        "receptions": 109,
+        "yards": 1204,
+        "tds": 7
+      },
+      {
+        "name": "Wan'Dale Robinson",
+        "pos": "WR",
+        "targets": 140,
+        "receptions": 93,
+        "yards": 699,
+        "tds": 3
+      },
+      {
+        "name": "Darius Slayton",
+        "pos": "WR",
+        "targets": 71,
+        "receptions": 39,
+        "yards": 573,
+        "tds": 2
+      },
+      {
+        "name": "Tyrone Tracy",
+        "pos": "RB",
+        "targets": 53,
+        "receptions": 38,
+        "yards": 284,
+        "tds": 1
+      },
+      {
+        "name": "Theo Johnson",
+        "pos": "TE",
+        "targets": 43,
+        "receptions": 29,
+        "yards": 331,
+        "tds": 1
+      }
+    ]
+  },
+  {
+    "abbr": "NYJ",
+    "name": "New York Jets",
+    "color": "#125740",
+    "accent": "#000000",
+    "qb": {
+      "name": "Aaron Rodgers",
+      "attempts": 584,
+      "completions": 368,
+      "yards": 3897,
+      "tds": 28
+    },
+    "receivers": [
+      {
+        "name": "Garrett Wilson",
+        "pos": "WR",
+        "targets": 153,
+        "receptions": 101,
+        "yards": 1104,
+        "tds": 7
+      },
+      {
+        "name": "Davante Adams",
+        "pos": "WR",
+        "targets": 141,
+        "receptions": 85,
+        "yards": 1063,
+        "tds": 8
+      },
+      {
+        "name": "Breece Hall",
+        "pos": "RB",
+        "targets": 76,
+        "receptions": 57,
+        "yards": 483,
+        "tds": 3
+      },
+      {
+        "name": "Tyler Conklin",
+        "pos": "TE",
+        "targets": 72,
+        "receptions": 51,
+        "yards": 449,
+        "tds": 4
+      },
+      {
+        "name": "Allen Lazard",
+        "pos": "WR",
+        "targets": 61,
+        "receptions": 37,
+        "yards": 530,
+        "tds": 6
+      }
+    ]
+  },
+  {
+    "abbr": "PHI",
+    "name": "Philadelphia Eagles",
+    "color": "#004C54",
+    "accent": "#A5ACAF",
+    "qb": {
+      "name": "Jalen Hurts",
+      "attempts": 361,
+      "completions": 248,
+      "yards": 2903,
+      "tds": 18
+    },
+    "receivers": [
+      {
+        "name": "DeVonta Smith",
+        "pos": "WR",
+        "targets": 89,
+        "receptions": 68,
+        "yards": 833,
+        "tds": 8
+      },
+      {
+        "name": "A.J. Brown",
+        "pos": "WR",
+        "targets": 97,
+        "receptions": 67,
+        "yards": 1079,
+        "tds": 7
+      },
+      {
+        "name": "Dallas Goedert",
+        "pos": "TE",
+        "targets": 52,
+        "receptions": 42,
+        "yards": 496,
+        "tds": 2
+      },
+      {
+        "name": "Saquon Barkley",
+        "pos": "RB",
+        "targets": 43,
+        "receptions": 33,
+        "yards": 278,
+        "tds": 2
+      },
+      {
+        "name": "Grant Calcaterra",
+        "pos": "TE",
+        "targets": 30,
+        "receptions": 24,
+        "yards": 298,
+        "tds": 1
+      }
+    ]
+  },
+  {
+    "abbr": "PIT",
+    "name": "Pittsburgh Steelers",
+    "color": "#FFB612",
+    "accent": "#101820",
+    "qb": {
+      "name": "Russell Wilson",
+      "attempts": 336,
+      "completions": 214,
+      "yards": 2482,
+      "tds": 16
+    },
+    "receivers": [
+      {
+        "name": "Pat Freiermuth",
+        "pos": "TE",
+        "targets": 78,
+        "receptions": 65,
+        "yards": 653,
+        "tds": 7
+      },
+      {
+        "name": "George Pickens",
+        "pos": "WR",
+        "targets": 103,
+        "receptions": 59,
+        "yards": 900,
+        "tds": 3
+      },
+      {
+        "name": "Jaylen Warren",
+        "pos": "RB",
+        "targets": 47,
+        "receptions": 38,
+        "yards": 310,
+        "tds": 0
+      },
+      {
+        "name": "Najee Harris",
+        "pos": "RB",
+        "targets": 48,
+        "receptions": 36,
+        "yards": 283,
+        "tds": 0
+      },
+      {
+        "name": "Calvin Austin",
+        "pos": "WR",
+        "targets": 58,
+        "receptions": 36,
+        "yards": 548,
+        "tds": 4
+      }
+    ]
+  },
+  {
+    "abbr": "SF",
+    "name": "San Francisco 49ers",
+    "color": "#AA0000",
+    "accent": "#B3995D",
+    "qb": {
+      "name": "Brock Purdy",
+      "attempts": 455,
+      "completions": 300,
+      "yards": 3864,
+      "tds": 20
+    },
+    "receivers": [
+      {
+        "name": "George Kittle",
+        "pos": "TE",
+        "targets": 94,
+        "receptions": 78,
+        "yards": 1106,
+        "tds": 8
+      },
+      {
+        "name": "Jauan Jennings",
+        "pos": "WR",
+        "targets": 113,
+        "receptions": 77,
+        "yards": 975,
+        "tds": 6
+      },
+      {
+        "name": "Deebo Samuel",
+        "pos": "WR",
+        "targets": 81,
+        "receptions": 51,
+        "yards": 670,
+        "tds": 3
+      },
+      {
+        "name": "Ricky Pearsall",
+        "pos": "WR",
+        "targets": 46,
+        "receptions": 31,
+        "yards": 400,
+        "tds": 3
+      },
+      {
+        "name": "Brandon Aiyuk",
+        "pos": "WR",
+        "targets": 47,
+        "receptions": 25,
+        "yards": 374,
+        "tds": 0
+      }
+    ]
+  },
+  {
+    "abbr": "SEA",
+    "name": "Seattle Seahawks",
+    "color": "#002244",
+    "accent": "#69BE28",
+    "qb": {
+      "name": "Geno Smith",
+      "attempts": 578,
+      "completions": 407,
+      "yards": 4320,
+      "tds": 21
+    },
+    "receivers": [
+      {
+        "name": "Jaxon Smith-Njigba",
+        "pos": "WR",
+        "targets": 137,
+        "receptions": 100,
+        "yards": 1130,
+        "tds": 6
+      },
+      {
+        "name": "DK Metcalf",
+        "pos": "WR",
+        "targets": 108,
+        "receptions": 66,
+        "yards": 992,
+        "tds": 5
+      },
+      {
+        "name": "Tyler Lockett",
+        "pos": "WR",
+        "targets": 74,
+        "receptions": 49,
+        "yards": 600,
+        "tds": 2
+      },
+      {
+        "name": "Noah Fant",
+        "pos": "TE",
+        "targets": 64,
+        "receptions": 48,
+        "yards": 500,
+        "tds": 1
+      },
+      {
+        "name": "Kenneth Walker",
+        "pos": "RB",
+        "targets": 53,
+        "receptions": 46,
+        "yards": 299,
+        "tds": 1
+      }
+    ]
+  },
+  {
+    "abbr": "TB",
+    "name": "Tampa Bay Buccaneers",
+    "color": "#D50A0A",
+    "accent": "#FF7900",
+    "qb": {
+      "name": "Baker Mayfield",
+      "attempts": 570,
+      "completions": 407,
+      "yards": 4500,
+      "tds": 41
+    },
+    "receivers": [
+      {
+        "name": "Mike Evans",
+        "pos": "WR",
+        "targets": 110,
+        "receptions": 74,
+        "yards": 1004,
+        "tds": 11
+      },
+      {
+        "name": "Cade Otton",
+        "pos": "TE",
+        "targets": 87,
+        "receptions": 59,
+        "yards": 600,
+        "tds": 4
+      },
+      {
+        "name": "Rachaad White",
+        "pos": "RB",
+        "targets": 57,
+        "receptions": 51,
+        "yards": 393,
+        "tds": 6
+      },
+      {
+        "name": "Chris Godwin",
+        "pos": "WR",
+        "targets": 62,
+        "receptions": 50,
+        "yards": 576,
+        "tds": 5
+      },
+      {
+        "name": "Bucky Irving",
+        "pos": "RB",
+        "targets": 52,
+        "receptions": 47,
+        "yards": 392,
+        "tds": 0
+      }
+    ]
+  },
+  {
+    "abbr": "TEN",
+    "name": "Tennessee Titans",
+    "color": "#0C2340",
+    "accent": "#4B92DB",
+    "qb": {
+      "name": "Will Levis",
+      "attempts": 301,
+      "completions": 190,
+      "yards": 2091,
+      "tds": 13
+    },
+    "receivers": [
+      {
+        "name": "Calvin Ridley",
+        "pos": "WR",
+        "targets": 120,
+        "receptions": 64,
+        "yards": 1017,
+        "tds": 4
+      },
+      {
+        "name": "Chigoziem Okonkwo",
+        "pos": "TE",
+        "targets": 70,
+        "receptions": 52,
+        "yards": 479,
+        "tds": 2
+      },
+      {
+        "name": "Tony Pollard",
+        "pos": "RB",
+        "targets": 57,
+        "receptions": 41,
+        "yards": 238,
+        "tds": 0
+      },
+      {
+        "name": "Tyler Boyd",
+        "pos": "WR",
+        "targets": 57,
+        "receptions": 39,
+        "yards": 390,
+        "tds": 0
+      },
+      {
+        "name": "Nick Westbrook-Ikhine",
+        "pos": "WR",
+        "targets": 60,
+        "receptions": 32,
+        "yards": 497,
+        "tds": 9
+      }
+    ]
+  },
+  {
+    "abbr": "WAS",
+    "name": "Washington Commanders",
+    "color": "#5A1414",
+    "accent": "#FFB612",
+    "qb": {
+      "name": "Jayden Daniels",
+      "attempts": 480,
+      "completions": 331,
+      "yards": 3568,
+      "tds": 25
+    },
+    "receivers": [
+      {
+        "name": "Terry McLaurin",
+        "pos": "WR",
+        "targets": 117,
+        "receptions": 82,
+        "yards": 1096,
+        "tds": 13
+      },
+      {
+        "name": "Zach Ertz",
+        "pos": "TE",
+        "targets": 91,
+        "receptions": 66,
+        "yards": 654,
+        "tds": 7
+      },
+      {
+        "name": "Olamide Zaccheaus",
+        "pos": "WR",
+        "targets": 64,
+        "receptions": 45,
+        "yards": 506,
+        "tds": 3
+      },
+      {
+        "name": "Noah Brown",
+        "pos": "WR",
+        "targets": 56,
+        "receptions": 35,
+        "yards": 453,
+        "tds": 1
+      },
+      {
+        "name": "Austin Ekeler",
+        "pos": "RB",
+        "targets": 41,
+        "receptions": 35,
+        "yards": 366,
+        "tds": 0
+      }
+    ]
+  }
+]

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Society</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 4px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        #canvas {
+            background: #0a0a0a;
+            flex: 1;
+            max-height: calc(100vh - 220px);
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .play-btn {
+            background: linear-gradient(90deg, #3B82F6, #EF4444);
+            color: white;
+        }
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.5);
+        }
+        .reset-btn {
+            background: #222;
+            color: #666;
+        }
+        .reset-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+        .stats {
+            display: flex;
+            gap: 40px;
+            margin-top: 10px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-value.blue { color: #3B82F6; }
+        .stat-value.center { color: #8B5CF6; }
+        .stat-value.red { color: #EF4444; }
+        .stat-value.noise { color: #F59E0B; }
+        .insight {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Society</h1>
+    <p class="subtitle">The quiet center. The screaming edges.</p>
+
+    <svg id="canvas"></svg>
+
+    <div class="controls">
+        <button class="play-btn" id="playBtn">▶ Turn On the Noise</button>
+        <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value blue" id="blueEdge">5%</div>
+            <div class="stat-label">Far Left (Loud)</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value center" id="quietCenter">90%</div>
+            <div class="stat-label">The Quiet Middle</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value red" id="redEdge">5%</div>
+            <div class="stat-label">Far Right (Loud)</div>
+        </div>
+    </div>
+
+    <div class="insight">
+        <p><strong>What you're seeing:</strong> 500 people arranged by ideology. The center is purple — mixed views, nuanced, quiet. The edges are pure blue and pure red — extreme, loud, pulsing. Click to see who dominates the conversation.</p>
+    </div>
+
+    <script>
+        // Responsive sizing
+        const availableHeight = window.innerHeight - 200;
+        const availableWidth = window.innerWidth - 40;
+        const size = Math.min(availableHeight, availableWidth, 700);
+
+        const width = size;
+        const height = size;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const maxRadius = (size / 2) - 30;
+        const numPeople = 500;
+
+        const svg = d3.select('#canvas')
+            .attr('width', width)
+            .attr('height', height);
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Create people
+        // Position based on ideology: angle determines left/right, distance from center = extremity
+        let people = [];
+
+        for (let i = 0; i < numPeople; i++) {
+            // Most people are near center, fewer at edges (normal distribution for distance)
+            let distance = Math.abs(d3.randomNormal(0, maxRadius * 0.35)());
+            distance = Math.min(distance, maxRadius - 10);
+
+            // Angle: left side = blue, right side = red
+            const angle = Math.random() * Math.PI * 2;
+
+            // Determine ideology based on position
+            // Left half = more blue, right half = more red
+            // Edge = more extreme
+            const x = centerX + Math.cos(angle) * distance;
+            const y = centerY + Math.sin(angle) * distance;
+
+            const normalizedX = (x - centerX) / maxRadius; // -1 to 1
+            const edgeness = distance / maxRadius; // 0 to 1
+
+            // Color: center is purple, edges are pure blue or red
+            let color;
+            if (normalizedX < -0.1) {
+                // Left side - blue
+                color = d3.interpolateRgb('#8B5CF6', '#1E40AF')(edgeness);
+            } else if (normalizedX > 0.1) {
+                // Right side - red
+                color = d3.interpolateRgb('#8B5CF6', '#991B1B')(edgeness);
+            } else {
+                // Center - purple
+                color = '#8B5CF6';
+            }
+
+            people.push({
+                id: i,
+                x: x,
+                y: y,
+                angle: angle,
+                distance: distance,
+                edgeness: edgeness,
+                normalizedX: normalizedX,
+                color: color,
+                baseRadius: 4,
+                radius: 4,
+                baseOpacity: 0.7,
+                opacity: 0.7,
+                pulsePhase: Math.random() * Math.PI * 2,
+                isEdge: edgeness > 0.7,
+                side: normalizedX < 0 ? 'left' : 'right'
+            });
+        }
+
+        // Draw center glow
+        const centerGlow = svg.append('circle')
+            .attr('cx', centerX)
+            .attr('cy', centerY)
+            .attr('r', 60)
+            .attr('fill', 'url(#centerGradient)')
+            .attr('opacity', 0.8);
+
+        // Gradient for center
+        const defs = svg.append('defs');
+        const gradient = defs.append('radialGradient')
+            .attr('id', 'centerGradient');
+        gradient.append('stop').attr('offset', '0%').attr('stop-color', '#F59E0B');
+        gradient.append('stop').attr('offset', '100%').attr('stop-color', 'transparent');
+
+        // Center label
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', centerY + 5)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '14px')
+            .attr('font-weight', 'bold')
+            .attr('opacity', 0.9)
+            .text('CENTER');
+
+        // Draw boundary
+        svg.append('circle')
+            .attr('cx', centerX)
+            .attr('cy', centerY)
+            .attr('r', maxRadius)
+            .attr('fill', 'none')
+            .attr('stroke', '#333')
+            .attr('stroke-width', 1);
+
+        // Draw people
+        const circles = svg.selectAll('.person')
+            .data(people)
+            .enter()
+            .append('circle')
+            .attr('class', 'person')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', d => d.radius)
+            .attr('fill', d => d.color)
+            .attr('opacity', d => d.opacity);
+
+        // Edge labels
+        svg.append('text')
+            .attr('x', centerX - maxRadius + 30)
+            .attr('y', centerY)
+            .attr('text-anchor', 'start')
+            .attr('fill', '#3B82F6')
+            .attr('font-size', '12px')
+            .attr('opacity', 0.6)
+            .text('← FAR LEFT');
+
+        svg.append('text')
+            .attr('x', centerX + maxRadius - 30)
+            .attr('y', centerY)
+            .attr('text-anchor', 'end')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '12px')
+            .attr('opacity', 0.6)
+            .text('FAR RIGHT →');
+
+        let isPlaying = false;
+        let animationFrame = null;
+
+        function updateStats() {
+            const leftEdge = people.filter(p => p.isEdge && p.side === 'left').length;
+            const rightEdge = people.filter(p => p.isEdge && p.side === 'right').length;
+            const center = people.length - leftEdge - rightEdge;
+
+            document.getElementById('blueEdge').textContent = Math.round(leftEdge / people.length * 100) + '%';
+            document.getElementById('redEdge').textContent = Math.round(rightEdge / people.length * 100) + '%';
+            document.getElementById('quietCenter').textContent = Math.round(center / people.length * 100) + '%';
+        }
+
+        let tick = 0;
+
+        function animate() {
+            tick++;
+
+            people.forEach(p => {
+                if (p.isEdge) {
+                    // Edge people pulse and grow
+                    p.pulsePhase += 0.15;
+                    p.radius = p.baseRadius + 6 + Math.sin(p.pulsePhase) * 4;
+                    p.opacity = 0.9;
+                } else {
+                    // Center people shrink and fade
+                    p.radius = Math.max(1.5, p.baseRadius - tick * 0.05);
+                    p.opacity = Math.max(0.15, p.baseOpacity - tick * 0.015);
+                }
+            });
+
+            circles
+                .attr('r', d => d.radius)
+                .attr('opacity', d => d.opacity);
+
+            // Center glow fades
+            centerGlow.attr('opacity', Math.max(0.1, 0.8 - tick * 0.02));
+
+            if (tick < 40) {
+                animationFrame = requestAnimationFrame(animate);
+            } else {
+                isPlaying = false;
+                playBtn.textContent = '▶ Play Again';
+            }
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) return;
+
+            if (tick >= 40) {
+                reset();
+                setTimeout(() => {
+                    isPlaying = true;
+                    playBtn.textContent = 'The edges take over...';
+                    animate();
+                }, 500);
+            } else {
+                isPlaying = true;
+                playBtn.textContent = 'The edges take over...';
+                animate();
+            }
+        });
+
+        function reset() {
+            isPlaying = false;
+            cancelAnimationFrame(animationFrame);
+            tick = 0;
+
+            people.forEach(p => {
+                p.radius = p.baseRadius;
+                p.opacity = p.baseOpacity;
+            });
+
+            circles
+                .transition()
+                .duration(500)
+                .attr('r', d => d.radius)
+                .attr('opacity', d => d.opacity);
+
+            centerGlow
+                .transition()
+                .duration(500)
+                .attr('opacity', 0.8);
+
+            playBtn.textContent = '▶ Turn On the Noise';
+        }
+
+        resetBtn.addEventListener('click', reset);
+        updateStats();
+    </script>
+</body>
+</html>

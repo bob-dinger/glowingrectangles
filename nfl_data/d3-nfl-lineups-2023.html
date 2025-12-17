@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Team Lineups - 2023</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .control-group label {
+            font-size: 12px;
+            color: #888;
+        }
+        select {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .field-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .field {
+            background: linear-gradient(to bottom, #1a472a 0%, #1a472a 49%, #fff 49%, #fff 51%, #1a472a 51%, #1a472a 100%);
+            border: 3px solid #fff;
+            border-radius: 4px;
+            position: relative;
+        }
+        .side-label {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            font-weight: bold;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 2px;
+        }
+        .tooltip {
+            position: fixed;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid #444;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 1000;
+        }
+        .tooltip .name {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .tooltip .details {
+            color: #aaa;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 15px 0;
+            font-size: 11px;
+            color: #888;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .team-info {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .team-name {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .formation-info {
+            color: #888;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>NFL Team Lineups</h1>
+    <p class="subtitle">2023 Season — Most common starters by snap count</p>
+    <div class="controls">
+        <div class="control-group">
+            <label>Team</label>
+            <select id="team-select"></select>
+        </div>
+    </div>
+    <div class="team-info" id="team-info"></div>
+    <div class="legend">
+        <div class="legend-item">
+            <svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="#3b82f6"/></svg>
+            <span>Offense</span>
+        </div>
+        <div class="legend-item">
+            <svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="#ef4444"/></svg>
+            <span>Defense</span>
+        </div>
+    </div>
+    <div class="field-container" id="field-container"></div>
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        let data = null;
+        const tooltip = document.getElementById('tooltip');
+
+        // Team full names
+        const teamNames = {
+            'ARI': 'Arizona Cardinals', 'ATL': 'Atlanta Falcons', 'BAL': 'Baltimore Ravens',
+            'BUF': 'Buffalo Bills', 'CAR': 'Carolina Panthers', 'CHI': 'Chicago Bears',
+            'CIN': 'Cincinnati Bengals', 'CLE': 'Cleveland Browns', 'DAL': 'Dallas Cowboys',
+            'DEN': 'Denver Broncos', 'DET': 'Detroit Lions', 'GB': 'Green Bay Packers',
+            'HOU': 'Houston Texans', 'IND': 'Indianapolis Colts', 'JAX': 'Jacksonville Jaguars',
+            'KC': 'Kansas City Chiefs', 'LAC': 'Los Angeles Chargers', 'LA': 'Los Angeles Rams',
+            'LV': 'Las Vegas Raiders', 'MIA': 'Miami Dolphins', 'MIN': 'Minnesota Vikings',
+            'NE': 'New England Patriots', 'NO': 'New Orleans Saints', 'NYG': 'New York Giants',
+            'NYJ': 'New York Jets', 'PHI': 'Philadelphia Eagles', 'PIT': 'Pittsburgh Steelers',
+            'SF': 'San Francisco 49ers', 'SEA': 'Seattle Seahawks', 'TB': 'Tampa Bay Buccaneers',
+            'TEN': 'Tennessee Titans', 'WAS': 'Washington Commanders'
+        };
+
+        // Position coordinates on the field (x: 0-100, y: 0-100)
+        // Offense on bottom half, Defense on top half
+        const offensePositions = {
+            // O-Line: 5 in a row, tight together at line of scrimmage
+            'C':  { x: 50, y: 58 },
+            'G':  [{ x: 42, y: 58 }, { x: 58, y: 58 }],
+            'T':  [{ x: 34, y: 58 }, { x: 66, y: 58 }],
+            // Backfield
+            'QB': { x: 50, y: 70 },
+            'RB': [{ x: 50, y: 80 }, { x: 42, y: 78 }],
+            'FB': { x: 50, y: 72 },
+            // Receivers spread out from the line
+            'WR': [{ x: 10, y: 55 }, { x: 90, y: 55 }, { x: 15, y: 62 }],
+            'TE': [{ x: 26, y: 58 }, { x: 74, y: 58 }]
+        };
+
+        const defensePositions = {
+            // Level 3 (bottom) - Defensive line at line of scrimmage
+            'DE': [{ x: 25, y: 42 }, { x: 75, y: 42 }],
+            'DT': [{ x: 40, y: 42 }, { x: 60, y: 42 }],
+            'NT': { x: 50, y: 42 },
+            // Level 2 (middle) - Linebackers
+            'OLB': [{ x: 18, y: 28 }, { x: 82, y: 28 }],
+            'ILB': [{ x: 40, y: 28 }, { x: 60, y: 28 }],
+            'MLB': { x: 50, y: 28 },
+            // Level 1 (top) - Secondary/DBs
+            'CB': [{ x: 12, y: 12 }, { x: 88, y: 12 }],
+            'FS': { x: 50, y: 8 },
+            'SS': { x: 65, y: 12 }
+        };
+
+        // Load data
+        fetch('lineups_2023.json')
+            .then(res => res.json())
+            .then(json => {
+                data = json;
+
+                // Populate team dropdown
+                const teams = Object.keys(data.teams).sort();
+                const teamSelect = document.getElementById('team-select');
+                teams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team;
+                    option.textContent = `${team} - ${teamNames[team] || team}`;
+                    if (team === 'KC') option.selected = true;
+                    teamSelect.appendChild(option);
+                });
+
+                // Initial render
+                renderTeam('KC');
+
+                teamSelect.addEventListener('change', (e) => {
+                    renderTeam(e.target.value);
+                });
+            });
+
+        function renderTeam(teamCode) {
+            const team = data.teams[teamCode];
+            if (!team) return;
+
+            // Update team info
+            document.getElementById('team-info').innerHTML = `
+                <div class="team-name">${teamNames[teamCode] || teamCode}</div>
+                <div class="formation-info">
+                    Primary Formation: ${team.top_formation ? team.top_formation.name : 'N/A'}
+                </div>
+            `;
+
+            const container = document.getElementById('field-container');
+            container.innerHTML = '';
+
+            const width = 700;
+            const height = 500;
+            const padding = 40;
+
+            const svg = d3.select(container)
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Field background
+            const field = svg.append('g');
+
+            // Green field
+            field.append('rect')
+                .attr('x', padding)
+                .attr('y', padding)
+                .attr('width', width - padding * 2)
+                .attr('height', height - padding * 2)
+                .attr('fill', '#1a472a')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2)
+                .attr('rx', 4);
+
+            // Line of scrimmage
+            field.append('line')
+                .attr('x1', padding)
+                .attr('x2', width - padding)
+                .attr('y1', height / 2)
+                .attr('y2', height / 2)
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
+
+            // Yard lines (faint)
+            [25, 75].forEach(pct => {
+                const y = padding + (height - padding * 2) * (pct / 100);
+                field.append('line')
+                    .attr('x1', padding)
+                    .attr('x2', width - padding)
+                    .attr('y1', y)
+                    .attr('y2', y)
+                    .attr('stroke', 'rgba(255,255,255,0.2)')
+                    .attr('stroke-width', 1)
+                    .attr('stroke-dasharray', '5,5');
+            });
+
+            // Side labels
+            svg.append('text')
+                .attr('x', width / 2)
+                .attr('y', padding + 20)
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'rgba(255,255,255,0.3)')
+                .attr('font-size', '12px')
+                .attr('letter-spacing', '3px')
+                .text('DEFENSE');
+
+            svg.append('text')
+                .attr('x', width / 2)
+                .attr('y', height - padding - 10)
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'rgba(255,255,255,0.3)')
+                .attr('font-size', '12px')
+                .attr('letter-spacing', '3px')
+                .text('OFFENSE');
+
+            // Scale functions
+            const xScale = (pct) => padding + (width - padding * 2) * (pct / 100);
+            const yScale = (pct) => padding + (height - padding * 2) * (pct / 100);
+
+            // Draw offense players
+            const usedOffPositions = {};
+            Object.entries(team.offense).forEach(([pos, players]) => {
+                if (!offensePositions[pos] || players.length === 0) return;
+                // Skip non-skill positions that shouldn't be on field
+                if (['CB', 'FS', 'SS', 'ILB', 'OLB', 'DE', 'DT', 'NT', 'MLB'].includes(pos)) return;
+
+                const positions = Array.isArray(offensePositions[pos])
+                    ? offensePositions[pos]
+                    : [offensePositions[pos]];
+
+                players.slice(0, positions.length).forEach((player, i) => {
+                    const posKey = `${pos}_${i}`;
+                    if (usedOffPositions[posKey]) return;
+                    usedOffPositions[posKey] = true;
+
+                    const coords = positions[i];
+                    const x = xScale(coords.x);
+                    const y = yScale(coords.y);
+
+                    drawPlayer(svg, x, y, player, pos, '#3b82f6', team.offense[pos].length > 1 ? i + 1 : null);
+                });
+            });
+
+            // Draw defense players
+            const usedDefPositions = {};
+            Object.entries(team.defense).forEach(([pos, players]) => {
+                if (!defensePositions[pos] || players.length === 0) return;
+                // Skip offensive positions that shouldn't be on defense
+                if (['QB', 'RB', 'WR', 'TE', 'C', 'G', 'T', 'FB'].includes(pos)) return;
+
+                const positions = Array.isArray(defensePositions[pos])
+                    ? defensePositions[pos]
+                    : [defensePositions[pos]];
+
+                players.slice(0, positions.length).forEach((player, i) => {
+                    const posKey = `${pos}_${i}`;
+                    if (usedDefPositions[posKey]) return;
+                    usedDefPositions[posKey] = true;
+
+                    const coords = positions[i];
+                    const x = xScale(coords.x);
+                    const y = yScale(coords.y);
+
+                    drawPlayer(svg, x, y, player, pos, '#ef4444', team.defense[pos].length > 1 ? i + 1 : null);
+                });
+            });
+        }
+
+        function drawPlayer(svg, x, y, player, pos, color, index) {
+            const g = svg.append('g')
+                .style('cursor', 'pointer')
+                .on('mouseover', function(event) {
+                    tooltip.innerHTML = `
+                        <div class="name">#${player.number} ${player.name}</div>
+                        <div class="details">
+                            Position: ${pos}<br>
+                            Snaps: ${player.snaps.toLocaleString()}
+                        </div>
+                    `;
+                    tooltip.style.opacity = 1;
+                    tooltip.style.left = (event.clientX + 15) + 'px';
+                    tooltip.style.top = (event.clientY - 10) + 'px';
+                })
+                .on('mouseout', function() {
+                    tooltip.style.opacity = 0;
+                });
+
+            // Player dot
+            g.append('circle')
+                .attr('cx', x)
+                .attr('cy', y)
+                .attr('r', 18)
+                .attr('fill', color)
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
+
+            // Position label
+            g.append('text')
+                .attr('x', x)
+                .attr('y', y)
+                .attr('text-anchor', 'middle')
+                .attr('dy', '0.35em')
+                .attr('fill', '#fff')
+                .attr('font-size', '10px')
+                .attr('font-weight', 'bold')
+                .text(pos);
+
+            // Jersey number below
+            g.append('text')
+                .attr('x', x)
+                .attr('y', y + 28)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#fff')
+                .attr('font-size', '10px')
+                .text(`#${player.number}`);
+        }
+    </script>
+</body>
+</html>

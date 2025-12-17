@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ohio State: The Flow of Tuition</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 13px;
+            max-width: 800px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .insight {
+            color: #888;
+            font-size: 12px;
+            margin-top: 15px;
+            max-width: 700px;
+            text-align: center;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ohio State: 60,000 Students Flow Through One Office</h1>
+    <p class="description">
+        Every dot is a student. Every student pays tuition. It all flows to the center.
+    </p>
+
+    <div id="vis"></div>
+
+    <p class="insight">
+        60,000 individuals become a river. The institution persists. The students pass through.
+    </p>
+
+    <script>
+        const width = 900;
+        const height = 600;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const numStudents = 60000;
+        const studentRadius = 1.2;
+
+        // Students arranged in horizontal bands flowing toward center
+        const students = [];
+
+        // Create a funnel/hourglass shape - wide on left, narrow at center, wide on right
+        // Left side: incoming students
+        // Right side: graduating students
+        // Center: the institution (bottleneck)
+
+        const leftEdge = 50;
+        const rightEdge = width - 50;
+        const funnelCenter = centerX;
+        const funnelNarrow = 30; // narrowest point
+
+        for (let i = 0; i < numStudents; i++) {
+            // Distribute students across the width
+            const t = i / numStudents;
+
+            // X position: spread across width
+            const x = leftEdge + t * (rightEdge - leftEdge);
+
+            // Y position: funnel shape - wide at edges, narrow at center
+            const distFromCenter = Math.abs(x - funnelCenter) / (width / 2);
+            const maxSpread = 250; // max vertical spread at edges
+            const minSpread = funnelNarrow; // min spread at center
+            const spread = minSpread + (maxSpread - minSpread) * distFromCenter;
+
+            // Random within the spread
+            const y = centerY + (Math.random() - 0.5) * spread * 2;
+
+            students.push({ x, y });
+        }
+
+        // Draw students
+        svg.selectAll('.student')
+            .data(students)
+            .enter()
+            .append('circle')
+            .attr('class', 'student')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', studentRadius)
+            .attr('fill', '#EF4444')
+            .attr('opacity', 0.6);
+
+        // Draw the institution at center
+        svg.append('circle')
+            .attr('cx', centerX)
+            .attr('cy', centerY)
+            .attr('r', 35)
+            .attr('fill', '#10B981')
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2);
+
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', centerY - 3)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '9px')
+            .attr('font-weight', 'bold')
+            .text('THE');
+
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', centerY + 9)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '9px')
+            .attr('font-weight', 'bold')
+            .text('INSTITUTION');
+
+        // Labels
+        svg.append('text')
+            .attr('x', 80)
+            .attr('y', 40)
+            .attr('fill', '#EF4444')
+            .attr('font-size', '12px')
+            .text('← Students enter');
+
+        svg.append('text')
+            .attr('x', width - 80)
+            .attr('y', 40)
+            .attr('text-anchor', 'end')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '12px')
+            .text('Students exit →');
+
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', height - 20)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#666')
+            .attr('font-size', '10px')
+            .text('60,000 students (each dot = 1 person) · 1 institution · 1 year');
+    </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One Year of Overdose Deaths</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Georgia', serif;
+            background-color: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .description {
+            color: #888888;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 14px;
+            max-width: 700px;
+            line-height: 1.6;
+        }
+        .stat {
+            color: #8b5cf6;
+        }
+        #vis {
+            background-color: #050505;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+        .footnote {
+            color: #444;
+            font-size: 11px;
+            margin-top: 20px;
+            text-align: center;
+            max-width: 600px;
+        }
+        .callout {
+            color: #8b5cf6;
+            font-size: 18px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .context {
+            color: #666;
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>One Year of Overdose Deaths</h1>
+    <p class="description">
+        <span class="stat">105,040 Americans died from drug overdoses in 2023.</span><br>
+        Each dot is one person.
+    </p>
+    <svg id="vis"></svg>
+    <div class="callout">
+        Every dot was someone's child.
+    </div>
+    <div class="context">
+        That's more than the capacity of most NFL stadiums.<br>
+        More than died in the entire Vietnam War (58,220).
+    </div>
+    <div class="footnote">
+        Data: CDC 2023. Leading cause of death for Americans aged 18-44.
+    </div>
+
+    <script>
+        const deaths = 105040;
+        const dotRadius = 2;
+        const dotSpacing = 5; // center to center
+
+        // Calculate grid dimensions
+        const dotsPerRow = Math.ceil(Math.sqrt(deaths * 1.5)); // wider than tall
+        const rows = Math.ceil(deaths / dotsPerRow);
+
+        const padding = 20;
+        const width = dotsPerRow * dotSpacing + padding * 2;
+        const height = rows * dotSpacing + padding * 2;
+
+        const svg = document.getElementById('vis');
+        svg.setAttribute('width', width);
+        svg.setAttribute('height', height);
+
+        // Build all circles as a single string for performance
+        let circles = '';
+        for (let i = 0; i < deaths; i++) {
+            const col = i % dotsPerRow;
+            const row = Math.floor(i / dotsPerRow);
+            const x = padding + col * dotSpacing + dotSpacing / 2;
+            const y = padding + row * dotSpacing + dotSpacing / 2;
+
+            circles += `<circle cx="${x}" cy="${y}" r="${dotRadius}" fill="#8b5cf6" opacity="0.7"/>`;
+        }
+
+        svg.innerHTML = circles;
+    </script>
+</body>
+</html>

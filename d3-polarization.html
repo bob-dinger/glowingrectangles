@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Political Polarization: 1990 → 2024</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        #canvas {
+            background: #0a0a0a;
+            border-radius: 8px;
+        }
+        .year-display {
+            font-size: 72px;
+            font-weight: bold;
+            margin: 20px 0;
+            font-variant-numeric: tabular-nums;
+        }
+        .year-display .year {
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6, #EF4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .play-btn {
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+            color: white;
+        }
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+        .reset-btn {
+            background: #333;
+            color: #aaa;
+        }
+        .reset-btn:hover {
+            background: #444;
+            color: #fff;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 25px;
+            font-size: 13px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .info {
+            max-width: 700px;
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px 25px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .info p {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .info p:last-child {
+            margin-bottom: 0;
+        }
+        .info strong {
+            color: #aaa;
+        }
+        .axis-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 900px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #555;
+        }
+        .stats {
+            display: flex;
+            gap: 50px;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-value.left { color: #3B82F6; }
+        .stat-value.center { color: #8B5CF6; }
+        .stat-value.right { color: #EF4444; }
+    </style>
+</head>
+<body>
+    <h1>Political Polarization</h1>
+    <p class="subtitle">Watch the American electorate pull apart: 1990 → 2024</p>
+
+    <div class="year-display">
+        <span class="year" id="yearDisplay">1990</span>
+    </div>
+
+    <div class="controls">
+        <button class="play-btn" id="playBtn">▶ Play Animation</button>
+        <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <svg id="canvas" width="900" height="400"></svg>
+
+    <div class="axis-labels">
+        <span>← Far Left</span>
+        <span>Center</span>
+        <span>Far Right →</span>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value left" id="leftPct">15%</div>
+            <div class="stat-label">Solid Left</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value center" id="centerPct">70%</div>
+            <div class="stat-label">Middle</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value right" id="rightPct">15%</div>
+            <div class="stat-label">Solid Right</div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #3B82F6;"></div>
+            <span>Liberal</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #8B5CF6;"></div>
+            <span>Moderate</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #EF4444;"></div>
+            <span>Conservative</span>
+        </div>
+    </div>
+
+    <div class="info">
+        <p><strong>What you're seeing:</strong> Each circle represents ~2 million Americans. In 1990, everyone mingles together as purple moderates. Over time, identities reveal — circles turn blue or red, grow larger, and retreat to their sides. The few remaining purple circles shrink and fade.</p>
+        <p><strong>Data inspired by:</strong> Pew Research Center's Political Polarization studies (1994-2024), showing the median Democrat and Republican have moved further apart, with fewer people holding mixed ideological views.</p>
+    </div>
+
+    <script>
+        const width = 900;
+        const height = 400;
+        const numDots = 150;
+
+        const svg = d3.select('#canvas');
+        const yearDisplay = document.getElementById('yearDisplay');
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Create dots - all start purple and mingling in center
+        let dots = [];
+        for (let i = 0; i < numDots; i++) {
+            // Random assignment: ~48% go left, ~48% go right, ~4% stay center
+            const rand = Math.random();
+            let side;
+            if (rand < 0.48) side = 'left';
+            else if (rand < 0.96) side = 'right';
+            else side = 'center';
+
+            dots.push({
+                id: i,
+                side: side,
+                // Start position: random in center area
+                x: width/2 + (Math.random() - 0.5) * 300,
+                y: height/2 + (Math.random() - 0.5) * 250,
+                // Target position based on side
+                targetX: side === 'left' ? 100 + Math.random() * 200 :
+                         side === 'right' ? width - 300 + Math.random() * 200 :
+                         width/2 + (Math.random() - 0.5) * 100,
+                targetY: 50 + Math.random() * (height - 100),
+                baseRadius: 5
+            });
+        }
+
+        // Create dot elements - all start purple
+        const dotElements = svg.selectAll('circle')
+            .data(dots)
+            .enter()
+            .append('circle')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', 5)
+            .attr('fill', '#8B5CF6')
+            .attr('opacity', 0.8);
+
+        let currentYear = 1990;
+        let isPlaying = false;
+        let animationTimer = null;
+        let phase = 'mingling'; // mingling, revealing, separating
+
+        function updateStats(leftPct, centerPct, rightPct) {
+            document.getElementById('leftPct').textContent = leftPct + '%';
+            document.getElementById('centerPct').textContent = centerPct + '%';
+            document.getElementById('rightPct').textContent = rightPct + '%';
+        }
+
+        // Mingling animation - dots move around randomly
+        function mingle() {
+            dotElements
+                .transition()
+                .duration(800)
+                .ease(d3.easeLinear)
+                .attr('cx', d => {
+                    const newX = d.x + (Math.random() - 0.5) * 80;
+                    d.x = Math.max(150, Math.min(width - 150, newX));
+                    return d.x;
+                })
+                .attr('cy', d => {
+                    const newY = d.y + (Math.random() - 0.5) * 60;
+                    d.y = Math.max(50, Math.min(height - 50, newY));
+                    return d.y;
+                });
+        }
+
+        function animate() {
+            if (currentYear >= 2024) {
+                isPlaying = false;
+                playBtn.textContent = '▶ Play Again';
+                return;
+            }
+
+            currentYear++;
+            yearDisplay.textContent = currentYear;
+
+            const totalYears = 2024 - 1990;
+            const elapsed = currentYear - 1990;
+            const progress = elapsed / totalYears;
+
+            // Phase 1: 1990-2000 - Mingling, all purple
+            if (currentYear <= 2000) {
+                mingle();
+                updateStats(15, 70, 15);
+            }
+            // Phase 2: 2000-2008 - Colors start revealing, slight movement
+            else if (currentYear <= 2008) {
+                const colorProgress = (currentYear - 2000) / 8;
+
+                dotElements
+                    .transition()
+                    .duration(200)
+                    .attr('fill', d => {
+                        if (d.side === 'left') {
+                            return d3.interpolateRgb('#8B5CF6', '#3B82F6')(colorProgress);
+                        } else if (d.side === 'right') {
+                            return d3.interpolateRgb('#8B5CF6', '#EF4444')(colorProgress);
+                        }
+                        return '#8B5CF6';
+                    })
+                    .attr('r', d => 5 + colorProgress * 3)
+                    .attr('cx', d => {
+                        // Slight drift toward sides
+                        const drift = (d.targetX - d.x) * 0.1;
+                        d.x += drift;
+                        return d.x;
+                    })
+                    .attr('cy', d => {
+                        d.y += (Math.random() - 0.5) * 20;
+                        d.y = Math.max(50, Math.min(height - 50, d.y));
+                        return d.y;
+                    });
+
+                const leftPct = Math.round(15 + colorProgress * 15);
+                const rightPct = Math.round(15 + colorProgress * 15);
+                updateStats(leftPct, 100 - leftPct - rightPct, rightPct);
+            }
+            // Phase 3: 2008-2024 - Full separation, colors intensify, circles grow
+            else {
+                const sepProgress = (currentYear - 2008) / 16;
+
+                dotElements
+                    .transition()
+                    .duration(200)
+                    .attr('fill', d => {
+                        if (d.side === 'left') {
+                            return d3.interpolateRgb('#3B82F6', '#1E40AF')(sepProgress);
+                        } else if (d.side === 'right') {
+                            return d3.interpolateRgb('#EF4444', '#991B1B')(sepProgress);
+                        }
+                        return d3.interpolateRgb('#8B5CF6', '#6D28D9')(sepProgress);
+                    })
+                    .attr('r', d => {
+                        if (d.side === 'center') return 6;
+                        return 8 + sepProgress * 6; // Grow to 14px
+                    })
+                    .attr('cx', d => {
+                        // Accelerating movement to sides
+                        const drift = (d.targetX - d.x) * (0.15 + sepProgress * 0.2);
+                        d.x += drift;
+                        return d.x;
+                    })
+                    .attr('cy', d => {
+                        const drift = (d.targetY - d.y) * 0.1;
+                        d.y += drift;
+                        return d.y;
+                    })
+                    .attr('opacity', d => d.side === 'center' ? 0.5 : 0.85);
+
+                const leftPct = Math.round(30 + sepProgress * 18);
+                const rightPct = Math.round(30 + sepProgress * 18);
+                updateStats(leftPct, Math.max(4, 100 - leftPct - rightPct), rightPct);
+            }
+
+            animationTimer = setTimeout(animate, 200);
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                isPlaying = false;
+                clearTimeout(animationTimer);
+                playBtn.textContent = '▶ Resume';
+            } else {
+                if (currentYear >= 2024) {
+                    reset();
+                }
+                isPlaying = true;
+                playBtn.textContent = '⏸ Pause';
+                animate();
+            }
+        });
+
+        function reset() {
+            isPlaying = false;
+            clearTimeout(animationTimer);
+            currentYear = 1990;
+            yearDisplay.textContent = '1990';
+            playBtn.textContent = '▶ Play Animation';
+
+            // Reset positions to center, all purple
+            dots.forEach(d => {
+                d.x = width/2 + (Math.random() - 0.5) * 300;
+                d.y = height/2 + (Math.random() - 0.5) * 250;
+            });
+
+            dotElements
+                .transition()
+                .duration(800)
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', 5)
+                .attr('fill', '#8B5CF6')
+                .attr('opacity', 0.8);
+
+            updateStats(15, 70, 15);
+        }
+
+        resetBtn.addEventListener('click', reset);
+
+        // Initialize stats
+        updateStats(15, 70, 15);
+    </script>
+</body>
+</html>

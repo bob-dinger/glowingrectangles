@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One Child, 30 Minutes</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 13px;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .insight {
+            color: #888;
+            font-size: 12px;
+            margin-top: 20px;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.7;
+        }
+        .volunteer {
+            color: #F59E0B;
+        }
+    </style>
+</head>
+<body>
+    <h1>One Child, 30 Minutes of Undivided Attention</h1>
+    <p class="description">
+        Bubble area = individual attention received.<br>
+        One volunteer. One child. Once a week.
+    </p>
+
+    <div id="vis"></div>
+
+    <p class="insight">
+        <span class="volunteer">30 minutes of 1-on-1 reading</span> is more individual attention<br>
+        than most kids get in an entire week of school.
+    </p>
+
+    <script>
+        const width = 600;
+        const height = 600;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const numKids = 30;
+        const volunteerMinutes = 30;
+        const otherKidMinutes = 2; // their theoretical share from teacher
+
+        // Scale: area proportional to time
+        const scale = 14;
+        const focusedKidRadius = Math.sqrt(volunteerMinutes) * scale;
+        const otherKidRadius = Math.sqrt(otherKidMinutes) * scale;
+
+        // Create nodes
+        const nodes = [];
+
+        // The one child getting volunteer attention (center)
+        nodes.push({
+            id: 'focused-child',
+            type: 'focused',
+            radius: focusedKidRadius,
+            color: '#F59E0B',
+            fx: centerX,
+            fy: centerY
+        });
+
+        // The other 29 kids
+        for (let i = 0; i < numKids - 1; i++) {
+            nodes.push({
+                id: `kid-${i}`,
+                type: 'other',
+                radius: otherKidRadius,
+                color: '#3B82F6'
+            });
+        }
+
+        // Force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(-20))
+            .force('center', d3.forceCenter(centerX, centerY))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 4).strength(1))
+            .force('radial', d3.forceRadial(d => {
+                if (d.type === 'focused') return 0;
+                return 140;
+            }, centerX, centerY).strength(0.4))
+            .on('tick', ticked);
+
+        // Draw bubbles
+        const bubbles = svg.selectAll('circle.bubble')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', d => d.color)
+            .attr('stroke', d => d.type === 'focused' ? '#fff' : 'rgba(255,255,255,0.2)')
+            .attr('stroke-width', d => d.type === 'focused' ? 2 : 0.5)
+            .attr('opacity', d => d.type === 'focused' ? 0.9 : 0.4);
+
+        // Label for focused child
+        svg.append('text')
+            .attr('class', 'focused-label')
+            .attr('x', centerX)
+            .attr('y', centerY - 8)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '16px')
+            .attr('font-weight', 'bold')
+            .text('30 min');
+
+        svg.append('text')
+            .attr('class', 'focused-sublabel')
+            .attr('x', centerX)
+            .attr('y', centerY + 12)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '11px')
+            .text('1-on-1');
+
+        // Label for other kids
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', 40)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#3B82F6')
+            .attr('opacity', 0.7)
+            .attr('font-size', '12px')
+            .text('29 other children: ~2 min each');
+
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+        }
+    </script>
+</body>
+</html>

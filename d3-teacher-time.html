@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Teacher's Time Divided</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 25px 0;
+            text-align: center;
+            font-size: 13px;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .insight {
+            color: #888;
+            font-size: 12px;
+            margin-top: 20px;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.7;
+        }
+        .highlight {
+            color: #10B981;
+        }
+        .volunteer {
+            color: #F59E0B;
+        }
+    </style>
+</head>
+<body>
+    <h1>A Teacher's Time, Divided by 30</h1>
+    <p class="description">
+        Area = time. The big circle is one teacher's day.<br>
+        The small circles are what each child gets.
+    </p>
+
+    <div id="vis"></div>
+
+    <p class="insight">
+        <span class="highlight">If a teacher had 60 minutes for 1-on-1 time</span> (generous estimate),<br>
+        each of 30 children gets a 2-minute circle.<br><br>
+        <span class="volunteer">One volunteer reading for 30 minutes</span> gives a child<br>
+        more individual attention than an entire week of school.
+    </p>
+
+    <script>
+        const width = 700;
+        const height = 500;
+
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Teacher's available 1-on-1 time: ~60 minutes/day (optimistic)
+        const teacherMinutes = 60;
+        const numKids = 30;
+        const minutesPerKid = teacherMinutes / numKids; // 2 minutes
+
+        // Area is proportional to time
+        // Teacher circle area = 60 units
+        // Each kid circle area = 2 units
+        // Area = πr², so r = sqrt(area/π)
+
+        const scaleFactor = 50; // pixels per sqrt(minute)
+        const teacherRadius = Math.sqrt(teacherMinutes) * scaleFactor / Math.sqrt(Math.PI);
+        const kidRadius = Math.sqrt(minutesPerKid) * scaleFactor / Math.sqrt(Math.PI);
+
+        // Position teacher circle on left
+        const teacherX = 180;
+        const teacherY = height / 2;
+
+        svg.append('circle')
+            .attr('cx', teacherX)
+            .attr('cy', teacherY)
+            .attr('r', teacherRadius)
+            .attr('fill', '#10B981')
+            .attr('opacity', 0.85)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2);
+
+        svg.append('text')
+            .attr('x', teacherX)
+            .attr('y', teacherY - 15)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '16px')
+            .attr('font-weight', 'bold')
+            .text('60 min');
+
+        svg.append('text')
+            .attr('x', teacherX)
+            .attr('y', teacherY + 5)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '12px')
+            .text('teacher\'s 1-on-1');
+
+        svg.append('text')
+            .attr('x', teacherX)
+            .attr('y', teacherY + 20)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '12px')
+            .text('time per day');
+
+        // Position 30 kid circles on right
+        const kidsStartX = 350;
+        const kidsStartY = 100;
+        const cols = 6;
+        const spacing = kidRadius * 2.8;
+
+        for (let i = 0; i < numKids; i++) {
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const x = kidsStartX + col * spacing;
+            const y = kidsStartY + row * spacing;
+
+            svg.append('circle')
+                .attr('cx', x)
+                .attr('cy', y)
+                .attr('r', kidRadius)
+                .attr('fill', '#3B82F6')
+                .attr('opacity', 0.8)
+                .attr('stroke', '#1e3a5f')
+                .attr('stroke-width', 1);
+        }
+
+        // Labels
+        svg.append('text')
+            .attr('x', teacherX)
+            .attr('y', 50)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#10B981')
+            .attr('font-size', '14px')
+            .attr('font-weight', 'bold')
+            .text('1 Teacher');
+
+        svg.append('text')
+            .attr('x', kidsStartX + (cols - 1) * spacing / 2)
+            .attr('y', 50)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#3B82F6')
+            .attr('font-size', '14px')
+            .attr('font-weight', 'bold')
+            .text('30 Children');
+
+        svg.append('text')
+            .attr('x', kidsStartX + (cols - 1) * spacing / 2)
+            .attr('y', 70)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#888')
+            .attr('font-size', '11px')
+            .text('2 min each');
+
+        // Equals sign
+        svg.append('text')
+            .attr('x', 280)
+            .attr('y', height / 2 + 5)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#666')
+            .attr('font-size', '28px')
+            .text('=');
+
+        // Volunteer comparison at bottom
+        const volunteerRadius = Math.sqrt(30) * scaleFactor / Math.sqrt(Math.PI);
+
+        svg.append('circle')
+            .attr('cx', 580)
+            .attr('cy', height - 80)
+            .attr('r', volunteerRadius)
+            .attr('fill', '#F59E0B')
+            .attr('opacity', 0.85)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2);
+
+        svg.append('text')
+            .attr('x', 580)
+            .attr('y', height - 80)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '12px')
+            .attr('font-weight', 'bold')
+            .text('30 min');
+
+        svg.append('text')
+            .attr('x', 450)
+            .attr('y', height - 75)
+            .attr('text-anchor', 'end')
+            .attr('fill', '#F59E0B')
+            .attr('font-size', '12px')
+            .text('1 volunteer, 1 child:');
+
+        svg.append('text')
+            .attr('x', 580)
+            .attr('y', height - 40)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#888')
+            .attr('font-size', '11px')
+            .text('15x more attention');
+    </script>
+</body>
+</html>

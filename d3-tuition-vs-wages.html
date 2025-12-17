@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The College Cost Gap: Tuition vs Wages</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 13px;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .axis text {
+            fill: #888;
+            font-size: 11px;
+        }
+        .axis path, .axis line {
+            stroke: #444;
+        }
+        .grid line {
+            stroke: #333;
+            stroke-opacity: 0.7;
+        }
+        .grid path {
+            stroke-width: 0;
+        }
+        .line-tuition {
+            fill: none;
+            stroke: #EF4444;
+            stroke-width: 3;
+        }
+        .line-wages {
+            fill: none;
+            stroke: #3B82F6;
+            stroke-width: 3;
+        }
+        .area-gap {
+            fill: rgba(239, 68, 68, 0.15);
+        }
+        .label {
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .legend {
+            color: #aaaaaa;
+            font-size: 12px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .stat-box {
+            display: inline-block;
+            margin: 0 15px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-tuition {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #EF4444;
+        }
+        .stat-wages {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3B82F6;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 3px;
+        }
+        .source {
+            color: #666;
+            font-size: 10px;
+            margin-top: 15px;
+        }
+        .source a {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>The College Bubble: Tuition vs. Wages Since 1980</h1>
+    <p class="description">
+        Both lines start at 100 in 1980. The growing red zone is the "bubble" —
+        the gap between what college costs and what graduates can earn.
+    </p>
+
+    <div style="margin-bottom: 20px;">
+        <div class="stat-box stat-tuition">
+            <div class="stat-number" style="color: #EF4444;">+169%</div>
+            <div class="stat-label">College tuition increase<br>(inflation-adjusted)</div>
+        </div>
+        <div class="stat-box stat-wages">
+            <div class="stat-number" style="color: #3B82F6;">+19%</div>
+            <div class="stat-label">Young worker wages<br>(inflation-adjusted)</div>
+        </div>
+    </div>
+
+    <div id="vis"></div>
+
+    <div class="legend">
+        <span style="color: #EF4444;">━━</span> College Tuition &nbsp;&nbsp;
+        <span style="color: #3B82F6;">━━</span> Young Worker Wages &nbsp;&nbsp;
+        <span style="color: rgba(239,68,68,0.4);">▓</span> The Gap (The Bubble)
+    </div>
+
+    <div class="source">
+        Source: <a href="https://www.cnbc.com/2021/11/02/the-gap-in-college-costs-and-earnings-for-young-workers-since-1980.html">Georgetown Center on Education and the Workforce via CNBC</a>
+    </div>
+
+    <script>
+        const width = 700;
+        const height = 450;
+        const margin = { top: 30, right: 100, bottom: 50, left: 60 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        // Data: indexed to 100 in 1980, inflation-adjusted
+        // Tuition grew 169%, wages grew 19% from 1980 to 2020
+        // Interpolating the growth (tuition accelerated in 80s/90s, slowed recently)
+        const data = [
+            { year: 1980, tuition: 100, wages: 100 },
+            { year: 1985, tuition: 130, wages: 102 },
+            { year: 1990, tuition: 165, wages: 103 },
+            { year: 1995, tuition: 195, wages: 105 },
+            { year: 2000, tuition: 220, wages: 112 },
+            { year: 2005, tuition: 245, wages: 114 },
+            { year: 2010, tuition: 260, wages: 112 },
+            { year: 2015, tuition: 268, wages: 115 },
+            { year: 2020, tuition: 269, wages: 119 },
+        ];
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const g = svg.append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Scales
+        const xScale = d3.scaleLinear()
+            .domain([1980, 2020])
+            .range([0, innerWidth]);
+
+        const yScale = d3.scaleLinear()
+            .domain([80, 300])
+            .range([innerHeight, 0]);
+
+        // Grid lines
+        g.append('g')
+            .attr('class', 'grid')
+            .call(d3.axisLeft(yScale)
+                .tickSize(-innerWidth)
+                .tickFormat('')
+                .ticks(5)
+            );
+
+        // Area between the lines (the gap/bubble)
+        const areaGenerator = d3.area()
+            .x(d => xScale(d.year))
+            .y0(d => yScale(d.wages))
+            .y1(d => yScale(d.tuition))
+            .curve(d3.curveMonotoneX);
+
+        g.append('path')
+            .datum(data)
+            .attr('class', 'area-gap')
+            .attr('d', areaGenerator);
+
+        // Line generators
+        const lineGenerator = d3.line()
+            .x(d => xScale(d.year))
+            .y(d => yScale(d.tuition))
+            .curve(d3.curveMonotoneX);
+
+        const wagesLineGenerator = d3.line()
+            .x(d => xScale(d.year))
+            .y(d => yScale(d.wages))
+            .curve(d3.curveMonotoneX);
+
+        // Draw tuition line
+        g.append('path')
+            .datum(data)
+            .attr('class', 'line-tuition')
+            .attr('d', lineGenerator);
+
+        // Draw wages line
+        g.append('path')
+            .datum(data)
+            .attr('class', 'line-wages')
+            .attr('d', wagesLineGenerator);
+
+        // X axis
+        g.append('g')
+            .attr('class', 'axis')
+            .attr('transform', `translate(0,${innerHeight})`)
+            .call(d3.axisBottom(xScale)
+                .tickValues([1980, 1990, 2000, 2010, 2020])
+                .tickFormat(d3.format('d'))
+            );
+
+        // Y axis
+        g.append('g')
+            .attr('class', 'axis')
+            .call(d3.axisLeft(yScale)
+                .tickValues([100, 150, 200, 250, 300])
+                .tickFormat(d => d)
+            );
+
+        // Y axis label
+        g.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', -45)
+            .attr('x', -innerHeight / 2)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#888')
+            .attr('font-size', '12px')
+            .text('Index (1980 = 100)');
+
+        // Baseline reference
+        g.append('line')
+            .attr('x1', 0)
+            .attr('y1', yScale(100))
+            .attr('x2', innerWidth)
+            .attr('y2', yScale(100))
+            .attr('stroke', '#666')
+            .attr('stroke-dasharray', '5,5')
+            .attr('stroke-width', 1);
+
+        g.append('text')
+            .attr('x', innerWidth + 5)
+            .attr('y', yScale(100) + 4)
+            .attr('fill', '#666')
+            .attr('font-size', '10px')
+            .text('1980 baseline');
+
+        // End labels
+        const lastPoint = data[data.length - 1];
+
+        g.append('text')
+            .attr('class', 'label')
+            .attr('x', xScale(lastPoint.year) + 8)
+            .attr('y', yScale(lastPoint.tuition) + 4)
+            .attr('fill', '#EF4444')
+            .text('Tuition: 269');
+
+        g.append('text')
+            .attr('class', 'label')
+            .attr('x', xScale(lastPoint.year) + 8)
+            .attr('y', yScale(lastPoint.wages) + 4)
+            .attr('fill', '#3B82F6')
+            .text('Wages: 119');
+
+        // Gap annotation
+        const gapY = (yScale(lastPoint.wages) + yScale(lastPoint.tuition)) / 2;
+        g.append('text')
+            .attr('x', xScale(2008))
+            .attr('y', gapY)
+            .attr('text-anchor', 'middle')
+            .attr('fill', 'rgba(239,68,68,0.8)')
+            .attr('font-size', '14px')
+            .attr('font-weight', 'bold')
+            .text('THE GAP');
+
+        g.append('text')
+            .attr('x', xScale(2008))
+            .attr('y', gapY + 16)
+            .attr('text-anchor', 'middle')
+            .attr('fill', 'rgba(239,68,68,0.6)')
+            .attr('font-size', '11px')
+            .text('150 index points');
+    </script>
+</body>
+</html>

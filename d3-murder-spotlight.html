@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Spotlight - 450 Weekly Murders</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Georgia', serif;
+            background-color: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .description {
+            color: #888888;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 14px;
+            max-width: 700px;
+            line-height: 1.6;
+        }
+        .stat {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        #vis {
+            position: relative;
+        }
+        svg {
+            background-color: #050505;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+        .bubble {
+            stroke: none;
+            transition: opacity 0.3s;
+        }
+        .bubble.highlighted {
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            background: #1a1a1a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #333;
+            border-color: #666;
+        }
+        .legend {
+            color: #666;
+            font-size: 12px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .annotation {
+            position: absolute;
+            color: #ef4444;
+            font-size: 12px;
+            pointer-events: none;
+            text-align: center;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <h1>The Spotlight</h1>
+    <p class="description">
+        <span class="stat">~450 Americans are murdered every week.</span><br>
+        Each dot represents one life lost. The media spotlights 2-3 cases.
+        The rest fade into statistics, mourned only by those who knew them.
+    </p>
+    <div id="vis"></div>
+    <div class="controls">
+        <button id="spotlight">Shine the Spotlight</button>
+        <button id="reset">Show All Equal</button>
+        <button id="shuffle">New Random Selection</button>
+    </div>
+    <div class="legend">
+        Click "Shine the Spotlight" to see which cases get national attention
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 500;
+        const numMurders = 450;
+        const padding = 20;
+
+        // Generate murder data
+        function generateData() {
+            const data = [];
+            for (let i = 0; i < numMurders; i++) {
+                data.push({
+                    id: i,
+                    radius: 7,
+                    highlighted: false,
+                    x: padding + Math.random() * (width - 2 * padding),
+                    y: padding + Math.random() * (height - 2 * padding)
+                });
+            }
+            return data;
+        }
+
+        let nodes = generateData();
+        let spotlightIndices = [];
+
+        // Pick random cases to spotlight (2-3)
+        function pickSpotlightCases() {
+            const count = Math.random() > 0.5 ? 3 : 2;
+            const indices = [];
+            while (indices.length < count) {
+                const idx = Math.floor(Math.random() * numMurders);
+                if (!indices.includes(idx)) {
+                    indices.push(idx);
+                }
+            }
+            return indices;
+        }
+
+        spotlightIndices = pickSpotlightCases();
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Create bubbles
+        const bubbles = svg.selectAll('.bubble')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', '#4a4a4a')
+            .attr('opacity', 0.7);
+
+        // Force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(-8))
+            .force('x', d3.forceX(width / 2).strength(0.15))
+            .force('y', d3.forceY(height / 2).strength(0.15))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 1))
+            .on('tick', ticked);
+
+        function ticked() {
+            // Clamp to bounds
+            nodes.forEach(d => {
+                d.x = Math.max(d.radius, Math.min(width - d.radius, d.x));
+                d.y = Math.max(d.radius, Math.min(height - d.radius, d.y));
+            });
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+        }
+
+        // Spotlight effect
+        function applySpotlight() {
+            bubbles
+                .transition()
+                .duration(800)
+                .attr('fill', (d, i) => spotlightIndices.includes(i) ? '#ef4444' : '#1a1a1a')
+                .attr('opacity', (d, i) => spotlightIndices.includes(i) ? 1 : 0.3)
+                .attr('r', (d, i) => spotlightIndices.includes(i) ? 18 : 5);
+
+            // Update simulation for new sizes
+            nodes.forEach((n, i) => {
+                n.radius = spotlightIndices.includes(i) ? 18 : 5;
+            });
+            simulation.force('collision', d3.forceCollide().radius(d => d.radius + 2));
+            simulation.alpha(0.3).restart();
+        }
+
+        // Reset to equal
+        function resetEqual() {
+            bubbles
+                .transition()
+                .duration(800)
+                .attr('fill', '#4a4a4a')
+                .attr('opacity', 0.7)
+                .attr('r', 7);
+
+            nodes.forEach(n => n.radius = 7);
+            simulation.force('collision', d3.forceCollide().radius(d => d.radius + 2));
+            simulation.alpha(0.3).restart();
+        }
+
+        // Shuffle spotlight
+        function shuffleSpotlight() {
+            spotlightIndices = pickSpotlightCases();
+            applySpotlight();
+        }
+
+        // Button handlers
+        d3.select('#spotlight').on('click', applySpotlight);
+        d3.select('#reset').on('click', resetEqual);
+        d3.select('#shuffle').on('click', shuffleSpotlight);
+    </script>
+</body>
+</html>

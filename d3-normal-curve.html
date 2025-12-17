@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Normal Distribution Curve</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        #vis {
+            width: 800px;
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .curve {
+            fill: none;
+            stroke: #3B82F6;
+            stroke-width: 2;
+        }
+        .dot {
+            fill: #6B7280;
+            opacity: 0.8;
+        }
+        .dot:hover {
+            fill: #3B82F6;
+            opacity: 1;
+        }
+        .axis {
+            stroke: #666;
+            stroke-width: 1;
+        }
+        .axis-label {
+            fill: #aaa;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Normal Distribution - Bell Curve</h1>
+    <p class="description">1000 dots positioned under a normal distribution curve</p>
+    <div id="vis"></div>
+
+    <script>
+        const width = 800;
+        const height = 600;
+        const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        // Box-Muller transform for normal distribution
+        function normalRandom(mean = 0, stdDev = 1) {
+            const u1 = Math.random();
+            const u2 = Math.random();
+            const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+            return z0 * stdDev + mean;
+        }
+
+        // Normal distribution PDF
+        function normalPDF(x, mean = 0, stdDev = 1) {
+            const exponent = -Math.pow(x - mean, 2) / (2 * Math.pow(stdDev, 2));
+            return (1 / (stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(exponent);
+        }
+
+        // Generate 1000 data points from normal distribution
+        const numPoints = 1000;
+        const mean = 0;
+        const stdDev = 1;
+        const dataPoints = [];
+
+        for (let i = 0; i < numPoints; i++) {
+            const value = normalRandom(mean, stdDev);
+            // Keep values within reasonable range (-3 to 3 standard deviations)
+            if (value >= -3 && value <= 3) {
+                dataPoints.push(value);
+            }
+        }
+
+        // Create histogram bins
+        const bins = d3.bin()
+            .domain([-3, 3])
+            .thresholds(40)(dataPoints);
+
+        // Create scales
+        const xScale = d3.scaleLinear()
+            .domain([-3, 3])
+            .range([0, innerWidth]);
+
+        const maxBinLength = d3.max(bins, d => d.length);
+        const yScale = d3.scaleLinear()
+            .domain([0, maxBinLength])
+            .range([innerHeight, 0]);
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Draw the bell curve
+        const curveData = [];
+        for (let x = -3; x <= 3; x += 0.1) {
+            curveData.push({
+                x: x,
+                y: normalPDF(x, mean, stdDev) * numPoints * 0.15  // Scale to match histogram
+            });
+        }
+
+        const line = d3.line()
+            .x(d => xScale(d.x))
+            .y(d => yScale(d.y));
+
+        svg.append('path')
+            .datum(curveData)
+            .attr('class', 'curve')
+            .attr('d', line);
+
+        // Draw dots in each bin
+        const dotRadius = 3;
+        bins.forEach(bin => {
+            const binCenter = (bin.x0 + bin.x1) / 2;
+            const dotsInBin = bin.length;
+
+            // Arrange dots in columns within each bin
+            const dotsPerRow = Math.ceil(Math.sqrt(dotsInBin));
+
+            bin.forEach((value, i) => {
+                const row = Math.floor(i / dotsPerRow);
+                const col = i % dotsPerRow;
+
+                const x = xScale(binCenter) + (col - dotsPerRow / 2) * (dotRadius * 2.5);
+                const y = innerHeight - (row * dotRadius * 2.5) - dotRadius;
+
+                svg.append('circle')
+                    .attr('class', 'dot')
+                    .attr('cx', x)
+                    .attr('cy', y)
+                    .attr('r', dotRadius);
+            });
+        });
+
+        // Add x-axis
+        const xAxis = d3.axisBottom(xScale)
+            .ticks(7)
+            .tickFormat(d => d === 0 ? 'Mean' : `${d > 0 ? '+' : ''}${d}σ`);
+
+        svg.append('g')
+            .attr('class', 'axis')
+            .attr('transform', `translate(0,${innerHeight})`)
+            .call(xAxis)
+            .selectAll('text')
+            .attr('class', 'axis-label');
+
+        // Add y-axis label
+        svg.append('text')
+            .attr('class', 'axis-label')
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -innerHeight / 2)
+            .attr('y', -40)
+            .style('text-anchor', 'middle')
+            .text('Frequency');
+
+        // Add title showing stats
+        svg.append('text')
+            .attr('class', 'axis-label')
+            .attr('x', innerWidth / 2)
+            .attr('y', -10)
+            .style('text-anchor', 'middle')
+            .style('font-size', '14px')
+            .style('fill', '#3B82F6')
+            .text(`${dataPoints.length} data points | Mean = ${mean} | Std Dev = ${stdDev}`);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Funnel - How Stories Disappear</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Georgia', serif;
+            background-color: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .description {
+            color: #888888;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 14px;
+            max-width: 700px;
+            line-height: 1.6;
+        }
+        svg {
+            background-color: #050505;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+        .bubble {
+            stroke: none;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            background: #1a1a1a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #333;
+            border-color: #666;
+        }
+        button.active {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+        .stage-labels {
+            display: flex;
+            justify-content: space-around;
+            width: 900px;
+            margin-top: 10px;
+            color: #666;
+            font-size: 12px;
+        }
+        .stage-label {
+            text-align: center;
+            width: 180px;
+        }
+        .stage-label .count {
+            color: #ef4444;
+            font-size: 18px;
+            display: block;
+            margin-bottom: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>The Funnel</h1>
+    <p class="description">
+        450 murders happen every week. Watch how they filter through the media ecosystem.
+        Most vanish from public consciousness entirely.
+    </p>
+    <div id="vis"></div>
+    <div class="stage-labels">
+        <div class="stage-label"><span class="count">450</span>Actual murders<br>(this week)</div>
+        <div class="stage-label"><span class="count">~50</span>Local news<br>covers</div>
+        <div class="stage-label"><span class="count">~8</span>Regional<br>pickup</div>
+        <div class="stage-label"><span class="count">2-3</span>National<br>attention</div>
+        <div class="stage-label"><span class="count">447</span>Forgotten<br>(statistics)</div>
+    </div>
+    <div class="controls">
+        <button id="stage0" class="active">All 450</button>
+        <button id="stage1">Local News</button>
+        <button id="stage2">Regional</button>
+        <button id="stage3">National</button>
+        <button id="animate">Animate Funnel</button>
+    </div>
+
+    <script>
+        const width = 900;
+        const height = 500;
+        const numMurders = 450;
+
+        // Define stages
+        const stages = {
+            0: { count: 450, label: 'All', xCenter: 100 },
+            1: { count: 50, label: 'Local', xCenter: 280 },
+            2: { count: 8, label: 'Regional', xCenter: 460 },
+            3: { count: 3, label: 'National', xCenter: 640 },
+            4: { label: 'Forgotten', xCenter: 820 }
+        };
+
+        // Generate data with pre-assigned fates
+        function generateData() {
+            const data = [];
+
+            // Shuffle indices to randomly assign fates
+            const indices = d3.shuffle(d3.range(numMurders));
+
+            // First 3 make it to national
+            const nationalIndices = new Set(indices.slice(0, 3));
+            // Next 5 make it to regional (8 total including national)
+            const regionalIndices = new Set(indices.slice(0, 8));
+            // Next 42 make it to local (50 total including above)
+            const localIndices = new Set(indices.slice(0, 50));
+
+            for (let i = 0; i < numMurders; i++) {
+                let maxStage = 0;
+                if (localIndices.has(i)) maxStage = 1;
+                if (regionalIndices.has(i)) maxStage = 2;
+                if (nationalIndices.has(i)) maxStage = 3;
+
+                data.push({
+                    id: i,
+                    radius: 6,
+                    maxStage: maxStage,
+                    currentStage: 0,
+                    forgotten: false,
+                    x: 100 + Math.random() * 50,
+                    y: Math.random() * height
+                });
+            }
+            return data;
+        }
+
+        let nodes = generateData();
+        let currentStage = 0;
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Draw funnel shape (subtle background)
+        const funnelPath = svg.append('path')
+            .attr('d', `M 50 50 L 200 50 L 700 230 L 700 270 L 200 450 L 50 450 Z`)
+            .attr('fill', '#0f0f0f')
+            .attr('stroke', '#222')
+            .attr('stroke-width', 1);
+
+        // Create bubbles
+        const bubbles = svg.selectAll('.bubble')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', '#ef4444')
+            .attr('opacity', 0.7);
+
+        // Force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(-8))
+            .force('x', d3.forceX(d => getTargetX(d)).strength(0.1))
+            .force('y', d3.forceY(height / 2).strength(0.05))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 1))
+            .on('tick', ticked);
+
+        function getTargetX(d) {
+            if (d.forgotten) return stages[4].xCenter;
+            return stages[Math.min(d.currentStage, d.maxStage)].xCenter;
+        }
+
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+        }
+
+        // Move to stage
+        function goToStage(stage) {
+            currentStage = stage;
+
+            nodes.forEach(n => {
+                if (stage === 0) {
+                    n.currentStage = 0;
+                    n.forgotten = false;
+                } else {
+                    if (n.maxStage >= stage) {
+                        n.currentStage = stage;
+                        n.forgotten = false;
+                    } else {
+                        n.forgotten = true;
+                    }
+                }
+            });
+
+            // Update visuals
+            bubbles
+                .transition()
+                .duration(500)
+                .attr('fill', d => {
+                    if (d.forgotten) return '#1a1a1a';
+                    if (d.maxStage === 3) return '#ef4444'; // National - red
+                    if (d.maxStage === 2) return '#f97316'; // Regional - orange
+                    if (d.maxStage === 1) return '#eab308'; // Local - yellow
+                    return '#4a4a4a'; // Never covered
+                })
+                .attr('opacity', d => d.forgotten ? 0.2 : 0.8)
+                .attr('r', d => {
+                    if (d.forgotten) return 4;
+                    if (stage === 3 && d.maxStage === 3) return 15;
+                    if (stage === 2 && d.maxStage >= 2) return 10;
+                    return 6;
+                });
+
+            // Update forces
+            simulation.force('x', d3.forceX(d => getTargetX(d)).strength(0.15));
+            simulation.alpha(0.5).restart();
+
+            // Update button states
+            d3.selectAll('.controls button').classed('active', false);
+            d3.select(`#stage${stage}`).classed('active', true);
+        }
+
+        // Animate through all stages
+        async function animateFunnel() {
+            goToStage(0);
+            await new Promise(r => setTimeout(r, 1500));
+            goToStage(1);
+            await new Promise(r => setTimeout(r, 1500));
+            goToStage(2);
+            await new Promise(r => setTimeout(r, 1500));
+            goToStage(3);
+        }
+
+        // Button handlers
+        d3.select('#stage0').on('click', () => goToStage(0));
+        d3.select('#stage1').on('click', () => goToStage(1));
+        d3.select('#stage2').on('click', () => goToStage(2));
+        d3.select('#stage3').on('click', () => goToStage(3));
+        d3.select('#animate').on('click', animateFunnel);
+    </script>
+</body>
+</html>

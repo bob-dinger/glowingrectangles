@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Recipe: Pasta Carbonara</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #fafafa;
+            color: #333;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #222;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .recipe-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .track-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+            margin-bottom: 8px;
+            margin-top: 20px;
+        }
+        .track-label:first-of-type {
+            margin-top: 0;
+        }
+        .step-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .box {
+            padding: 16px 20px;
+            border-radius: 8px;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .input-box {
+            background: #E8F5E9;
+            border: 2px solid #A5D6A7;
+            width: 220px;
+        }
+        .method-box {
+            background: #FFF3E0;
+            border: 2px solid #FFCC80;
+            width: 200px;
+            text-align: center;
+        }
+        .result-box {
+            background: #E3F2FD;
+            border: 2px solid #90CAF9;
+            width: 220px;
+        }
+        .arrow {
+            font-size: 24px;
+            color: #ccc;
+            margin: 0 12px;
+        }
+        .box-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+        .box-content {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+        .method-detail {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .temp-high { border-color: #EF5350; background: #FFEBEE; }
+        .temp-med { border-color: #FFCC80; background: #FFF3E0; }
+        .temp-low { border-color: #81D4FA; background: #E1F5FE; }
+        .temp-none { border-color: #E0E0E0; background: #FAFAFA; }
+
+        .merge-indicator {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding-left: 50px;
+        }
+        .merge-line {
+            width: 40px;
+            height: 2px;
+            background: #ccc;
+        }
+        .merge-arrow {
+            font-size: 18px;
+            color: #999;
+            margin: 0 8px;
+        }
+        .merge-label {
+            font-size: 11px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .final-row {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px dashed #ddd;
+        }
+        .final-box {
+            background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+            border: 3px solid #FFD54F;
+            width: 100%;
+            max-width: 660px;
+            text-align: center;
+            padding: 20px;
+        }
+        .final-box .box-content {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="recipe-container">
+        <h1>Pasta Carbonara</h1>
+        <p class="subtitle">Serves 2 — Total time: 25 minutes</p>
+
+        <!-- Track 1: Pasta -->
+        <div class="track-label">Track 1: Pasta</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Water + Salt</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-high">
+                <div class="box-content">Boil</div>
+                <div class="method-detail">10 min • high heat</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Boiling salted water</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Boiling water + Spaghetti (200g)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-high">
+                <div class="box-content">Boil</div>
+                <div class="method-detail">8 min • high heat</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Al dente pasta + pasta water</div>
+            </div>
+        </div>
+
+        <!-- Track 2: Guanciale -->
+        <div class="track-label">Track 2: Guanciale (start when pasta goes in)</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Guanciale (150g), cubed</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-med">
+                <div class="box-content">Render</div>
+                <div class="method-detail">7 min • medium heat</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Crispy guanciale + rendered fat</div>
+            </div>
+        </div>
+
+        <!-- Track 3: Egg mixture -->
+        <div class="track-label">Track 3: Egg mixture (while other tracks run)</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">2 whole eggs + 2 yolks</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Whisk</div>
+                <div class="method-detail">1 min • no heat</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Beaten eggs</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Beaten eggs + Pecorino (75g) + Black pepper</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Mix</div>
+                <div class="method-detail">1 min • no heat</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Carbonara sauce</div>
+            </div>
+        </div>
+
+        <!-- Merge -->
+        <div class="merge-indicator">
+            <div class="merge-line"></div>
+            <div class="merge-arrow">↓</div>
+            <div class="merge-label">All tracks merge — timing is critical</div>
+        </div>
+
+        <!-- Final assembly -->
+        <div class="track-label">Assembly: Off heat!</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Hot pasta + Guanciale in pan</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-low">
+                <div class="box-content">Toss</div>
+                <div class="method-detail">30 sec • residual heat</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Pasta coated in fat</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Pasta + Carbonara sauce</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-low">
+                <div class="box-content">Toss vigorously</div>
+                <div class="method-detail">1 min • OFF heat</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Emulsified creamy pasta</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Creamy pasta (+ pasta water if needed)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Adjust & plate</div>
+                <div class="method-detail">30 sec • no heat</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Silky carbonara</div>
+            </div>
+        </div>
+
+        <!-- Final result -->
+        <div class="step-row final-row">
+            <div class="box final-box">
+                <div class="box-label">Final Result</div>
+                <div class="box-content">🍝 Pasta Carbonara</div>
+                <div class="method-detail">Top with more pecorino + black pepper</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

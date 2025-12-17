@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFW Shootings - 30 Days of Dallas Morning News Coverage</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Georgia', serif;
+            background-color: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .description {
+            color: #888888;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 14px;
+            max-width: 700px;
+            line-height: 1.6;
+        }
+        .stat {
+            color: #ef4444;
+        }
+        svg {
+            background-color: #0f0f0f;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+        .incident {
+            fill: #ef4444;
+            stroke: #ff6b6b;
+            stroke-width: 1px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.2s;
+        }
+        .incident:hover {
+            opacity: 1;
+            stroke-width: 2px;
+            r: 10;
+        }
+        .city-label {
+            fill: #444;
+            font-size: 10px;
+            pointer-events: none;
+        }
+        .city-marker {
+            fill: none;
+            stroke: #333;
+            stroke-width: 1;
+        }
+        .tooltip {
+            position: absolute;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 10px;
+            color: #fff;
+            font-size: 12px;
+            max-width: 300px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .tooltip .location {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .tooltip .date {
+            color: #888;
+            font-size: 10px;
+        }
+        .legend {
+            color: #666;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+        .source {
+            color: #444;
+            font-size: 10px;
+            margin-top: 10px;
+        }
+        .stats {
+            display: flex;
+            gap: 40px;
+            margin-top: 15px;
+            color: #888;
+            font-size: 13px;
+        }
+        .stat-box {
+            text-align: center;
+        }
+        .stat-box .number {
+            color: #ef4444;
+            font-size: 28px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>30 Days of Shootings in DFW</h1>
+    <p class="description">
+        Every shooting covered by the Dallas Morning News from Nov 10 - Dec 10, 2024.<br>
+        <span class="stat">82 incidents</span> with identifiable locations. Hover for details.
+    </p>
+    <div id="vis"></div>
+    <div class="stats">
+        <div class="stat-box">
+            <span class="number">82</span>
+            shooting stories
+        </div>
+        <div class="stat-box">
+            <span class="number">~2.7</span>
+            per day
+        </div>
+        <div class="stat-box">
+            <span class="number">23</span>
+            in Dallas proper
+        </div>
+    </div>
+    <div class="legend">
+        Each dot = one news story about a shooting, murder, or gun violence
+    </div>
+    <div class="source">
+        Source: dallasnews.com sitemap, Nov 10 - Dec 10, 2024
+    </div>
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const width = 800;
+        const height = 600;
+
+        // DFW bounding box (approximate)
+        const bounds = {
+            minLat: 32.45,
+            maxLat: 33.25,
+            minLon: -97.55,
+            maxLon: -96.45
+        };
+
+        // Major cities for reference
+        const cities = [
+            { name: 'Dallas', lat: 32.7767, lon: -96.7970 },
+            { name: 'Fort Worth', lat: 32.7555, lon: -97.3308 },
+            { name: 'Arlington', lat: 32.7357, lon: -97.1081 },
+            { name: 'Plano', lat: 33.0198, lon: -96.6989 },
+            { name: 'Irving', lat: 32.8140, lon: -96.9489 },
+            { name: 'Garland', lat: 32.9126, lon: -96.6389 },
+            { name: 'Frisco', lat: 33.1507, lon: -96.8236 },
+            { name: 'McKinney', lat: 33.1972, lon: -96.6397 },
+            { name: 'Denton', lat: 33.2148, lon: -97.1331 },
+        ];
+
+        // Scale functions
+        const xScale = d3.scaleLinear()
+            .domain([bounds.minLon, bounds.maxLon])
+            .range([50, width - 50]);
+
+        const yScale = d3.scaleLinear()
+            .domain([bounds.minLat, bounds.maxLat])
+            .range([height - 50, 50]);
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Draw city markers
+        svg.selectAll('.city-marker')
+            .data(cities)
+            .enter()
+            .append('circle')
+            .attr('class', 'city-marker')
+            .attr('cx', d => xScale(d.lon))
+            .attr('cy', d => yScale(d.lat))
+            .attr('r', 20);
+
+        svg.selectAll('.city-label')
+            .data(cities)
+            .enter()
+            .append('text')
+            .attr('class', 'city-label')
+            .attr('x', d => xScale(d.lon))
+            .attr('y', d => yScale(d.lat) + 4)
+            .attr('text-anchor', 'middle')
+            .text(d => d.name);
+
+        // Tooltip
+        const tooltip = d3.select('#tooltip');
+
+        // Load and draw incidents
+        const incidents = [
+            {"lat": 32.7767, "lon": -96.79175737893498, "location": "Dallas", "title": "Weekend Dallas Baby Shower Turns Chaotic Then Deadly After Fight Led To Gunfire Po", "date": "2025-12-08", "url": "https://www.dallasnews.com/news/crime/2025/12/08/weekend-dallas-baby-shower-turns-chaotic-then-deadly-after-fight-led-to-gunfire-police-say/"},
+            {"lat": 32.7847, "lon": -96.79498529498498, "location": "Dallas", "title": "Dallas Police Say Gunshot Detectors Have Fallen Short So Far Cueing Plans For New", "date": "2025-12-07", "url": "https://www.dallasnews.com/news/crime/2025/12/07/dallas-police-say-gunshot-detectors-have-fallen-short-so-far-cueing-plans-for-new-pilot/"},
+            {"lat": 32.6812, "lon": -96.87352549498885, "location": "Red Bird", "title": "Weekend Shooting In Dallas Red Bird Area Leaves 1 Dead 4 Injured Officials Say", "date": "2025-12-08", "url": "https://www.dallasnews.com/news/crime/2025/12/08/weekend-shooting-in-dallas-red-bird-area-leaves-1-dead-4-injured-officials-say/"},
+            {"lat": 32.6892, "lon": -96.87593761498664, "location": "Red Bird", "title": "Un Detenido Por El Tiroteo En Un Baby Shower De Dallas Que Dejo Un Muerto Y Cuatro", "date": "2025-12-09", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/12/09/un-detenido-por-el-tiroteo-en-un-baby-shower-de-dallas-que-dejo-un-muerto-y-cuatro-heridos/"},
+            {"lat": 32.71, "lon": -96.78877659683698, "location": "Roseland", "title": "New Security Fewer Shootings Roseland Crime Fell And Tenants Left Amid Renovation", "date": "2025-12-08", "url": "https://www.dallasnews.com/news/investigations/2025/12/08/new-security-fewer-shootings-roseland-crime-fell-and-tenants-left-amid-renovation-plans/"},
+            {"lat": 32.718, "lon": -96.77259866648908, "location": "Roseland", "title": "Gunfire Was Routine For Roselands Children A 9 Year Olds Death There Shook Dallas", "date": "2025-12-08", "url": "https://www.dallasnews.com/news/investigations/2025/12/08/gunfire-was-routine-for-roselands-children-a-9-year-olds-death-there-shook-dallas/"},
+            {"lat": 32.5421, "lon": -97.32549498295715, "location": "Burleson", "title": "17 Year Old Killed Another Arrested Following Alleged Drug Deal At Burleson Bailey", "date": "2025-12-05", "url": "https://www.dallasnews.com/news/crime/2025/12/05/17-year-old-killed-another-arrested-following-alleged-drug-deal-at-burleson-bailey-lake/"},
+            {"lat": 32.8140, "lon": -96.95960596817507, "location": "Irving", "title": "20 Year Old Motorcyclist Killed In Irving Road Rage Incident", "date": "2025-12-04", "url": "https://www.dallasnews.com/news/crime/2025/12/04/20-year-old-motorcyclist-killed-in-irving-road-rage-incident/"},
+            {"lat": 32.785, "lon": -96.78252073665015, "location": "Deep Ellum", "title": "Officials Identify Man Fatally Stabbed In October While In Dallas Deep Ellum", "date": "2025-12-03", "url": "https://www.dallasnews.com/news/crime/2025/12/03/officials-identify-man-fatally-stabbed-in-october-while-in-dallas-deep-ellum/"},
+            {"lat": 32.7927, "lon": -96.79889987523685, "location": "Dallas", "title": "Balacera En Un Salon De Eventos En Dallas Deja Un Muerto Y Cuatro Heridos", "date": "2025-12-08", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/12/08/balacera-en-un-salon-de-eventos-en-dallas-deja-un-muerto-y-cuatro-heridos/"},
+            {"lat": 32.6833, "lon": -97.38619686818823, "location": "Hulen Mall", "title": "Tiroteo En El Hulen Mall De Fort Worth Hay Un Detenido", "date": "2025-11-30", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/30/tiroteo-en-el-hulen-mall-de-fort-worth-hay-un-detenido/"},
+            {"lat": 32.7555, "lon": -97.32168912813706, "location": "Fort Worth", "title": "Fort Worth Couple Found Dead In Suspected Murder Suicide Police Say", "date": "2025-12-03", "url": "https://www.dallasnews.com/news/crime/2025/12/03/fort-worth-couple-found-dead-in-suspected-murder-suicide-police-say/"},
+            {"lat": 32.7635, "lon": -97.33785437555786, "location": "Fort Worth", "title": "Fort Worth Police Responding To A Shooting At Hulen Mall Officials Say", "date": "2025-11-29", "url": "https://www.dallasnews.com/news/2025/11/29/fort-worth-police-responding-to-a-shooting-at-hulen-mall-officials-say/"},
+            {"lat": 32.6913, "lon": -97.39679810971456, "location": "Hulen Mall", "title": "21 Year Old Arrested Following Shooting At Hulen Mall In Fort Worth", "date": "2025-11-30", "url": "https://www.dallasnews.com/news/2025/11/30/21-year-old-arrested-following-shooting-at-hulen-mall-in-fort-worth/"},
+            {"lat": 32.79, "lon": -96.75618024813478, "location": "East Dallas", "title": "26 Year Old Man Dead After Shooting In Old East Dallas Saturday Officials Say", "date": "2025-11-30", "url": "https://www.dallasnews.com/news/crime/2025/11/30/26-year-old-man-dead-after-shooting-in-old-east-dallas-saturday-officials-say/"},
+            {"lat": 32.6972, "lon": -96.87263629551766, "location": "Red Bird", "title": "Woman Arrested In Fatal Stabbing In Dallas Red Bird Neighborhood Officials Say", "date": "2025-11-26", "url": "https://www.dallasnews.com/news/crime/2025/11/26/woman-arrested-in-fatal-stabbing-in-dallas-red-bird-neighborhood-officials-say/"},
+            {"lat": 32.7052, "lon": -96.87426411003178, "location": "Red Bird", "title": "21 Year Old Arrested In A Shooting In Redbird Monday That Left One Dead Officials", "date": "2025-11-26", "url": "https://www.dallasnews.com/news/crime/2025/11/26/21-year-old-arrested-in-a-shooting-in-redbird-monday-that-left-one-dead-officials-say/"},
+            {"lat": 32.8007, "lon": -96.80681704893883, "location": "Dallas", "title": "Dallas Police Announce One Arrest In Deadly July Shooting At Club Living Room", "date": "2025-11-26", "url": "https://www.dallasnews.com/news/crime/2025/11/26/dallas-police-announce-one-arrest-in-deadly-july-shooting-at-club-living-room/"},
+            {"lat": 32.8087, "lon": -96.79455609006316, "location": "Dallas", "title": "2 Suspects Indicted In July Triple Homicide In Dallas", "date": "2025-12-03", "url": "https://www.dallasnews.com/news/crime/2025/12/03/2-suspects-indicted-in-july-triple-homicide-in-dallas/"},
+            {"lat": 32.72, "lon": -96.86042936741673, "location": "Oak Cliff", "title": "Hombre De 23 Anos Arrestado Por Tiroteo En Oak Cliff Que Dejo Dos Muertos", "date": "2025-12-09", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/12/09/hombre-de-23-anos-arrestado-por-tiroteo-en-oak-cliff-que-dejo-dos-muertos/"},
+            {"lat": 32.728, "lon": -96.8478595076389, "location": "Oak Cliff", "title": "Dallas Police Arrest 23 Year Old In Oak Cliff Double Homicide", "date": "2025-12-09", "url": "https://www.dallasnews.com/news/crime/2025/12/09/dallas-police-arrest-23-year-old-in-oak-cliff-double-homicide/"},
+            {"lat": 32.736, "lon": -96.85633595282328, "location": "Oak Cliff", "title": "Two Killed In Overnight Shooting In Dallas Oak Cliff Area Police Say", "date": "2025-12-07", "url": "https://www.dallasnews.com/news/crime/2025/12/07/two-killed-in-overnight-shooting-in-dallas-oak-cliff-area-police-say/"},
+            {"lat": 32.744, "lon": -96.86103044055117, "location": "Oak Cliff", "title": "Dos Muertos En Tiroteo Nocturno En El Area De Oak Cliff De Dallas Dice La Policia", "date": "2025-12-07", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/12/07/dos-muertos-en-tiroteo-nocturno-en-el-area-de-oak-cliff-de-dallas-dice-la-policia/"},
+            {"lat": 32.7460, "lon": -96.99314814453227, "location": "Grand Prairie", "title": "Mother Dies Weeks After Attack In Grand Prairie Home Leaving Kids Without Both Pa", "date": "2025-12-02", "url": "https://www.dallasnews.com/news/crime/2025/12/02/mother-dies-weeks-after-attack-in-grand-prairie-home-leaving-kids-without-both-parents/"},
+            {"lat": 32.754, "lon": -97.0026069315411, "location": "Grand Prairie", "title": "Madre Muere Semanas Despues De Ataque En Casa De Grand Prairie Dejando A Sus Hijos", "date": "2025-12-02", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/12/02/madre-muere-semanas-despues-de-ataque-en-casa-de-grand-prairie-dejando-a-sus-hijos-sin-ambos-padres/"},
+            {"lat": 32.762, "lon": -96.9955629217411, "location": "Grand Prairie", "title": "Grand Prairie Elementary School Evacuated After Bomb Threat Police Say", "date": "2025-11-14", "url": "https://www.dallasnews.com/news/2025/11/14/grand-prairie-elementary-school-evacuated-after-bomb-threat-police-say/"},
+            {"lat": 32.77, "lon": -97.00509780168946, "location": "Grand Prairie", "title": "Escuela Primaria De Grand Prairie Evacuada Tras Amenaza De Bomba Dice La Policia", "date": "2025-11-14", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/14/escuela-primaria-de-grand-prairie-evacuada-tras-amenaza-de-bomba-dice-la-policia/"},
+            {"lat": 32.5896, "lon": -96.85104252915127, "location": "Desoto", "title": "Mujer De Desoto Dispara Contra Hombre Que La Siguio Y Se Metio A Su Casa Dice La P", "date": "2025-11-11", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/11/mujer-de-desoto-dispara-contra-hombre-que-la-siguio-y-se-metio-a-su-casa-dice-la-policia/"},
+            {"lat": 32.5976, "lon": -96.86393571411024, "location": "Desoto", "title": "Desoto Woman Shoots Man Who Followed Her Home And Broke Into Her House Police Say", "date": "2025-11-11", "url": "https://www.dallasnews.com/news/crime/2025/11/11/desoto-woman-shoots-man-who-followed-her-home-and-broke-into-her-house-police-say/"},
+            {"lat": 32.7715, "lon": -97.33637015682588, "location": "Fort Worth", "title": "Gunshots Ring Out During Fort Worth City Council Meeting Councilman Says", "date": "2025-11-19", "url": "https://www.dallasnews.com/news/2025/11/19/gunshots-ring-out-during-fort-worth-city-council-meeting-councilman-says/"},
+            {"lat": 32.7795, "lon": -97.32406691645605, "location": "Fort Worth", "title": "Suenan Disparos Durante Una Reunion Del Concejo De Fort Worth Dice Un Concejal", "date": "2025-11-20", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/20/suenan-disparos-durante-una-reunion-del-concejo-de-fort-worth-dice-un-concejal/"},
+            {"lat": 32.7875, "lon": -97.32890115285165, "location": "Fort Worth", "title": "Fort Worth Police Release Surveillance Video Of Persons Of Interest In Deadly Shoo", "date": "2025-11-18", "url": "https://www.dallasnews.com/news/crime/2025/11/18/fort-worth-police-release-surveillance-video-of-persons-of-interest-in-deadly-shooting/"},
+            {"lat": 32.7357, "lon": -97.10040684055, "location": "Arlington", "title": "La Policia De Arlington Anuncia 3 Arrestos Por La Muerte A Tiros De Un Hombre De 2", "date": "2025-11-13", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/13/la-policia-de-arlington-anuncia-3-arrestos-por-la-muerte-a-tiros-de-un-hombre-de-27-anos/"},
+            {"lat": 32.7437, "lon": -97.1148595854285, "location": "Arlington", "title": "Arlington Police Announce Three Arrests In October Shooting Death Of 27 Year Old M", "date": "2025-11-12", "url": "https://www.dallasnews.com/news/crime/2025/11/12/arlington-police-announce-three-arrests-in-october-shooting-death-of-27-year-old-man/"},
+            {"lat": 32.7517, "lon": -97.09786832195687, "location": "Arlington", "title": "Third Alarm Fire At Arlington Apartment Complex Displaces 15 Residents", "date": "2025-11-13", "url": "https://www.dallasnews.com/news/2025/11/13/third-alarm-fire-at-arlington-apartment-complex-displaces-15-residents/"},
+            {"lat": 32.6993, "lon": -97.39618127168195, "location": "Hulen Mall", "title": "Fort Worth Man Arrested After Hulen Mall Shooting That Left One Wounded", "date": "2025-11-30", "url": "https://www.dallasnews.com/news/crime/2025/11/30/fort-worth-man-arrested-after-hulen-mall-shooting-that-left-one-wounded/"},
+            {"lat": 32.8167, "lon": -96.81035958012887, "location": "Dallas", "title": "11 Year Old Boy Killed 9 Year Old Injured In Dallas Shooting", "date": "2025-11-24", "url": "https://www.dallasnews.com/news/crime/2025/11/24/11-year-old-boy-killed-9-year-old-injured-in-dallas-shooting/"},
+            {"lat": 32.8247, "lon": -96.79432498398422, "location": "Dallas", "title": "Nino De 11 Anos Muerto Y Nina De 9 Anos Herida En Un Tiroteo En Dallas", "date": "2025-11-24", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/24/nino-de-11-anos-muerto-y-nina-de-9-anos-herida-en-un-tiroteo-en-dallas/"},
+            {"lat": 32.8327, "lon": -96.80605247706422, "location": "Dallas", "title": "Man Killed In Shooting Sunday Morning At Dallas Fast Food Restaurant Police Say", "date": "2025-11-24", "url": "https://www.dallasnews.com/news/crime/2025/11/24/man-killed-in-shooting-sunday-morning-at-dallas-fast-food-restaurant-police-say/"},
+            {"lat": 32.8407, "lon": -96.79693737199476, "location": "Dallas", "title": "Hombre Muere Baleado El Domingo Por La Manana En Un Restaurante De Comida Rapida D", "date": "2025-11-25", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/25/hombre-muere-baleado-el-domingo-por-la-manana-en-un-restaurante-de-comida-rapida-de-dallas-dice-la-policia/"},
+            {"lat": 32.8487, "lon": -96.78831684988628, "location": "Dallas", "title": "Teen Critically Wounded In Fourth July Shooting In South Dallas Police Say", "date": "2025-11-14", "url": "https://www.dallasnews.com/news/crime/2025/11/14/teen-critically-wounded-in-fourth-july-shooting-in-south-dallas-police-say/"},
+            {"lat": 32.74, "lon": -96.76269890595633, "location": "South Dallas", "title": "4 Children Hurt In Separate Weekend Shootings In Dallas Police Say", "date": "2025-11-11", "url": "https://www.dallasnews.com/news/crime/2025/11/11/4-children-hurt-in-separate-weekend-shootings-in-dallas-police-say/"},
+            {"lat": 32.748, "lon": -96.77983099820867, "location": "South Dallas", "title": "Cuatro Menores Heridos En Tiroteos Separados El Fin De Semana En Dallas Dice La Po", "date": "2025-11-11", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/11/cuatro-menores-heridos-en-tiroteos-separados-el-fin-de-semana-en-dallas-dice-la-policia/"},
+            {"lat": 32.8567, "lon": -96.80063652568686, "location": "Dallas", "title": "Identifican A Hombre Apunalado Mortalmente En Octubre En Deep Ellum De Dallas", "date": "2025-12-03", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/12/03/identifican-a-hombre-apunalado-mortalmente-en-octubre-en-deep-ellum-de-dallas/"},
+            {"lat": 32.8647, "lon": -96.79229687376085, "location": "Dallas", "title": "Man Convicted Of Capital Murder In Dallas Lottery Winner Killing", "date": "2025-11-19", "url": "https://www.dallasnews.com/news/courts/2025/11/19/man-convicted-of-capital-murder-in-dallas-lottery-winner-killing/"},
+            {"lat": 32.8727, "lon": -96.80824671666696, "location": "Dallas", "title": "Hombre Condenado Por Asesinato Capital De Ganador De Loteria En Dallas", "date": "2025-11-19", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/19/hombre-condenado-por-asesinato-capital-de-ganador-de-loteria-en-dallas/"},
+            {"lat": 32.7955, "lon": -97.33988315048858, "location": "Fort Worth", "title": "Fort Worth Man Arrested After Allegedly Striking Killing Pedestrian Then Fleeing", "date": "2025-11-16", "url": "https://www.dallasnews.com/news/crime/2025/11/16/fort-worth-man-arrested-after-allegedly-striking-killing-pedestrian-then-fleeing/"},
+            {"lat": 32.8035, "lon": -97.32236813858008, "location": "Fort Worth", "title": "Fort Worth Man Charged With Murder After Body Found In His Apartment Police Say", "date": "2025-11-15", "url": "https://www.dallasnews.com/news/crime/2025/11/15/fort-worth-man-charged-with-murder-after-body-found-in-his-apartment-police-say/"},
+            {"lat": 32.7807, "lon": -96.81069538251916, "location": "Dallas", "title": "23 Year Old Charged With Murder In Fatal Shooting Of Woman In Dallas", "date": "2025-11-21", "url": "https://www.dallasnews.com/news/crime/2025/11/21/23-year-old-charged-with-murder-in-fatal-shooting-of-woman-in-dallas/"},
+            {"lat": 32.7887, "lon": -96.79849917595595, "location": "Dallas", "title": "Man Shot In Dallas Overnight", "date": "2025-11-20", "url": "https://www.dallasnews.com/news/crime/2025/11/20/man-shot-in-dallas-overnight/"},
+            {"lat": 32.7132, "lon": -96.87100355959016, "location": "Red Bird", "title": "Mujer Arrestada Por Apunalamiento Fatal En Vecindario Red Bird De Dallas Dicen Fun", "date": "2025-11-26", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/26/mujer-arrestada-por-apunalamiento-fatal-en-vecindario-red-bird-de-dallas-dicen-funcionarios/"},
+            {"lat": 32.6812, "lon": -96.86353609697088, "location": "Redbird", "title": "Joven De 21 Anos Arrestado Por Tiroteo En Redbird Que Dejo Un Muerto Dicen Funcion", "date": "2025-11-26", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/26/joven-de-21-anos-arrestado-por-tiroteo-en-redbird-que-dejo-un-muerto-dicen-funcionarios/"},
+            {"lat": 32.798, "lon": -96.75080802809695, "location": "East Dallas", "title": "Un Muerto Y Un Herido En Tiroteo En Old East Dallas El Sabado Dicen Funcionarios", "date": "2025-12-01", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/12/01/un-muerto-y-un-herido-en-tiroteo-en-old-east-dallas-el-sabado-dicen-funcionarios/"},
+            {"lat": 32.806, "lon": -96.75786206166422, "location": "East Dallas", "title": "One Man Killed Another Injured In Shooting In Old East Dallas Police Say", "date": "2025-11-30", "url": "https://www.dallasnews.com/news/crime/2025/11/30/one-man-killed-another-injured-in-shooting-in-old-east-dallas-police-say/"},
+            {"lat": 33.1032, "lon": -96.68021610989892, "location": "Allen", "title": "Allen Man Faces Capital Murder Charge After Death Of Child In His Care", "date": "2025-11-22", "url": "https://www.dallasnews.com/news/crime/2025/11/22/allen-man-faces-capital-murder-charge-after-death-of-child-in-his-care/"},
+            {"lat": 33.1112, "lon": -96.6651063779497, "location": "Allen", "title": "Hombre De Allen Enfrenta Cargo De Asesinato Capital Tras Muerte De Nino Bajo Su Cu", "date": "2025-11-22", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/22/hombre-de-allen-enfrenta-cargo-de-asesinato-capital-tras-muerte-de-nino-bajo-su-cuidado/"},
+            {"lat": 33.0146, "lon": -97.09254044497786, "location": "Flower Mound", "title": "Flower Mound Teen Turns Himself In Following Fatal Hit And Run Crash Police Say", "date": "2025-11-22", "url": "https://www.dallasnews.com/news/crime/2025/11/22/flower-mound-teen-turns-himself-in-following-fatal-hit-and-run-crash-police-say/"},
+            {"lat": 33.0226, "lon": -97.09104310606908, "location": "Flower Mound", "title": "Adolescente De Flower Mound Se Entrega Tras Choque Mortal Con Fuga Dice La Policia", "date": "2025-11-22", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/22/adolescente-de-flower-mound-se-entrega-tras-choque-mortal-con-fuga-dice-la-policia/"},
+            {"lat": 32.5501, "lon": -97.31477019155315, "location": "Burleson", "title": "Joven De 17 Anos Asesinado Otro Arrestado Tras Presunta Venta De Drogas En Burleso", "date": "2025-12-06", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/12/06/joven-de-17-anos-asesinado-otro-arrestado-tras-presunta-venta-de-drogas-en-burleson-bailey-lake/"},
+            {"lat": 32.822, "lon": -96.94287098424315, "location": "Irving", "title": "Motociclista De 20 Anos Muere En Incidente De Ira Al Volante En Irving", "date": "2025-12-04", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/12/04/motociclista-de-20-anos-muere-en-incidente-de-ira-al-volante-en-irving/"},
+            {"lat": 32.781, "lon": -96.79700046605594, "location": "Downtown Dallas", "title": "Dallas Police Searching For Suspect In Fatal Downtown Dallas Stabbing", "date": "2025-11-15", "url": "https://www.dallasnews.com/news/crime/2025/11/15/dallas-police-searching-for-suspect-in-fatal-downtown-dallas-stabbing/"},
+            {"lat": 32.789, "lon": -96.79122115684855, "location": "Downtown Dallas", "title": "Policia De Dallas Busca Sospechoso De Apunalamiento Fatal En El Centro De Dallas", "date": "2025-11-15", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/15/policia-de-dallas-busca-sospechoso-de-apunalamiento-fatal-en-el-centro-de-dallas/"},
+            {"lat": 32.797, "lon": -96.80556887413315, "location": "Downtown Dallas", "title": "Arrest Made In Downtown Dallas Stabbing Death Police Say", "date": "2025-11-21", "url": "https://www.dallasnews.com/news/crime/2025/11/21/arrest-made-in-downtown-dallas-stabbing-death-police-say/"},
+            {"lat": 32.1972, "lon": -96.64531476917972, "location": "Mckinney", "title": "Mckinney Mother Facing Murder Charge After Child Hospitalized On Suspected Abuse D", "date": "2025-12-03", "url": "https://www.dallasnews.com/news/crime/2025/12/03/mckinney-mother-facing-murder-charge-after-child-hospitalized-on-suspected-abuse-dies/"},
+            {"lat": 32.8807, "lon": -96.80007737499312, "location": "Dallas", "title": "Man Fatally Stabbed After Confrontation Near Downtown Dallas Dumpster", "date": "2025-11-20", "url": "https://www.dallasnews.com/news/crime/2025/11/20/man-fatally-stabbed-after-confrontation-near-downtown-dallas-dumpster/"},
+            {"lat": 32.8887, "lon": -96.80327682813596, "location": "Dallas", "title": "Hombre Apunalado Fatalmente Tras Confrontacion Cerca De Un Contenedor En El Centro", "date": "2025-11-20", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/20/hombre-apunalado-fatalmente-tras-confrontacion-cerca-de-un-contenedor-en-el-centro-de-dallas/"},
+            {"lat": 32.87, "lon": -96.72069406839914, "location": "Lake Highlands", "title": "Lake Highlands Man Pleads Guilty To Murder Of His Girlfriend", "date": "2025-12-04", "url": "https://www.dallasnews.com/news/courts/2025/12/04/lake-highlands-man-pleads-guilty-to-murder-of-his-girlfriend/"},
+            {"lat": 32.785, "lon": -96.76403131016695, "location": "Old East Dallas", "title": "Hombre De 26 Anos Muere Tras Tiroteo En Old East Dallas El Sabado Dicen Funcionari", "date": "2025-12-01", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/12/01/hombre-de-26-anos-muere-tras-tiroteo-en-old-east-dallas-el-sabado-dicen-funcionarios/"},
+            {"lat": 32.72, "lon": -96.71665313188195, "location": "Pleasant Grove", "title": "2 Arrested In Pleasant Grove Murder", "date": "2025-11-20", "url": "https://www.dallasnews.com/news/crime/2025/11/20/2-arrested-in-pleasant-grove-murder/"},
+            {"lat": 33.0462, "lon": -96.99769765188952, "location": "Lewisville", "title": "Lewisville Police Investigating Fatal Shooting Inside Apartment", "date": "2025-11-14", "url": "https://www.dallasnews.com/news/crime/2025/11/14/lewisville-police-investigating-fatal-shooting-inside-apartment/"},
+            {"lat": 32.7668, "lon": -96.60889654481916, "location": "Mesquite", "title": "Mesquite Man Gets Life In Prison For Murdering Estranged Wifes New Partner", "date": "2025-12-06", "url": "https://www.dallasnews.com/news/courts/2025/12/06/mesquite-man-gets-life-in-prison-for-murdering-estranged-wifes-new-partner/"},
+            {"lat": 32.9343, "lon": -97.08862133139893, "location": "Grapevine", "title": "Child Injured When Gun Accidentally Discharged In Grapevine Police Say", "date": "2025-11-27", "url": "https://www.dallasnews.com/news/crime/2025/11/27/child-injured-when-gun-accidentally-discharged-in-grapevine-police-say/"},
+            {"lat": 33.0198, "lon": -96.69424648393428, "location": "Plano", "title": "Plano Teen Gets 40 Years For Deadly 2022 Shooting", "date": "2025-12-04", "url": "https://www.dallasnews.com/news/courts/2025/12/04/plano-teen-gets-40-years-for-deadly-2022-shooting/"},
+            {"lat": 32.8967, "lon": -96.80645193009476, "location": "Dallas", "title": "Dallas Teen Pleads Guilty To Murder Robbery In 2022 Killing Of Woman", "date": "2025-11-21", "url": "https://www.dallasnews.com/news/courts/2025/11/21/dallas-teen-pleads-guilty-to-murder-robbery-in-2022-killing-of-woman/"},
+            {"lat": 32.9047, "lon": -96.79428181078455, "location": "Dallas", "title": "Adolescente De Dallas Se Declara Culpable De Asesinato Y Robo En El Homicidio De U", "date": "2025-11-21", "url": "https://www.dallasnews.com/espanol/al-dia/dallas-fort-worth/2025/11/21/adolescente-de-dallas-se-declara-culpable-de-asesinato-y-robo-en-el-homicidio-de-una-mujer-en-2022/"}
+        ];
+
+        // Draw incidents
+        svg.selectAll('.incident')
+            .data(incidents)
+            .enter()
+            .append('circle')
+            .attr('class', 'incident')
+            .attr('cx', d => xScale(d.lon))
+            .attr('cy', d => yScale(d.lat))
+            .attr('r', 6)
+            .on('mouseover', function(event, d) {
+                tooltip
+                    .style('opacity', 1)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 10) + 'px')
+                    .html(`
+                        <div class="location">${d.location}</div>
+                        <div>${d.title}</div>
+                        <div class="date">${d.date}</div>
+                    `);
+            })
+            .on('mouseout', function() {
+                tooltip.style('opacity', 0);
+            })
+            .on('click', function(event, d) {
+                window.open(d.url, '_blank');
+            });
+    </script>
+</body>
+</html>

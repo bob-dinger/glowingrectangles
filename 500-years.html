@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 Years Timeline</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #ffffff;
+            color: #000000;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #timeline {
+            background-color: #ffffff;
+        }
+        #event-name {
+            font-size: 20px;
+            margin-top: 15px;
+            font-weight: bold;
+            height: 30px;
+        }
+        #event-years {
+            font-size: 16px;
+            margin-top: 5px;
+            color: #666;
+            height: 24px;
+        }
+        #nextBtn {
+            margin-top: 15px;
+            padding: 12px 32px;
+            font-size: 16px;
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #nextBtn:hover {
+            background-color: #2563EB;
+        }
+    </style>
+</head>
+<body>
+    <h1>500 Years of History</h1>
+    <svg id="timeline" width="600" height="360"></svg>
+    <div id="event-name"></div>
+    <div id="event-years"></div>
+    <button id="nextBtn">Next Event</button>
+
+    <script>
+        const svg = document.getElementById('timeline');
+        const svgNS = "http://www.w3.org/2000/svg";
+
+        const cols = 10;
+        const rows = 6;
+        const cellSize = 60; // Square cells
+        const gridWidth = cols * cellSize;
+        const gridHeight = rows * cellSize;
+
+        // Store cell references
+        const cells = {};
+
+        // Draw the grid
+        for (let row = 0; row < rows; row++) {
+            const startYear = 1500 + (row * 100);
+            const maxCols = row === 5 ? 3 : 10; // 2000s only has 3 decades (2000, 2010, 2020)
+
+            for (let col = 0; col < maxCols; col++) {
+                const year = startYear + (col * 10);
+                const x = col * cellSize;
+                const y = row * cellSize;
+
+                // Cell rectangle (square)
+                const rect = document.createElementNS(svgNS, 'rect');
+                rect.setAttribute('x', x);
+                rect.setAttribute('y', y);
+                rect.setAttribute('width', cellSize);
+                rect.setAttribute('height', cellSize);
+                rect.setAttribute('fill', '#ffffff');
+                rect.setAttribute('stroke', '#000000');
+                rect.setAttribute('stroke-width', '2');
+                svg.appendChild(rect);
+
+                // Decade label
+                const label = document.createElementNS(svgNS, 'text');
+                label.setAttribute('x', x + cellSize / 2);
+                label.setAttribute('y', y + cellSize / 2 + 5);
+                label.setAttribute('text-anchor', 'middle');
+                label.setAttribute('font-size', '12px');
+                label.setAttribute('fill', '#999');
+                label.textContent = year;
+                svg.appendChild(label);
+
+                cells[year] = rect;
+            }
+        }
+
+        // Flash overlay for highlighting
+        const flashOverlay = document.createElementNS(svgNS, 'rect');
+        flashOverlay.setAttribute('fill', '#FFD700');
+        flashOverlay.setAttribute('opacity', '0');
+        svg.appendChild(flashOverlay);
+
+        // Historical events
+        const events = [
+            // Major world events
+            { name: 'Columbus reaches the Americas', startYear: 1490, endYear: 1490 },
+            { name: 'Protestant Reformation begins', startYear: 1510, endYear: 1510 },
+            { name: 'Magellan circumnavigates the globe', startYear: 1520, endYear: 1520 },
+            { name: 'Jamestown founded', startYear: 1600, endYear: 1600 },
+            { name: 'Pilgrims land at Plymouth Rock', startYear: 1620, endYear: 1620 },
+            { name: 'Isaac Newton publishes Principia', startYear: 1680, endYear: 1680 },
+            { name: 'American Revolution', startYear: 1770, endYear: 1780 },
+            { name: 'French Revolution', startYear: 1780, endYear: 1790 },
+            { name: 'Napoleon conquers Europe', startYear: 1800, endYear: 1810 },
+            { name: 'American Civil War', startYear: 1860, endYear: 1860 },
+            { name: 'Moon Landing', startYear: 1960, endYear: 1960 },
+            { name: 'Fall of the Berlin Wall', startYear: 1980, endYear: 1980 },
+            { name: 'September 11 attacks', startYear: 2000, endYear: 2000 },
+            { name: 'iPhone launches, smartphone era begins', startYear: 2000, endYear: 2000 },
+            { name: 'COVID-19 pandemic', startYear: 2020, endYear: 2020 },
+            { name: 'ChatGPT & AI revolution', startYear: 2020, endYear: 2020 },
+            { name: 'British Empire', startYear: 1700, endYear: 1950 },
+            { name: 'Atlantic Slave Trade', startYear: 1500, endYear: 1860 },
+            { name: 'Industrial Revolution', startYear: 1760, endYear: 1840 },
+            { name: 'Cold War', startYear: 1940, endYear: 1990 },
+            { name: 'Renaissance', startYear: 1500, endYear: 1600 },
+            { name: 'Age of Exploration', startYear: 1500, endYear: 1600 },
+
+            // European Wars - 1500s
+            { name: 'Italian Wars', startYear: 1494, endYear: 1559 },
+            { name: 'French Wars of Religion', startYear: 1562, endYear: 1598 },
+            { name: 'Eighty Years War (Dutch Independence)', startYear: 1568, endYear: 1648 },
+            { name: 'Anglo-Spanish War', startYear: 1585, endYear: 1604 },
+
+            // European Wars - 1600s
+            { name: 'Thirty Years War', startYear: 1618, endYear: 1648 },
+            { name: 'English Civil War', startYear: 1642, endYear: 1651 },
+            { name: 'Franco-Dutch War', startYear: 1672, endYear: 1678 },
+            { name: 'Great Turkish War', startYear: 1683, endYear: 1699 },
+            { name: 'Nine Years War', startYear: 1688, endYear: 1697 },
+
+            // European Wars - 1700s
+            { name: 'War of Spanish Succession', startYear: 1701, endYear: 1714 },
+            { name: 'Great Northern War', startYear: 1700, endYear: 1721 },
+            { name: 'War of Austrian Succession', startYear: 1740, endYear: 1748 },
+            { name: 'Seven Years War', startYear: 1756, endYear: 1763 },
+            { name: 'Napoleonic Wars', startYear: 1803, endYear: 1815 },
+
+            // European Wars - 1800s
+            { name: 'Crimean War', startYear: 1853, endYear: 1856 },
+            { name: 'Franco-Prussian War', startYear: 1870, endYear: 1871 },
+            { name: 'Austro-Prussian War', startYear: 1866, endYear: 1866 },
+            { name: 'Russo-Turkish War', startYear: 1877, endYear: 1878 },
+
+            // European Wars - 1900s
+            { name: 'World War I', startYear: 1914, endYear: 1918 },
+            { name: 'Russian Civil War', startYear: 1917, endYear: 1922 },
+            { name: 'Spanish Civil War', startYear: 1936, endYear: 1939 },
+            { name: 'World War II', startYear: 1939, endYear: 1945 },
+            { name: 'Greek Civil War', startYear: 1946, endYear: 1949 },
+            { name: 'Hungarian Revolution', startYear: 1956, endYear: 1956 },
+            { name: 'Yugoslav Wars', startYear: 1991, endYear: 2001 },
+
+            // European Wars - 2000s
+            { name: 'Russo-Georgian War', startYear: 2008, endYear: 2008 },
+            { name: 'Russian invasion of Ukraine', startYear: 2022, endYear: 2024 }
+        ];
+
+        let currentIndex = 0;
+        let shuffledEvents = [...events];
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        shuffle(shuffledEvents);
+
+        function getDecade(year) {
+            return Math.floor(year / 10) * 10;
+        }
+
+        function getCellCoords(decade) {
+            const row = Math.floor((decade - 1500) / 100);
+            const col = (decade % 100) / 10;
+            return {
+                x: col * cellSize,
+                y: row * cellSize,
+                row: row,
+                col: col
+            };
+        }
+
+        function resetCells() {
+            Object.values(cells).forEach(cell => {
+                gsap.to(cell, {
+                    attr: { fill: '#ffffff' },
+                    duration: 0.3
+                });
+            });
+        }
+
+        function flashYearRange(startYear, endYear) {
+            const startDecade = getDecade(startYear);
+            const endDecade = getDecade(endYear);
+
+            // Collect all decades in range
+            const decades = [];
+            for (let d = startDecade; d <= endDecade; d += 10) {
+                if (cells[d]) {
+                    decades.push(d);
+                }
+            }
+
+            // Flash each cell
+            decades.forEach((decade, index) => {
+                const cell = cells[decade];
+                if (cell) {
+                    gsap.fromTo(cell,
+                        { attr: { fill: '#FFD700' } },
+                        {
+                            attr: { fill: '#FFF8DC' },
+                            duration: 1.5,
+                            delay: index * 0.05,
+                            ease: 'power2.out'
+                        }
+                    );
+                }
+            });
+        }
+
+        function showEvent(index) {
+            const event = shuffledEvents[index];
+
+            document.getElementById('event-name').textContent = event.name;
+
+            const startDecade = getDecade(event.startYear);
+            const endDecade = getDecade(event.endYear);
+            if (startDecade === endDecade) {
+                document.getElementById('event-years').textContent = `${startDecade}s`;
+            } else {
+                document.getElementById('event-years').textContent = `${startDecade}s - ${endDecade}s`;
+            }
+
+            resetCells();
+
+            setTimeout(() => {
+                flashYearRange(event.startYear, event.endYear);
+            }, 400);
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            currentIndex = (currentIndex + 1) % shuffledEvents.length;
+            if (currentIndex === 0) {
+                shuffle(shuffledEvents);
+            }
+            showEvent(currentIndex);
+        });
+
+        // Show first event
+        showEvent(0);
+    </script>
+</body>
+</html>

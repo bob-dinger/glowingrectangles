@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Learning Tools - Glowing Gardens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            margin-bottom: 30px;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        h1 {
+            font-size: 42px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #DC2626 0%, #F59E0B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tagline {
+            font-size: 16px;
+            color: #888;
+        }
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 25px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #DC2626;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #DC2626, #F59E0B);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .card:hover {
+            border-color: #DC2626;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.15);
+        }
+        .card:hover::before {
+            opacity: 1;
+        }
+        .card-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        .card-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .card-description {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        .card-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #555;
+        }
+        .card-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(220, 38, 38, 0.2);
+            color: #DC2626;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge.new {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22C55E;
+        }
+        .badge.icons {
+            background: rgba(139, 92, 246, 0.2);
+            color: #8B5CF6;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid #222;
+            color: #555;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+
+        <header>
+            <h1>Spanish Learning Tools</h1>
+            <p class="tagline">Visual and interactive ways to learn Spanish verbs</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">400+</div>
+                    <div class="stat-label">Verbs</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">6</div>
+                    <div class="stat-label">Tools</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">187</div>
+                    <div class="stat-label">Phrases</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card" onclick="window.location.href='spanish-gradients.html'">
+                <span class="badge new">New</span>
+                <div class="card-icon">📊</div>
+                <div class="card-title">Verb Gradients</div>
+                <div class="card-description">Intensity spectrums from subtle to extreme. See how whisper → murmur → speak → shout → scream relate to each other.</div>
+                <div class="card-meta">
+                    <span>10 gradients</span>
+                    <span>50 verbs</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="window.location.href='spanish-verbs-icons.html'">
+                <span class="badge icons">Icons</span>
+                <div class="card-icon">🎯</div>
+                <div class="card-title">Verb Clusters</div>
+                <div class="card-description">Force diagrams grouping verbs by action type. Mouth actions, throwing, looking, emotions, and 16 more categories.</div>
+                <div class="card-meta">
+                    <span>20 categories</span>
+                    <span>180+ verbs</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="window.location.href='spanish-verbs.html'">
+                <div class="card-icon">🔮</div>
+                <div class="card-title">Verb Clusters (Classic)</div>
+                <div class="card-description">Original version with emoji centers. Same 20 categories of related verbs in force diagram format.</div>
+                <div class="card-meta">
+                    <span>20 categories</span>
+                    <span>180+ verbs</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="window.location.href='spanish-game.html'">
+                <div class="card-icon">🎮</div>
+                <div class="card-title">Translation Game</div>
+                <div class="card-description">Practice translating sentences. See subject and object light up as you learn sentence structure across tenses.</div>
+                <div class="card-meta">
+                    <span>3 tenses</span>
+                    <span>187 phrases</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="window.location.href='spanish-confusables.html'">
+                <div class="card-icon">🔄</div>
+                <div class="card-title">Confusable Verbs</div>
+                <div class="card-description">Verbs that look or sound similar. Grouped by prefix (arr-, con-, des-) with memory mnemonics.</div>
+                <div class="card-meta">
+                    <span>12 clusters</span>
+                    <span>105 verbs</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="window.location.href='spanish-conjugation.html'">
+                <div class="card-icon">📝</div>
+                <div class="card-title">Conjugation Trainer</div>
+                <div class="card-description">Learn verb conjugations with animated pronoun forms. Watch all 5 forms animate sequentially.</div>
+                <div class="card-meta">
+                    <span>3 tenses</span>
+                    <span>28 verbs</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Click any verb to hear pronunciation • Part of <a href="index.html" style="color:#DC2626;text-decoration:none;">Glowing Gardens</a>
+        </footer>
+    </div>
+</body>
+</html>

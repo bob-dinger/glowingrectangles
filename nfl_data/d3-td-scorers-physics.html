@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 100 TD Scorer Seasons</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            padding: 15px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(10,10,10,0.9) 0%, rgba(10,10,10,0) 100%);
+        }
+        .subtitle {
+            font-size: 13px;
+            color: #888;
+            font-weight: normal;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        canvas {
+            display: block;
+        }
+        .tooltip {
+            position: fixed;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid #444;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 1000;
+        }
+        .tooltip .name {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .tooltip .tds {
+            color: #4ade80;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .tooltip .breakdown {
+            color: #888;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+        button {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        button:hover {
+            background: #333;
+            border-color: #666;
+        }
+        .legend {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            z-index: 100;
+            font-size: 11px;
+            color: #888;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Top 100 Touchdown Scorer Seasons <span class="subtitle">— rushing + receiving + special teams TDs</span></h1>
+    <div class="legend">
+        <div class="legend-item">
+            <svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#ef4444"/></svg>
+            <span>RB</span>
+        </div>
+        <div class="legend-item">
+            <svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#3b82f6"/></svg>
+            <span>WR</span>
+        </div>
+        <div class="legend-item">
+            <svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#22c55e"/></svg>
+            <span>TE</span>
+        </div>
+        <div class="legend-item">
+            <svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#a855f7"/></svg>
+            <span>QB</span>
+        </div>
+    </div>
+    <div id="canvas-container"></div>
+    <div class="controls">
+        <button id="drop-btn">Drop Again</button>
+        <button id="shake-btn">Shake</button>
+    </div>
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const { Engine, Render, Runner, Bodies, Body, Composite, Mouse, MouseConstraint, Events } = Matter;
+
+        let data = [];
+        let engine, render, runner;
+        let balls = [];
+        const tooltip = document.getElementById('tooltip');
+
+        // Color by position
+        function getPositionColor(position) {
+            switch(position) {
+                case 'RB': return '#ef4444';  // Red
+                case 'WR': return '#3b82f6';  // Blue
+                case 'TE': return '#22c55e';  // Green
+                case 'QB': return '#a855f7';  // Purple
+                default: return '#6b7280';    // Gray
+            }
+        }
+
+        function getInitials(name) {
+            const parts = name.split(' ');
+            if (parts.length >= 2) {
+                return parts[0][0] + parts[parts.length - 1][0];
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        // Load data and initialize
+        fetch('td_scorers_seasons.json')
+            .then(res => res.json())
+            .then(json => {
+                data = json;
+                initPhysics();
+                dropBalls();
+            });
+
+        function initPhysics() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // Create engine
+            engine = Engine.create();
+            engine.gravity.y = 0.8;
+
+            // Create renderer
+            render = Render.create({
+                element: document.getElementById('canvas-container'),
+                engine: engine,
+                options: {
+                    width: width,
+                    height: height,
+                    wireframes: false,
+                    background: '#0a0a0a'
+                }
+            });
+
+            // Custom rendering for labels
+            Events.on(render, 'afterRender', function() {
+                const ctx = render.context;
+
+                balls.forEach(ball => {
+                    const pos = ball.body.position;
+                    const initials = getInitials(ball.data.name);
+                    const label = `${initials}-${ball.data.tds}`;
+
+                    ctx.save();
+                    ctx.translate(pos.x, pos.y);
+                    ctx.rotate(ball.body.angle);
+
+                    // Text styling
+                    const fontSize = Math.max(10, ball.radius * 0.45);
+                    ctx.font = `bold ${fontSize}px -apple-system, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(label, 0, 0);
+
+                    ctx.restore();
+                });
+            });
+
+            // Add walls
+            const wallOptions = { isStatic: true, render: { fillStyle: '#1a1a1a' } };
+            const floorY = height - 80;
+            Composite.add(engine.world, [
+                Bodies.rectangle(width / 2, floorY + 25, width, 50, wallOptions),
+                Bodies.rectangle(-25, height / 2, 50, height, wallOptions),
+                Bodies.rectangle(width + 25, height / 2, 50, height, wallOptions)
+            ]);
+
+            // Mouse control
+            const mouse = Mouse.create(render.canvas);
+            const mouseConstraint = MouseConstraint.create(engine, {
+                mouse: mouse,
+                constraint: {
+                    stiffness: 0.2,
+                    render: { visible: false }
+                }
+            });
+            Composite.add(engine.world, mouseConstraint);
+            render.mouse = mouse;
+
+            // Hover detection
+            Events.on(engine, 'afterUpdate', function() {
+                const mousePos = mouse.position;
+                let hoveredBall = null;
+
+                for (const ball of balls) {
+                    const dx = ball.body.position.x - mousePos.x;
+                    const dy = ball.body.position.y - mousePos.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < ball.radius) {
+                        hoveredBall = ball;
+                        break;
+                    }
+                }
+
+                if (hoveredBall && !mouseConstraint.body) {
+                    const d = hoveredBall.data;
+                    let breakdown = [];
+                    if (d.rush_tds) breakdown.push(`${d.rush_tds} rushing`);
+                    if (d.rec_tds) breakdown.push(`${d.rec_tds} receiving`);
+                    if (d.st_tds) breakdown.push(`${d.st_tds} special teams`);
+
+                    tooltip.innerHTML = `
+                        <div class="name">${d.name} (${d.position})</div>
+                        <div>${d.season} Season</div>
+                        <div class="tds">${d.tds} TDs</div>
+                        <div class="breakdown">${breakdown.join(', ')}</div>
+                    `;
+                    tooltip.style.opacity = 1;
+                    tooltip.style.left = (mousePos.x + 15) + 'px';
+                    tooltip.style.top = (mousePos.y - 10) + 'px';
+                } else {
+                    tooltip.style.opacity = 0;
+                }
+            });
+
+            // Start
+            Render.run(render);
+            runner = Runner.create();
+            Runner.run(runner, engine);
+        }
+
+        function dropBalls() {
+            // Clear existing balls
+            balls.forEach(b => Composite.remove(engine.world, b.body));
+            balls = [];
+
+            const width = window.innerWidth;
+
+            // Create balls with staggered drop
+            data.forEach((player, i) => {
+                setTimeout(() => {
+                    // Radius based on TDs (scale from 15 to 50)
+                    const minTD = 15, maxTD = 31;
+                    const radius = 15 + ((player.tds - minTD) / (maxTD - minTD)) * 35;
+
+                    // Random x position
+                    const x = 100 + Math.random() * (width - 200);
+                    const y = -50 - Math.random() * 100;
+
+                    const body = Bodies.circle(x, y, radius, {
+                        restitution: 0.6,
+                        friction: 0.1,
+                        frictionAir: 0.001,
+                        render: {
+                            fillStyle: getPositionColor(player.position),
+                            strokeStyle: '#fff',
+                            lineWidth: 2
+                        }
+                    });
+
+                    Composite.add(engine.world, body);
+                    balls.push({ body, radius, data: player });
+                }, i * 50);
+            });
+        }
+
+        function shakeBalls() {
+            balls.forEach(ball => {
+                const force = {
+                    x: (Math.random() - 0.5) * 0.05,
+                    y: -Math.random() * 0.08
+                };
+                Body.applyForce(ball.body, ball.body.position, force);
+            });
+        }
+
+        // Button handlers
+        document.getElementById('drop-btn').addEventListener('click', dropBalls);
+        document.getElementById('shake-btn').addEventListener('click', shakeBalls);
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            render.canvas.width = window.innerWidth;
+            render.canvas.height = window.innerHeight;
+            render.options.width = window.innerWidth;
+            render.options.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

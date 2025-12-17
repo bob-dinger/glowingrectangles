@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Attention a Teacher Can Give</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 25px 0;
+            text-align: center;
+            font-size: 13px;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .insight {
+            color: #888;
+            font-size: 12px;
+            margin-top: 20px;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.7;
+        }
+        .highlight {
+            color: #10B981;
+        }
+        .volunteer {
+            color: #F59E0B;
+        }
+    </style>
+</head>
+<body>
+    <h1>One Teacher. Thirty Kids. Eight Hours.</h1>
+    <p class="description">
+        Each ring = one child's share of a teacher's day.<br>
+        The math makes individual attention nearly impossible.
+    </p>
+
+    <div id="vis"></div>
+
+    <p class="insight">
+        <span class="highlight">A teacher's reality:</span> Even if they did nothing but 1-on-1 time, each child gets 16 minutes/day.<br>
+        After teaching, grading, managing, meetings — it's closer to <span class="highlight">2-4 minutes</span>.<br><br>
+        <span class="volunteer">One volunteer reading for 30 minutes</span> gives a child more individual attention<br>
+        than they might receive all week in school.
+    </p>
+
+    <script>
+        const width = 700;
+        const height = 550;
+        const centerX = width / 2;
+        const centerY = 250;
+
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const numKids = 30;
+        const schoolDayMinutes = 480; // 8 hours
+        const maxTheoreticalMinutes = schoolDayMinutes / numKids; // 16 min
+        const realisticMinutes = 3; // what they actually get
+
+        // Teacher in center
+        const teacherRadius = 30;
+
+        svg.append('circle')
+            .attr('cx', centerX)
+            .attr('cy', centerY)
+            .attr('r', teacherRadius)
+            .attr('fill', '#10B981')
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2);
+
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', centerY + 4)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '11px')
+            .attr('font-weight', 'bold')
+            .text('Teacher');
+
+        // 30 kids around the teacher
+        const kidRadius = 20;
+        const orbitRadius = 120;
+
+        const kids = [];
+        for (let i = 0; i < numKids; i++) {
+            const angle = (i / numKids) * Math.PI * 2 - Math.PI / 2;
+            kids.push({
+                x: centerX + orbitRadius * Math.cos(angle),
+                y: centerY + orbitRadius * Math.sin(angle),
+                id: i + 1
+            });
+        }
+
+        // Draw kids
+        svg.selectAll('.kid')
+            .data(kids)
+            .enter()
+            .append('circle')
+            .attr('class', 'kid')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', kidRadius)
+            .attr('fill', '#3B82F6')
+            .attr('opacity', 0.8)
+            .attr('stroke', '#1e3a5f')
+            .attr('stroke-width', 1);
+
+        // Draw attention "slice" for each kid - a thin arc showing their share
+        const attentionArc = d3.arc()
+            .innerRadius(teacherRadius + 5)
+            .outerRadius(teacherRadius + 15)
+            .startAngle((d, i) => (i / numKids) * Math.PI * 2)
+            .endAngle((d, i) => ((i + 1) / numKids) * Math.PI * 2 - 0.02);
+
+        svg.selectAll('.attention-slice')
+            .data(kids)
+            .enter()
+            .append('path')
+            .attr('class', 'attention-slice')
+            .attr('d', attentionArc)
+            .attr('transform', `translate(${centerX},${centerY})`)
+            .attr('fill', '#F59E0B')
+            .attr('opacity', 0.7);
+
+        // Time breakdown below
+        const breakdownY = 430;
+
+        // Full day bar
+        const barWidth = 500;
+        const barHeight = 30;
+        const barX = (width - barWidth) / 2;
+
+        svg.append('rect')
+            .attr('x', barX)
+            .attr('y', breakdownY)
+            .attr('width', barWidth)
+            .attr('height', barHeight)
+            .attr('fill', '#333')
+            .attr('rx', 4);
+
+        // Sections of the day
+        const dayBreakdown = [
+            { label: 'Whole-class teaching', minutes: 240, color: '#4B5563' },
+            { label: 'Transitions/Management', minutes: 60, color: '#374151' },
+            { label: 'Admin/Grading', minutes: 60, color: '#1f2937' },
+            { label: 'Lunch/Breaks', minutes: 60, color: '#111827' },
+            { label: '1-on-1 available', minutes: 60, color: '#10B981' },
+        ];
+
+        let currentX = barX;
+        dayBreakdown.forEach(section => {
+            const sectionWidth = (section.minutes / schoolDayMinutes) * barWidth;
+            svg.append('rect')
+                .attr('x', currentX)
+                .attr('y', breakdownY)
+                .attr('width', sectionWidth)
+                .attr('height', barHeight)
+                .attr('fill', section.color)
+                .attr('rx', currentX === barX ? 4 : 0);
+            currentX += sectionWidth;
+        });
+
+        // Labels for the bar
+        svg.append('text')
+            .attr('x', barX)
+            .attr('y', breakdownY - 8)
+            .attr('fill', '#888')
+            .attr('font-size', '11px')
+            .text('8-hour school day breakdown:');
+
+        svg.append('text')
+            .attr('x', barX + barWidth)
+            .attr('y', breakdownY - 8)
+            .attr('text-anchor', 'end')
+            .attr('fill', '#10B981')
+            .attr('font-size', '11px')
+            .text('~60 min for 1-on-1 = 2 min per child');
+
+        // Per-child breakdown
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', breakdownY + barHeight + 30)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '14px')
+            .attr('font-weight', 'bold')
+            .text('Each child\'s share: ~2 minutes of individual attention per day');
+
+        // Volunteer comparison
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', breakdownY + barHeight + 55)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#F59E0B')
+            .attr('font-size', '13px')
+            .text('One volunteer reading for 30 min = 15x more attention');
+
+        // Legend
+        svg.append('circle')
+            .attr('cx', 60)
+            .attr('cy', 30)
+            .attr('r', 8)
+            .attr('fill', '#3B82F6');
+        svg.append('text')
+            .attr('x', 75)
+            .attr('y', 34)
+            .attr('fill', '#888')
+            .attr('font-size', '11px')
+            .text('= 1 child');
+
+        svg.append('rect')
+            .attr('x', 150)
+            .attr('y', 22)
+            .attr('width', 16)
+            .attr('height', 16)
+            .attr('fill', '#F59E0B')
+            .attr('opacity', 0.7);
+        svg.append('text')
+            .attr('x', 172)
+            .attr('y', 34)
+            .attr('fill', '#888')
+            .attr('font-size', '11px')
+            .text('= share of teacher\'s attention');
+    </script>
+</body>
+</html>

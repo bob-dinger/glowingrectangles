@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Bubble Force - NFL Player Ages</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+        #vis {
+            width: 600px;
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 600px;
+            height: 600px;
+        }
+        .bubble {
+            stroke: #fff;
+            stroke-width: 0.5px;
+            cursor: pointer;
+            opacity: 0.9;
+        }
+        .bubble:hover {
+            opacity: 1;
+            stroke-width: 1.5px;
+        }
+        .legend {
+            color: #aaaaaa;
+            font-size: 11px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>NFL Player Age Distribution (2025)</h1>
+    <p class="description">
+        ~1,280 bubbles representing 2,567 NFL players. Each bubble = ~2 players.
+        Larger bubbles = older players. Color: young (green) → prime (blue) → veteran (red).
+    </p>
+    <div id="vis"></div>
+    <div class="legend">
+        Age 21 (smallest) → Age 41 (largest) | Peak: 25 years old | Mean: 26.3
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 600;
+
+        // NFL roster age data (scraped from ESPN, Nov 2025)
+        const ageData = [
+            { age: 21, count: 32 },
+            { age: 22, count: 140 },
+            { age: 23, count: 256 },
+            { age: 24, count: 362 },
+            { age: 25, count: 391 },
+            { age: 26, count: 349 },
+            { age: 27, count: 268 },
+            { age: 28, count: 208 },
+            { age: 29, count: 170 },
+            { age: 30, count: 135 },
+            { age: 31, count: 93 },
+            { age: 32, count: 59 },
+            { age: 33, count: 34 },
+            { age: 34, count: 18 },
+            { age: 35, count: 18 },
+            { age: 36, count: 13 },
+            { age: 37, count: 6 },
+            { age: 38, count: 4 },
+            { age: 39, count: 6 },
+            { age: 40, count: 1 },
+            { age: 41, count: 4 }
+        ];
+
+        // Generate individual bubbles - divide counts by 2 to get ~1280 bubbles
+        const nodes = [];
+        let id = 0;
+
+        ageData.forEach(d => {
+            // Halve the count (round up to keep representation)
+            const bubbleCount = Math.ceil(d.count / 2);
+            for (let i = 0; i < bubbleCount; i++) {
+                nodes.push({
+                    id: id++,
+                    age: d.age,
+                    x: Math.random() * width,
+                    y: Math.random() * height
+                });
+            }
+        });
+
+        console.log('Total bubbles:', nodes.length);
+
+        // Radius scale - older = larger (age 21 smallest, age 41 largest)
+        const radiusScale = d3.scaleLinear()
+            .domain([21, 41])
+            .range([4, 14]);
+
+        // Color scale - young (green) to prime (blue) to veteran (red)
+        const colorScale = d3.scaleLinear()
+            .domain([21, 28, 41])
+            .range(['#10B981', '#3B82F6', '#EF4444']);
+
+        // Add radius to each node
+        nodes.forEach(d => {
+            d.radius = radiusScale(d.age);
+        });
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Add circles
+        const bubbles = svg.selectAll('.bubble')
+            .data(nodes, d => d.id)
+            .enter()
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', d => colorScale(d.age));
+
+        // Charge function - lighter for many bubbles
+        function charge(d) {
+            return -Math.pow(d.radius, 2.0) * 0.02;
+        }
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(charge))
+            .force('x', d3.forceX().strength(0.05).x(width / 2))
+            .force('y', d3.forceY().strength(0.05).y(height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 1))
+            .on('tick', ticked);
+
+        // Tick function
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+        }
+    </script>
+</body>
+</html>

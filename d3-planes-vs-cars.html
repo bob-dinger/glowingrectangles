@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planes vs Cars - Fear vs Reality</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Georgia', serif;
+            background-color: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .description {
+            color: #888888;
+            margin: 0 0: 25px 0;
+            text-align: center;
+            font-size: 14px;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+        .stat-highlight {
+            color: #ef4444;
+        }
+        .panels {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .panel-title {
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        .panel-stat {
+            color: #ef4444;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .panel-subtitle {
+            color: #666;
+            font-size: 11px;
+            margin-bottom: 10px;
+        }
+        svg {
+            background-color: #050505;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+        .bubble {
+            stroke: none;
+        }
+        .vs-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .vs {
+            color: #333;
+            font-size: 36px;
+        }
+        .ratio {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .bottom-stats {
+            display: flex;
+            gap: 60px;
+            margin-top: 25px;
+            color: #888;
+            font-size: 13px;
+        }
+        .bottom-stat {
+            text-align: center;
+        }
+        .bottom-stat .label {
+            color: #666;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            background: #1a1a1a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #333;
+            border-color: #666;
+        }
+        button.active {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+        .note {
+            color: #555;
+            font-size: 11px;
+            margin-top: 15px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Planes vs Cars</h1>
+    <p class="description">
+        We fear plane crashes. We ignore car crashes.<br>
+        <span class="stat-highlight">~115 Americans die in car crashes every day. Plane crashes kill ~0.</span>
+    </p>
+
+    <div class="panels">
+        <div class="panel">
+            <div class="panel-title">Car Deaths</div>
+            <div class="panel-stat">~115/day</div>
+            <div class="panel-subtitle">42,000 per year in the US</div>
+            <svg id="cars" width="500" height="450"></svg>
+        </div>
+        <div class="vs-container">
+            <div class="vs">vs</div>
+            <div class="ratio">
+                Cars kill<br>
+                <strong style="font-size: 24px; color: #fff;">1,000x</strong><br>
+                more people
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-title">Plane Deaths</div>
+            <div class="panel-stat">~0/day</div>
+            <div class="panel-subtitle">~40 per year in the US (avg)</div>
+            <svg id="planes" width="200" height="450"></svg>
+        </div>
+    </div>
+
+    <div class="bottom-stats">
+        <div class="bottom-stat">
+            <div class="label">Lifetime odds of dying in a car crash</div>
+            <div style="color: #ef4444; font-size: 18px;">1 in 107</div>
+        </div>
+        <div class="bottom-stat">
+            <div class="label">Lifetime odds of dying in a plane crash</div>
+            <div style="color: #3b82f6; font-size: 18px;">1 in 205,552</div>
+        </div>
+        <div class="bottom-stat">
+            <div class="label">News stories per death</div>
+            <div><span style="color: #ef4444;">Cars: ~0</span> &nbsp; <span style="color: #3b82f6;">Planes: ~1,000</span></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="daily" class="active">Daily Deaths</button>
+        <button id="weekly">Weekly Deaths</button>
+        <button id="monthly">Monthly Deaths</button>
+    </div>
+
+    <div class="note">
+        Sources: NHTSA, FAA, National Safety Council
+    </div>
+
+    <script>
+        const carWidth = 500;
+        const planeWidth = 200;
+        const height = 450;
+
+        // Death rates
+        const rates = {
+            daily: { cars: 115, planes: 0.1 },
+            weekly: { cars: 805, planes: 0.8 },
+            monthly: { cars: 3500, planes: 3 }
+        };
+
+        let currentPeriod = 'daily';
+
+        // Generate car death data
+        function generateCarData(count) {
+            // Cap display at 400 for visual clarity, but show real number
+            const displayCount = Math.min(count, 400);
+            const data = [];
+            for (let i = 0; i < displayCount; i++) {
+                data.push({
+                    id: i,
+                    radius: count > 200 ? 5 : 6,
+                    x: Math.random() * carWidth,
+                    y: Math.random() * height
+                });
+            }
+            return data;
+        }
+
+        // Generate plane death data
+        function generatePlaneData(count) {
+            const data = [];
+            const displayCount = Math.round(count);
+            for (let i = 0; i < displayCount; i++) {
+                data.push({
+                    id: i,
+                    radius: 8,
+                    x: Math.random() * planeWidth,
+                    y: Math.random() * height
+                });
+            }
+            return data;
+        }
+
+        // Create Car SVG
+        const carSvg = d3.select('#cars');
+
+        // Create Plane SVG
+        const planeSvg = d3.select('#planes');
+
+        let carNodes, planeNodes;
+        let carSimulation, planeSimulation;
+        let carBubbles, planeBubbles;
+
+        function initializeVisualizations() {
+            const carCount = rates[currentPeriod].cars;
+            const planeCount = rates[currentPeriod].planes;
+
+            carNodes = generateCarData(carCount);
+            planeNodes = generatePlaneData(planeCount);
+
+            // Clear existing
+            carSvg.selectAll('*').remove();
+            planeSvg.selectAll('*').remove();
+
+            // Add "each dot = 1 death" label if too many
+            if (carCount > 400) {
+                carSvg.append('text')
+                    .attr('x', carWidth / 2)
+                    .attr('y', 20)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#666')
+                    .attr('font-size', '11px')
+                    .text(`Showing 400 of ${carCount} deaths`);
+            }
+
+            // Car bubbles
+            carBubbles = carSvg.selectAll('.bubble')
+                .data(carNodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'bubble')
+                .attr('r', d => d.radius)
+                .attr('fill', '#ef4444')
+                .attr('opacity', 0.7);
+
+            // Plane bubbles
+            planeBubbles = planeSvg.selectAll('.bubble')
+                .data(planeNodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'bubble')
+                .attr('r', d => d.radius)
+                .attr('fill', '#3b82f6')
+                .attr('opacity', 0.8);
+
+            // Add message if no plane deaths
+            if (planeNodes.length === 0) {
+                planeSvg.append('text')
+                    .attr('x', planeWidth / 2)
+                    .attr('y', height / 2 - 20)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#3b82f6')
+                    .attr('font-size', '48px')
+                    .text('0');
+
+                planeSvg.append('text')
+                    .attr('x', planeWidth / 2)
+                    .attr('y', height / 2 + 20)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#666')
+                    .attr('font-size', '12px')
+                    .text('(most days)');
+            }
+
+            // Car force simulation
+            if (carSimulation) carSimulation.stop();
+            carSimulation = d3.forceSimulation(carNodes)
+                .force('charge', d3.forceManyBody().strength(-3))
+                .force('x', d3.forceX(carWidth / 2).strength(0.03))
+                .force('y', d3.forceY(height / 2).strength(0.03))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 1))
+                .on('tick', () => {
+                    carBubbles
+                        .attr('cx', d => Math.max(d.radius, Math.min(carWidth - d.radius, d.x)))
+                        .attr('cy', d => Math.max(d.radius, Math.min(height - d.radius, d.y)));
+                });
+
+            // Plane force simulation
+            if (planeSimulation) planeSimulation.stop();
+            if (planeNodes.length > 0) {
+                planeSimulation = d3.forceSimulation(planeNodes)
+                    .force('charge', d3.forceManyBody().strength(-20))
+                    .force('x', d3.forceX(planeWidth / 2).strength(0.05))
+                    .force('y', d3.forceY(height / 2).strength(0.05))
+                    .force('collision', d3.forceCollide().radius(d => d.radius + 2))
+                    .on('tick', () => {
+                        planeBubbles
+                            .attr('cx', d => Math.max(d.radius, Math.min(planeWidth - d.radius, d.x)))
+                            .attr('cy', d => Math.max(d.radius, Math.min(height - d.radius, d.y)));
+                    });
+            }
+        }
+
+        function switchPeriod(period) {
+            currentPeriod = period;
+
+            // Update stats display
+            const carStat = document.querySelector('#cars').parentElement.querySelector('.panel-stat');
+            const planeStat = document.querySelector('#planes').parentElement.querySelector('.panel-stat');
+
+            if (period === 'daily') {
+                carStat.textContent = '~115/day';
+                planeStat.textContent = '~0/day';
+            } else if (period === 'weekly') {
+                carStat.textContent = '~805/week';
+                planeStat.textContent = '~1/week';
+            } else {
+                carStat.textContent = '~3,500/month';
+                planeStat.textContent = '~3/month';
+            }
+
+            initializeVisualizations();
+
+            // Update buttons
+            d3.selectAll('.controls button').classed('active', false);
+            d3.select(`#${period}`).classed('active', true);
+        }
+
+        // Initialize
+        initializeVisualizations();
+
+        // Button handlers
+        d3.select('#daily').on('click', () => switchPeriod('daily'));
+        d3.select('#weekly').on('click', () => switchPeriod('weekly'));
+        d3.select('#monthly').on('click', () => switchPeriod('monthly'));
+    </script>
+</body>
+</html>

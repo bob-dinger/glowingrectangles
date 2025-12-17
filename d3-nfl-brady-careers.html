@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Careers - The Brady Era</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+            max-width: 1000px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .year-label {
+            fill: #666;
+            font-size: 10px;
+            font-family: Arial, sans-serif;
+        }
+        .year-line {
+            stroke: #222;
+            stroke-width: 1px;
+        }
+        .legend {
+            color: #aaaaaa;
+            font-size: 11px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .stat {
+            color: #888;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .brady-stat {
+            color: #EF4444;
+        }
+    </style>
+</head>
+<body>
+    <h1>NFL Careers: The Tom Brady Era (2002-2022)</h1>
+    <p class="description">
+        13,132 NFL players. Each horizontal line = one career. Sorted by entry year.
+        <span class="brady-stat">Tom Brady's 21-year career</span> highlighted in red.
+    </p>
+    <div id="vis"></div>
+    <div class="stat">
+        52.5% of NFL careers last 3 years or less | Median: 3 years | Brady: 21 years
+    </div>
+
+    <script>
+        const width = 1000;
+        const height = 2400;
+        const paddingTop = 30;
+        const paddingBottom = 20;
+        const paddingLeft = 50;
+        const paddingRight = 30;
+
+        const minYear = 2002;
+        const maxYear = 2022;
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // X scale for years
+        const xScale = d3.scaleLinear()
+            .domain([minYear, maxYear])
+            .range([paddingLeft, width - paddingRight]);
+
+        // Load data
+        d3.json('nfl_careers.json').then(data => {
+            console.log(`Loaded ${data.length} players`);
+
+            // Y scale - one row per player
+            const rowHeight = (height - paddingTop - paddingBottom) / data.length;
+
+            // Draw year grid lines and labels
+            for (let year = minYear; year <= maxYear; year++) {
+                const x = xScale(year);
+
+                svg.append('line')
+                    .attr('class', 'year-line')
+                    .attr('x1', x)
+                    .attr('y1', paddingTop)
+                    .attr('x2', x)
+                    .attr('y2', height - paddingBottom);
+
+                if (year % 5 === 0 || year === minYear || year === maxYear) {
+                    svg.append('text')
+                        .attr('class', 'year-label')
+                        .attr('x', x)
+                        .attr('y', 18)
+                        .attr('text-anchor', 'middle')
+                        .text(year);
+                }
+            }
+
+            // Draw career lines (non-Brady first, then Brady on top)
+            const nonBrady = data.filter(d => !d.is_brady);
+            const brady = data.filter(d => d.is_brady);
+
+            // Color scale based on career length
+            const colorScale = d3.scaleLinear()
+                .domain([1, 5, 15])
+                .range(['#374151', '#6B7280', '#9CA3AF']);
+
+            // Draw non-Brady careers
+            nonBrady.forEach((d, i) => {
+                // Find original index for y position
+                const originalIndex = data.findIndex(p => p.name === d.name);
+                const y = paddingTop + originalIndex * rowHeight + rowHeight / 2;
+
+                svg.append('line')
+                    .attr('x1', xScale(d.first_year))
+                    .attr('y1', y)
+                    .attr('x2', xScale(d.last_year))
+                    .attr('y2', y)
+                    .attr('stroke', colorScale(d.years))
+                    .attr('stroke-width', Math.max(rowHeight * 0.8, 0.5))
+                    .attr('stroke-linecap', 'round')
+                    .attr('opacity', 0.7);
+            });
+
+            // Draw Brady (on top, highlighted)
+            brady.forEach(d => {
+                const originalIndex = data.findIndex(p => p.name === d.name);
+                const y = paddingTop + originalIndex * rowHeight + rowHeight / 2;
+
+                // Glow effect
+                svg.append('line')
+                    .attr('x1', xScale(d.first_year))
+                    .attr('y1', y)
+                    .attr('x2', xScale(d.last_year))
+                    .attr('y2', y)
+                    .attr('stroke', '#EF4444')
+                    .attr('stroke-width', 4)
+                    .attr('stroke-linecap', 'round')
+                    .attr('opacity', 0.5);
+
+                // Main line
+                svg.append('line')
+                    .attr('x1', xScale(d.first_year))
+                    .attr('y1', y)
+                    .attr('x2', xScale(d.last_year))
+                    .attr('y2', y)
+                    .attr('stroke', '#EF4444')
+                    .attr('stroke-width', 2)
+                    .attr('stroke-linecap', 'round');
+            });
+
+            console.log('Rendering complete');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Attention Ratio</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 13px;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .insight {
+            color: #888;
+            font-size: 12px;
+            margin-top: 20px;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.7;
+        }
+        .highlight {
+            color: #10B981;
+        }
+        .red {
+            color: #EF4444;
+        }
+    </style>
+</head>
+<body>
+    <h1>One University President vs. 45 Million Borrowers</h1>
+    <p class="description">
+        Each bubble's area = share of political attention on student loan policy.
+        This is why the system never changes.
+    </p>
+
+    <div id="vis"></div>
+
+    <p class="insight">
+        <span class="highlight">The university president</span> has lunch with senators, testifies before Congress,
+        and employs a team of lobbyists.<br><br>
+        <span class="red">Each borrower</span> has a job, kids, and 15 minutes to maybe sign an online petition.<br><br>
+        Same total stake. Completely different power.
+    </p>
+
+    <script>
+        const width = 700;
+        const height = 600;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // The core insight:
+        // 1 university president has mass lobbying power
+        // 45 million borrowers have mass collective stake but near-zero individual attention
+
+        // Let's say the president commands 10,000x the political attention of one borrower
+        // Area scales with sqrt, so radius scales linearly with attention
+
+        const presidentAttention = 10000;
+        const borrowerAttention = 1;
+        const numBorrowers = 1000; // Representative sample (actual: 45 million)
+
+        // Scale so president bubble is prominent but fits
+        const maxRadius = 120;
+        const presidentRadius = maxRadius;
+        const borrowerRadius = presidentRadius * Math.sqrt(borrowerAttention / presidentAttention);
+
+        // President bubble - center left
+        const presidentX = 200;
+        const presidentY = centerY;
+
+        svg.append('circle')
+            .attr('cx', presidentX)
+            .attr('cy', presidentY)
+            .attr('r', presidentRadius)
+            .attr('fill', '#10B981')
+            .attr('opacity', 0.85)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2);
+
+        svg.append('text')
+            .attr('x', presidentX)
+            .attr('y', presidentY - 10)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '14px')
+            .attr('font-weight', 'bold')
+            .text('1 University');
+
+        svg.append('text')
+            .attr('x', presidentX)
+            .attr('y', presidentY + 10)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '14px')
+            .attr('font-weight', 'bold')
+            .text('President');
+
+        svg.append('text')
+            .attr('x', presidentX)
+            .attr('y', presidentY + presidentRadius + 25)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#10B981')
+            .attr('font-size', '12px')
+            .text('Full-time lobbying power');
+
+        // Borrower bubbles - packed on the right side
+        const borrowerCenterX = 520;
+        const borrowerCenterY = centerY;
+        const packRadius = 150;
+
+        // Generate borrower positions in a packed circle
+        const borrowers = [];
+        const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+
+        for (let i = 0; i < numBorrowers; i++) {
+            const r = packRadius * Math.sqrt(i / numBorrowers);
+            const theta = i * goldenAngle;
+            borrowers.push({
+                x: borrowerCenterX + r * Math.cos(theta),
+                y: borrowerCenterY + r * Math.sin(theta)
+            });
+        }
+
+        svg.selectAll('.borrower')
+            .data(borrowers)
+            .enter()
+            .append('circle')
+            .attr('class', 'borrower')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', borrowerRadius)
+            .attr('fill', '#EF4444')
+            .attr('opacity', 0.7);
+
+        // Borrower label
+        svg.append('text')
+            .attr('x', borrowerCenterX)
+            .attr('y', borrowerCenterY - packRadius - 30)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '14px')
+            .attr('font-weight', 'bold')
+            .text('45 Million Borrowers');
+
+        svg.append('text')
+            .attr('x', borrowerCenterX)
+            .attr('y', borrowerCenterY - packRadius - 12)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#888')
+            .attr('font-size', '11px')
+            .text('(1,000 shown)');
+
+        svg.append('text')
+            .attr('x', borrowerCenterX)
+            .attr('y', borrowerCenterY + packRadius + 25)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '12px')
+            .text('Near-zero individual voice');
+
+        // VS in the middle
+        svg.append('text')
+            .attr('x', centerX + 10)
+            .attr('y', centerY)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#666')
+            .attr('font-size', '24px')
+            .attr('font-weight', 'bold')
+            .text('vs');
+
+        // Ratio callout at bottom
+        svg.append('rect')
+            .attr('x', centerX - 100)
+            .attr('y', height - 80)
+            .attr('width', 200)
+            .attr('height', 50)
+            .attr('fill', 'rgba(0,0,0,0.5)')
+            .attr('stroke', '#444')
+            .attr('rx', 5);
+
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', height - 52)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '18px')
+            .attr('font-weight', 'bold')
+            .text('10,000 : 1');
+
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', height - 35)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#888')
+            .attr('font-size', '11px')
+            .text('attention ratio per person');
+
+        // Area comparison note
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', 35)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#666')
+            .attr('font-size', '11px')
+            .text('Bubble area = political attention on student loan policy');
+    </script>
+</body>
+</html>

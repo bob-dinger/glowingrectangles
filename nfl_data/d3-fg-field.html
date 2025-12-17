@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Field Goals by Distance</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .control-group label {
+            font-size: 12px;
+            color: #888;
+        }
+        select {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .field-container {
+            position: relative;
+        }
+        .stats {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #888;
+        }
+        .stats span {
+            color: #4ade80;
+            font-weight: bold;
+        }
+        .stats .miss {
+            color: #ef4444;
+        }
+        .tooltip {
+            position: fixed;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid #444;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 1000;
+        }
+        .tooltip .distance {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .tooltip .made {
+            color: #4ade80;
+        }
+        .tooltip .missed {
+            color: #ef4444;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 15px 0;
+            font-size: 12px;
+            color: #888;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>NFL Field Goals by Distance</h1>
+    <p class="subtitle">Each dot = one kick attempt at that yard line — made (green) vs missed (red)</p>
+    <div class="controls">
+        <div class="control-group">
+            <label>Season</label>
+            <select id="year-select"></select>
+        </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="legend">
+        <div class="legend-item">
+            <svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="#4ade80"/></svg>
+            <span>Made (left side)</span>
+        </div>
+        <div class="legend-item">
+            <svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="#ef4444"/></svg>
+            <span>Missed (right side)</span>
+        </div>
+    </div>
+    <div class="field-container" id="field"></div>
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        let data = null;
+        const tooltip = document.getElementById('tooltip');
+
+        // Load data
+        fetch('fg_kicks_by_year.json')
+            .then(res => res.json())
+            .then(json => {
+                data = json;
+
+                // Populate year dropdown
+                const years = Object.keys(data.seasons).map(Number).sort((a, b) => b - a);
+                const yearSelect = document.getElementById('year-select');
+                years.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    if (year === 2024) option.selected = true;
+                    yearSelect.appendChild(option);
+                });
+
+                renderField(2024);
+
+                yearSelect.addEventListener('change', (e) => {
+                    renderField(+e.target.value);
+                });
+            });
+
+        function renderField(year) {
+            const seasonData = data.seasons[year];
+            if (!seasonData) return;
+
+            const container = document.getElementById('field');
+            container.innerHTML = '';
+
+            const width = 1100;
+            const height = 400;
+            const padding = 30;
+            const endZoneWidth = 50;
+            const fieldWidth = width - padding * 2;
+            const fieldHeight = height - padding * 2;
+            const playableWidth = fieldWidth - endZoneWidth * 2;
+
+            // X scale: 0 = left end zone, 50 = midfield, 100 = right end zone
+            const xScale = d3.scaleLinear()
+                .domain([0, 100])
+                .range([padding + endZoneWidth, padding + endZoneWidth + playableWidth]);
+
+            const svg = d3.select(container)
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Left end zone
+            svg.append('rect')
+                .attr('x', padding)
+                .attr('y', padding)
+                .attr('width', endZoneWidth)
+                .attr('height', fieldHeight)
+                .attr('fill', '#1e3a5f');
+
+            // Right end zone
+            svg.append('rect')
+                .attr('x', padding + endZoneWidth + playableWidth)
+                .attr('y', padding)
+                .attr('width', endZoneWidth)
+                .attr('height', fieldHeight)
+                .attr('fill', '#5f1e1e');
+
+            // Main field
+            svg.append('rect')
+                .attr('x', padding + endZoneWidth)
+                .attr('y', padding)
+                .attr('width', playableWidth)
+                .attr('height', fieldHeight)
+                .attr('fill', '#1a472a')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
+
+            // Draw yard lines every 10 yards
+            for (let yard = 10; yard <= 90; yard += 10) {
+                const x = xScale(yard);
+                svg.append('line')
+                    .attr('x1', x)
+                    .attr('x2', x)
+                    .attr('y1', padding)
+                    .attr('y2', padding + fieldHeight)
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 1)
+                    .attr('opacity', 0.5);
+
+                // Yard numbers
+                const displayYard = yard <= 50 ? yard : 100 - yard;
+                svg.append('text')
+                    .attr('x', x)
+                    .attr('y', padding + 20)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#fff')
+                    .attr('font-size', '12px')
+                    .attr('opacity', 0.6)
+                    .text(displayYard);
+            }
+
+            // Midfield line
+            svg.append('line')
+                .attr('x1', xScale(50))
+                .attr('x2', xScale(50))
+                .attr('y1', padding)
+                .attr('y2', padding + fieldHeight)
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
+
+            // Goal posts (in end zones)
+            // Left goal post
+            svg.append('rect')
+                .attr('x', padding + endZoneWidth - 5)
+                .attr('y', height / 2 - 20)
+                .attr('width', 6)
+                .attr('height', 40)
+                .attr('fill', '#FFD700');
+
+            // Right goal post
+            svg.append('rect')
+                .attr('x', padding + endZoneWidth + playableWidth - 1)
+                .attr('y', height / 2 - 20)
+                .attr('width', 6)
+                .attr('height', 40)
+                .attr('fill', '#FFD700');
+
+            // End zone labels
+            svg.append('text')
+                .attr('x', padding + endZoneWidth / 2)
+                .attr('y', height / 2)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#fff')
+                .attr('font-size', '11px')
+                .attr('font-weight', 'bold')
+                .attr('opacity', 0.7)
+                .attr('transform', `rotate(-90, ${padding + endZoneWidth / 2}, ${height / 2})`)
+                .text('END ZONE');
+
+            svg.append('text')
+                .attr('x', padding + endZoneWidth + playableWidth + endZoneWidth / 2)
+                .attr('y', height / 2)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#fff')
+                .attr('font-size', '11px')
+                .attr('font-weight', 'bold')
+                .attr('opacity', 0.7)
+                .attr('transform', `rotate(90, ${padding + endZoneWidth + playableWidth + endZoneWidth / 2}, ${height / 2})`)
+                .text('END ZONE');
+
+            // Calculate totals
+            let totalMade = 0, totalMissed = 0;
+            let made50plus = 0, att50plus = 0;
+
+            // Split kicks - made go to left half, missed go to right half
+            const madeKicks = [];
+            const missedKicks = [];
+
+            seasonData.forEach(d => {
+                const distance = d.distance;
+                const yardLine = distance - 17; // FG distance - 17 = yard line
+
+                if (yardLine < 1 || yardLine > 60) return;
+
+                totalMade += d.made;
+                totalMissed += d.missed;
+
+                if (distance >= 50) {
+                    made50plus += d.made;
+                    att50plus += d.made + d.missed;
+                }
+
+                for (let i = 0; i < d.made; i++) {
+                    madeKicks.push({ distance, yardLine });
+                }
+                for (let i = 0; i < d.missed; i++) {
+                    missedKicks.push({ distance, yardLine });
+                }
+            });
+
+            // Plot made kicks on left side (kicking toward left end zone)
+            madeKicks.forEach(kick => {
+                // Yard line from left: they're kicking from yardLine toward 0
+                const x = xScale(kick.yardLine);
+                const y = padding + 30 + Math.random() * (fieldHeight - 60);
+
+                svg.append('circle')
+                    .attr('cx', x)
+                    .attr('cy', y)
+                    .attr('r', 4)
+                    .attr('fill', '#4ade80')
+                    .attr('opacity', 0.85)
+                    .style('cursor', 'pointer')
+                    .on('mouseover', function(event) {
+                        const d = seasonData.find(s => s.distance === kick.distance);
+                        showTooltip(event, kick.distance, d.made, d.missed);
+                    })
+                    .on('mouseout', hideTooltip);
+            });
+
+            // Plot missed kicks on right side (kicking toward right end zone)
+            missedKicks.forEach(kick => {
+                // Mirror to right side: 100 - yardLine
+                const x = xScale(100 - kick.yardLine);
+                const y = padding + 30 + Math.random() * (fieldHeight - 60);
+
+                svg.append('circle')
+                    .attr('cx', x)
+                    .attr('cy', y)
+                    .attr('r', 4)
+                    .attr('fill', '#ef4444')
+                    .attr('opacity', 0.85)
+                    .style('cursor', 'pointer')
+                    .on('mouseover', function(event) {
+                        const d = seasonData.find(s => s.distance === kick.distance);
+                        showTooltip(event, kick.distance, d.made, d.missed);
+                    })
+                    .on('mouseout', hideTooltip);
+            });
+
+            // Labels
+            svg.append('text')
+                .attr('x', xScale(25))
+                .attr('y', height - 8)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#4ade80')
+                .attr('font-size', '13px')
+                .attr('font-weight', 'bold')
+                .text('MADE');
+
+            svg.append('text')
+                .attr('x', xScale(75))
+                .attr('y', height - 8)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#ef4444')
+                .attr('font-size', '13px')
+                .attr('font-weight', 'bold')
+                .text('MISSED');
+
+            // Update stats
+            const totalAtt = totalMade + totalMissed;
+            const pct = totalAtt > 0 ? (totalMade / totalAtt * 100).toFixed(1) : 0;
+            const pct50 = att50plus > 0 ? (made50plus / att50plus * 100).toFixed(1) : 0;
+
+            document.getElementById('stats').innerHTML = `
+                <span>${totalMade}</span> made / <span class="miss">${totalMissed}</span> missed
+                (<span>${pct}%</span>) &nbsp;|&nbsp;
+                50+ yards: <span>${made50plus}</span>/<span>${att50plus}</span> (<span>${pct50}%</span>)
+            `;
+        }
+
+        function showTooltip(event, distance, made, missed) {
+            const total = made + missed;
+            const pct = total > 0 ? (made / total * 100).toFixed(0) : 0;
+            const yardLine = distance - 17;
+            tooltip.innerHTML = `
+                <div class="distance">${distance} yard FG</div>
+                <div style="color:#888">from the ${yardLine} yard line</div>
+                <div><span class="made">${made} made</span> / <span class="missed">${missed} missed</span></div>
+                <div>${pct}% success</div>
+            `;
+            tooltip.style.opacity = 1;
+            tooltip.style.left = (event.clientX + 15) + 'px';
+            tooltip.style.top = (event.clientY - 10) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.opacity = 0;
+        }
+    </script>
+</body>
+</html>

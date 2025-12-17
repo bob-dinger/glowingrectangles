@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who Runs for Office?</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 16px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        #canvas {
+            background: #0a0a0a;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 25px 0;
+        }
+        button {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .play-btn {
+            background: linear-gradient(90deg, #DC2626, #7C2D12);
+            color: white;
+        }
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.5);
+        }
+        .reset-btn {
+            background: #222;
+            color: #666;
+        }
+        .reset-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+        .stage-label {
+            font-size: 13px;
+            margin-top: 15px;
+            color: #EF4444;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            min-height: 20px;
+        }
+        .quote {
+            max-width: 600px;
+            text-align: center;
+            margin-top: 30px;
+            padding: 25px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border-left: 4px solid #EF4444;
+        }
+        .quote p {
+            font-size: 15px;
+            color: #ccc;
+            line-height: 1.7;
+            font-style: italic;
+        }
+        .quote .author {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #666;
+            font-style: normal;
+        }
+        .stats-row {
+            display: flex;
+            gap: 60px;
+            margin-top: 25px;
+        }
+        .stat-box {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 42px;
+            font-weight: bold;
+        }
+        .stat-number.good { color: #22C55E; }
+        .stat-number.bad { color: #EF4444; }
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        /* Full screen question overlay */
+        .question-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .question-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .question-overlay .number {
+            font-size: 24px;
+            color: #666;
+            margin-bottom: 30px;
+            letter-spacing: 3px;
+        }
+        .question-overlay .question {
+            font-size: 52px;
+            font-weight: bold;
+            text-align: center;
+            max-width: 900px;
+            line-height: 1.3;
+            padding: 0 40px;
+        }
+        .question-overlay .subtext {
+            font-size: 18px;
+            color: #666;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Who Runs for Office?</h1>
+    <p class="subtitle">100 Americans. Watch who self-selects into politics.</p>
+
+    <svg id="canvas" width="1000" height="500"></svg>
+
+    <div class="stage-label" id="stageLabel"></div>
+
+    <div class="controls">
+        <button class="play-btn" id="playBtn">▶ Start the Filter</button>
+        <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-number good" id="goodLeft">50</div>
+            <div class="stat-label">Good People Left</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number bad" id="badLeft">50</div>
+            <div class="stat-label">Narcissists Left</div>
+        </div>
+    </div>
+
+    <div class="quote">
+        <p>"Those who seek power are precisely those who should not have it."</p>
+        <div class="author">— The fundamental problem of democracy</div>
+    </div>
+
+    <!-- Full screen question overlay -->
+    <div class="question-overlay" id="questionOverlay">
+        <div class="number" id="questionNumber">QUESTION 1</div>
+        <div class="question" id="questionText"></div>
+        <div class="subtext">To run for office, you must answer YES.</div>
+    </div>
+
+    <script>
+        const width = 1000;
+        const height = 500;
+
+        const svg = d3.select('#canvas');
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const stageLabel = document.getElementById('stageLabel');
+
+        // Create 100 people: 50 good, 50 narcissists
+        let people = [];
+
+        const goodTraits = [
+            'Humble', 'Empathetic', 'Honest', 'Thoughtful', 'Principled',
+            'Private', 'Modest', 'Genuine', 'Self-aware', 'Collaborative'
+        ];
+
+        const badTraits = [
+            'NARCISSIST', 'SHAMELESS', 'POWER-HUNGRY', 'FAME-SEEKER', 'MANIPULATOR',
+            'EGOMANIAC', 'SOCIOPATH', 'DEMAGOGUE', 'GRIFTER', 'AUTHORITARIAN'
+        ];
+
+        for (let i = 0; i < 100; i++) {
+            const isGood = i < 50;
+            people.push({
+                id: i,
+                isGood: isGood,
+                trait: isGood ? goodTraits[i % goodTraits.length] : badTraits[i % badTraits.length],
+                x: 100 + (i % 10) * 90,
+                y: 80 + Math.floor(i / 10) * 45,
+                startX: 100 + (i % 10) * 90,
+                startY: 80 + Math.floor(i / 10) * 45,
+                active: true,
+                running: false,
+                opacity: 1,
+                radius: 15
+            });
+        }
+
+        // Shuffle for display
+        people.sort(() => Math.random() - 0.5);
+        people.forEach((p, i) => {
+            p.x = 100 + (i % 10) * 90;
+            p.y = 80 + Math.floor(i / 10) * 45;
+            p.startX = p.x;
+            p.startY = p.y;
+        });
+
+        // Draw people
+        const circles = svg.selectAll('circle')
+            .data(people)
+            .enter()
+            .append('circle')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', d => d.radius)
+            .attr('fill', d => d.isGood ? '#22C55E' : '#EF4444')
+            .attr('opacity', 0.85)
+            .attr('stroke', 'none')
+            .attr('stroke-width', 2);
+
+        // Labels
+        const labels = svg.selectAll('text.label')
+            .data(people)
+            .enter()
+            .append('text')
+            .attr('class', 'label')
+            .attr('x', d => d.x)
+            .attr('y', d => d.y + 4)
+            .attr('text-anchor', 'middle')
+            .attr('fill', 'white')
+            .attr('font-size', '8px')
+            .attr('font-weight', 'bold')
+            .attr('opacity', 0)
+            .text(d => d.trait);
+
+        const questionOverlay = document.getElementById('questionOverlay');
+        const questionNumber = document.getElementById('questionNumber');
+        const questionText = document.getElementById('questionText');
+
+        // Stages of filtering - brutal questions
+        // Each stage removes ~50% of good people and ~15% of bad people
+        // This creates steady visible filtering at each stage
+        const stages = [
+            {
+                question: "Do you want millions of people to know your name?",
+                filter: (p) => {
+                    if (p.isGood) return Math.random() < 0.55;
+                    return Math.random() < 0.18;
+                }
+            },
+            {
+                question: "Will you call strangers and beg them for money?",
+                filter: (p) => {
+                    if (p.isGood) return Math.random() < 0.55;
+                    return Math.random() < 0.18;
+                }
+            },
+            {
+                question: "Are you willing to let your family be attacked online?",
+                filter: (p) => {
+                    if (p.isGood) return Math.random() < 0.55;
+                    return Math.random() < 0.18;
+                }
+            },
+            {
+                question: "Will you say things you know are lies?",
+                filter: (p) => {
+                    if (p.isGood) return Math.random() < 0.55;
+                    return Math.random() < 0.18;
+                }
+            },
+            {
+                question: "Do you believe you deserve power over others?",
+                filter: (p) => {
+                    if (p.isGood) return Math.random() < 0.55;
+                    return Math.random() < 0.18;
+                }
+            }
+        ];
+
+        let isPlaying = false;
+        let currentStage = -1;
+
+        function updateStats() {
+            const activeGood = people.filter(p => p.active && p.isGood).length;
+            const activeBad = people.filter(p => p.active && !p.isGood).length;
+            document.getElementById('goodLeft').textContent = activeGood;
+            document.getElementById('badLeft').textContent = activeBad;
+        }
+
+        function showQuestion(stageIndex, callback) {
+            const stage = stages[stageIndex];
+            questionNumber.textContent = `QUESTION ${stageIndex + 1} OF ${stages.length}`;
+            questionText.textContent = stage.question;
+            questionOverlay.classList.add('visible');
+
+            // Show for 2.5 seconds
+            setTimeout(() => {
+                questionOverlay.classList.remove('visible');
+                setTimeout(callback, 400);
+            }, 2500);
+        }
+
+        function runStage(stageIndex) {
+            if (stageIndex >= stages.length) {
+                // Final state
+                stageLabel.textContent = "MEET YOUR CANDIDATES";
+                isPlaying = false;
+                playBtn.textContent = '▶ Run Again';
+                currentStage = stageIndex;
+
+                // Remaining people arranged in grid
+                const remaining = people.filter(p => p.active);
+                const cols = Math.min(5, remaining.length);
+                const rows = Math.ceil(remaining.length / cols);
+                const spacingX = 150;
+                const spacingY = 100;
+                const startX = width/2 - ((cols - 1) * spacingX) / 2;
+                const startY = height/2 - ((rows - 1) * spacingY) / 2;
+
+                remaining.forEach((p, i) => {
+                    const col = i % cols;
+                    const row = Math.floor(i / cols);
+                    p.x = startX + col * spacingX;
+                    p.y = startY + row * spacingY;
+                    p.radius = 30;
+                });
+
+                circles.transition()
+                    .duration(1000)
+                    .attr('cx', d => d.active ? d.x : d.x)
+                    .attr('cy', d => d.active ? d.y : d.y)
+                    .attr('r', d => d.active ? d.radius : d.radius)
+                    .attr('stroke', d => d.active ? '#fff' : 'none')
+                    .attr('stroke-width', 3);
+
+                labels.transition()
+                    .duration(1000)
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y + 50)
+                    .attr('opacity', d => d.active ? 1 : 0)
+                    .attr('font-size', '11px');
+
+                return;
+            }
+
+            // Show the question first
+            showQuestion(stageIndex, () => {
+                const stage = stages[stageIndex];
+                stageLabel.textContent = `Filtering...`;
+
+                // Apply filter
+                people.forEach(p => {
+                    if (!p.active) return;
+                    if (stage.filter(p)) {
+                        // This person exits (said NO)
+                        p.active = false;
+                        p.opacity = 0.15;
+                        // Move to exit
+                        p.x = p.isGood ? -50 : width + 50;
+                    }
+                });
+
+                // Animate
+                circles.transition()
+                    .duration(1200)
+                    .attr('cx', d => d.x)
+                    .attr('opacity', d => d.opacity)
+                    .attr('r', d => d.active ? 15 : 10);
+
+                labels.transition()
+                    .duration(1200)
+                    .attr('x', d => d.x)
+                    .attr('opacity', 0);
+
+                updateStats();
+
+                // Next stage
+                setTimeout(() => runStage(stageIndex + 1), 1800);
+            });
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) return;
+
+            if (currentStage >= stages.length) {
+                reset();
+                setTimeout(() => {
+                    isPlaying = true;
+                    playBtn.textContent = 'Filtering...';
+                    runStage(0);
+                }, 600);
+            } else {
+                isPlaying = true;
+                playBtn.textContent = 'Filtering...';
+                runStage(0);
+            }
+        });
+
+        function reset() {
+            isPlaying = false;
+            currentStage = -1;
+            stageLabel.textContent = '';
+
+            people.forEach((p, i) => {
+                p.x = p.startX;
+                p.y = p.startY;
+                p.active = true;
+                p.opacity = 0.85;
+                p.radius = 15;
+            });
+
+            circles.transition()
+                .duration(500)
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', d => d.radius)
+                .attr('opacity', d => d.opacity)
+                .attr('stroke', 'none');
+
+            labels.transition()
+                .duration(500)
+                .attr('x', d => d.x)
+                .attr('y', d => d.y + 4)
+                .attr('opacity', 0)
+                .attr('font-size', '8px');
+
+            playBtn.textContent = '▶ Start the Filter';
+            updateStats();
+        }
+
+        resetBtn.addEventListener('click', reset);
+        updateStats();
+    </script>
+</body>
+</html>

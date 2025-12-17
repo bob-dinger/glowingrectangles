@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The 4th Down Revolution</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        .highlight {
+            color: #4ade80;
+            font-weight: bold;
+        }
+        .chart-container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 20px 0;
+        }
+        .chart-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+        .axis text {
+            fill: #888;
+            font-size: 12px;
+        }
+        .axis line, .axis path {
+            stroke: #444;
+        }
+        .grid line {
+            stroke: #333;
+            stroke-opacity: 0.7;
+        }
+        .bar-label {
+            fill: #fff;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .annotation {
+            font-size: 11px;
+            fill: #888;
+        }
+        .tooltip {
+            position: fixed;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid #444;
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 1000;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+            margin-top: 4px;
+        }
+        .stat-label {
+            color: #888;
+        }
+        .big-stat {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .big-stat-item {
+            text-align: center;
+        }
+        .big-stat-value {
+            font-size: 48px;
+            font-weight: bold;
+        }
+        .big-stat-label {
+            font-size: 14px;
+            color: #888;
+        }
+        .green { color: #4ade80; }
+        .blue { color: #3b82f6; }
+        .section {
+            width: 100%;
+            max-width: 1000px;
+            margin: 30px 0;
+        }
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>The 4th Down Revolution</h1>
+    <p class="subtitle">NFL teams are increasingly <span class="highlight">going for it</span> on 4th down</p>
+
+    <div class="big-stat">
+        <div class="big-stat-item">
+            <div class="big-stat-value">11.1%</div>
+            <div class="big-stat-label">Go-for-it rate in 1999</div>
+        </div>
+        <div class="big-stat-item">
+            <div class="big-stat-value green">19.1%</div>
+            <div class="big-stat-label">Go-for-it rate in 2024</div>
+        </div>
+        <div class="big-stat-item">
+            <div class="big-stat-value blue">+72%</div>
+            <div class="big-stat-label">Increase</div>
+        </div>
+    </div>
+
+    <div class="chart-container" id="trend-chart"></div>
+
+    <div class="section">
+        <div class="section-title">Where the Change Happened</div>
+        <div id="ytg-chart"></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">By Field Position</div>
+        <div id="field-chart"></div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const tooltip = document.getElementById('tooltip');
+
+        const data = {"summary": {"1999": {"total": 4362, "go": 483, "punt": 2686, "fg": 931, "converted": 210}, "2000": {"total": 4156, "go": 470, "punt": 2579, "fg": 869, "converted": 223}, "2001": {"total": 4218, "go": 485, "punt": 2590, "fg": 922, "converted": 210}, "2002": {"total": 4195, "go": 514, "punt": 2541, "fg": 921, "converted": 259}, "2003": {"total": 4311, "go": 533, "punt": 2637, "fg": 899, "converted": 254}, "2004": {"total": 4208, "go": 473, "punt": 2610, "fg": 827, "converted": 231}, "2005": {"total": 4244, "go": 490, "punt": 2621, "fg": 927, "converted": 233}, "2006": {"total": 4200, "go": 491, "punt": 2598, "fg": 923, "converted": 253}, "2007": {"total": 4089, "go": 549, "punt": 2444, "fg": 908, "converted": 271}, "2008": {"total": 4023, "go": 502, "punt": 2412, "fg": 947, "converted": 263}, "2009": {"total": 4191, "go": 576, "punt": 2550, "fg": 876, "converted": 287}, "2010": {"total": 4200, "go": 501, "punt": 2562, "fg": 921, "converted": 246}, "2011": {"total": 4208, "go": 448, "punt": 2594, "fg": 967, "converted": 194}, "2012": {"total": 4167, "go": 473, "punt": 2563, "fg": 954, "converted": 234}, "2013": {"total": 4289, "go": 498, "punt": 2596, "fg": 973, "converted": 239}, "2014": {"total": 4117, "go": 468, "punt": 2484, "fg": 948, "converted": 220}, "2015": {"total": 4199, "go": 503, "punt": 2551, "fg": 952, "converted": 246}, "2016": {"total": 4082, "go": 496, "punt": 2429, "fg": 966, "converted": 258}, "2017": {"total": 4233, "go": 513, "punt": 2539, "fg": 975, "converted": 242}, "2018": {"total": 3977, "go": 565, "punt": 2320, "fg": 897, "converted": 323}, "2019": {"total": 4042, "go": 621, "punt": 2244, "fg": 936, "converted": 294}, "2020": {"total": 3832, "go": 687, "punt": 1993, "fg": 916, "converted": 380}, "2021": {"total": 4254, "go": 826, "punt": 2187, "fg": 969, "converted": 441}, "2022": {"total": 4300, "go": 770, "punt": 2294, "fg": 1007, "converted": 396}, "2023": {"total": 4490, "go": 833, "punt": 2352, "fg": 1037, "converted": 433}, "2024": {"total": 4279, "go": 816, "punt": 2119, "fg": 1063, "converted": 466}}, "by_ytg": {"1999": {"1": {"go": 163, "punt": 225, "fg": 68, "converted": 107}, "2": {"go": 51, "punt": 164, "fg": 61, "converted": 23}, "3": {"go": 34, "punt": 159, "fg": 84, "converted": 10}, "4": {"go": 27, "punt": 175, "fg": 103, "converted": 11}}, "2024": {"1": {"go": 317, "punt": 101, "fg": 27, "converted": 230}, "2": {"go": 123, "punt": 107, "fg": 58, "converted": 74}, "3": {"go": 104, "punt": 121, "fg": 94, "converted": 56}, "4": {"go": 59, "punt": 150, "fg": 98, "converted": 30}}}, "by_field_pos": {"1999": {"own": {"go": 116, "punt": 2106, "fg": 0, "converted": 44}, "redzone": {"go": 77, "punt": 0, "fg": 526, "converted": 30}, "opponent": {"go": 213, "punt": 173, "fg": 404, "converted": 96}, "midfield": {"go": 77, "punt": 407, "fg": 1, "converted": 40}}, "2024": {"redzone": {"go": 195, "punt": 0, "fg": 506, "converted": 114}, "own": {"go": 230, "punt": 1793, "fg": 0, "converted": 117}, "opponent": {"go": 247, "punt": 34, "fg": 546, "converted": 145}, "midfield": {"go": 144, "punt": 292, "fg": 11, "converted": 90}}}};
+
+        // Render charts on load
+        renderTrendChart();
+        renderYTGChart();
+        renderFieldChart();
+
+        function renderTrendChart() {
+            const container = document.getElementById('trend-chart');
+            const width = 1000;
+            const height = 380;
+            const margin = { top: 30, right: 30, bottom: 50, left: 60 };
+
+            const svg = d3.select(container)
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            const years = Object.keys(data.summary).map(Number).sort((a, b) => a - b);
+            const chartData = years.map(year => ({
+                year,
+                goRate: (data.summary[year].go / data.summary[year].total * 100),
+                go: data.summary[year].go,
+                total: data.summary[year].total,
+                converted: data.summary[year].converted,
+                convRate: (data.summary[year].converted / data.summary[year].go * 100)
+            }));
+
+            const x = d3.scaleBand()
+                .domain(years)
+                .range([margin.left, width - margin.right])
+                .padding(0.15);
+
+            const y = d3.scaleLinear()
+                .domain([0, 22])
+                .range([height - margin.bottom, margin.top]);
+
+            // Grid lines
+            svg.append('g')
+                .attr('class', 'grid')
+                .selectAll('line')
+                .data([5, 10, 15, 20])
+                .enter()
+                .append('line')
+                .attr('x1', margin.left)
+                .attr('x2', width - margin.right)
+                .attr('y1', d => y(d))
+                .attr('y2', d => y(d));
+
+            // Bars with color gradient based on year (older = darker, newer = brighter)
+            svg.selectAll('.bar')
+                .data(chartData)
+                .enter()
+                .append('rect')
+                .attr('class', 'bar')
+                .attr('x', d => x(d.year))
+                .attr('y', d => y(d.goRate))
+                .attr('width', x.bandwidth())
+                .attr('height', d => height - margin.bottom - y(d.goRate))
+                .attr('fill', (d, i) => {
+                    // Color shift from blue to green as years progress
+                    if (d.year >= 2018) return '#4ade80';  // Green for modern era
+                    return '#3b82f6';  // Blue for traditional era
+                })
+                .attr('opacity', 0.9)
+                .style('cursor', 'pointer')
+                .on('mouseover', function(event, d) {
+                    d3.select(this).attr('opacity', 1);
+                    tooltip.innerHTML = `
+                        <div style="font-size:16px;font-weight:bold">${d.year} Season</div>
+                        <div class="stat-row">
+                            <span class="stat-label">Go-for-it rate:</span>
+                            <span style="color:#4ade80;font-weight:bold">${d.goRate.toFixed(1)}%</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Attempts:</span>
+                            <span>${d.go} of ${d.total}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Conversion rate:</span>
+                            <span>${d.convRate.toFixed(1)}%</span>
+                        </div>
+                    `;
+                    tooltip.style.opacity = 1;
+                    tooltip.style.left = (event.clientX + 15) + 'px';
+                    tooltip.style.top = (event.clientY - 10) + 'px';
+                })
+                .on('mouseout', function() {
+                    d3.select(this).attr('opacity', 0.9);
+                    tooltip.style.opacity = 0;
+                });
+
+            // X axis - show every other year to avoid crowding
+            svg.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height - margin.bottom})`)
+                .call(d3.axisBottom(x).tickSize(0).tickValues(years.filter((y, i) => i % 2 === 0 || y === 2024)))
+                .selectAll('text')
+                .style('font-size', '11px')
+                .attr('transform', 'rotate(-45)')
+                .attr('text-anchor', 'end')
+                .attr('dx', '-5px')
+                .attr('dy', '5px');
+
+            // Y axis
+            svg.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(${margin.left},0)`)
+                .call(d3.axisLeft(y).ticks(5).tickFormat(d => d + '%'));
+
+            // Y axis label
+            svg.append('text')
+                .attr('transform', 'rotate(-90)')
+                .attr('x', -height / 2)
+                .attr('y', 18)
+                .attr('fill', '#888')
+                .attr('text-anchor', 'middle')
+                .text('Go-for-it Rate on 4th Down');
+
+            // Annotation for the inflection point
+            svg.append('text')
+                .attr('x', x(2018) + x.bandwidth() / 2)
+                .attr('y', y(14.2) - 25)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#4ade80')
+                .attr('font-size', '11px')
+                .text('Analytics era begins');
+
+            svg.append('line')
+                .attr('x1', x(2018) + x.bandwidth() / 2)
+                .attr('x2', x(2018) + x.bandwidth() / 2)
+                .attr('y1', y(14.2) - 20)
+                .attr('y2', y(14.2) - 5)
+                .attr('stroke', '#4ade80')
+                .attr('stroke-width', 1);
+        }
+
+        function renderYTGChart() {
+            const container = document.getElementById('ytg-chart');
+            const width = 900;
+            const height = 300;
+            const margin = { top: 30, right: 120, bottom: 50, left: 80 };
+
+            const svg = d3.select(container)
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Compare 1999 vs 2024 by yards to go
+            const ytgLabels = ['1', '2', '3', '4'];
+            const ytgData = ytgLabels.map((label, i) => {
+                const ytg = String(i + 1);
+
+                const d1999 = data.by_ytg['1999'][ytg] || {go: 0, punt: 0, fg: 0};
+                const d2024 = data.by_ytg['2024'][ytg] || {go: 0, punt: 0, fg: 0};
+                const total1999 = d1999.go + d1999.punt + d1999.fg;
+                const total2024 = d2024.go + d2024.punt + d2024.fg;
+
+                return {
+                    label: '4th & ' + label,
+                    rate1999: total1999 > 0 ? (d1999.go / total1999 * 100) : 0,
+                    rate2024: total2024 > 0 ? (d2024.go / total2024 * 100) : 0,
+                    go1999: d1999.go, total1999, go2024: d2024.go, total2024
+                };
+            });
+
+            const x = d3.scaleBand()
+                .domain(ytgData.map(d => d.label))
+                .range([margin.left, width - margin.right])
+                .padding(0.3);
+
+            const y = d3.scaleLinear()
+                .domain([0, 80])
+                .range([height - margin.bottom, margin.top]);
+
+            const barWidth = x.bandwidth() / 2 - 2;
+
+            // 1999 bars
+            svg.selectAll('.bar-1999')
+                .data(ytgData)
+                .enter()
+                .append('rect')
+                .attr('class', 'bar-1999')
+                .attr('x', d => x(d.label))
+                .attr('y', d => y(d.rate1999))
+                .attr('width', barWidth)
+                .attr('height', d => height - margin.bottom - y(d.rate1999))
+                .attr('fill', '#666')
+                .attr('opacity', 0.8);
+
+            // 2024 bars
+            svg.selectAll('.bar-2024')
+                .data(ytgData)
+                .enter()
+                .append('rect')
+                .attr('class', 'bar-2024')
+                .attr('x', d => x(d.label) + barWidth + 4)
+                .attr('y', d => y(d.rate2024))
+                .attr('width', barWidth)
+                .attr('height', d => height - margin.bottom - y(d.rate2024))
+                .attr('fill', '#4ade80')
+                .attr('opacity', 0.9);
+
+            // Labels
+            svg.selectAll('.label-2024')
+                .data(ytgData)
+                .enter()
+                .append('text')
+                .attr('x', d => x(d.label) + barWidth + 4 + barWidth / 2)
+                .attr('y', d => y(d.rate2024) - 5)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#4ade80')
+                .attr('font-size', '11px')
+                .attr('font-weight', 'bold')
+                .text(d => d.rate2024.toFixed(0) + '%');
+
+            svg.selectAll('.label-1999')
+                .data(ytgData)
+                .enter()
+                .append('text')
+                .attr('x', d => x(d.label) + barWidth / 2)
+                .attr('y', d => y(d.rate1999) - 5)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#888')
+                .attr('font-size', '11px')
+                .text(d => d.rate1999.toFixed(0) + '%');
+
+            // X axis
+            svg.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height - margin.bottom})`)
+                .call(d3.axisBottom(x).tickSize(0));
+
+            // Y axis
+            svg.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(${margin.left},0)`)
+                .call(d3.axisLeft(y).ticks(4).tickFormat(d => d + '%'));
+
+            // Legend
+            const legend = svg.append('g')
+                .attr('transform', `translate(${width - 100}, ${margin.top})`);
+
+            legend.append('rect').attr('width', 14).attr('height', 14).attr('fill', '#666');
+            legend.append('text').attr('x', 20).attr('y', 12).attr('fill', '#888').attr('font-size', '12px').text('1999');
+
+            legend.append('rect').attr('y', 20).attr('width', 14).attr('height', 14).attr('fill', '#4ade80');
+            legend.append('text').attr('x', 20).attr('y', 32).attr('fill', '#888').attr('font-size', '12px').text('2024');
+        }
+
+        function renderFieldChart() {
+            const container = document.getElementById('field-chart');
+            const width = 900;
+            const height = 280;
+            const margin = { top: 30, right: 120, bottom: 50, left: 120 };
+
+            const svg = d3.select(container)
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            const zones = [
+                { key: 'own', label: 'Own Territory (50+ yds)' },
+                { key: 'midfield', label: 'Midfield (40-50 yds)' },
+                { key: 'opponent', label: 'Opponent Territory (20-40)' },
+                { key: 'redzone', label: 'Red Zone (inside 20)' }
+            ];
+
+            const zoneData = zones.map(zone => {
+                const d1999 = data.by_field_pos['1999'][zone.key] || {go: 0, punt: 0, fg: 0};
+                const d2024 = data.by_field_pos['2024'][zone.key] || {go: 0, punt: 0, fg: 0};
+                const total1999 = d1999.go + d1999.punt + d1999.fg;
+                const total2024 = d2024.go + d2024.punt + d2024.fg;
+
+                return {
+                    ...zone,
+                    rate1999: total1999 > 0 ? (d1999.go / total1999 * 100) : 0,
+                    rate2024: total2024 > 0 ? (d2024.go / total2024 * 100) : 0
+                };
+            });
+
+            const y = d3.scaleBand()
+                .domain(zoneData.map(d => d.label))
+                .range([margin.top, height - margin.bottom])
+                .padding(0.3);
+
+            const x = d3.scaleLinear()
+                .domain([0, 50])
+                .range([margin.left, width - margin.right]);
+
+            const barHeight = y.bandwidth() / 2 - 2;
+
+            // 1999 bars
+            svg.selectAll('.bar-1999')
+                .data(zoneData)
+                .enter()
+                .append('rect')
+                .attr('y', d => y(d.label))
+                .attr('x', margin.left)
+                .attr('height', barHeight)
+                .attr('width', d => x(d.rate1999) - margin.left)
+                .attr('fill', '#666')
+                .attr('opacity', 0.8);
+
+            // 2024 bars
+            svg.selectAll('.bar-2024')
+                .data(zoneData)
+                .enter()
+                .append('rect')
+                .attr('y', d => y(d.label) + barHeight + 4)
+                .attr('x', margin.left)
+                .attr('height', barHeight)
+                .attr('width', d => x(d.rate2024) - margin.left)
+                .attr('fill', '#4ade80')
+                .attr('opacity', 0.9);
+
+            // Labels
+            svg.selectAll('.label-2024')
+                .data(zoneData)
+                .enter()
+                .append('text')
+                .attr('y', d => y(d.label) + barHeight + 4 + barHeight / 2 + 4)
+                .attr('x', d => x(d.rate2024) + 5)
+                .attr('fill', '#4ade80')
+                .attr('font-size', '11px')
+                .attr('font-weight', 'bold')
+                .text(d => d.rate2024.toFixed(0) + '%');
+
+            svg.selectAll('.label-1999')
+                .data(zoneData)
+                .enter()
+                .append('text')
+                .attr('y', d => y(d.label) + barHeight / 2 + 4)
+                .attr('x', d => x(d.rate1999) + 5)
+                .attr('fill', '#888')
+                .attr('font-size', '11px')
+                .text(d => d.rate1999.toFixed(0) + '%');
+
+            // Y axis (zone labels)
+            svg.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(${margin.left},0)`)
+                .call(d3.axisLeft(y).tickSize(0))
+                .selectAll('text')
+                .style('font-size', '12px');
+
+            // X axis
+            svg.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height - margin.bottom})`)
+                .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + '%'));
+
+            // Legend
+            const legend = svg.append('g')
+                .attr('transform', `translate(${width - 100}, ${margin.top})`);
+
+            legend.append('rect').attr('width', 14).attr('height', 14).attr('fill', '#666');
+            legend.append('text').attr('x', 20).attr('y', 12).attr('fill', '#888').attr('font-size', '12px').text('1999');
+
+            legend.append('rect').attr('y', 20).attr('width', 14).attr('height', 14).attr('fill', '#4ade80');
+            legend.append('text').attr('x', 20).attr('y', 32).attr('fill', '#888').attr('font-size', '12px').text('2024');
+        }
+    </script>
+</body>
+</html>

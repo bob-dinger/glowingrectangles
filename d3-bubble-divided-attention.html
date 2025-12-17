@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divided vs. Undivided Attention</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 13px;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .insight {
+            color: #888;
+            font-size: 12px;
+            margin-top: 20px;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.7;
+        }
+        .highlight {
+            color: #10B981;
+        }
+        .volunteer {
+            color: #F59E0B;
+        }
+        .faded {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Divided Attention vs. Undivided Attention</h1>
+    <p class="description">
+        A teacher's attention is split 30 ways simultaneously — it's not 2 minutes each, it's 1/30th all day.<br>
+        A volunteer gives 100% focus to one child.
+    </p>
+
+    <div id="vis"></div>
+
+    <p class="insight">
+        <span class="faded">The faded blue circles are theoretical — that 1-on-1 time doesn't really exist.</span><br><br>
+        <span class="volunteer">The solid orange circle is real — 30 minutes of complete, undivided attention.</span><br><br>
+        This is what changes a child's life.
+    </p>
+
+    <script>
+        const width = 700;
+        const height = 600;
+        const centerX = width / 2;
+        const centerY = height / 2 - 20;
+
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Time values
+        const teacherMinutes = 60;
+        const numKids = 30;
+        const minutesPerKid = teacherMinutes / numKids; // 2 minutes theoretical
+        const volunteerMinutes = 30;
+
+        // Scale: area proportional to time
+        const scale = 12;
+        const teacherRadius = Math.sqrt(teacherMinutes) * scale;
+        const kidRadius = Math.sqrt(minutesPerKid) * scale;
+        const volunteerRadius = Math.sqrt(volunteerMinutes) * scale;
+
+        // Create nodes
+        const nodes = [];
+
+        // Teacher node (fixed at center)
+        nodes.push({
+            id: 'teacher',
+            type: 'teacher',
+            radius: teacherRadius,
+            color: '#10B981',
+            fx: centerX,
+            fy: centerY
+        });
+
+        // 30 kid nodes - these are THEORETICAL/IMPOSSIBLE
+        for (let i = 0; i < numKids; i++) {
+            nodes.push({
+                id: `kid-${i}`,
+                type: 'kid',
+                radius: kidRadius,
+                color: '#3B82F6'
+            });
+        }
+
+        // Volunteer node - this is REAL
+        nodes.push({
+            id: 'volunteer',
+            type: 'volunteer',
+            radius: volunteerRadius,
+            color: '#F59E0B'
+        });
+
+        // Force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(d => d.type === 'teacher' ? 0 : -25))
+            .force('center', d3.forceCenter(centerX, centerY))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 3).strength(1))
+            .force('radial', d3.forceRadial(d => {
+                if (d.type === 'teacher') return 0;
+                if (d.type === 'volunteer') return 200;
+                return 120;
+            }, centerX, centerY).strength(d => d.type === 'teacher' ? 0 : 0.3))
+            .on('tick', ticked);
+
+        // Draw bubbles
+        const bubbles = svg.selectAll('circle.bubble')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', d => d.color)
+            .attr('stroke', d => {
+                if (d.type === 'teacher') return '#fff';
+                if (d.type === 'volunteer') return '#fff';
+                return 'rgba(59, 130, 246, 0.3)';
+            })
+            .attr('stroke-width', d => d.type === 'kid' ? 1 : 2)
+            .attr('stroke-dasharray', d => d.type === 'kid' ? '2,2' : 'none')
+            .attr('opacity', d => {
+                if (d.type === 'kid') return 0.15; // Faded - theoretical/impossible
+                return 0.9; // Solid - real
+            });
+
+        // "Theoretical" label for kids
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', 35)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#3B82F6')
+            .attr('opacity', 0.5)
+            .attr('font-size', '12px')
+            .text('30 × 2 min "theoretical" 1-on-1');
+
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', 52)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#666')
+            .attr('font-size', '11px')
+            .text('(doesn\'t actually happen)');
+
+        // Teacher label
+        const teacherLabel = svg.append('text')
+            .attr('class', 'teacher-label')
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '12px')
+            .attr('font-weight', 'bold')
+            .text('60 min');
+
+        const teacherSublabel = svg.append('text')
+            .attr('class', 'teacher-sublabel')
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '9px')
+            .text('divided 30 ways');
+
+        // Volunteer label
+        const volunteerLabel = svg.append('text')
+            .attr('class', 'volunteer-label')
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '14px')
+            .attr('font-weight', 'bold')
+            .text('30 min');
+
+        const volunteerSublabel = svg.append('text')
+            .attr('class', 'volunteer-sublabel')
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '10px')
+            .text('100% focus');
+
+        const volunteerTag = svg.append('text')
+            .attr('class', 'volunteer-tag')
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#F59E0B')
+            .attr('font-size', '11px')
+            .attr('font-weight', 'bold')
+            .text('REAL');
+
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            const teacher = nodes.find(d => d.type === 'teacher');
+            teacherLabel.attr('x', teacher.x).attr('y', teacher.y);
+            teacherSublabel.attr('x', teacher.x).attr('y', teacher.y + 14);
+
+            const volunteer = nodes.find(d => d.type === 'volunteer');
+            volunteerLabel.attr('x', volunteer.x).attr('y', volunteer.y);
+            volunteerSublabel.attr('x', volunteer.x).attr('y', volunteer.y + 15);
+            volunteerTag.attr('x', volunteer.x).attr('y', volunteer.y + 55);
+        }
+    </script>
+</body>
+</html>

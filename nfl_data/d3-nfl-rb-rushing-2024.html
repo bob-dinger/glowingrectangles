@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Rushing Leaders - 2024 Season</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .description {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .teams-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        .team-card {
+            background-color: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .team-name {
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid;
+        }
+        .tooltip {
+            position: fixed;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid #444;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 1000;
+            max-width: 250px;
+        }
+        .tooltip .stat-line {
+            color: #aaa;
+            font-size: 11px;
+        }
+        .legend {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            margin: 20px 0;
+            font-size: 12px;
+            color: #888;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rushing by Team</h1>
+    <p class="description">2024 NFL Season — Circle size = yards, Number = carries</p>
+    <div class="legend">
+        <div class="legend-item">
+            <svg width="24" height="24"><circle cx="12" cy="12" r="10" fill="#666"/></svg>
+            <span>More yards</span>
+        </div>
+        <div class="legend-item">
+            <svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="#22C55E"/></svg>
+            <span>TD rusher</span>
+        </div>
+        <div class="legend-item">
+            <span style="color: #FFB612;">QB</span> / <span>RB</span>
+            <span>= position color</span>
+        </div>
+    </div>
+    <div class="teams-container" id="teams"></div>
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const teamsData = [
+  {
+    "abbr": "ARI",
+    "name": "Arizona Cardinals",
+    "color": "#97233F",
+    "accent": "#000000",
+    "team_carries": 436,
+    "team_yards": 2311,
+    "team_tds": 16,
+    "rushers": [
+      {"name": "James Conner", "pos": "RB", "carries": 236, "yards": 1094, "tds": 8, "ypc": 4.6},
+      {"name": "Kyler Murray", "pos": "QB", "carries": 78, "yards": 572, "tds": 5, "ypc": 7.3},
+      {"name": "Trey Benson", "pos": "RB", "carries": 63, "yards": 291, "tds": 1, "ypc": 4.6},
+      {"name": "Michael Carter", "pos": "RB", "carries": 35, "yards": 131, "tds": 1, "ypc": 3.7},
+      {"name": "Emari Demercado", "pos": "RB", "carries": 24, "yards": 223, "tds": 1, "ypc": 9.3}
+    ]
+  },
+  {
+    "abbr": "ATL",
+    "name": "Atlanta Falcons",
+    "color": "#A71930",
+    "accent": "#000000",
+    "team_carries": 464,
+    "team_yards": 2100,
+    "team_tds": 17,
+    "rushers": [
+      {"name": "Bijan Robinson", "pos": "RB", "carries": 304, "yards": 1456, "tds": 14, "ypc": 4.8},
+      {"name": "Tyler Allgeier", "pos": "RB", "carries": 137, "yards": 644, "tds": 3, "ypc": 4.7},
+      {"name": "Kirk Cousins", "pos": "QB", "carries": 23, "yards": 0, "tds": 0, "ypc": 0.0}
+    ]
+  },
+  {
+    "abbr": "BAL",
+    "name": "Baltimore Ravens",
+    "color": "#241773",
+    "accent": "#9E7C0C",
+    "team_carries": 511,
+    "team_yards": 3064,
+    "team_tds": 21,
+    "rushers": [
+      {"name": "Derrick Henry", "pos": "RB", "carries": 325, "yards": 1921, "tds": 16, "ypc": 5.9},
+      {"name": "Lamar Jackson", "pos": "QB", "carries": 139, "yards": 915, "tds": 4, "ypc": 6.6},
+      {"name": "Justice Hill", "pos": "RB", "carries": 47, "yards": 228, "tds": 1, "ypc": 4.9}
+    ]
+  },
+  {
+    "abbr": "BUF",
+    "name": "Buffalo Bills",
+    "color": "#00338D",
+    "accent": "#C60C30",
+    "team_carries": 463,
+    "team_yards": 2195,
+    "team_tds": 32,
+    "rushers": [
+      {"name": "James Cook", "pos": "RB", "carries": 207, "yards": 1009, "tds": 16, "ypc": 4.9},
+      {"name": "Ray Davis", "pos": "RB", "carries": 113, "yards": 442, "tds": 3, "ypc": 3.9},
+      {"name": "Josh Allen", "pos": "QB", "carries": 102, "yards": 531, "tds": 12, "ypc": 5.2},
+      {"name": "Ty Johnson", "pos": "RB", "carries": 41, "yards": 213, "tds": 1, "ypc": 5.2}
+    ]
+  },
+  {
+    "abbr": "CAR",
+    "name": "Carolina Panthers",
+    "color": "#0085CA",
+    "accent": "#101820",
+    "team_carries": 348,
+    "team_yards": 1649,
+    "team_tds": 18,
+    "rushers": [
+      {"name": "Chuba Hubbard", "pos": "RB", "carries": 250, "yards": 1195, "tds": 10, "ypc": 4.8},
+      {"name": "Miles Sanders", "pos": "RB", "carries": 55, "yards": 205, "tds": 2, "ypc": 3.7},
+      {"name": "Bryce Young", "pos": "QB", "carries": 43, "yards": 249, "tds": 6, "ypc": 5.8}
+    ]
+  },
+  {
+    "abbr": "CHI",
+    "name": "Chicago Bears",
+    "color": "#C83803",
+    "accent": "#0B162A",
+    "team_carries": 389,
+    "team_yards": 1598,
+    "team_tds": 12,
+    "rushers": [
+      {"name": "D'Andre Swift", "pos": "RB", "carries": 253, "yards": 959, "tds": 6, "ypc": 3.8},
+      {"name": "Caleb Williams", "pos": "QB", "carries": 81, "yards": 489, "tds": 0, "ypc": 6.0},
+      {"name": "Roschon Johnson", "pos": "RB", "carries": 55, "yards": 150, "tds": 6, "ypc": 2.7}
+    ]
+  },
+  {
+    "abbr": "CIN",
+    "name": "Cincinnati Bengals",
+    "color": "#FB4F14",
+    "accent": "#000000",
+    "team_carries": 381,
+    "team_yards": 1563,
+    "team_tds": 12,
+    "rushers": [
+      {"name": "Chase Brown", "pos": "RB", "carries": 229, "yards": 990, "tds": 7, "ypc": 4.3},
+      {"name": "Zack Moss", "pos": "RB", "carries": 74, "yards": 242, "tds": 2, "ypc": 3.3},
+      {"name": "Joe Burrow", "pos": "QB", "carries": 42, "yards": 201, "tds": 2, "ypc": 4.8},
+      {"name": "Khalil Herbert", "pos": "RB", "carries": 36, "yards": 130, "tds": 1, "ypc": 3.6}
+    ]
+  },
+  {
+    "abbr": "CLE",
+    "name": "Cleveland Browns",
+    "color": "#311D00",
+    "accent": "#FF3C00",
+    "team_carries": 334,
+    "team_yards": 1385,
+    "team_tds": 7,
+    "rushers": [
+      {"name": "Jerome Ford", "pos": "RB", "carries": 104, "yards": 565, "tds": 3, "ypc": 5.4},
+      {"name": "Nick Chubb", "pos": "RB", "carries": 102, "yards": 332, "tds": 3, "ypc": 3.3},
+      {"name": "D'Onta Foreman", "pos": "RB", "carries": 71, "yards": 232, "tds": 0, "ypc": 3.3},
+      {"name": "Deshaun Watson", "pos": "QB", "carries": 31, "yards": 148, "tds": 1, "ypc": 4.8},
+      {"name": "Pierre Strong", "pos": "RB", "carries": 26, "yards": 108, "tds": 0, "ypc": 4.2}
+    ]
+  },
+  {
+    "abbr": "DAL",
+    "name": "Dallas Cowboys",
+    "color": "#003594",
+    "accent": "#869397",
+    "team_carries": 335,
+    "team_yards": 1323,
+    "team_tds": 5,
+    "rushers": [
+      {"name": "Rico Dowdle", "pos": "RB", "carries": 235, "yards": 1079, "tds": 2, "ypc": 4.6},
+      {"name": "Ezekiel Elliott", "pos": "RB", "carries": 74, "yards": 226, "tds": 3, "ypc": 3.1},
+      {"name": "Cooper Rush", "pos": "QB", "carries": 26, "yards": 18, "tds": 0, "ypc": 0.7}
+    ]
+  },
+  {
+    "abbr": "DEN",
+    "name": "Denver Broncos",
+    "color": "#FB4F14",
+    "accent": "#002244",
+    "team_carries": 420,
+    "team_yards": 1749,
+    "team_tds": 11,
+    "rushers": [
+      {"name": "Javonte Williams", "pos": "RB", "carries": 139, "yards": 513, "tds": 4, "ypc": 3.7},
+      {"name": "Jaleel McLaughlin", "pos": "RB", "carries": 113, "yards": 496, "tds": 1, "ypc": 4.4},
+      {"name": "Bo Nix", "pos": "QB", "carries": 92, "yards": 430, "tds": 4, "ypc": 4.7},
+      {"name": "Audric Estime", "pos": "RB", "carries": 76, "yards": 310, "tds": 2, "ypc": 4.1}
+    ]
+  },
+  {
+    "abbr": "DET",
+    "name": "Detroit Lions",
+    "color": "#0076B6",
+    "accent": "#B0B7BC",
+    "team_carries": 501,
+    "team_yards": 2382,
+    "team_tds": 28,
+    "rushers": [
+      {"name": "Jahmyr Gibbs", "pos": "RB", "carries": 250, "yards": 1412, "tds": 16, "ypc": 5.6},
+      {"name": "David Montgomery", "pos": "RB", "carries": 185, "yards": 775, "tds": 12, "ypc": 4.2},
+      {"name": "Jared Goff", "pos": "QB", "carries": 35, "yards": 56, "tds": 0, "ypc": 1.6},
+      {"name": "Craig Reynolds", "pos": "RB", "carries": 31, "yards": 139, "tds": 0, "ypc": 4.5}
+    ]
+  },
+  {
+    "abbr": "GB",
+    "name": "Green Bay Packers",
+    "color": "#203731",
+    "accent": "#FFB612",
+    "team_carries": 485,
+    "team_yards": 2235,
+    "team_tds": 22,
+    "rushers": [
+      {"name": "Josh Jacobs", "pos": "RB", "carries": 301, "yards": 1329, "tds": 15, "ypc": 4.4},
+      {"name": "Emanuel Wilson", "pos": "RB", "carries": 103, "yards": 502, "tds": 4, "ypc": 4.9},
+      {"name": "Christopher Brooks", "pos": "RB", "carries": 36, "yards": 183, "tds": 1, "ypc": 5.1},
+      {"name": "Jordan Love", "pos": "QB", "carries": 25, "yards": 83, "tds": 1, "ypc": 3.3},
+      {"name": "Malik Willis", "pos": "QB", "carries": 20, "yards": 138, "tds": 1, "ypc": 6.9}
+    ]
+  },
+  {
+    "abbr": "HOU",
+    "name": "Houston Texans",
+    "color": "#03202F",
+    "accent": "#A71930",
+    "team_carries": 367,
+    "team_yards": 1654,
+    "team_tds": 13,
+    "rushers": [
+      {"name": "Joe Mixon", "pos": "RB", "carries": 245, "yards": 1016, "tds": 11, "ypc": 4.1},
+      {"name": "C.J. Stroud", "pos": "QB", "carries": 52, "yards": 233, "tds": 0, "ypc": 4.5},
+      {"name": "Dameon Pierce", "pos": "RB", "carries": 40, "yards": 293, "tds": 2, "ypc": 7.3},
+      {"name": "Dare Ogunbowale", "pos": "RB", "carries": 30, "yards": 112, "tds": 0, "ypc": 3.7}
+    ]
+  },
+  {
+    "abbr": "IND",
+    "name": "Indianapolis Colts",
+    "color": "#002C5F",
+    "accent": "#A2AAAD",
+    "team_carries": 477,
+    "team_yards": 2242,
+    "team_tds": 20,
+    "rushers": [
+      {"name": "Jonathan Taylor", "pos": "RB", "carries": 303, "yards": 1431, "tds": 11, "ypc": 4.7},
+      {"name": "Anthony Richardson", "pos": "QB", "carries": 86, "yards": 499, "tds": 6, "ypc": 5.8},
+      {"name": "Trey Sermon", "pos": "RB", "carries": 56, "yards": 159, "tds": 2, "ypc": 2.8},
+      {"name": "Tyler Goodson", "pos": "RB", "carries": 32, "yards": 153, "tds": 1, "ypc": 4.8}
+    ]
+  },
+  {
+    "abbr": "JAX",
+    "name": "Jacksonville Jaguars",
+    "color": "#101820",
+    "accent": "#D7A22A",
+    "team_carries": 404,
+    "team_yards": 1678,
+    "team_tds": 13,
+    "rushers": [
+      {"name": "Tank Bigsby", "pos": "RB", "carries": 168, "yards": 766, "tds": 7, "ypc": 4.6},
+      {"name": "Travis Etienne", "pos": "RB", "carries": 150, "yards": 558, "tds": 2, "ypc": 3.7},
+      {"name": "D'Ernest Johnson", "pos": "RB", "carries": 32, "yards": 143, "tds": 0, "ypc": 4.5},
+      {"name": "Mac Jones", "pos": "QB", "carries": 28, "yards": 92, "tds": 1, "ypc": 3.3},
+      {"name": "Trevor Lawrence", "pos": "QB", "carries": 26, "yards": 119, "tds": 3, "ypc": 4.6}
+    ]
+  },
+  {
+    "abbr": "KC",
+    "name": "Kansas City Chiefs",
+    "color": "#E31837",
+    "accent": "#FFB81C",
+    "team_carries": 417,
+    "team_yards": 1620,
+    "team_tds": 11,
+    "rushers": [
+      {"name": "Kareem Hunt", "pos": "RB", "carries": 200, "yards": 728, "tds": 7, "ypc": 3.6},
+      {"name": "Isiah Pacheco", "pos": "RB", "carries": 83, "yards": 310, "tds": 1, "ypc": 3.7},
+      {"name": "Patrick Mahomes", "pos": "QB", "carries": 58, "yards": 307, "tds": 2, "ypc": 5.3},
+      {"name": "Carson Steele", "pos": "RB", "carries": 56, "yards": 183, "tds": 0, "ypc": 3.3},
+      {"name": "Samaje Perine", "pos": "RB", "carries": 20, "yards": 92, "tds": 1, "ypc": 4.6}
+    ]
+  },
+  {
+    "abbr": "LV",
+    "name": "Las Vegas Raiders",
+    "color": "#000000",
+    "accent": "#A5ACAF",
+    "team_carries": 323,
+    "team_yards": 1127,
+    "team_tds": 8,
+    "rushers": [
+      {"name": "Alexander Mattison", "pos": "RB", "carries": 132, "yards": 420, "tds": 4, "ypc": 3.2},
+      {"name": "Ameer Abdullah", "pos": "RB", "carries": 66, "yards": 311, "tds": 2, "ypc": 4.7},
+      {"name": "Zamir White", "pos": "RB", "carries": 65, "yards": 183, "tds": 1, "ypc": 2.8},
+      {"name": "Sincere McCormick", "pos": "RB", "carries": 39, "yards": 183, "tds": 0, "ypc": 4.7},
+      {"name": "Aidan O'Connell", "pos": "QB", "carries": 21, "yards": 30, "tds": 1, "ypc": 1.4}
+    ]
+  },
+  {
+    "abbr": "LAC",
+    "name": "Los Angeles Chargers",
+    "color": "#0080C6",
+    "accent": "#FFC20E",
+    "team_carries": 442,
+    "team_yards": 1820,
+    "team_tds": 17,
+    "rushers": [
+      {"name": "J.K. Dobbins", "pos": "RB", "carries": 195, "yards": 905, "tds": 9, "ypc": 4.6},
+      {"name": "Gus Edwards", "pos": "RB", "carries": 101, "yards": 365, "tds": 4, "ypc": 3.6},
+      {"name": "Justin Herbert", "pos": "QB", "carries": 69, "yards": 306, "tds": 2, "ypc": 4.4},
+      {"name": "Kimani Vidal", "pos": "RB", "carries": 43, "yards": 155, "tds": 0, "ypc": 3.6},
+      {"name": "Hassan Haskins", "pos": "RB", "carries": 34, "yards": 89, "tds": 2, "ypc": 2.6}
+    ]
+  },
+  {
+    "abbr": "LA",
+    "name": "Los Angeles Rams",
+    "color": "#003594",
+    "accent": "#FFA300",
+    "team_carries": 426,
+    "team_yards": 1646,
+    "team_tds": 14,
+    "rushers": [
+      {"name": "Kyren Williams", "pos": "RB", "carries": 316, "yards": 1299, "tds": 14, "ypc": 4.1},
+      {"name": "Blake Corum", "pos": "RB", "carries": 58, "yards": 207, "tds": 0, "ypc": 3.6},
+      {"name": "Matthew Stafford", "pos": "QB", "carries": 30, "yards": 41, "tds": 0, "ypc": 1.4},
+      {"name": "Ronnie Rivers", "pos": "RB", "carries": 22, "yards": 99, "tds": 0, "ypc": 4.5}
+    ]
+  },
+  {
+    "abbr": "MIA",
+    "name": "Miami Dolphins",
+    "color": "#008E97",
+    "accent": "#FC4C02",
+    "team_carries": 382,
+    "team_yards": 1569,
+    "team_tds": 10,
+    "rushers": [
+      {"name": "Devon Achane", "pos": "RB", "carries": 203, "yards": 907, "tds": 6, "ypc": 4.5},
+      {"name": "Raheem Mostert", "pos": "RB", "carries": 85, "yards": 278, "tds": 2, "ypc": 3.3},
+      {"name": "Jaylen Wright", "pos": "RB", "carries": 68, "yards": 249, "tds": 0, "ypc": 3.7},
+      {"name": "Tyler Huntley", "pos": "QB", "carries": 26, "yards": 135, "tds": 2, "ypc": 5.2}
+    ]
+  },
+  {
+    "abbr": "MIN",
+    "name": "Minnesota Vikings",
+    "color": "#4F2683",
+    "accent": "#FFC62F",
+    "team_carries": 482,
+    "team_yards": 1976,
+    "team_tds": 8,
+    "rushers": [
+      {"name": "Aaron Jones", "pos": "RB", "carries": 255, "yards": 1138, "tds": 5, "ypc": 4.5},
+      {"name": "Cam Akers", "pos": "RB", "carries": 104, "yards": 444, "tds": 2, "ypc": 4.3},
+      {"name": "Sam Darnold", "pos": "QB", "carries": 67, "yards": 212, "tds": 1, "ypc": 3.2},
+      {"name": "Ty Chandler", "pos": "RB", "carries": 56, "yards": 182, "tds": 0, "ypc": 3.2}
+    ]
+  },
+  {
+    "abbr": "NE",
+    "name": "New England Patriots",
+    "color": "#002244",
+    "accent": "#C60C30",
+    "team_carries": 401,
+    "team_yards": 1829,
+    "team_tds": 10,
+    "rushers": [
+      {"name": "Rhamondre Stevenson", "pos": "RB", "carries": 207, "yards": 801, "tds": 7, "ypc": 3.9},
+      {"name": "Antonio Gibson", "pos": "RB", "carries": 120, "yards": 538, "tds": 1, "ypc": 4.5},
+      {"name": "Drake Maye", "pos": "QB", "carries": 54, "yards": 421, "tds": 2, "ypc": 7.8},
+      {"name": "Jamycal Hasty", "pos": "RB", "carries": 20, "yards": 69, "tds": 0, "ypc": 3.5}
+    ]
+  },
+  {
+    "abbr": "NO",
+    "name": "New Orleans Saints",
+    "color": "#D3BC8D",
+    "accent": "#101820",
+    "team_carries": 374,
+    "team_yards": 1610,
+    "team_tds": 14,
+    "rushers": [
+      {"name": "Alvin Kamara", "pos": "RB", "carries": 228, "yards": 950, "tds": 6, "ypc": 4.2},
+      {"name": "Jamaal Williams", "pos": "RB", "carries": 48, "yards": 164, "tds": 1, "ypc": 3.4},
+      {"name": "Taysom Hill", "pos": "TE", "carries": 39, "yards": 278, "tds": 6, "ypc": 7.1},
+      {"name": "Kendre Miller", "pos": "RB", "carries": 39, "yards": 148, "tds": 1, "ypc": 3.8},
+      {"name": "Jordan Mims", "pos": "RB", "carries": 20, "yards": 70, "tds": 0, "ypc": 3.5}
+    ]
+  },
+  {
+    "abbr": "NYG",
+    "name": "New York Giants",
+    "color": "#0B2265",
+    "accent": "#A71930",
+    "team_carries": 372,
+    "team_yards": 1541,
+    "team_tds": 11,
+    "rushers": [
+      {"name": "Tyrone Tracy", "pos": "RB", "carries": 192, "yards": 839, "tds": 5, "ypc": 4.4},
+      {"name": "Devin Singletary", "pos": "RB", "carries": 113, "yards": 437, "tds": 4, "ypc": 3.9},
+      {"name": "Daniel Jones", "pos": "QB", "carries": 67, "yards": 265, "tds": 2, "ypc": 4.0}
+    ]
+  },
+  {
+    "abbr": "NYJ",
+    "name": "New York Jets",
+    "color": "#125740",
+    "accent": "#000000",
+    "team_carries": 353,
+    "team_yards": 1491,
+    "team_tds": 8,
+    "rushers": [
+      {"name": "Breece Hall", "pos": "RB", "carries": 209, "yards": 876, "tds": 5, "ypc": 4.2},
+      {"name": "Braelon Allen", "pos": "RB", "carries": 92, "yards": 334, "tds": 2, "ypc": 3.6},
+      {"name": "Isaiah Davis", "pos": "RB", "carries": 30, "yards": 174, "tds": 1, "ypc": 5.8},
+      {"name": "Aaron Rodgers", "pos": "QB", "carries": 22, "yards": 107, "tds": 0, "ypc": 4.9}
+    ]
+  },
+  {
+    "abbr": "PHI",
+    "name": "Philadelphia Eagles",
+    "color": "#004C54",
+    "accent": "#A5ACAF",
+    "team_carries": 600,
+    "team_yards": 3007,
+    "team_tds": 28,
+    "rushers": [
+      {"name": "Saquon Barkley", "pos": "RB", "carries": 345, "yards": 2005, "tds": 13, "ypc": 5.8},
+      {"name": "Jalen Hurts", "pos": "QB", "carries": 150, "yards": 630, "tds": 14, "ypc": 4.2},
+      {"name": "Kenneth Gainwell", "pos": "RB", "carries": 75, "yards": 290, "tds": 1, "ypc": 3.9},
+      {"name": "Will Shipley", "pos": "RB", "carries": 30, "yards": 82, "tds": 0, "ypc": 2.7}
+    ]
+  },
+  {
+    "abbr": "PIT",
+    "name": "Pittsburgh Steelers",
+    "color": "#FFB612",
+    "accent": "#101820",
+    "team_carries": 520,
+    "team_yards": 2133,
+    "team_tds": 14,
+    "rushers": [
+      {"name": "Najee Harris", "pos": "RB", "carries": 263, "yards": 1043, "tds": 6, "ypc": 4.0},
+      {"name": "Jaylen Warren", "pos": "RB", "carries": 120, "yards": 511, "tds": 1, "ypc": 4.3},
+      {"name": "Justin Fields", "pos": "QB", "carries": 62, "yards": 289, "tds": 5, "ypc": 4.7},
+      {"name": "Russell Wilson", "pos": "QB", "carries": 43, "yards": 155, "tds": 2, "ypc": 3.6},
+      {"name": "Cordarrelle Patterson", "pos": "RB", "carries": 32, "yards": 135, "tds": 0, "ypc": 4.2}
+    ]
+  },
+  {
+    "abbr": "SF",
+    "name": "San Francisco 49ers",
+    "color": "#AA0000",
+    "accent": "#B3995D",
+    "team_carries": 395,
+    "team_yards": 1870,
+    "team_tds": 13,
+    "rushers": [
+      {"name": "Jordan Mason", "pos": "RB", "carries": 153, "yards": 789, "tds": 3, "ypc": 5.2},
+      {"name": "Isaac Guerendo", "pos": "RB", "carries": 84, "yards": 420, "tds": 4, "ypc": 5.0},
+      {"name": "Brock Purdy", "pos": "QB", "carries": 66, "yards": 323, "tds": 5, "ypc": 4.9},
+      {"name": "Christian McCaffrey", "pos": "RB", "carries": 50, "yards": 202, "tds": 0, "ypc": 4.0},
+      {"name": "Deebo Samuel", "pos": "WR", "carries": 42, "yards": 136, "tds": 1, "ypc": 3.2}
+    ]
+  },
+  {
+    "abbr": "SEA",
+    "name": "Seattle Seahawks",
+    "color": "#002244",
+    "accent": "#69BE28",
+    "team_carries": 372,
+    "team_yards": 1586,
+    "team_tds": 17,
+    "rushers": [
+      {"name": "Kenneth Walker", "pos": "RB", "carries": 153, "yards": 573, "tds": 7, "ypc": 3.7},
+      {"name": "Zach Charbonnet", "pos": "RB", "carries": 135, "yards": 569, "tds": 8, "ypc": 4.2},
+      {"name": "Geno Smith", "pos": "QB", "carries": 53, "yards": 272, "tds": 2, "ypc": 5.1},
+      {"name": "Kenny McIntosh", "pos": "RB", "carries": 31, "yards": 172, "tds": 0, "ypc": 5.5}
+    ]
+  },
+  {
+    "abbr": "TB",
+    "name": "Tampa Bay Buccaneers",
+    "color": "#D50A0A",
+    "accent": "#FF7900",
+    "team_carries": 461,
+    "team_yards": 2421,
+    "team_tds": 16,
+    "rushers": [
+      {"name": "Bucky Irving", "pos": "RB", "carries": 207, "yards": 1122, "tds": 8, "ypc": 5.4},
+      {"name": "Rachaad White", "pos": "RB", "carries": 144, "yards": 613, "tds": 3, "ypc": 4.3},
+      {"name": "Baker Mayfield", "pos": "QB", "carries": 60, "yards": 378, "tds": 3, "ypc": 6.3},
+      {"name": "Sean Tucker", "pos": "RB", "carries": 50, "yards": 308, "tds": 2, "ypc": 6.2}
+    ]
+  },
+  {
+    "abbr": "TEN",
+    "name": "Tennessee Titans",
+    "color": "#0C2340",
+    "accent": "#4B92DB",
+    "team_carries": 436,
+    "team_yards": 1782,
+    "team_tds": 10,
+    "rushers": [
+      {"name": "Tony Pollard", "pos": "RB", "carries": 260, "yards": 1079, "tds": 5, "ypc": 4.2},
+      {"name": "Tyjae Spears", "pos": "RB", "carries": 84, "yards": 312, "tds": 4, "ypc": 3.7},
+      {"name": "Will Levis", "pos": "QB", "carries": 45, "yards": 183, "tds": 0, "ypc": 4.1},
+      {"name": "Mason Rudolph", "pos": "QB", "carries": 25, "yards": 106, "tds": 1, "ypc": 4.2},
+      {"name": "Julius Chestnut", "pos": "RB", "carries": 22, "yards": 102, "tds": 0, "ypc": 4.6}
+    ]
+  },
+  {
+    "abbr": "WAS",
+    "name": "Washington Commanders",
+    "color": "#5A1414",
+    "accent": "#FFB612",
+    "team_carries": 502,
+    "team_yards": 2491,
+    "team_tds": 24,
+    "rushers": [
+      {"name": "Brian Robinson", "pos": "RB", "carries": 187, "yards": 799, "tds": 8, "ypc": 4.3},
+      {"name": "Jayden Daniels", "pos": "QB", "carries": 148, "yards": 891, "tds": 6, "ypc": 6.0},
+      {"name": "Austin Ekeler", "pos": "RB", "carries": 77, "yards": 367, "tds": 4, "ypc": 4.8},
+      {"name": "Jeremy McNichols", "pos": "RB", "carries": 55, "yards": 261, "tds": 4, "ypc": 4.7},
+      {"name": "Chris Rodriguez", "pos": "RB", "carries": 35, "yards": 173, "tds": 2, "ypc": 4.9}
+    ]
+  }
+];
+
+        const tooltip = document.getElementById('tooltip');
+        const container = document.getElementById('teams');
+
+        // Find league-wide max yards for scaling
+        const leagueMaxYards = Math.max(...teamsData.flatMap(t => t.rushers.map(r => r.yards)));
+
+        teamsData.forEach(team => {
+            const card = document.createElement('div');
+            card.className = 'team-card';
+
+            const teamName = document.createElement('div');
+            teamName.className = 'team-name';
+            teamName.style.borderColor = team.color;
+            teamName.style.color = team.color;
+            teamName.textContent = team.name;
+            card.appendChild(teamName);
+
+            const width = 200;
+            const height = 180;
+
+            const svg = d3.select(card).append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            const rusherNodes = team.rushers.map((r, i) => ({
+                id: r.name,
+                name: r.name,
+                pos: r.pos,
+                carries: r.carries,
+                yards: r.yards,
+                tds: r.tds,
+                ypc: r.ypc,
+                radius: 8 + (r.yards / leagueMaxYards) * 25
+            }));
+
+            // Force simulation - no center QB, just rushers spread out
+            const simulation = d3.forceSimulation(rusherNodes)
+                .force('charge', d3.forceManyBody().strength(-80))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 6));
+
+            // Draw nodes
+            const node = svg.append('g')
+                .selectAll('circle')
+                .data(rusherNodes)
+                .join('circle')
+                .attr('r', d => d.radius)
+                .attr('fill', d => {
+                    if (d.pos === 'QB') return '#FFB612';
+                    if (d.pos === 'WR') return '#22C55E';
+                    if (d.pos === 'TE') return '#3B82F6';
+                    return team.color;
+                })
+                .attr('stroke', d => d.tds > 0 ? '#22C55E' : '#333')
+                .attr('stroke-width', d => d.tds > 0 ? 2 : 1)
+                .style('cursor', 'pointer');
+
+            // Carry numbers inside circles
+            const carryLabels = svg.append('g')
+                .selectAll('text.carry')
+                .data(rusherNodes)
+                .join('text')
+                .attr('class', 'carry')
+                .attr('text-anchor', 'middle')
+                .attr('dy', '0.35em')
+                .attr('font-size', '9px')
+                .attr('font-weight', 'bold')
+                .attr('fill', d => d.pos === 'QB' ? '#000' : '#fff')
+                .attr('pointer-events', 'none')
+                .text(d => d.carries);
+
+            // Name labels below
+            const labels = svg.append('g')
+                .selectAll('text.name')
+                .data(rusherNodes)
+                .join('text')
+                .attr('class', 'name')
+                .attr('text-anchor', 'middle')
+                .attr('dy', d => d.radius + 10)
+                .attr('font-size', '8px')
+                .attr('fill', '#777')
+                .text(d => d.name.split(' ').pop());
+
+            // Hover interactions
+            node.on('mouseover', function(event, d) {
+                let html = `<strong>${d.name}</strong> (${d.pos})<br>`;
+                html += `<span class="stat-line">${d.carries} car, ${d.yards.toLocaleString()} yds, ${d.ypc} ypc`;
+                if (d.tds > 0) html += `, ${d.tds} TD`;
+                html += `</span>`;
+
+                tooltip.style.opacity = 1;
+                tooltip.style.left = (event.clientX + 15) + 'px';
+                tooltip.style.top = (event.clientY - 10) + 'px';
+                tooltip.innerHTML = html;
+
+                node.attr('opacity', n => n.id === d.id ? 1 : 0.2);
+                carryLabels.attr('opacity', n => n.id === d.id ? 1 : 0.2);
+                labels.attr('opacity', n => n.id === d.id ? 1 : 0.2);
+            })
+            .on('mouseout', function() {
+                tooltip.style.opacity = 0;
+                node.attr('opacity', 1);
+                carryLabels.attr('opacity', 1);
+                labels.attr('opacity', 1);
+            });
+
+            simulation.on('tick', () => {
+                node
+                    .attr('cx', d => d.x = Math.max(d.radius + 5, Math.min(width - d.radius - 5, d.x)))
+                    .attr('cy', d => d.y = Math.max(d.radius + 5, Math.min(height - d.radius - 5, d.y)));
+
+                carryLabels
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y);
+
+                labels
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y);
+            });
+
+            container.appendChild(card);
+        });
+    </script>
+</body>
+</html>

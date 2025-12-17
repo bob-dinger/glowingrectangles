@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Conjugation Trainer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #ffffff;
+            color: #000000;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        #canvas {
+            background-color: #ffffff;
+        }
+        #nextBtn, #revealBtn {
+            padding: 12px 32px;
+            font-size: 16px;
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #nextBtn:hover, #revealBtn:hover {
+            background-color: #2563EB;
+        }
+        #revealBtn {
+            background-color: #22C55E;
+        }
+        #revealBtn:hover {
+            background-color: #16A34A;
+        }
+        .conjugation-label {
+            font-size: 14px;
+            fill: #000000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Spanish Conjugation Trainer</h1>
+    <svg id="canvas" width="700" height="600"></svg>
+    <div style="margin-top: 20px; display: flex; gap: 15px;">
+        <button id="revealBtn">Reveal</button>
+        <button id="nextBtn">Next</button>
+    </div>
+
+    <script>
+        const svg = document.getElementById('canvas');
+        const svgNS = "http://www.w3.org/2000/svg";
+
+        const centerX = 350;
+        const centerY = 300;
+        const mainRadius = 180;
+        const smallRadius = 30;
+
+        // Main white circle with black border
+        const mainCircle = document.createElementNS(svgNS, 'circle');
+        mainCircle.setAttribute('cx', centerX);
+        mainCircle.setAttribute('cy', centerY);
+        mainCircle.setAttribute('r', mainRadius);
+        mainCircle.setAttribute('fill', '#ffffff');
+        mainCircle.setAttribute('stroke', '#000000');
+        mainCircle.setAttribute('stroke-width', '4');
+        svg.appendChild(mainCircle);
+
+        // Text elements in center - verb infinitive
+        const verbText = document.createElementNS(svgNS, 'text');
+        verbText.setAttribute('x', centerX);
+        verbText.setAttribute('y', centerY - 20);
+        verbText.setAttribute('text-anchor', 'middle');
+        verbText.setAttribute('font-size', '32px');
+        verbText.setAttribute('font-weight', 'bold');
+        verbText.setAttribute('fill', '#000000');
+        svg.appendChild(verbText);
+
+        // Tense label
+        const tenseText = document.createElementNS(svgNS, 'text');
+        tenseText.setAttribute('x', centerX);
+        tenseText.setAttribute('y', centerY + 20);
+        tenseText.setAttribute('text-anchor', 'middle');
+        tenseText.setAttribute('font-size', '18px');
+        tenseText.setAttribute('fill', '#666666');
+        svg.appendChild(tenseText);
+
+        // English meaning
+        const meaningText = document.createElementNS(svgNS, 'text');
+        meaningText.setAttribute('x', centerX);
+        meaningText.setAttribute('y', centerY + 50);
+        meaningText.setAttribute('text-anchor', 'middle');
+        meaningText.setAttribute('font-size', '14px');
+        meaningText.setAttribute('fill', '#999999');
+        svg.appendChild(meaningText);
+
+        // Pronoun circles at clock positions
+        // yo (I) = 6 o'clock, tú (you) = 12 o'clock, él/ella = 9 o'clock, nosotros = 5 o'clock, ellos = 3 o'clock
+        const positions = [
+            { angle: -90, color: '#EF4444', pronoun: 'tú', label: 'you' },
+            { angle: 0, color: '#22C55E', pronoun: 'ellos', label: 'they' },
+            { angle: 90, color: '#3B82F6', pronoun: 'yo', label: 'I' },
+            { angle: 60, color: '#8B5CF6', pronoun: 'nosotros', label: 'we' },
+            { angle: 180, color: '#F59E0B', pronoun: 'él/ella', label: 'he/she' }
+        ];
+
+        const circles = {};
+        const conjugationLabels = {};
+
+        positions.forEach(pos => {
+            const radians = pos.angle * (Math.PI / 180);
+            const x = centerX + mainRadius * Math.cos(radians);
+            const y = centerY + mainRadius * Math.sin(radians);
+
+            // Circle
+            const circle = document.createElementNS(svgNS, 'circle');
+            circle.setAttribute('cx', x);
+            circle.setAttribute('cy', y);
+            circle.setAttribute('r', smallRadius);
+            circle.setAttribute('fill', '#dddddd');
+            circle.setAttribute('stroke', '#000000');
+            circle.setAttribute('stroke-width', '2');
+            circle.dataset.color = pos.color;
+            svg.appendChild(circle);
+
+            // Pronoun label inside circle
+            const label = document.createElementNS(svgNS, 'text');
+            label.setAttribute('x', x);
+            label.setAttribute('y', y + 5);
+            label.setAttribute('text-anchor', 'middle');
+            label.setAttribute('font-size', '12px');
+            label.setAttribute('font-weight', 'bold');
+            label.setAttribute('fill', '#000000');
+            label.textContent = pos.pronoun;
+            svg.appendChild(label);
+
+            // Conjugation label outside circle
+            const conjLabel = document.createElementNS(svgNS, 'text');
+            conjLabel.setAttribute('class', 'conjugation-label');
+            conjLabel.setAttribute('font-size', '15px');
+            conjLabel.setAttribute('fill', '#000000');
+            conjLabel.setAttribute('opacity', '0');
+
+            // Position label outside the circle - more space for side circles
+            const isTopOrBottom = (pos.angle === -90 || pos.angle === 90);
+            const labelOffset = isTopOrBottom ? 50 : 70;
+            const labelX = centerX + (mainRadius + labelOffset) * Math.cos(radians);
+            const labelY = centerY + (mainRadius + labelOffset) * Math.sin(radians) + 5;
+            conjLabel.setAttribute('x', labelX);
+            conjLabel.setAttribute('y', labelY);
+
+            // Adjust text-anchor based on position
+            if (pos.angle === 0 || pos.angle === 60) {
+                conjLabel.setAttribute('text-anchor', 'start');
+            } else if (pos.angle === 180) {
+                conjLabel.setAttribute('text-anchor', 'end');
+            } else {
+                conjLabel.setAttribute('text-anchor', 'middle');
+            }
+            svg.appendChild(conjLabel);
+
+            circles[pos.pronoun] = circle;
+            conjugationLabels[pos.pronoun] = conjLabel;
+        });
+
+        // Verbs with conjugations
+        const verbs = [
+            // -AR verbs
+            {
+                infinitive: 'hablar', meaning: 'to speak',
+                present: { yo: 'hablo', tú: 'hablas', 'él/ella': 'habla', nosotros: 'hablamos', ellos: 'hablan' },
+                past: { yo: 'hablé', tú: 'hablaste', 'él/ella': 'habló', nosotros: 'hablamos', ellos: 'hablaron' },
+                future: { yo: 'hablaré', tú: 'hablarás', 'él/ella': 'hablará', nosotros: 'hablaremos', ellos: 'hablarán' }
+            },
+            {
+                infinitive: 'escuchar', meaning: 'to listen',
+                present: { yo: 'escucho', tú: 'escuchas', 'él/ella': 'escucha', nosotros: 'escuchamos', ellos: 'escuchan' },
+                past: { yo: 'escuché', tú: 'escuchaste', 'él/ella': 'escuchó', nosotros: 'escuchamos', ellos: 'escucharon' },
+                future: { yo: 'escucharé', tú: 'escucharás', 'él/ella': 'escuchará', nosotros: 'escucharemos', ellos: 'escucharán' }
+            },
+            {
+                infinitive: 'amar', meaning: 'to love',
+                present: { yo: 'amo', tú: 'amas', 'él/ella': 'ama', nosotros: 'amamos', ellos: 'aman' },
+                past: { yo: 'amé', tú: 'amaste', 'él/ella': 'amó', nosotros: 'amamos', ellos: 'amaron' },
+                future: { yo: 'amaré', tú: 'amarás', 'él/ella': 'amará', nosotros: 'amaremos', ellos: 'amarán' }
+            },
+            {
+                infinitive: 'trabajar', meaning: 'to work',
+                present: { yo: 'trabajo', tú: 'trabajas', 'él/ella': 'trabaja', nosotros: 'trabajamos', ellos: 'trabajan' },
+                past: { yo: 'trabajé', tú: 'trabajaste', 'él/ella': 'trabajó', nosotros: 'trabajamos', ellos: 'trabajaron' },
+                future: { yo: 'trabajaré', tú: 'trabajarás', 'él/ella': 'trabajará', nosotros: 'trabajaremos', ellos: 'trabajarán' }
+            },
+            {
+                infinitive: 'caminar', meaning: 'to walk',
+                present: { yo: 'camino', tú: 'caminas', 'él/ella': 'camina', nosotros: 'caminamos', ellos: 'caminan' },
+                past: { yo: 'caminé', tú: 'caminaste', 'él/ella': 'caminó', nosotros: 'caminamos', ellos: 'caminaron' },
+                future: { yo: 'caminaré', tú: 'caminarás', 'él/ella': 'caminará', nosotros: 'caminaremos', ellos: 'caminarán' }
+            },
+            {
+                infinitive: 'llamar', meaning: 'to call',
+                present: { yo: 'llamo', tú: 'llamas', 'él/ella': 'llama', nosotros: 'llamamos', ellos: 'llaman' },
+                past: { yo: 'llamé', tú: 'llamaste', 'él/ella': 'llamó', nosotros: 'llamamos', ellos: 'llamaron' },
+                future: { yo: 'llamaré', tú: 'llamarás', 'él/ella': 'llamará', nosotros: 'llamaremos', ellos: 'llamarán' }
+            },
+            {
+                infinitive: 'comprar', meaning: 'to buy',
+                present: { yo: 'compro', tú: 'compras', 'él/ella': 'compra', nosotros: 'compramos', ellos: 'compran' },
+                past: { yo: 'compré', tú: 'compraste', 'él/ella': 'compró', nosotros: 'compramos', ellos: 'compraron' },
+                future: { yo: 'compraré', tú: 'comprarás', 'él/ella': 'comprará', nosotros: 'compraremos', ellos: 'comprarán' }
+            },
+
+            // -ER verbs
+            {
+                infinitive: 'comer', meaning: 'to eat',
+                present: { yo: 'como', tú: 'comes', 'él/ella': 'come', nosotros: 'comemos', ellos: 'comen' },
+                past: { yo: 'comí', tú: 'comiste', 'él/ella': 'comió', nosotros: 'comimos', ellos: 'comieron' },
+                future: { yo: 'comeré', tú: 'comerás', 'él/ella': 'comerá', nosotros: 'comeremos', ellos: 'comerán' }
+            },
+            {
+                infinitive: 'beber', meaning: 'to drink',
+                present: { yo: 'bebo', tú: 'bebes', 'él/ella': 'bebe', nosotros: 'bebemos', ellos: 'beben' },
+                past: { yo: 'bebí', tú: 'bebiste', 'él/ella': 'bebió', nosotros: 'bebimos', ellos: 'bebieron' },
+                future: { yo: 'beberé', tú: 'beberás', 'él/ella': 'beberá', nosotros: 'beberemos', ellos: 'beberán' }
+            },
+            {
+                infinitive: 'aprender', meaning: 'to learn',
+                present: { yo: 'aprendo', tú: 'aprendes', 'él/ella': 'aprende', nosotros: 'aprendemos', ellos: 'aprenden' },
+                past: { yo: 'aprendí', tú: 'aprendiste', 'él/ella': 'aprendió', nosotros: 'aprendimos', ellos: 'aprendieron' },
+                future: { yo: 'aprenderé', tú: 'aprenderás', 'él/ella': 'aprenderá', nosotros: 'aprenderemos', ellos: 'aprenderán' }
+            },
+            {
+                infinitive: 'correr', meaning: 'to run',
+                present: { yo: 'corro', tú: 'corres', 'él/ella': 'corre', nosotros: 'corremos', ellos: 'corren' },
+                past: { yo: 'corrí', tú: 'corriste', 'él/ella': 'corrió', nosotros: 'corrimos', ellos: 'corrieron' },
+                future: { yo: 'correré', tú: 'correrás', 'él/ella': 'correrá', nosotros: 'correremos', ellos: 'correrán' }
+            },
+            {
+                infinitive: 'leer', meaning: 'to read',
+                present: { yo: 'leo', tú: 'lees', 'él/ella': 'lee', nosotros: 'leemos', ellos: 'leen' },
+                past: { yo: 'leí', tú: 'leíste', 'él/ella': 'leyó', nosotros: 'leímos', ellos: 'leyeron' },
+                future: { yo: 'leeré', tú: 'leerás', 'él/ella': 'leerá', nosotros: 'leeremos', ellos: 'leerán' }
+            },
+
+            // -IR verbs
+            {
+                infinitive: 'vivir', meaning: 'to live',
+                present: { yo: 'vivo', tú: 'vives', 'él/ella': 'vive', nosotros: 'vivimos', ellos: 'viven' },
+                past: { yo: 'viví', tú: 'viviste', 'él/ella': 'vivió', nosotros: 'vivimos', ellos: 'vivieron' },
+                future: { yo: 'viviré', tú: 'vivirás', 'él/ella': 'vivirá', nosotros: 'viviremos', ellos: 'vivirán' }
+            },
+            {
+                infinitive: 'escribir', meaning: 'to write',
+                present: { yo: 'escribo', tú: 'escribes', 'él/ella': 'escribe', nosotros: 'escribimos', ellos: 'escriben' },
+                past: { yo: 'escribí', tú: 'escribiste', 'él/ella': 'escribió', nosotros: 'escribimos', ellos: 'escribieron' },
+                future: { yo: 'escribiré', tú: 'escribirás', 'él/ella': 'escribirá', nosotros: 'escribiremos', ellos: 'escribirán' }
+            },
+            {
+                infinitive: 'abrir', meaning: 'to open',
+                present: { yo: 'abro', tú: 'abres', 'él/ella': 'abre', nosotros: 'abrimos', ellos: 'abren' },
+                past: { yo: 'abrí', tú: 'abriste', 'él/ella': 'abrió', nosotros: 'abrimos', ellos: 'abrieron' },
+                future: { yo: 'abriré', tú: 'abrirás', 'él/ella': 'abrirá', nosotros: 'abriremos', ellos: 'abrirán' }
+            },
+            {
+                infinitive: 'recibir', meaning: 'to receive',
+                present: { yo: 'recibo', tú: 'recibes', 'él/ella': 'recibe', nosotros: 'recibimos', ellos: 'reciben' },
+                past: { yo: 'recibí', tú: 'recibiste', 'él/ella': 'recibió', nosotros: 'recibimos', ellos: 'recibieron' },
+                future: { yo: 'recibiré', tú: 'recibirás', 'él/ella': 'recibirá', nosotros: 'recibiremos', ellos: 'recibirán' }
+            },
+
+            // Irregular verbs
+            {
+                infinitive: 'ser', meaning: 'to be (permanent)',
+                present: { yo: 'soy', tú: 'eres', 'él/ella': 'es', nosotros: 'somos', ellos: 'son' },
+                past: { yo: 'fui', tú: 'fuiste', 'él/ella': 'fue', nosotros: 'fuimos', ellos: 'fueron' },
+                future: { yo: 'seré', tú: 'serás', 'él/ella': 'será', nosotros: 'seremos', ellos: 'serán' }
+            },
+            {
+                infinitive: 'estar', meaning: 'to be (temporary)',
+                present: { yo: 'estoy', tú: 'estás', 'él/ella': 'está', nosotros: 'estamos', ellos: 'están' },
+                past: { yo: 'estuve', tú: 'estuviste', 'él/ella': 'estuvo', nosotros: 'estuvimos', ellos: 'estuvieron' },
+                future: { yo: 'estaré', tú: 'estarás', 'él/ella': 'estará', nosotros: 'estaremos', ellos: 'estarán' }
+            },
+            {
+                infinitive: 'tener', meaning: 'to have',
+                present: { yo: 'tengo', tú: 'tienes', 'él/ella': 'tiene', nosotros: 'tenemos', ellos: 'tienen' },
+                past: { yo: 'tuve', tú: 'tuviste', 'él/ella': 'tuvo', nosotros: 'tuvimos', ellos: 'tuvieron' },
+                future: { yo: 'tendré', tú: 'tendrás', 'él/ella': 'tendrá', nosotros: 'tendremos', ellos: 'tendrán' }
+            },
+            {
+                infinitive: 'ir', meaning: 'to go',
+                present: { yo: 'voy', tú: 'vas', 'él/ella': 'va', nosotros: 'vamos', ellos: 'van' },
+                past: { yo: 'fui', tú: 'fuiste', 'él/ella': 'fue', nosotros: 'fuimos', ellos: 'fueron' },
+                future: { yo: 'iré', tú: 'irás', 'él/ella': 'irá', nosotros: 'iremos', ellos: 'irán' }
+            },
+            {
+                infinitive: 'hacer', meaning: 'to do/make',
+                present: { yo: 'hago', tú: 'haces', 'él/ella': 'hace', nosotros: 'hacemos', ellos: 'hacen' },
+                past: { yo: 'hice', tú: 'hiciste', 'él/ella': 'hizo', nosotros: 'hicimos', ellos: 'hicieron' },
+                future: { yo: 'haré', tú: 'harás', 'él/ella': 'hará', nosotros: 'haremos', ellos: 'harán' }
+            },
+            {
+                infinitive: 'decir', meaning: 'to say/tell',
+                present: { yo: 'digo', tú: 'dices', 'él/ella': 'dice', nosotros: 'decimos', ellos: 'dicen' },
+                past: { yo: 'dije', tú: 'dijiste', 'él/ella': 'dijo', nosotros: 'dijimos', ellos: 'dijeron' },
+                future: { yo: 'diré', tú: 'dirás', 'él/ella': 'dirá', nosotros: 'diremos', ellos: 'dirán' }
+            },
+            {
+                infinitive: 'poder', meaning: 'to be able to',
+                present: { yo: 'puedo', tú: 'puedes', 'él/ella': 'puede', nosotros: 'podemos', ellos: 'pueden' },
+                past: { yo: 'pude', tú: 'pudiste', 'él/ella': 'pudo', nosotros: 'pudimos', ellos: 'pudieron' },
+                future: { yo: 'podré', tú: 'podrás', 'él/ella': 'podrá', nosotros: 'podremos', ellos: 'podrán' }
+            },
+            {
+                infinitive: 'querer', meaning: 'to want',
+                present: { yo: 'quiero', tú: 'quieres', 'él/ella': 'quiere', nosotros: 'queremos', ellos: 'quieren' },
+                past: { yo: 'quise', tú: 'quisiste', 'él/ella': 'quiso', nosotros: 'quisimos', ellos: 'quisieron' },
+                future: { yo: 'querré', tú: 'querrás', 'él/ella': 'querrá', nosotros: 'querremos', ellos: 'querrán' }
+            },
+            {
+                infinitive: 'saber', meaning: 'to know (facts)',
+                present: { yo: 'sé', tú: 'sabes', 'él/ella': 'sabe', nosotros: 'sabemos', ellos: 'saben' },
+                past: { yo: 'supe', tú: 'supiste', 'él/ella': 'supo', nosotros: 'supimos', ellos: 'supieron' },
+                future: { yo: 'sabré', tú: 'sabrás', 'él/ella': 'sabrá', nosotros: 'sabremos', ellos: 'sabrán' }
+            },
+            {
+                infinitive: 'venir', meaning: 'to come',
+                present: { yo: 'vengo', tú: 'vienes', 'él/ella': 'viene', nosotros: 'venimos', ellos: 'vienen' },
+                past: { yo: 'vine', tú: 'viniste', 'él/ella': 'vino', nosotros: 'vinimos', ellos: 'vinieron' },
+                future: { yo: 'vendré', tú: 'vendrás', 'él/ella': 'vendrá', nosotros: 'vendremos', ellos: 'vendrán' }
+            },
+            {
+                infinitive: 'ver', meaning: 'to see',
+                present: { yo: 'veo', tú: 'ves', 'él/ella': 've', nosotros: 'vemos', ellos: 'ven' },
+                past: { yo: 'vi', tú: 'viste', 'él/ella': 'vio', nosotros: 'vimos', ellos: 'vieron' },
+                future: { yo: 'veré', tú: 'verás', 'él/ella': 'verá', nosotros: 'veremos', ellos: 'verán' }
+            },
+            {
+                infinitive: 'dar', meaning: 'to give',
+                present: { yo: 'doy', tú: 'das', 'él/ella': 'da', nosotros: 'damos', ellos: 'dan' },
+                past: { yo: 'di', tú: 'diste', 'él/ella': 'dio', nosotros: 'dimos', ellos: 'dieron' },
+                future: { yo: 'daré', tú: 'darás', 'él/ella': 'dará', nosotros: 'daremos', ellos: 'darán' }
+            }
+        ];
+
+        const tenses = ['present', 'past', 'future'];
+        const tenseNames = { present: 'Present', past: 'Preterite', future: 'Future' };
+
+        // Create all verb+tense combinations
+        let combinations = [];
+        verbs.forEach(verb => {
+            tenses.forEach(tense => {
+                combinations.push({ verb, tense });
+            });
+        });
+
+        let currentIndex = 0;
+        let shuffledCombinations = [...combinations];
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        shuffle(shuffledCombinations);
+
+        function resetAll() {
+            // Reset circles
+            Object.values(circles).forEach(circle => {
+                gsap.to(circle, {
+                    attr: { fill: '#dddddd', r: smallRadius },
+                    duration: 0.3
+                });
+            });
+            // Hide conjugation labels
+            Object.values(conjugationLabels).forEach(label => {
+                gsap.to(label, { attr: { opacity: 0 }, duration: 0.3 });
+            });
+        }
+
+        function lightUpCircle(pronoun) {
+            const circle = circles[pronoun];
+            if (circle) {
+                gsap.to(circle, {
+                    attr: { fill: circle.dataset.color, r: smallRadius * 1.2 },
+                    duration: 0.4,
+                    ease: 'back.out(1.7)'
+                });
+            }
+        }
+
+        function showConjugation(pronoun, conjugation) {
+            const label = conjugationLabels[pronoun];
+            if (label) {
+                label.textContent = conjugation;
+                gsap.to(label, { attr: { opacity: 1 }, duration: 0.4 });
+            }
+        }
+
+        let currentCombo = null;
+
+        function showVerb(index) {
+            currentCombo = shuffledCombinations[index];
+            const { verb, tense } = currentCombo;
+
+            verbText.textContent = verb.infinitive;
+            tenseText.textContent = `(${tenseNames[tense]})`;
+            meaningText.textContent = verb.meaning;
+
+            resetAll();
+        }
+
+        function revealConjugations() {
+            if (!currentCombo) return;
+
+            const { verb, tense } = currentCombo;
+            const conjugations = verb[tense];
+
+            let delay = 0;
+            const pronouns = ['yo', 'tú', 'él/ella', 'nosotros', 'ellos'];
+
+            pronouns.forEach((pronoun, i) => {
+                setTimeout(() => {
+                    lightUpCircle(pronoun);
+                    showConjugation(pronoun, conjugations[pronoun]);
+                }, delay);
+                delay += 300;
+            });
+        }
+
+        document.getElementById('revealBtn').addEventListener('click', revealConjugations);
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            currentIndex = (currentIndex + 1) % shuffledCombinations.length;
+            if (currentIndex === 0) {
+                shuffle(shuffledCombinations);
+            }
+            showVerb(currentIndex);
+        });
+
+        // Show first verb
+        showVerb(0);
+    </script>
+</body>
+</html>

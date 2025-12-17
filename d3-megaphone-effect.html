@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Megaphone Effect</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        #canvas {
+            background: #0a0a0a;
+            border-radius: 8px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .play-btn {
+            background: linear-gradient(90deg, #EF4444, #F97316);
+            color: white;
+        }
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+        .reset-btn {
+            background: #333;
+            color: #aaa;
+        }
+        .reset-btn:hover {
+            background: #444;
+            color: #fff;
+        }
+        .stats {
+            display: flex;
+            gap: 50px;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-value.normal { color: #3B82F6; }
+        .stat-value.parasite { color: #EF4444; }
+        .stat-value.noise { color: #F97316; }
+        .info {
+            max-width: 700px;
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px 25px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .info p {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+        .info strong {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <h1>The Megaphone Effect</h1>
+    <p class="subtitle">5 parasites with megaphones drown out 95 normal people</p>
+
+    <div class="controls">
+        <button class="play-btn" id="playBtn">▶ Play</button>
+        <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <svg id="canvas" width="900" height="500"></svg>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value normal" id="normalVoice">100%</div>
+            <div class="stat-label">Normal Voice Share</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value parasite" id="parasiteVoice">0%</div>
+            <div class="stat-label">Parasite Voice Share</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value noise" id="outrage">0</div>
+            <div class="stat-label">Outrage Level</div>
+        </div>
+    </div>
+
+    <div class="info">
+        <p><strong>What you're seeing:</strong> 95 normal people (blue) speak at normal volume. 5 parasites (red) have megaphones that grow larger the more outrageous they become. Watch as the quiet majority gets drowned out, even though they vastly outnumber the loud minority.</p>
+    </div>
+
+    <script>
+        const width = 900;
+        const height = 500;
+        const numNormal = 95;
+        const numParasites = 5;
+
+        const svg = d3.select('#canvas');
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Create people
+        let people = [];
+
+        // Normal people
+        for (let i = 0; i < numNormal; i++) {
+            people.push({
+                id: i,
+                type: 'normal',
+                x: 100 + Math.random() * 700,
+                y: 100 + Math.random() * 300,
+                baseRadius: 8,
+                radius: 8,
+                megaphoneSize: 0,
+                opacity: 0.8
+            });
+        }
+
+        // Parasites
+        for (let i = 0; i < numParasites; i++) {
+            people.push({
+                id: numNormal + i,
+                type: 'parasite',
+                x: 200 + i * 150,
+                y: 250 + (Math.random() - 0.5) * 100,
+                baseRadius: 10,
+                radius: 10,
+                megaphoneSize: 20,
+                opacity: 1,
+                outrageLevel: 0
+            });
+        }
+
+        // Draw megaphones (triangles) for parasites
+        const megaphones = svg.selectAll('.megaphone')
+            .data(people.filter(p => p.type === 'parasite'))
+            .enter()
+            .append('path')
+            .attr('class', 'megaphone')
+            .attr('d', d => {
+                const size = d.megaphoneSize;
+                return `M${d.x + d.radius},${d.y - 5} L${d.x + d.radius + size},${d.y - size/2} L${d.x + d.radius + size},${d.y + size/2} Z`;
+            })
+            .attr('fill', '#F97316')
+            .attr('opacity', 0.8);
+
+        // Draw people
+        const circles = svg.selectAll('circle')
+            .data(people)
+            .enter()
+            .append('circle')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', d => d.radius)
+            .attr('fill', d => d.type === 'normal' ? '#3B82F6' : '#EF4444')
+            .attr('opacity', d => d.opacity);
+
+        // Sound wave rings for parasites
+        const waves = svg.selectAll('.wave')
+            .data(people.filter(p => p.type === 'parasite'))
+            .enter()
+            .append('circle')
+            .attr('class', 'wave')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', d => d.radius)
+            .attr('fill', 'none')
+            .attr('stroke', '#EF4444')
+            .attr('stroke-width', 2)
+            .attr('opacity', 0);
+
+        let isPlaying = false;
+        let animationTimer = null;
+        let tick = 0;
+
+        function updateStats() {
+            const parasites = people.filter(p => p.type === 'parasite');
+            const normals = people.filter(p => p.type === 'normal');
+
+            const totalParasiteVoice = parasites.reduce((sum, p) => sum + p.megaphoneSize, 0);
+            const totalNormalVoice = normals.reduce((sum, p) => sum + p.radius * p.opacity, 0);
+            const totalVoice = totalParasiteVoice + totalNormalVoice;
+
+            const parasitePct = Math.round((totalParasiteVoice / totalVoice) * 100);
+            const normalPct = 100 - parasitePct;
+            const avgOutrage = Math.round(parasites.reduce((sum, p) => sum + (p.outrageLevel || 0), 0) / parasites.length);
+
+            document.getElementById('normalVoice').textContent = normalPct + '%';
+            document.getElementById('parasiteVoice').textContent = parasitePct + '%';
+            document.getElementById('outrage').textContent = avgOutrage;
+        }
+
+        function animate() {
+            tick++;
+
+            const parasites = people.filter(p => p.type === 'parasite');
+            const normals = people.filter(p => p.type === 'normal');
+
+            // Parasites get louder over time
+            parasites.forEach(p => {
+                p.outrageLevel = Math.min(100, (p.outrageLevel || 0) + 1 + Math.random() * 2);
+                p.megaphoneSize = 20 + p.outrageLevel * 1.5;
+                p.radius = 10 + p.outrageLevel * 0.1;
+            });
+
+            // Normal people fade and shrink as they're drowned out
+            normals.forEach(p => {
+                p.opacity = Math.max(0.15, p.opacity - 0.008);
+                p.radius = Math.max(3, p.baseRadius * p.opacity);
+            });
+
+            // Update circles
+            circles
+                .transition()
+                .duration(100)
+                .attr('r', d => d.radius)
+                .attr('opacity', d => d.opacity);
+
+            // Update megaphones
+            megaphones
+                .transition()
+                .duration(100)
+                .attr('d', d => {
+                    const size = d.megaphoneSize;
+                    return `M${d.x + d.radius},${d.y - 8} L${d.x + d.radius + size},${d.y - size/2 - 10} L${d.x + d.radius + size},${d.y + size/2 + 10} Z`;
+                });
+
+            // Pulse sound waves
+            if (tick % 5 === 0) {
+                waves
+                    .attr('r', d => d.radius)
+                    .attr('opacity', 0.6)
+                    .transition()
+                    .duration(500)
+                    .attr('r', d => d.megaphoneSize + 50)
+                    .attr('opacity', 0);
+            }
+
+            updateStats();
+
+            if (parasites[0].outrageLevel < 100) {
+                animationTimer = setTimeout(animate, 100);
+            } else {
+                isPlaying = false;
+                playBtn.textContent = '▶ Play Again';
+            }
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                isPlaying = false;
+                clearTimeout(animationTimer);
+                playBtn.textContent = '▶ Resume';
+            } else {
+                if (people.find(p => p.type === 'parasite').outrageLevel >= 100) {
+                    reset();
+                }
+                isPlaying = true;
+                playBtn.textContent = '⏸ Pause';
+                animate();
+            }
+        });
+
+        function reset() {
+            isPlaying = false;
+            clearTimeout(animationTimer);
+            tick = 0;
+
+            people.forEach(p => {
+                if (p.type === 'normal') {
+                    p.radius = p.baseRadius;
+                    p.opacity = 0.8;
+                } else {
+                    p.radius = 10;
+                    p.megaphoneSize = 20;
+                    p.outrageLevel = 0;
+                }
+            });
+
+            circles
+                .transition()
+                .duration(500)
+                .attr('r', d => d.radius)
+                .attr('opacity', d => d.opacity);
+
+            megaphones
+                .transition()
+                .duration(500)
+                .attr('d', d => {
+                    const size = d.megaphoneSize;
+                    return `M${d.x + d.radius},${d.y - 5} L${d.x + d.radius + size},${d.y - size/2} L${d.x + d.radius + size},${d.y + size/2} Z`;
+                });
+
+            playBtn.textContent = '▶ Play';
+            updateStats();
+        }
+
+        resetBtn.addEventListener('click', reset);
+        updateStats();
+    </script>
+</body>
+</html>

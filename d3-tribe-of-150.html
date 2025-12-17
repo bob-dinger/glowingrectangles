@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Tribe of 150</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 16px;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 600px;
+        }
+        .container {
+            display: flex;
+            gap: 60px;
+            align-items: flex-start;
+        }
+        .panel {
+            text-align: center;
+        }
+        .panel-title {
+            font-size: 18px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .panel-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .canvas {
+            background: #111;
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        button {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .play-btn {
+            background: linear-gradient(90deg, #8B5CF6, #EC4899);
+            color: white;
+        }
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.5);
+        }
+        .reset-btn {
+            background: #222;
+            color: #666;
+        }
+        .reset-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            max-width: 900px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #888;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .insight {
+            max-width: 800px;
+            text-align: center;
+            margin-top: 30px;
+            padding: 25px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border-left: 4px solid #8B5CF6;
+        }
+        .insight p {
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.7;
+        }
+        .insight strong {
+            color: #fff;
+        }
+        .comparison-arrow {
+            font-size: 48px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            padding-top: 150px;
+        }
+        .stat-box {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .stat-box .label {
+            color: #666;
+        }
+        .stat-box .value {
+            font-weight: bold;
+            color: #EF4444;
+        }
+        .stat-box .value.contained {
+            color: #22C55E;
+        }
+    </style>
+</head>
+<body>
+    <h1>The Tribe of 150</h1>
+    <p class="subtitle">Every human trait evolved for a reason. The problem isn't the traits — it's that the container is gone.</p>
+
+    <div class="controls">
+        <button class="play-btn" id="playBtn">▶ Remove the Container</button>
+        <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="container">
+        <div class="panel">
+            <div class="panel-title">The Tribe</div>
+            <div class="panel-subtitle">150 people, all traits contained</div>
+            <svg id="tribe" class="canvas" width="400" height="400"></svg>
+            <div class="stat-box">
+                <span class="label">Narcissist influence: </span>
+                <span class="value contained" id="tribeInfluence">2 of 150 (1.3%)</span>
+            </div>
+        </div>
+
+        <div class="comparison-arrow">→</div>
+
+        <div class="panel">
+            <div class="panel-title">The Modern World</div>
+            <div class="panel-subtitle">Same traits, no container</div>
+            <svg id="modern" class="canvas" width="400" height="400"></svg>
+            <div class="stat-box">
+                <span class="label">Narcissist influence: </span>
+                <span class="value" id="modernInfluence">2 of 150 (1.3%)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+
+    <div class="insight">
+        <p><strong>The insight:</strong> Tribes had natural containers. The narcissist could only annoy 148 people. The paranoid watchman protected everyone. The risk-taker's discoveries benefited the whole group. Now, one narcissist can reach millions while the watchman and risk-taker stay invisible.</p>
+    </div>
+
+    <script>
+        const tribeSize = 150;
+        const tribeSvg = d3.select('#tribe');
+        const modernSvg = d3.select('#modern');
+
+        // Trait definitions with colors and tribe roles
+        const traits = [
+            { name: 'Leader', count: 3, color: '#F59E0B', role: 'Made decisions for the group', scaleMultiplier: 1.2 },
+            { name: 'Follower', count: 80, color: '#6B7280', role: 'Stable core of society', scaleMultiplier: 0.3 },
+            { name: 'Caregiver', count: 15, color: '#EC4899', role: 'Raised children, healed sick', scaleMultiplier: 0.5 },
+            { name: 'Night Owl', count: 8, color: '#3B82F6', role: 'Watched camp at night', scaleMultiplier: 0.4 },
+            { name: 'Early Riser', count: 8, color: '#60A5FA', role: 'Morning watch & hunting', scaleMultiplier: 0.4 },
+            { name: 'Risk-taker', count: 5, color: '#22C55E', role: 'Tried new foods, explored', scaleMultiplier: 0.6 },
+            { name: 'Paranoid', count: 4, color: '#8B5CF6', role: 'Watched for threats', scaleMultiplier: 0.5 },
+            { name: 'Gossip', count: 8, color: '#F472B6', role: 'Information network', scaleMultiplier: 0.8 },
+            { name: 'Contrarian', count: 5, color: '#14B8A6', role: 'Prevented groupthink', scaleMultiplier: 0.7 },
+            { name: 'Peacemaker', count: 6, color: '#A78BFA', role: 'Resolved conflicts', scaleMultiplier: 0.5 },
+            { name: 'Craftsman', count: 5, color: '#78716C', role: 'Made tools & shelter', scaleMultiplier: 0.4 },
+            { name: 'NARCISSIST', count: 2, color: '#EF4444', role: 'Charged into battle first', scaleMultiplier: 15, dangerous: true },
+            { name: 'SOCIOPATH', count: 1, color: '#DC2626', role: 'Did the violence others couldn\'t', scaleMultiplier: 20, dangerous: true }
+        ];
+
+        // Build legend
+        const legend = document.getElementById('legend');
+        traits.forEach(t => {
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.innerHTML = `<div class="legend-dot" style="background:${t.color}"></div><span>${t.name} (${t.count}): ${t.role}</span>`;
+            legend.appendChild(item);
+        });
+
+        // Create people
+        let tribePeople = [];
+        let modernPeople = [];
+        let id = 0;
+
+        traits.forEach(trait => {
+            for (let i = 0; i < trait.count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 30 + Math.random() * 140;
+                const person = {
+                    id: id++,
+                    trait: trait.name,
+                    color: trait.color,
+                    dangerous: trait.dangerous || false,
+                    scaleMultiplier: trait.scaleMultiplier,
+                    // Tribe position - circular, contained
+                    tribeX: 200 + Math.cos(angle) * dist,
+                    tribeY: 200 + Math.sin(angle) * dist,
+                    tribeRadius: trait.dangerous ? 8 : 5,
+                    // Modern position - starts same
+                    modernX: 200 + Math.cos(angle) * dist,
+                    modernY: 200 + Math.sin(angle) * dist,
+                    modernRadius: trait.dangerous ? 8 : 5
+                };
+                tribePeople.push({...person});
+                modernPeople.push({...person});
+            }
+        });
+
+        // Draw tribe (static, contained)
+        const tribeCircles = tribeSvg.selectAll('circle')
+            .data(tribePeople)
+            .enter()
+            .append('circle')
+            .attr('cx', d => d.tribeX)
+            .attr('cy', d => d.tribeY)
+            .attr('r', d => d.tribeRadius)
+            .attr('fill', d => d.color)
+            .attr('opacity', 0.85)
+            .attr('stroke', d => d.dangerous ? '#fff' : 'none')
+            .attr('stroke-width', 1);
+
+        // Draw tribe container circle
+        tribeSvg.append('circle')
+            .attr('cx', 200)
+            .attr('cy', 200)
+            .attr('r', 180)
+            .attr('fill', 'none')
+            .attr('stroke', '#333')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5');
+
+        // Draw modern
+        const modernCircles = modernSvg.selectAll('circle')
+            .data(modernPeople)
+            .enter()
+            .append('circle')
+            .attr('cx', d => d.modernX)
+            .attr('cy', d => d.modernY)
+            .attr('r', d => d.modernRadius)
+            .attr('fill', d => d.color)
+            .attr('opacity', 0.85)
+            .attr('stroke', d => d.dangerous ? '#fff' : 'none')
+            .attr('stroke-width', 1);
+
+        // Draw modern container (will fade)
+        const modernContainer = modernSvg.append('circle')
+            .attr('cx', 200)
+            .attr('cy', 200)
+            .attr('r', 180)
+            .attr('fill', 'none')
+            .attr('stroke', '#333')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5');
+
+        let isPlaying = false;
+        let phase = 0;
+
+        function animate() {
+            phase++;
+
+            // Container fades
+            modernContainer
+                .transition()
+                .duration(1000)
+                .attr('stroke-opacity', 0);
+
+            // Non-dangerous people shrink and fade
+            // Dangerous people GROW and move to center
+            modernPeople.forEach(p => {
+                if (p.dangerous) {
+                    // Narcissists/Sociopaths grow massively
+                    p.modernRadius = 8 + phase * p.scaleMultiplier;
+                    // Move toward center
+                    p.modernX = p.modernX + (200 - p.modernX) * 0.1;
+                    p.modernY = p.modernY + (200 - p.modernY) * 0.1;
+                } else {
+                    // Everyone else shrinks
+                    p.modernRadius = Math.max(1, 5 - phase * 0.3);
+                    p.opacity = Math.max(0.2, 0.85 - phase * 0.05);
+                }
+            });
+
+            modernCircles
+                .transition()
+                .duration(500)
+                .attr('cx', d => d.modernX)
+                .attr('cy', d => d.modernY)
+                .attr('r', d => d.modernRadius)
+                .attr('opacity', d => d.dangerous ? 0.9 : Math.max(0.2, 0.85 - phase * 0.05));
+
+            // Update influence stat
+            const narcissistArea = modernPeople
+                .filter(p => p.dangerous)
+                .reduce((sum, p) => sum + Math.PI * p.modernRadius * p.modernRadius, 0);
+            const totalArea = modernPeople
+                .reduce((sum, p) => sum + Math.PI * p.modernRadius * p.modernRadius, 0);
+            const pct = Math.round((narcissistArea / totalArea) * 100);
+
+            document.getElementById('modernInfluence').textContent = `${pct}% of all attention`;
+
+            if (phase < 12) {
+                setTimeout(animate, 600);
+            } else {
+                isPlaying = false;
+                playBtn.textContent = '▶ Play Again';
+            }
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) return;
+
+            if (phase >= 12) {
+                reset();
+                setTimeout(() => {
+                    isPlaying = true;
+                    playBtn.textContent = 'Scaling...';
+                    animate();
+                }, 500);
+            } else {
+                isPlaying = true;
+                playBtn.textContent = 'Scaling...';
+                animate();
+            }
+        });
+
+        function reset() {
+            isPlaying = false;
+            phase = 0;
+
+            modernPeople.forEach((p, i) => {
+                p.modernX = tribePeople[i].tribeX;
+                p.modernY = tribePeople[i].tribeY;
+                p.modernRadius = tribePeople[i].tribeRadius;
+            });
+
+            modernCircles
+                .transition()
+                .duration(500)
+                .attr('cx', d => d.modernX)
+                .attr('cy', d => d.modernY)
+                .attr('r', d => d.modernRadius)
+                .attr('opacity', 0.85);
+
+            modernContainer
+                .transition()
+                .duration(500)
+                .attr('stroke-opacity', 1);
+
+            document.getElementById('modernInfluence').textContent = '2 of 150 (1.3%)';
+            playBtn.textContent = '▶ Remove the Container';
+        }
+
+        resetBtn.addEventListener('click', reset);
+    </script>
+</body>
+</html>

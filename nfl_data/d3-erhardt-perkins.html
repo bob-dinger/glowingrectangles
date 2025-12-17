@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erhardt-Perkins Playbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #111;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .category {
+            margin-bottom: 40px;
+        }
+        .category-title {
+            font-size: 20px;
+            color: #22c55e;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+        }
+
+        .plays {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .play {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #333;
+        }
+        .play-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        .play-aka {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .field {
+            background: #1a472a;
+            border-radius: 4px;
+            height: 160px;
+            position: relative;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .field-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        .los {
+            position: absolute;
+            bottom: 35px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #fff;
+            opacity: 0.5;
+        }
+        .yard-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #fff;
+            opacity: 0.15;
+        }
+
+        .player {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .player.offense {
+            background: #3b82f6;
+            border: 2px solid #fff;
+        }
+        .player.qb {
+            background: #ef4444;
+            border: 2px solid #fff;
+        }
+        .player.line {
+            background: #666;
+            border: 2px solid #999;
+            border-radius: 3px;
+            width: 14px;
+            height: 14px;
+        }
+
+        .route {
+            position: absolute;
+            pointer-events: none;
+        }
+        .route path {
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+        .route.primary path {
+            stroke: #fbbf24;
+        }
+        .route.secondary path {
+            stroke: #22c55e;
+        }
+        .route.check path {
+            stroke: #f472b6;
+        }
+        .route.block path {
+            stroke: #888;
+            stroke-dasharray: 4,4;
+        }
+
+        .arrow {
+            fill: currentColor;
+        }
+
+        .play-desc {
+            font-size: 13px;
+            color: #aaa;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        .play-reads {
+            font-size: 12px;
+            color: #888;
+        }
+        .play-reads strong {
+            color: #fbbf24;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .tag.quick { background: #065f46; color: #6ee7b7; }
+        .tag.deep { background: #7c2d12; color: #fed7aa; }
+        .tag.rpo { background: #4c1d95; color: #c4b5fd; }
+        .tag.play-action { background: #1e3a5f; color: #93c5fd; }
+        .tag.screen { background: #713f12; color: #fde68a; }
+        .tag.red-zone { background: #7f1d1d; color: #fca5a5; }
+    </style>
+</head>
+<body>
+    <h1>Erhardt-Perkins Playbook</h1>
+    <p class="subtitle">Concept-based play calling. One word = one route combination, regardless of formation.</p>
+
+    <div id="playbook"></div>
+
+    <script>
+    const playbook = {
+        "Quick Game (3-Step)": [
+            {
+                name: "Slant",
+                aka: "Also: Slice, Dino",
+                desc: "Quick inside breaking route. Beat man coverage, find soft spots in zone. Release outside, break inside at 3-5 yards.",
+                reads: "Hot read vs blitz. Throw on the break.",
+                tags: ["quick"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 50 105 L 75 85", type: "primary" },
+                    { player: "Z", path: "M 230 125 L 230 105 L 200 85", type: "secondary" },
+                    { player: "H", path: "M 180 125 L 180 110 L 150 100", type: "secondary" },
+                    { player: "Y", path: "M 100 125 L 100 115 L 85 115", type: "block" },
+                    { player: "F", path: "M 140 135 L 140 125 L 160 115", type: "check" }
+                ]
+            },
+            {
+                name: "Hitch",
+                aka: "Also: Curl, Stop",
+                desc: "Receiver runs 5-6 yards and stops, turning back to QB. Timing route. Works against off coverage.",
+                reads: "Throw before the break. Ball out quick.",
+                tags: ["quick"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 50 90", type: "primary", stop: true },
+                    { player: "Z", path: "M 230 125 L 230 90", type: "primary", stop: true },
+                    { player: "H", path: "M 180 125 L 180 95", type: "secondary", stop: true },
+                    { player: "Y", path: "M 100 125 L 100 115 L 85 115", type: "block" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "check" }
+                ]
+            },
+            {
+                name: "Quick Out",
+                aka: "Also: Speed Out",
+                desc: "3-step drop, receiver breaks hard to sideline at 5 yards. Need arm strength to fit it in.",
+                reads: "Throw to outside shoulder. Ball must be out fast.",
+                tags: ["quick"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 50 100 L 20 100", type: "primary" },
+                    { player: "Z", path: "M 230 125 L 230 100 L 260 100", type: "primary" },
+                    { player: "H", path: "M 180 125 L 180 105 L 150 85", type: "secondary" },
+                    { player: "Y", path: "M 100 125 L 100 115", type: "block" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "check" }
+                ]
+            },
+            {
+                name: "Snag",
+                aka: "Also: Triangle, Spot",
+                desc: "Three-man triangle concept. Corner route, flat route, snag/settle route. Creates horizontal stretch.",
+                reads: "Read flat defender. If he sits, throw flat. If he widens, throw snag.",
+                tags: ["quick", "red-zone"],
+                routes: [
+                    { player: "Z", path: "M 230 125 L 230 90 L 260 70", type: "primary" },
+                    { player: "H", path: "M 180 125 L 180 105 L 220 105", type: "secondary" },
+                    { player: "Y", path: "M 100 125 L 115 110", type: "check", stop: true },
+                    { player: "X", path: "M 50 125 L 50 85", type: "secondary" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            },
+            {
+                name: "Stick",
+                aka: "Also: 6-Route",
+                desc: "TE runs 6 yards and sticks. Flat route from RB creates simple 2-man read.",
+                reads: "Read the linebacker. Throw stick if he drops, flat if he jumps stick.",
+                tags: ["quick"],
+                routes: [
+                    { player: "Y", path: "M 100 125 L 100 95", type: "primary", stop: true },
+                    { player: "F", path: "M 140 135 L 140 125 L 100 125", type: "secondary" },
+                    { player: "X", path: "M 50 125 L 50 90 L 30 70", type: "check" },
+                    { player: "Z", path: "M 230 125 L 230 85", type: "check" },
+                    { player: "H", path: "M 180 125 L 180 90", type: "check" }
+                ]
+            },
+            {
+                name: "Slant-Flat",
+                aka: "Also: Scat",
+                desc: "Simple high-low read. Slant behind the flat defender, flat in front of him.",
+                reads: "Read flat defender. Throw opposite of where he goes.",
+                tags: ["quick"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 50 105 L 80 80", type: "primary" },
+                    { player: "F", path: "M 140 135 L 100 125 L 50 125", type: "secondary" },
+                    { player: "Z", path: "M 230 125 L 230 85", type: "check" },
+                    { player: "H", path: "M 180 125 L 180 100 L 150 80", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 115", type: "block" }
+                ]
+            }
+        ],
+        "Horizontal Stretches": [
+            {
+                name: "Mesh",
+                aka: "Also: Cross, Drive",
+                desc: "Two receivers cross underneath at 5-6 yards, picking defenders. Creates natural rubs in man coverage.",
+                reads: "Vs man: find the rub, throw to receiver coming open. Vs zone: throw to soft spot.",
+                tags: ["quick"],
+                routes: [
+                    { player: "H", path: "M 180 125 L 180 110 L 70 100", type: "primary" },
+                    { player: "Y", path: "M 100 125 L 100 105 L 200 95", type: "primary" },
+                    { player: "X", path: "M 50 125 L 50 75 L 30 55", type: "secondary" },
+                    { player: "Z", path: "M 230 125 L 230 75 L 250 55", type: "secondary" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "check" }
+                ]
+            },
+            {
+                name: "Drive",
+                aka: "Also: Shallow Cross",
+                desc: "Shallow crosser at 3-4 yards with a dig route behind it. Two-level horizontal stretch.",
+                reads: "Read the middle linebacker. Shallow vs man, dig vs zone.",
+                tags: ["quick"],
+                routes: [
+                    { player: "H", path: "M 180 125 L 180 118 L 60 115", type: "primary" },
+                    { player: "Y", path: "M 100 125 L 100 90 L 180 80", type: "primary" },
+                    { player: "X", path: "M 50 125 L 50 85 L 30 65", type: "secondary" },
+                    { player: "Z", path: "M 230 125 L 230 70", type: "check" },
+                    { player: "F", path: "M 140 135 L 160 125 L 200 125", type: "check" }
+                ]
+            },
+            {
+                name: "Spacing",
+                aka: "Also: Spaco",
+                desc: "Five receivers spread across the field at different levels. Find the open window.",
+                reads: "Work across the field. Someone's always open if you find them.",
+                tags: ["quick"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 50 100", type: "primary", stop: true },
+                    { player: "H", path: "M 180 125 L 150 115 L 100 110", type: "primary" },
+                    { player: "Y", path: "M 100 125 L 100 105 L 140 95", type: "primary", stop: true },
+                    { player: "F", path: "M 140 135 L 180 125 L 220 125", type: "secondary" },
+                    { player: "Z", path: "M 230 125 L 230 100", type: "secondary", stop: true }
+                ]
+            },
+            {
+                name: "Y-Cross",
+                aka: "Also: Dig, Square-In",
+                desc: "TE runs 12-15 yard cross. Deep crossers are zone killers. Need time.",
+                reads: "Find the hole in zone. Against man, TE has to win with speed across.",
+                tags: [],
+                routes: [
+                    { player: "Y", path: "M 100 125 L 100 75 L 200 65", type: "primary" },
+                    { player: "X", path: "M 50 125 L 50 80 L 30 60", type: "secondary" },
+                    { player: "H", path: "M 180 125 L 180 115 L 220 115", type: "check" },
+                    { player: "Z", path: "M 230 125 L 230 65", type: "check" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            }
+        ],
+        "Vertical Stretches": [
+            {
+                name: "Smash",
+                aka: "Also: Hi-Lo",
+                desc: "Corner route over a hitch. Classic 2-man high-low stretch on the cornerback.",
+                reads: "Read the corner. If he sits on hitch, throw corner. If he bails, throw hitch.",
+                tags: ["red-zone"],
+                routes: [
+                    { player: "Z", path: "M 230 125 L 230 90", type: "secondary", stop: true },
+                    { player: "H", path: "M 180 125 L 180 75 L 230 45", type: "primary" },
+                    { player: "X", path: "M 50 125 L 50 65", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 95 L 50 95", type: "check" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            },
+            {
+                name: "Flood",
+                aka: "Also: Deluge",
+                desc: "Three receivers to one side at three different levels. Flat, intermediate, deep. Overloads the zone.",
+                reads: "High-low the flat defender, then the corner. Three-level read.",
+                tags: [],
+                routes: [
+                    { player: "F", path: "M 140 135 L 140 125 L 230 125", type: "secondary" },
+                    { player: "H", path: "M 180 125 L 180 95 L 230 85", type: "primary" },
+                    { player: "Z", path: "M 230 125 L 230 50", type: "primary" },
+                    { player: "X", path: "M 50 125 L 50 75", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 115", type: "block" }
+                ]
+            },
+            {
+                name: "Levels",
+                aka: "Also: Hi-Lo In",
+                desc: "Two in-breaking routes at different depths. Stretches zone vertically over the middle.",
+                reads: "Read the hook defender. Throw behind him.",
+                tags: [],
+                routes: [
+                    { player: "Y", path: "M 100 125 L 100 95 L 160 85", type: "primary" },
+                    { player: "H", path: "M 180 125 L 180 70 L 120 55", type: "primary" },
+                    { player: "X", path: "M 50 125 L 50 85 L 30 65", type: "secondary" },
+                    { player: "Z", path: "M 230 125 L 230 60", type: "check" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            },
+            {
+                name: "Dagger",
+                aka: "Also: Post-Dig",
+                desc: "Post route clears out safety, dig comes behind it. Vertical stretch on safety.",
+                reads: "If safety bites on post, throw dig. If safety sits, throw post.",
+                tags: ["deep"],
+                routes: [
+                    { player: "Z", path: "M 230 125 L 230 60 L 180 30", type: "primary" },
+                    { player: "H", path: "M 180 125 L 180 75 L 130 70", type: "primary" },
+                    { player: "X", path: "M 50 125 L 50 80", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 100 L 60 100", type: "check" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            },
+            {
+                name: "Mills",
+                aka: "Also: Post-Wheel",
+                desc: "Post by inside receiver, wheel by back. Stretches the safety vertically.",
+                reads: "Safety has to choose: take the post or the wheel.",
+                tags: ["deep", "play-action"],
+                routes: [
+                    { player: "H", path: "M 180 125 L 180 75 L 140 40", type: "primary" },
+                    { player: "F", path: "M 140 135 L 200 125 L 230 90 L 230 40", type: "primary" },
+                    { player: "Z", path: "M 230 125 L 230 80 L 250 60", type: "secondary" },
+                    { player: "X", path: "M 50 125 L 50 70", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 115", type: "block" }
+                ]
+            }
+        ],
+        "Shot Plays (Deep)": [
+            {
+                name: "Four Verticals",
+                aka: "Also: Verts, Seattle",
+                desc: "Four receivers run go routes. Stretch the deep coverage horizontally. One-on-one chances.",
+                reads: "Read the safeties. If 2-high, work seams. If 1-high, work outside.",
+                tags: ["deep"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 50 30", type: "primary" },
+                    { player: "Y", path: "M 100 125 L 100 30", type: "primary" },
+                    { player: "H", path: "M 180 125 L 180 30", type: "primary" },
+                    { player: "Z", path: "M 230 125 L 230 30", type: "primary" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            },
+            {
+                name: "Post",
+                aka: "Also: Pump, Bomb",
+                desc: "Deep post route. The classic shot play. Needs time and a clean pocket.",
+                reads: "Safety in the middle. Throw over his head or behind him.",
+                tags: ["deep", "play-action"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 50 60 L 100 25", type: "primary" },
+                    { player: "Z", path: "M 230 125 L 230 50", type: "secondary" },
+                    { player: "H", path: "M 180 125 L 180 80 L 220 60", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 100 L 130 90", type: "check" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            },
+            {
+                name: "Double Post",
+                aka: "Also: Dub Post",
+                desc: "Two receivers run posts. Puts both safeties in conflict. Big play potential.",
+                reads: "Pick the post with better leverage. Usually backside post.",
+                tags: ["deep", "play-action"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 50 60 L 100 25", type: "primary" },
+                    { player: "Z", path: "M 230 125 L 230 60 L 180 25", type: "primary" },
+                    { player: "H", path: "M 180 125 L 180 90 L 220 75", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 90 L 60 75", type: "check" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            },
+            {
+                name: "Skinny Post",
+                aka: "Also: Pole, Seam",
+                desc: "Post route with a tighter angle. Stays between the numbers. Zone beater.",
+                reads: "Fit it between the linebackers and safeties.",
+                tags: ["deep"],
+                routes: [
+                    { player: "H", path: "M 180 125 L 180 70 L 160 35", type: "primary" },
+                    { player: "Z", path: "M 230 125 L 230 50", type: "secondary" },
+                    { player: "X", path: "M 50 125 L 50 50", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 90 L 70 80", type: "check" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            },
+            {
+                name: "Corner",
+                aka: "Also: Flag, 7-Route",
+                desc: "Deep out-breaking route to the corner of the end zone. Sideline throw.",
+                reads: "Back shoulder or over the top depending on coverage.",
+                tags: ["deep", "red-zone"],
+                routes: [
+                    { player: "Z", path: "M 230 125 L 230 65 L 265 35", type: "primary" },
+                    { player: "H", path: "M 180 125 L 180 95", type: "secondary", stop: true },
+                    { player: "X", path: "M 50 125 L 50 60 L 100 30", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 100 L 130 90", type: "check" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            },
+            {
+                name: "Go/Seam",
+                aka: "Also: Streak, Fly",
+                desc: "Straight vertical route. Win with speed. Back-shoulder adjustment vs tight coverage.",
+                reads: "Throw it up and let your guy go get it. Trust the matchup.",
+                tags: ["deep"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 50 25", type: "primary" },
+                    { player: "Y", path: "M 100 125 L 100 85 L 130 75", type: "check" },
+                    { player: "H", path: "M 180 125 L 180 85 L 150 75", type: "check" },
+                    { player: "Z", path: "M 230 125 L 230 85", type: "secondary", stop: true },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            }
+        ],
+        "Play Action": [
+            {
+                name: "Boot",
+                aka: "Also: Bootleg, Waggle",
+                desc: "Fake run one way, roll out the other. Crosser, flat, and corner route.",
+                reads: "Deep to short. Corner, crosser, flat, run.",
+                tags: ["play-action"],
+                routes: [
+                    { player: "Y", path: "M 100 125 L 100 80 L 200 65", type: "primary" },
+                    { player: "F", path: "M 140 135 L 100 140 L 50 140 L 30 125", type: "secondary" },
+                    { player: "Z", path: "M 230 125 L 230 65 L 265 40", type: "primary" },
+                    { player: "X", path: "M 50 125 L 50 85", type: "check" },
+                    { player: "H", path: "M 180 125 L 150 135", type: "block" }
+                ]
+            },
+            {
+                name: "Naked",
+                aka: "Also: Nake, Sprint Out",
+                desc: "Bootleg without pulling linemen. QB on his own. High risk, high reward.",
+                reads: "Crosser is the primary. Dump it off if nothing's there.",
+                tags: ["play-action"],
+                routes: [
+                    { player: "Y", path: "M 100 125 L 100 90 L 180 75", type: "primary" },
+                    { player: "H", path: "M 180 125 L 180 80 L 230 55", type: "secondary" },
+                    { player: "F", path: "M 140 135 L 180 135 L 220 125", type: "check" },
+                    { player: "X", path: "M 50 125 L 50 75", type: "check" },
+                    { player: "Z", path: "M 230 125 L 230 50", type: "check" }
+                ]
+            },
+            {
+                name: "Post-Wheel",
+                aka: "Also: China",
+                desc: "Play action deep shot. Post clears out, wheel comes behind. Chunk play.",
+                reads: "Safety has to honor the post. Wheel comes open late.",
+                tags: ["play-action", "deep"],
+                routes: [
+                    { player: "Z", path: "M 230 125 L 230 65 L 180 30", type: "primary" },
+                    { player: "F", path: "M 140 135 L 180 135 L 220 100 L 220 40", type: "primary" },
+                    { player: "H", path: "M 180 125 L 180 95 L 140 85", type: "check" },
+                    { player: "X", path: "M 50 125 L 50 70", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 115", type: "block" }
+                ]
+            },
+            {
+                name: "Yankee",
+                aka: "Also: Deep Cross",
+                desc: "Play action with deep crosser. TE sells block then releases deep across.",
+                reads: "TE finds the hole in zone. Against man, he has to separate.",
+                tags: ["play-action", "deep"],
+                routes: [
+                    { player: "Y", path: "M 100 125 L 100 110 L 100 60 L 200 45", type: "primary" },
+                    { player: "X", path: "M 50 125 L 50 50", type: "secondary" },
+                    { player: "Z", path: "M 230 125 L 230 65 L 265 40", type: "check" },
+                    { player: "H", path: "M 180 125 L 160 135", type: "block" },
+                    { player: "F", path: "M 140 135 L 120 140", type: "block" }
+                ]
+            }
+        ],
+        "Screens": [
+            {
+                name: "Tunnel Screen",
+                aka: "Also: Bubble, Now",
+                desc: "Quick screen to slot receiver. Blockers set up in front. Easy pitch and catch.",
+                reads: "Throw it now. Let blockers work.",
+                tags: ["screen", "quick"],
+                routes: [
+                    { player: "H", path: "M 180 125 L 160 130", type: "primary" },
+                    { player: "Z", path: "M 230 125 L 200 135 L 180 140", type: "block" },
+                    { player: "Y", path: "M 100 125 L 130 135 L 160 140", type: "block" },
+                    { player: "X", path: "M 50 125 L 50 85", type: "check" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "check" }
+                ]
+            },
+            {
+                name: "Slip Screen",
+                aka: "Also: Middle Screen",
+                desc: "Let rushers go, RB slips out behind them. Linemen release to block.",
+                reads: "Wait for it to develop. Let the trash clear.",
+                tags: ["screen"],
+                routes: [
+                    { player: "F", path: "M 140 135 L 140 110 L 140 95", type: "primary" },
+                    { player: "Y", path: "M 100 125 L 100 100 L 120 85", type: "block" },
+                    { player: "H", path: "M 180 125 L 180 100 L 160 85", type: "block" },
+                    { player: "X", path: "M 50 125 L 50 75", type: "check" },
+                    { player: "Z", path: "M 230 125 L 230 75", type: "check" }
+                ]
+            },
+            {
+                name: "Jailbreak Screen",
+                aka: "Also: Throw Back Screen",
+                desc: "Fake one direction, throw back to RB going the other way. Whole line pulls.",
+                reads: "Sell the fake. Throw back against the flow.",
+                tags: ["screen"],
+                routes: [
+                    { player: "F", path: "M 140 135 L 100 140 L 50 130", type: "primary" },
+                    { player: "Y", path: "M 100 125 L 70 135 L 40 140", type: "block" },
+                    { player: "X", path: "M 50 125 L 30 135 L 10 145", type: "block" },
+                    { player: "H", path: "M 180 125 L 180 90", type: "check" },
+                    { player: "Z", path: "M 230 125 L 230 80", type: "check" }
+                ]
+            },
+            {
+                name: "WR Screen",
+                aka: "Also: Smoke, Fast",
+                desc: "Quick throw to outside receiver with blockers. Beat aggressive corners.",
+                reads: "Ball out immediately. It's a long handoff.",
+                tags: ["screen", "quick"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 40 130", type: "primary" },
+                    { player: "Y", path: "M 100 125 L 70 135 L 40 145", type: "block" },
+                    { player: "F", path: "M 140 135 L 100 145 L 50 150", type: "block" },
+                    { player: "H", path: "M 180 125 L 180 95", type: "check" },
+                    { player: "Z", path: "M 230 125 L 230 85", type: "check" }
+                ]
+            }
+        ],
+        "Red Zone": [
+            {
+                name: "Fade",
+                aka: "Also: Go, 9-Route",
+                desc: "Back shoulder fade in the end zone. Trust your receiver to go get it.",
+                reads: "High and outside. Only your guy can catch it.",
+                tags: ["red-zone", "deep"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 45 30", type: "primary" },
+                    { player: "Z", path: "M 230 125 L 235 30", type: "primary" },
+                    { player: "Y", path: "M 100 125 L 100 90 L 140 80", type: "check" },
+                    { player: "H", path: "M 180 125 L 180 90 L 140 80", type: "check" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            },
+            {
+                name: "Slant-Flat",
+                aka: "Also: Red Zone Scat",
+                desc: "Compressed version for short field. Quick slant, flat underneath.",
+                reads: "Same read, tighter window. Ball out fast.",
+                tags: ["red-zone", "quick"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 50 110 L 80 90", type: "primary" },
+                    { player: "F", path: "M 140 135 L 100 130 L 50 125", type: "secondary" },
+                    { player: "Z", path: "M 230 125 L 230 90", type: "check" },
+                    { player: "H", path: "M 180 125 L 180 100 L 150 85", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 115", type: "block" }
+                ]
+            },
+            {
+                name: "High-Low",
+                aka: "Also: Levels Red",
+                desc: "Two-man read on the goal line. Flat and corner, or stick and corner.",
+                reads: "Read the flat defender. Throw opposite.",
+                tags: ["red-zone"],
+                routes: [
+                    { player: "Z", path: "M 230 125 L 230 80 L 260 55", type: "primary" },
+                    { player: "H", path: "M 180 125 L 180 110 L 220 105", type: "primary" },
+                    { player: "Y", path: "M 100 125 L 100 95", type: "check", stop: true },
+                    { player: "X", path: "M 50 125 L 50 80 L 20 55", type: "secondary" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            },
+            {
+                name: "Out",
+                aka: "Also: Speed Out, Bench",
+                desc: "Quick out route to the pylon. Timing throw to the front corner.",
+                reads: "Throw before the break. Hit him in stride at the pylon.",
+                tags: ["red-zone", "quick"],
+                routes: [
+                    { player: "Z", path: "M 230 125 L 230 95 L 265 95", type: "primary" },
+                    { player: "H", path: "M 180 125 L 180 85 L 210 65", type: "secondary" },
+                    { player: "X", path: "M 50 125 L 50 95 L 15 95", type: "secondary" },
+                    { player: "Y", path: "M 100 125 L 100 115", type: "block" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            },
+            {
+                name: "Pivot",
+                aka: "Also: Whip",
+                desc: "Receiver fakes out, pivots back inside. Creates separation in tight space.",
+                reads: "Throw on the pivot. Ball has to be there.",
+                tags: ["red-zone", "quick"],
+                routes: [
+                    { player: "Z", path: "M 230 125 L 230 100 L 245 95 L 210 85", type: "primary" },
+                    { player: "H", path: "M 180 125 L 180 80 L 220 55", type: "secondary" },
+                    { player: "X", path: "M 50 125 L 50 100 L 35 95 L 70 85", type: "secondary" },
+                    { player: "Y", path: "M 100 125 L 100 115", type: "block" },
+                    { player: "F", path: "M 140 135 L 140 115", type: "block" }
+                ]
+            }
+        ],
+        "RPOs": [
+            {
+                name: "RPO Slant",
+                aka: "Also: Run-Pass Option",
+                desc: "Give the ball to RB or throw slant based on linebacker read.",
+                reads: "Read the linebacker. If he flows to run, throw slant. If he sits, hand off.",
+                tags: ["rpo", "quick"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 50 105 L 80 85", type: "primary" },
+                    { player: "F", path: "M 140 135 L 100 140 L 80 145", type: "secondary" },
+                    { player: "Z", path: "M 230 125 L 230 90", type: "check" },
+                    { player: "H", path: "M 180 125 L 180 100", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 115", type: "block" }
+                ]
+            },
+            {
+                name: "RPO Bubble",
+                aka: "Also: Run-Pass Bubble",
+                desc: "Inside zone run or bubble screen based on overhang defender.",
+                reads: "If overhang crashes, throw bubble. If he stays wide, hand off.",
+                tags: ["rpo", "screen"],
+                routes: [
+                    { player: "H", path: "M 180 125 L 160 130", type: "primary" },
+                    { player: "Z", path: "M 230 125 L 200 135", type: "block" },
+                    { player: "F", path: "M 140 135 L 100 140 L 80 145", type: "secondary" },
+                    { player: "X", path: "M 50 125 L 50 90", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 115", type: "block" }
+                ]
+            },
+            {
+                name: "RPO Pop",
+                aka: "Also: Run-Pass Pop",
+                desc: "Run or pop pass to TE behind linebackers who flow to the run.",
+                reads: "Linebackers flow, throw pop. They sit, hand off.",
+                tags: ["rpo"],
+                routes: [
+                    { player: "Y", path: "M 100 125 L 100 95 L 140 85", type: "primary" },
+                    { player: "F", path: "M 140 135 L 100 140 L 80 145", type: "secondary" },
+                    { player: "X", path: "M 50 125 L 50 85", type: "check" },
+                    { player: "H", path: "M 180 125 L 180 95", type: "check" },
+                    { player: "Z", path: "M 230 125 L 230 85", type: "check" }
+                ]
+            },
+            {
+                name: "RPO Glance",
+                aka: "Also: Peek",
+                desc: "Quick peek at receiver on glance route. Throw if corner is soft.",
+                reads: "Pre-snap read. If corner is off, throw glance. If tight, hand off.",
+                tags: ["rpo", "quick"],
+                routes: [
+                    { player: "X", path: "M 50 125 L 50 105 L 65 95", type: "primary" },
+                    { player: "F", path: "M 140 135 L 100 140 L 80 145", type: "secondary" },
+                    { player: "Z", path: "M 230 125 L 230 85", type: "check" },
+                    { player: "H", path: "M 180 125 L 180 95", type: "check" },
+                    { player: "Y", path: "M 100 125 L 100 115", type: "block" }
+                ]
+            }
+        ]
+    };
+
+    // Player positions for standard 11 personnel spread
+    const positions = {
+        X: { x: 50, y: 125 },   // Split end (left)
+        Y: { x: 100, y: 125 },  // TE (left slot area)
+        Q: { x: 140, y: 145 },  // QB
+        F: { x: 140, y: 160 },  // RB
+        H: { x: 180, y: 125 },  // Slot (right)
+        Z: { x: 230, y: 125 },  // Flanker (right)
+        // O-line
+        LT: { x: 100, y: 145 },
+        LG: { x: 115, y: 145 },
+        C: { x: 130, y: 145 },
+        RG: { x: 145, y: 145 },
+        RT: { x: 160, y: 145 }
+    };
+
+    function createField(play, container) {
+        const field = document.createElement('div');
+        field.className = 'field';
+
+        // Add yard lines
+        for (let i = 1; i <= 4; i++) {
+            const line = document.createElement('div');
+            line.className = 'yard-line';
+            line.style.bottom = (35 + i * 25) + 'px';
+            field.appendChild(line);
+        }
+
+        // Add LOS
+        const los = document.createElement('div');
+        los.className = 'los';
+        field.appendChild(los);
+
+        // Add route SVG
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'route');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '100%');
+        svg.style.position = 'absolute';
+        svg.style.top = '0';
+        svg.style.left = '0';
+
+        // Draw routes
+        play.routes.forEach(route => {
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('class', `route ${route.type}`);
+
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', route.path);
+            g.appendChild(path);
+
+            // Add arrow at end
+            const pathParts = route.path.split(' ');
+            const lastX = parseFloat(pathParts[pathParts.length - 2]);
+            const lastY = parseFloat(pathParts[pathParts.length - 1]);
+            const prevX = parseFloat(pathParts[pathParts.length - 4]);
+            const prevY = parseFloat(pathParts[pathParts.length - 3]);
+
+            if (!route.stop) {
+                const angle = Math.atan2(lastY - prevY, lastX - prevX);
+                const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                const size = 6;
+                const x1 = lastX - size * Math.cos(angle - 0.5);
+                const y1 = lastY - size * Math.sin(angle - 0.5);
+                const x2 = lastX - size * Math.cos(angle + 0.5);
+                const y2 = lastY - size * Math.sin(angle + 0.5);
+                arrow.setAttribute('points', `${lastX},${lastY} ${x1},${y1} ${x2},${y2}`);
+                arrow.setAttribute('class', 'arrow');
+                if (route.type === 'primary') arrow.style.fill = '#fbbf24';
+                else if (route.type === 'secondary') arrow.style.fill = '#22c55e';
+                else if (route.type === 'check') arrow.style.fill = '#f472b6';
+                else arrow.style.fill = '#888';
+                g.appendChild(arrow);
+            } else {
+                // Draw stop/curl indicator
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', lastX);
+                circle.setAttribute('cy', lastY);
+                circle.setAttribute('r', 4);
+                circle.setAttribute('fill', route.type === 'primary' ? '#fbbf24' : route.type === 'secondary' ? '#22c55e' : '#f472b6');
+                g.appendChild(circle);
+            }
+
+            svg.appendChild(g);
+        });
+
+        field.appendChild(svg);
+
+        // Add players
+        // O-line
+        ['LT', 'LG', 'C', 'RG', 'RT'].forEach(pos => {
+            const p = document.createElement('div');
+            p.className = 'player line';
+            p.style.left = positions[pos].x + 'px';
+            p.style.top = positions[pos].y + 'px';
+            field.appendChild(p);
+        });
+
+        // QB
+        const qb = document.createElement('div');
+        qb.className = 'player qb';
+        qb.style.left = positions.Q.x + 'px';
+        qb.style.top = positions.Q.y + 'px';
+        qb.textContent = 'Q';
+        field.appendChild(qb);
+
+        // Skill players
+        ['X', 'Y', 'H', 'Z', 'F'].forEach(pos => {
+            const p = document.createElement('div');
+            p.className = 'player offense';
+            p.style.left = positions[pos].x + 'px';
+            p.style.top = positions[pos].y + 'px';
+            p.textContent = pos;
+            field.appendChild(p);
+        });
+
+        container.appendChild(field);
+    }
+
+    // Render playbook
+    const container = document.getElementById('playbook');
+
+    Object.entries(playbook).forEach(([category, plays]) => {
+        const catDiv = document.createElement('div');
+        catDiv.className = 'category';
+
+        const title = document.createElement('h2');
+        title.className = 'category-title';
+        title.textContent = category;
+        catDiv.appendChild(title);
+
+        const playsDiv = document.createElement('div');
+        playsDiv.className = 'plays';
+
+        plays.forEach(play => {
+            const playDiv = document.createElement('div');
+            playDiv.className = 'play';
+
+            const name = document.createElement('div');
+            name.className = 'play-name';
+            name.textContent = play.name;
+            playDiv.appendChild(name);
+
+            if (play.aka) {
+                const aka = document.createElement('div');
+                aka.className = 'play-aka';
+                aka.textContent = play.aka;
+                playDiv.appendChild(aka);
+            }
+
+            createField(play, playDiv);
+
+            if (play.tags && play.tags.length > 0) {
+                const tags = document.createElement('div');
+                play.tags.forEach(t => {
+                    const tag = document.createElement('span');
+                    tag.className = `tag ${t}`;
+                    tag.textContent = t.replace('-', ' ');
+                    tags.appendChild(tag);
+                });
+                playDiv.appendChild(tags);
+            }
+
+            const desc = document.createElement('div');
+            desc.className = 'play-desc';
+            desc.textContent = play.desc;
+            playDiv.appendChild(desc);
+
+            const reads = document.createElement('div');
+            reads.className = 'play-reads';
+            reads.innerHTML = '<strong>Reads:</strong> ' + play.reads;
+            playDiv.appendChild(reads);
+
+            playsDiv.appendChild(playDiv);
+        });
+
+        catDiv.appendChild(playsDiv);
+        container.appendChild(catDiv);
+    });
+    </script>
+</body>
+</html>

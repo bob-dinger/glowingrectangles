@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistical Distributions</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .distributions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .dist-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .dist-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .dist-svg {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        .examples {
+            margin-top: 12px;
+            text-align: center;
+            color: #aaaaaa;
+            font-size: 13px;
+            line-height: 1.5;
+            max-width: 450px;
+        }
+        .examples strong {
+            color: #ffffff;
+        }
+        .bubble {
+            stroke: #fff;
+            stroke-width: 1px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Statistical Distributions</h1>
+
+    <div class="distributions-grid">
+        <div class="dist-container">
+            <div class="dist-title">Normal (Bell Curve)</div>
+            <svg class="dist-svg" id="normal" width="450" height="450"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Human heights, IQ scores, test scores,
+                measurement errors, blood pressure, shoe sizes
+            </div>
+        </div>
+
+        <div class="dist-container">
+            <div class="dist-title">Power Law</div>
+            <svg class="dist-svg" id="power-law" width="450" height="450"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Wealth distribution, city populations,
+                word frequency, website traffic, social media followers, earthquake magnitudes
+            </div>
+        </div>
+
+        <div class="dist-container">
+            <div class="dist-title">Uniform</div>
+            <svg class="dist-svg" id="uniform" width="450" height="450"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Rolling a fair die, random number generators,
+                lottery numbers, roulette wheel, equal resource allocation
+            </div>
+        </div>
+
+        <div class="dist-container">
+            <div class="dist-title">Bimodal</div>
+            <svg class="dist-svg" id="bimodal" width="450" height="450"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Heights (men vs women), commute times (car vs transit),
+                exam scores (prepared vs unprepared), age at first marriage
+            </div>
+        </div>
+
+        <div class="dist-container">
+            <div class="dist-title">Exponential</div>
+            <svg class="dist-svg" id="exponential" width="450" height="450"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Time between events, radioactive decay,
+                customer arrivals, light bulb lifespans, time to next earthquake
+            </div>
+        </div>
+
+        <div class="dist-container">
+            <div class="dist-title">Pareto (80/20)</div>
+            <svg class="dist-svg" id="pareto" width="450" height="450"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> 20% of customers = 80% of sales,
+                20% of bugs = 80% of crashes, wealth concentration, land ownership
+            </div>
+        </div>
+
+        <div class="dist-container">
+            <div class="dist-title">Logarithmic</div>
+            <svg class="dist-svg" id="logarithmic" width="450" height="450"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Benford's Law (first digits),
+                species abundance, income distribution tails, file sizes
+            </div>
+        </div>
+
+        <div class="dist-container">
+            <div class="dist-title">Polarized</div>
+            <svg class="dist-svg" id="polarized" width="450" height="450"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Political opinions, wealth extremes,
+                pass/fail outcomes, binary choices, winner-take-all markets
+            </div>
+        </div>
+
+        <div class="dist-container">
+            <div class="dist-title">Diversity</div>
+            <svg class="dist-svg" id="diversity" width="450" height="450"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Ecosystems, skill sets in teams,
+                genetic variation, portfolio diversity, cultural variety
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 450;
+        const height = 450;
+        const numPoints = 80;
+        const maxRadius = 25;
+
+        // Box-Muller transform for normal distribution
+        function normalRandom(mean = 0, stdDev = 1) {
+            const u1 = Math.random();
+            const u2 = Math.random();
+            const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+            return z0 * stdDev + mean;
+        }
+
+        // Generic function to create a bubble visualization
+        function createDistribution(svgId, dataGenerator, colorScale) {
+            const svg = d3.select(`#${svgId}`);
+            const data = dataGenerator(numPoints);
+
+            const maxSize = d3.max(data, d => d.size);
+            const radiusScale = d3.scaleSqrt()
+                .domain([0, maxSize])
+                .range([3, maxRadius]);
+
+            const nodes = data.map((d, i) => ({
+                id: i,
+                radius: radiusScale(d.size),
+                size: d.size,
+                color: d.color || colorScale(radiusScale(d.size)),
+                x: width / 2 + (Math.random() - 0.5) * 200,
+                y: height / 2 + (Math.random() - 0.5) * 200
+            }));
+
+            const bubbles = svg.selectAll('circle')
+                .data(nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'bubble')
+                .attr('r', d => d.radius)
+                .attr('fill', d => d.color);
+
+            const simulation = d3.forceSimulation(nodes)
+                .force('charge', d3.forceManyBody().strength(d => -Math.pow(d.radius, 2) * 0.03))
+                .force('x', d3.forceX(width / 2).strength(0.05))
+                .force('y', d3.forceY(height / 2).strength(0.05))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 2))
+                .on('tick', () => {
+                    bubbles.attr('cx', d => d.x).attr('cy', d => d.y);
+                });
+        }
+
+        // Normal Distribution
+        createDistribution('normal', (n) => {
+            const data = [];
+            for (let i = 0; i < n; i++) {
+                let size = normalRandom(300, 100);
+                size = Math.max(50, Math.min(500, size));
+                data.push({ size });
+            }
+            return data;
+        }, d3.scaleSequential(d3.interpolateCool).domain([0, maxRadius]));
+
+        // Power Law Distribution
+        createDistribution('power-law', (n) => {
+            const data = [];
+            const alpha = 1.5;
+            for (let i = 0; i < n; i++) {
+                const u = Math.random();
+                const value = Math.pow(1 - u, -1/alpha);
+                data.push({ size: value * 50 });
+            }
+            return data;
+        }, d3.scaleSequential(d3.interpolatePlasma).domain([0, maxRadius]));
+
+        // Uniform Distribution
+        createDistribution('uniform', (n) => {
+            const data = [];
+            const uniformSize = 200;
+            for (let i = 0; i < n; i++) {
+                data.push({ size: uniformSize, color: '#8B5CF6' });
+            }
+            return data;
+        }, () => '#8B5CF6');
+
+        // Bimodal Distribution
+        createDistribution('bimodal', (n) => {
+            const data = [];
+            for (let i = 0; i < n; i++) {
+                if (i < n / 2) {
+                    data.push({ size: normalRandom(150, 30), color: '#3B82F6' });
+                } else {
+                    data.push({ size: normalRandom(350, 30), color: '#EF4444' });
+                }
+            }
+            return data;
+        }, () => '#888');
+
+        // Exponential Distribution
+        createDistribution('exponential', (n) => {
+            const data = [];
+            for (let i = 0; i < n; i++) {
+                const u = Math.random();
+                const value = -Math.log(1 - u) * 100;
+                data.push({ size: Math.min(value, 500) });
+            }
+            return data;
+        }, d3.scaleSequential(d3.interpolateOrRd).domain([0, maxRadius]));
+
+        // Pareto Distribution (80/20)
+        createDistribution('pareto', (n) => {
+            const data = [];
+            const top20 = Math.floor(n * 0.2);
+            for (let i = 0; i < n; i++) {
+                if (i < top20) {
+                    data.push({ size: 400 + Math.random() * 100, color: '#F59E0B' });
+                } else {
+                    data.push({ size: 50 + Math.random() * 50, color: '#6B7280' });
+                }
+            }
+            return data;
+        }, () => '#888');
+
+        // Logarithmic Distribution
+        createDistribution('logarithmic', (n) => {
+            const data = [];
+            for (let i = 0; i < n; i++) {
+                const t = (i + 1) / n;
+                const value = Math.log(1 + t * 9) / Math.log(10) * 400 + 50;
+                data.push({ size: value });
+            }
+            // Shuffle
+            data.sort(() => Math.random() - 0.5);
+            return data;
+        }, d3.scaleSequential(d3.interpolateBlues).domain([0, maxRadius]));
+
+        // Polarized Distribution
+        createDistribution('polarized', (n) => {
+            const data = [];
+            for (let i = 0; i < n; i++) {
+                if (Math.random() < 0.3) {
+                    data.push({ size: 400 + Math.random() * 100, color: '#F59E0B' });
+                } else {
+                    data.push({ size: 30 + Math.random() * 30, color: '#8B5CF6' });
+                }
+            }
+            return data;
+        }, () => '#888');
+
+        // Diversity Distribution
+        createDistribution('diversity', (n) => {
+            const data = [];
+            for (let i = 0; i < n; i++) {
+                const size = 50 + (i / n) * 400;
+                const hue = (i / n) * 360;
+                data.push({ size, color: `hsl(${hue}, 70%, 55%)` });
+            }
+            // Shuffle
+            data.sort(() => Math.random() - 0.5);
+            return data;
+        }, () => '#888');
+    </script>
+</body>
+</html>

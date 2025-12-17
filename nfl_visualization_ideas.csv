@@ -1,0 +1,74 @@
+Category,Stat,Visual Type,Description,Story It Tells,Update Frequency
+Passing,Passing Yards,Bubble Size,QB bubbles sized by weekly passing yards,Who dominated through the air,Weekly
+Passing,Completion %,Bubble Color Gradient,Green (high) to red (low) completion rates,Accuracy leaders vs strugglers,Weekly
+Passing,TD:INT Ratio,Bubble Position,Y-axis = TDs / X-axis = INTs - top-left is elite,Decision making quality,Weekly
+Passing,Air Yards vs YAC,Scatter Bubbles,X = air yards / Y = yards after catch,Deep throwers vs dink-and-dunk + good receivers,Weekly
+Passing,Pressure Rate vs Sack Rate,Scatter Plot,How often pressured vs how often sacked,OL protection + QB mobility,Weekly
+Passing,Time to Throw,Horizontal Distribution,Quick release left / slow release right,Offensive style and OL quality,Weekly
+Passing,EPA per Dropback,Force Diagram,Size = attempts / position = EPA,Efficiency with volume context,Weekly
+Rushing,Rushing Yards,Bubble Size,RB bubbles sized by weekly rushing yards,Ground game dominance,Weekly
+Rushing,Yards Per Carry,Color Gradient,Efficiency coloring on rushing bubbles,Efficiency vs volume,Weekly
+Rushing,Yards Before Contact,Bubble Split,Inner circle = before contact / outer = after,OL run blocking vs RB talent,Weekly
+Rushing,Broken Tackles,Spiky Bubbles,More spikes = more broken tackles,Individual effort and power,Weekly
+Rushing,Rush Attempts Inside 5,Red Zone Bubbles,Size = goal line carries,Trust near the end zone,Weekly
+Receiving,Targets,Bubble Size,WR/TE bubbles sized by targets,Target hogs and pecking order,Weekly
+Receiving,Target Share %,Pie/Donut by Team,Team's targets distributed among receivers,Who owns the passing game,Weekly
+Receiving,Catch Rate,Fill Percentage,Bubble fill % = catch rate,Reliable hands vs drops,Weekly
+Receiving,Yards Per Route Run,Efficiency Gradient,Color intensity = YPRR,True receiving efficiency,Weekly
+Receiving,Separation (yards),Bubble Glow/Halo,Larger glow = more separation,Who gets open vs who doesn't,Weekly
+Receiving,Air Yards Share,Vertical Position,Higher = more downfield targets,Role in offense (deep vs short),Weekly
+Receiving,Red Zone Targets,Special Marker,Crown or star icon in red zone,TD equity,Weekly
+Defense,Sacks,Bubble Size,Defender bubbles sized by sacks,Pass rush dominance,Weekly
+Defense,Pressures,Outer Ring,Ring thickness = pressures beyond sacks,Pressure without the sack stat,Weekly
+Defense,Tackles,Bubble Size,LB/S bubbles sized by tackles,Activity level,Weekly
+Defense,Missed Tackle %,Cracked Bubble,Visual cracks = missed tackles,Tackling reliability,Weekly
+Defense,Pass Breakups,Shield Icon,PBUs shown as defensive badges,Coverage playmakers,Weekly
+Defense,Interceptions,Special Bubble,Highlighted/starred bubbles for INTs,Turnover creators,Weekly
+Defense,QB Hits,Impact Rings,Rings radiating from defender,Violence at QB,Weekly
+Defense,Coverage Snap %,Zone Coloring,Man vs zone distribution,Defensive scheme,Weekly
+Team,Point Differential,Bubble Size + Color,Size = magnitude / green positive red negative,Dominance or struggle,Weekly
+Team,Yards Per Play,Horizontal Position,Left = inefficient / right = efficient,Offensive efficiency,Weekly
+Team,Turnover Margin,Vertical Position,Top = positive / bottom = negative,Ball security and takeaways,Weekly
+Team,Time of Possession,Clock Visual,Filled clock percentage,Ball control style,Weekly
+Team,3rd Down %,Conversion Bar,Fill bar showing conversion rate,Sustaining drives,Weekly
+Team,Red Zone TD %,Heat Indicator,Temperature gauge visual,Finishing drives,Weekly
+Team,Penalty Yards,Chain/Anchor,Dragging weight sized by penalties,Self-inflicted wounds,Weekly
+Team,Win Probability Added,Swing Chart,Line chart of WPA through game,Momentum and key plays,Per Game
+Fantasy,Fantasy Points,Bubble Size,Player bubbles sized by weekly fantasy points,Fantasy studs and duds,Weekly
+Fantasy,Snap Count %,Bubble Opacity,More opaque = more snaps,Opportunity level,Weekly
+Fantasy,Touch Count,Bubble Size,RB/WR touches (rush + targets),Volume kings,Weekly
+Fantasy,Snap % vs Production,Scatter,X = snap % / Y = fantasy points,Efficiency of opportunity,Weekly
+Fantasy,Boom/Bust Rate,Bubble Variance,Spiky = volatile / smooth = consistent,Predictability,Season
+Fantasy,Schedule Strength,Upcoming Path,Visual path of next 4 opponents,Playoff planning,Weekly
+Advanced,EPA (Expected Points Added),Position on Field,Positive right / negative left,True value added,Weekly
+Advanced,CPOE (Completion % Over Expected),Gradient,Green = beating expectation,Accuracy beyond the numbers,Weekly
+Advanced,Success Rate,Fill Percentage,% of plays that were successful,Consistent execution,Weekly
+Advanced,DVOA,Composite Score Bubble,Size = DVOA magnitude,Advanced team ranking,Weekly
+Advanced,Win Probability,Pre/Post Bubble,Before and after game bubbles,Expectations vs results,Weekly
+Advanced,Next Gen Stats - Speed,Speed Lines,Trailing lines showing max speed,Athletic plays,Weekly
+Advanced,Average Depth of Target,Vertical Axis,Higher = deeper targets,Offensive philosophy,Weekly
+Historical,Career Yards,Timeline Bubbles,Bubbles along career timeline,Legacy visualization,Anytime
+Historical,Season Pace vs Records,Race Track,Current pace vs record pace,Record watch,Weekly
+Historical,Age vs Production,Scatter,X = age / Y = production,Career arcs and decline,Season
+Historical,Draft Position vs Performance,Scatter,X = draft pick / Y = career value,Draft hits and misses,Season
+Network,QB-WR Connections,Force Diagram,Lines = completions / thickness = volume,Chemistry and favorite targets,Weekly
+Network,Defensive Matchups,Matchup Lines,Who covered whom and results,Individual battles,Weekly
+Network,Division Standings,Cluster Diagram,Division clusters with standings,Playoff picture,Weekly
+Network,Trade Rumors,Dashed Connections,Rumored moves and connections,Deadline drama,As Needed
+Comparison,Week over Week,Ghost Bubbles,Faded bubble = last week / solid = this week,Trending up or down,Weekly
+Comparison,vs Same Week Last Year,Split Bubble,Half this year / half last year,Year over year growth,Weekly
+Comparison,Rookie vs Veteran,Side by Side,Same stat different experience groups,Youth movement,Weekly
+Comparison,Contract vs Production,Scatter,X = salary / Y = production,Value contracts and overpays,Season
+Injuries,Injury Report,Damaged Bubbles,Questionable/Out status visual,Availability impact,Weekly
+Injuries,Snap Count Post-Injury,Before/After,Pre-injury vs post-injury production,Recovery tracking,As Needed
+Betting,Spread vs Result,Over/Under Line,Cover vs not cover visual,Against the spread,Weekly
+Betting,Over/Under Totals,Point Explosion,Total points vs line,Scoring trends,Weekly
+Betting,Moneyline Upsets,Upset Markers,Underdog wins highlighted,Chaos weeks,Weekly
+Seasonal,Playoff Probability,Funnel Visual,Narrowing path to playoffs,Postseason picture,Weekly
+Seasonal,Draft Position,Reverse Standings,Tanking race visualization,Draft order implications,Weekly
+Seasonal,Strength of Schedule,Mountain Range,Difficulty of remaining games,Easy vs hard paths,Weekly
+Unique,4th Quarter Comebacks,Resurrection Bubbles,Teams that came back highlighted,Clutch factor,Weekly
+Unique,Garbage Time Stats,Hollow vs Solid,Hollow = garbage time production,Real vs inflated stats,Weekly
+Unique,Weather Impact,Weather Overlay,Rain/snow/wind effects on bubbles,Elements affecting play,Weekly
+Unique,Prime Time Performance,Spotlight Effect,National TV game highlighting,Big stage performers,Weekly
+Unique,Divisional vs Non-Divisional,Color Split,Different colors for division games,Rivalry intensity,Weekly

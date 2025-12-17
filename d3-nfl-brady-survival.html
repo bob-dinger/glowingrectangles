@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL 2002 Class Survival</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+            max-width: 800px;
+            line-height: 1.5;
+        }
+        #controls {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        button {
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #2563EB;
+        }
+        button:disabled {
+            background-color: #4B5563;
+            cursor: not-allowed;
+        }
+        #year-display {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: bold;
+            min-width: 60px;
+        }
+        #stats {
+            color: #10B981;
+            font-size: 14px;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .player-dot {
+            stroke: rgba(255,255,255,0.2);
+            stroke-width: 0.5px;
+        }
+        .brady-dot {
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+        .legend {
+            color: #aaaaaa;
+            font-size: 11px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>NFL 2002 Class: Who Survives?</h1>
+    <p class="description">
+        1,948 players entered the NFL in 2002. Watch them fade as careers end.
+        <span style="color: #EF4444;">Tom Brady</span> is the last one standing.
+    </p>
+    <div id="controls">
+        <button id="playBtn">Play</button>
+        <button id="resetBtn">Reset</button>
+        <div id="year-display">2002</div>
+        <div id="stats">1,948 remaining (100%)</div>
+    </div>
+    <div id="vis"></div>
+    <div class="legend">
+        Each dot = one player from the 2002 class | Dots fade when careers end
+    </div>
+
+    <script>
+        const width = 800;
+        const height = 800;
+        const padding = 40;
+
+        let currentYear = 2002;
+        let isPlaying = false;
+        let animationTimer = null;
+
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const yearDisplay = document.getElementById('year-display');
+        const statsDisplay = document.getElementById('stats');
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Load data
+        d3.json('nfl_2002_class.json').then(data => {
+            console.log(`Loaded ${data.length} players`);
+
+            const totalPlayers = data.length;
+
+            // Layout players in a grid
+            const cols = Math.ceil(Math.sqrt(totalPlayers * (width / height)));
+            const rows = Math.ceil(totalPlayers / cols);
+            const dotRadius = Math.min(
+                (width - padding * 2) / cols / 2 - 1,
+                (height - padding * 2) / rows / 2 - 1
+            );
+            const spacingX = (width - padding * 2) / cols;
+            const spacingY = (height - padding * 2) / rows;
+
+            // Assign positions
+            data.forEach((d, i) => {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                d.x = padding + col * spacingX + spacingX / 2;
+                d.y = padding + row * spacingY + spacingY / 2;
+            });
+
+            // Draw non-Brady players first
+            const nonBrady = data.filter(d => !d.is_brady);
+            const brady = data.filter(d => d.is_brady);
+
+            const playerDots = svg.selectAll('.player-dot')
+                .data(nonBrady)
+                .enter()
+                .append('circle')
+                .attr('class', 'player-dot')
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', dotRadius)
+                .attr('fill', '#3B82F6')
+                .attr('opacity', 0.9);
+
+            // Draw Brady on top (larger, red)
+            const bradyDot = svg.selectAll('.brady-dot')
+                .data(brady)
+                .enter()
+                .append('circle')
+                .attr('class', 'brady-dot')
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', dotRadius * 1.5)
+                .attr('fill', '#EF4444')
+                .attr('opacity', 1);
+
+            // Update function for each year
+            function updateYear(year) {
+                currentYear = year;
+                yearDisplay.textContent = year;
+
+                // Count survivors
+                const survivors = data.filter(d => d.last_year >= year).length;
+                const pct = (100 * survivors / totalPlayers).toFixed(1);
+                statsDisplay.textContent = `${survivors.toLocaleString()} remaining (${pct}%)`;
+
+                // Fade out players whose careers ended
+                playerDots.transition()
+                    .duration(300)
+                    .attr('opacity', d => d.last_year >= year ? 0.9 : 0.05)
+                    .attr('fill', d => d.last_year >= year ? '#3B82F6' : '#1f2937');
+
+                // Brady always stays bright
+                bradyDot.attr('opacity', 1).attr('fill', '#EF4444');
+            }
+
+            // Play animation
+            function play() {
+                if (currentYear >= 2022) {
+                    reset();
+                }
+                isPlaying = true;
+                playBtn.textContent = 'Pause';
+
+                animationTimer = setInterval(() => {
+                    if (currentYear < 2022) {
+                        currentYear++;
+                        updateYear(currentYear);
+                    } else {
+                        pause();
+                    }
+                }, 800);
+            }
+
+            function pause() {
+                isPlaying = false;
+                playBtn.textContent = 'Play';
+                if (animationTimer) {
+                    clearInterval(animationTimer);
+                    animationTimer = null;
+                }
+            }
+
+            function reset() {
+                pause();
+                currentYear = 2002;
+                updateYear(2002);
+            }
+
+            playBtn.addEventListener('click', () => {
+                if (isPlaying) {
+                    pause();
+                } else {
+                    play();
+                }
+            });
+
+            resetBtn.addEventListener('click', reset);
+
+            // Initialize
+            updateYear(2002);
+        });
+    </script>
+</body>
+</html>

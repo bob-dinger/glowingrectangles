@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Confusable Verbs</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        #canvas {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        .category-list {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            width: 200px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .category-list h2 {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .category-item {
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            background-color: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            font-family: monospace;
+        }
+        .category-item:hover {
+            background-color: #2a2a2a;
+            border-color: #555;
+        }
+        .category-item.selected {
+            border-color: var(--cat-color);
+            background-color: #1a1a1a;
+        }
+        .category-item .count {
+            float: right;
+            color: #555;
+            font-size: 11px;
+        }
+        .info {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            max-width: 650px;
+        }
+        .verb-label {
+            font-size: 15px;
+            font-weight: bold;
+            fill: #fff;
+            pointer-events: none;
+            text-anchor: middle;
+        }
+        .verb-english {
+            font-size: 10px;
+            fill: #aaa;
+            pointer-events: none;
+            text-anchor: middle;
+        }
+        .prefix-label {
+            font-size: 28px;
+            font-weight: bold;
+            fill: #fff;
+            pointer-events: none;
+            text-anchor: middle;
+            font-family: monospace;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid #444;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            max-width: 300px;
+            z-index: 100;
+        }
+        .tooltip .spanish {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            font-family: monospace;
+        }
+        .tooltip .spanish .highlight {
+            color: #F59E0B;
+        }
+        .tooltip .english {
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+        .tooltip .example {
+            font-style: italic;
+            color: #888;
+            font-size: 12px;
+            border-top: 1px solid #333;
+            padding-top: 8px;
+            margin-top: 4px;
+        }
+        .tooltip .example-trans {
+            color: #666;
+            font-size: 11px;
+        }
+        .tooltip .mnemonic {
+            color: #F59E0B;
+            font-size: 11px;
+            margin-top: 8px;
+            border-top: 1px solid #333;
+            padding-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Spanish Confusable Verbs</h1>
+    <p class="subtitle">Verbs that look and sound dangerously similar</p>
+
+    <div class="container">
+        <div>
+            <svg id="canvas" width="650" height="600"></svg>
+            <div class="info">Click a verb to hear pronunciation • Hover for meaning + memory trick</div>
+        </div>
+
+        <div class="category-list">
+            <h2>Patterns</h2>
+            <div id="categories"></div>
+        </div>
+    </div>
+    <div class="tooltip"></div>
+
+    <script>
+        const width = 650;
+        const height = 600;
+
+        const categories = {
+            arr: {
+                name: 'arr-',
+                prefix: 'arr',
+                color: '#EF4444',
+                verbs: [
+                    { spanish: 'arrastrar', english: 'to drag', example: 'Arrastra la silla', exampleEn: 'Drag the chair', mnemonic: 'drag = RASTR (like rastro/trail)' },
+                    { spanish: 'arrojar', english: 'to throw/hurl', example: 'Arrojó la piedra', exampleEn: 'He hurled the stone', mnemonic: 'throw = ROJO (red hot throw)' },
+                    { spanish: 'arriesgar', english: 'to risk', example: 'Arriesgó su vida', exampleEn: 'He risked his life', mnemonic: 'risk = RIESGO (the noun)' },
+                    { spanish: 'arrepentirse', english: 'to regret', example: 'Me arrepiento', exampleEn: 'I regret it', mnemonic: 'regret = REPENT (same root!)' },
+                    { spanish: 'arrancar', english: 'to start/pull out', example: 'Arranca el carro', exampleEn: 'Start the car', mnemonic: 'start = RANCAR (rip into action)' },
+                    { spanish: 'arreglar', english: 'to fix/arrange', example: 'Arregla tu cuarto', exampleEn: 'Fix up your room', mnemonic: 'fix = REGLA (put in order/rule)' },
+                    { spanish: 'arruinar', english: 'to ruin', example: 'Arruinó todo', exampleEn: 'He ruined everything', mnemonic: 'ruin = RUINA (same word!)' },
+                    { spanish: 'arrestar', english: 'to arrest', example: 'Lo arrestaron', exampleEn: 'They arrested him', mnemonic: 'arrest = same as English!' },
+                    { spanish: 'arrendar', english: 'to rent/lease', example: 'Arrendó un apartamento', exampleEn: 'He rented an apartment', mnemonic: 'rent = RENDAR (render payment)' }
+                ]
+            },
+            ent: {
+                name: '-ent-',
+                prefix: 'ent',
+                color: '#3B82F6',
+                verbs: [
+                    { spanish: 'entender', english: 'to understand', example: 'No entiendo', exampleEn: "I don't understand", mnemonic: 'understand = TENDER (tend to get it)' },
+                    { spanish: 'enterrar', english: 'to bury', example: 'Enterraron al perro', exampleEn: 'They buried the dog', mnemonic: 'bury = TIERRA (into the earth)' },
+                    { spanish: 'enterarse', english: 'to find out', example: 'Me enteré ayer', exampleEn: 'I found out yesterday', mnemonic: 'find out = get ENTERed into your brain' },
+                    { spanish: 'entrar', english: 'to enter', example: 'Entra a la casa', exampleEn: 'Enter the house', mnemonic: 'enter = same as English!' },
+                    { spanish: 'entregar', english: 'to deliver/hand over', example: 'Entrega el paquete', exampleEn: 'Deliver the package', mnemonic: 'deliver = TREGAR (hand over)' },
+                    { spanish: 'entrenar', english: 'to train', example: 'Entrena todos los días', exampleEn: 'He trains every day', mnemonic: 'train = TRENAR (like trainer)' },
+                    { spanish: 'entretener', english: 'to entertain', example: 'Me entretiene', exampleEn: 'It entertains me', mnemonic: 'entertain = same root!' },
+                    { spanish: 'enfriar', english: 'to cool down', example: 'Enfría la sopa', exampleEn: 'Cool down the soup', mnemonic: 'cool = FRÍO (cold)' },
+                    { spanish: 'enfrentar', english: 'to face/confront', example: 'Enfrentó sus miedos', exampleEn: 'He faced his fears', mnemonic: 'face = FRENTE (forehead/front)' }
+                ]
+            },
+            con: {
+                name: 'con-',
+                prefix: 'con',
+                color: '#22C55E',
+                verbs: [
+                    { spanish: 'conocer', english: 'to know (person/place)', example: 'Conozco a María', exampleEn: 'I know María', mnemonic: 'know person = COGNIZE (recognize)' },
+                    { spanish: 'contar', english: 'to count/tell', example: 'Cuenta hasta diez', exampleEn: 'Count to ten', mnemonic: 'count = same root!' },
+                    { spanish: 'confiar', english: 'to trust', example: 'Confío en ti', exampleEn: 'I trust you', mnemonic: 'trust = FIAR (have faith)' },
+                    { spanish: 'confundir', english: 'to confuse', example: 'Me confundes', exampleEn: 'You confuse me', mnemonic: 'confuse = same as English!' },
+                    { spanish: 'conseguir', english: 'to get/obtain', example: 'Conseguí el trabajo', exampleEn: 'I got the job', mnemonic: 'get = SEGUIR (follow through)' },
+                    { spanish: 'construir', english: 'to build', example: 'Construyeron una casa', exampleEn: 'They built a house', mnemonic: 'build = CONSTRUCT' },
+                    { spanish: 'contener', english: 'to contain', example: 'Contiene agua', exampleEn: 'It contains water', mnemonic: 'contain = same as English!' },
+                    { spanish: 'contestar', english: 'to answer', example: 'Contesta el teléfono', exampleEn: 'Answer the phone', mnemonic: 'answer = CONTEST (respond to)' },
+                    { spanish: 'convertir', english: 'to convert', example: 'Se convirtió en héroe', exampleEn: 'He became a hero', mnemonic: 'convert = same as English!' },
+                    { spanish: 'convencer', english: 'to convince', example: 'Me convenció', exampleEn: 'He convinced me', mnemonic: 'convince = same as English!' }
+                ]
+            },
+            des: {
+                name: 'des-',
+                prefix: 'des',
+                color: '#F59E0B',
+                verbs: [
+                    { spanish: 'despertar', english: 'to wake up', example: 'Despierta temprano', exampleEn: 'Wake up early', mnemonic: 'wake = un-SLEEP (des = un)' },
+                    { spanish: 'descansar', english: 'to rest', example: 'Necesito descansar', exampleEn: 'I need to rest', mnemonic: 'rest = un-tire (CANSAR = tire)' },
+                    { spanish: 'descubrir', english: 'to discover', example: 'Descubrí un secreto', exampleEn: 'I discovered a secret', mnemonic: 'discover = un-COVER' },
+                    { spanish: 'descargar', english: 'to download/unload', example: 'Descarga la app', exampleEn: 'Download the app', mnemonic: 'download = un-LOAD (CARGAR = load)' },
+                    { spanish: 'desafiar', english: 'to challenge/defy', example: 'Me desafió a una carrera', exampleEn: 'He challenged me to a race', mnemonic: 'defy = same root! (des + fiar)' },
+                    { spanish: 'despegar', english: 'to take off (plane)', example: 'El avión despegó', exampleEn: 'The plane took off', mnemonic: 'take off = un-STICK (PEGAR = stick)' },
+                    { spanish: 'desear', english: 'to desire/wish', example: 'Deseo verte', exampleEn: 'I wish to see you', mnemonic: 'desire = same root!' },
+                    { spanish: 'despedir', english: 'to fire/say goodbye', example: 'Lo despidieron', exampleEn: 'They fired him', mnemonic: 'fire = un-PEDIR (un-ask for)' },
+                    { spanish: 'destruir', english: 'to destroy', example: 'Destruyó todo', exampleEn: 'He destroyed everything', mnemonic: 'destroy = same as English!' },
+                    { spanish: 'desaparecer', english: 'to disappear', example: 'Desapareció', exampleEn: 'He disappeared', mnemonic: 'disappear = un-APPEAR' },
+                    { spanish: 'describir', english: 'to describe', example: 'Describe la escena', exampleEn: 'Describe the scene', mnemonic: 'describe = same as English!' },
+                    { spanish: 'desarrollar', english: 'to develop', example: 'Desarrolló una app', exampleEn: 'He developed an app', mnemonic: 'develop = un-ROLL (unroll/unfold)' }
+                ]
+            },
+            per: {
+                name: 'per-',
+                prefix: 'per',
+                color: '#8B5CF6',
+                verbs: [
+                    { spanish: 'perder', english: 'to lose', example: 'Perdí mis llaves', exampleEn: 'I lost my keys', mnemonic: 'lose = PERDITION (lost forever)' },
+                    { spanish: 'perdonar', english: 'to forgive', example: 'Te perdono', exampleEn: 'I forgive you', mnemonic: 'forgive = PARDON' },
+                    { spanish: 'permitir', english: 'to permit', example: 'No lo permito', exampleEn: "I don't permit it", mnemonic: 'permit = same as English!' },
+                    { spanish: 'pertenecer', english: 'to belong', example: 'Pertenece a ella', exampleEn: 'It belongs to her', mnemonic: 'belong = PERTAIN to' },
+                    { spanish: 'perseguir', english: 'to chase/pursue', example: 'Persiguió al ladrón', exampleEn: 'He chased the thief', mnemonic: 'chase = PURSUE/SEGUIR' },
+                    { spanish: 'persistir', english: 'to persist', example: 'Persiste el problema', exampleEn: 'The problem persists', mnemonic: 'persist = same as English!' },
+                    { spanish: 'persuadir', english: 'to persuade', example: 'Me persuadió', exampleEn: 'He persuaded me', mnemonic: 'persuade = same as English!' },
+                    { spanish: 'percibir', english: 'to perceive', example: 'Percibo un cambio', exampleEn: 'I perceive a change', mnemonic: 'perceive = same as English!' }
+                ]
+            },
+            pre: {
+                name: 'pre-',
+                prefix: 'pre',
+                color: '#EC4899',
+                verbs: [
+                    { spanish: 'preguntar', english: 'to ask (question)', example: 'Pregúntale', exampleEn: 'Ask him', mnemonic: 'ask = pre-GUNTAR (before knowing)' },
+                    { spanish: 'prestar', english: 'to lend', example: 'Préstame dinero', exampleEn: 'Lend me money', mnemonic: 'lend = pre-STAR (put forward)' },
+                    { spanish: 'preparar', english: 'to prepare', example: 'Prepara la cena', exampleEn: 'Prepare dinner', mnemonic: 'prepare = same as English!' },
+                    { spanish: 'presentar', english: 'to present/introduce', example: 'Te presento a Juan', exampleEn: 'I introduce you to Juan', mnemonic: 'present = same as English!' },
+                    { spanish: 'preferir', english: 'to prefer', example: 'Prefiero café', exampleEn: 'I prefer coffee', mnemonic: 'prefer = same as English!' },
+                    { spanish: 'pretender', english: 'to try/intend', example: 'Pretende ayudar', exampleEn: 'He tries to help', mnemonic: 'intend = PRETEND (aim for)' },
+                    { spanish: 'prevenir', english: 'to prevent', example: 'Previene enfermedades', exampleEn: 'It prevents diseases', mnemonic: 'prevent = same as English!' },
+                    { spanish: 'prometer', english: 'to promise', example: 'Te lo prometo', exampleEn: 'I promise you', mnemonic: 'promise = same root!' }
+                ]
+            },
+            rec: {
+                name: 're-/rec-',
+                prefix: 're',
+                color: '#14B8A6',
+                verbs: [
+                    { spanish: 'recordar', english: 'to remember', example: 'Recuerdo ese día', exampleEn: 'I remember that day', mnemonic: 'remember = re-CORD (heart again)' },
+                    { spanish: 'recoger', english: 'to pick up', example: 'Recoge tu ropa', exampleEn: 'Pick up your clothes', mnemonic: 'pick up = re-COGER (gather again)' },
+                    { spanish: 'reconocer', english: 'to recognize', example: 'Te reconozco', exampleEn: 'I recognize you', mnemonic: 'recognize = same as English!' },
+                    { spanish: 'recibir', english: 'to receive', example: 'Recibí tu mensaje', exampleEn: 'I received your message', mnemonic: 'receive = same as English!' },
+                    { spanish: 'rechazar', english: 'to reject', example: 'Rechazó la oferta', exampleEn: 'He rejected the offer', mnemonic: 'reject = re-CHAZAR (push back)' },
+                    { spanish: 'recomendar', english: 'to recommend', example: 'Te lo recomiendo', exampleEn: 'I recommend it', mnemonic: 'recommend = same as English!' },
+                    { spanish: 'recuperar', english: 'to recover', example: 'Recuperó su salud', exampleEn: 'He recovered his health', mnemonic: 'recover = same as English!' },
+                    { spanish: 'reducir', english: 'to reduce', example: 'Reduce el precio', exampleEn: 'Reduce the price', mnemonic: 'reduce = same as English!' },
+                    { spanish: 'repetir', english: 'to repeat', example: 'Repite después de mí', exampleEn: 'Repeat after me', mnemonic: 'repeat = same as English!' }
+                ]
+            },
+            tra: {
+                name: 'tra-',
+                prefix: 'tra',
+                color: '#F97316',
+                verbs: [
+                    { spanish: 'trabajar', english: 'to work', example: 'Trabajo mucho', exampleEn: 'I work a lot', mnemonic: 'work = TRABAJO (the noun)' },
+                    { spanish: 'traer', english: 'to bring', example: 'Trae pan', exampleEn: 'Bring bread', mnemonic: 'bring = TRAER (track it here)' },
+                    { spanish: 'tratar', english: 'to try/treat', example: 'Trata de entender', exampleEn: 'Try to understand', mnemonic: 'try/treat = same root!' },
+                    { spanish: 'traducir', english: 'to translate', example: 'Traduce el texto', exampleEn: 'Translate the text', mnemonic: 'translate = same root!' },
+                    { spanish: 'tragar', english: 'to swallow', example: 'Traga la pastilla', exampleEn: 'Swallow the pill', mnemonic: 'swallow = TRAGAR (goes down throat)' },
+                    { spanish: 'transformar', english: 'to transform', example: 'Transformó su vida', exampleEn: 'He transformed his life', mnemonic: 'transform = same as English!' },
+                    { spanish: 'transmitir', english: 'to transmit', example: 'Transmite el mensaje', exampleEn: 'Transmit the message', mnemonic: 'transmit = same as English!' },
+                    { spanish: 'trasladar', english: 'to move/transfer', example: 'Trasladaron la oficina', exampleEn: 'They moved the office', mnemonic: 'transfer = LADO (to another side)' }
+                ]
+            },
+            car: {
+                name: '-car',
+                prefix: 'car',
+                color: '#06B6D4',
+                verbs: [
+                    { spanish: 'buscar', english: 'to look for', example: 'Busco mis llaves', exampleEn: 'I look for my keys', mnemonic: 'search = BUSCAR (bus-car hunting)' },
+                    { spanish: 'tocar', english: 'to touch/play', example: 'Toca la guitarra', exampleEn: 'Play the guitar', mnemonic: 'touch = TOCAR (contact)' },
+                    { spanish: 'sacar', english: 'to take out', example: 'Saca la basura', exampleEn: 'Take out the trash', mnemonic: 'take out = SACK it out' },
+                    { spanish: 'secar', english: 'to dry', example: 'Seca los platos', exampleEn: 'Dry the dishes', mnemonic: 'dry = SECO (dry/adjective)' },
+                    { spanish: 'acercar', english: 'to bring near', example: 'Acércate', exampleEn: 'Come closer', mnemonic: 'near = CERCA (close)' },
+                    { spanish: 'explicar', english: 'to explain', example: 'Explícame', exampleEn: 'Explain to me', mnemonic: 'explain = same as English!' },
+                    { spanish: 'dedicar', english: 'to dedicate', example: 'Te dedico esta canción', exampleEn: 'I dedicate this song to you', mnemonic: 'dedicate = same as English!' },
+                    { spanish: 'indicar', english: 'to indicate', example: 'Indica el camino', exampleEn: 'Indicate the way', mnemonic: 'indicate = same as English!' },
+                    { spanish: 'marcar', english: 'to mark/dial', example: 'Marca el número', exampleEn: 'Dial the number', mnemonic: 'mark = same as English!' }
+                ]
+            },
+            cer: {
+                name: '-cer',
+                prefix: 'cer',
+                color: '#A855F7',
+                verbs: [
+                    { spanish: 'hacer', english: 'to do/make', example: 'Hago mi tarea', exampleEn: 'I do my homework', mnemonic: 'make = HACER (fundamental verb!)' },
+                    { spanish: 'parecer', english: 'to seem', example: 'Parece difícil', exampleEn: 'It seems difficult', mnemonic: 'seem = APPEAR' },
+                    { spanish: 'ofrecer', english: 'to offer', example: 'Ofrezco ayuda', exampleEn: 'I offer help', mnemonic: 'offer = same as English!' },
+                    { spanish: 'crecer', english: 'to grow', example: 'Los niños crecen rápido', exampleEn: 'Children grow fast', mnemonic: 'grow = CRESC (crescendo!)' },
+                    { spanish: 'nacer', english: 'to be born', example: 'Nació en México', exampleEn: 'He was born in Mexico', mnemonic: 'born = NASCENT' },
+                    { spanish: 'merecer', english: 'to deserve', example: 'Mereces lo mejor', exampleEn: 'You deserve the best', mnemonic: 'deserve = MERIT' },
+                    { spanish: 'establecer', english: 'to establish', example: 'Estableció un negocio', exampleEn: 'He established a business', mnemonic: 'establish = same as English!' },
+                    { spanish: 'agradecer', english: 'to thank', example: 'Te agradezco', exampleEn: 'I thank you', mnemonic: 'thank = GRADE (grateful)' },
+                    { spanish: 'aparecer', english: 'to appear', example: 'Apareció de repente', exampleEn: 'He appeared suddenly', mnemonic: 'appear = same as English!' },
+                    { spanish: 'desaparecer', english: 'to disappear', example: 'Desapareció', exampleEn: 'He disappeared', mnemonic: 'disappear = des + appear!' }
+                ]
+            },
+            ten: {
+                name: '-ten-',
+                prefix: 'ten',
+                color: '#DC2626',
+                verbs: [
+                    { spanish: 'tener', english: 'to have', example: 'Tengo hambre', exampleEn: "I'm hungry (I have hunger)", mnemonic: 'have = TENER (fundamental verb!)' },
+                    { spanish: 'mantener', english: 'to maintain', example: 'Mantén la calma', exampleEn: 'Maintain calm', mnemonic: 'maintain = MANO + TENER (hold in hand)' },
+                    { spanish: 'contener', english: 'to contain', example: 'Contiene azúcar', exampleEn: 'It contains sugar', mnemonic: 'contain = same as English!' },
+                    { spanish: 'obtener', english: 'to obtain', example: 'Obtuve el premio', exampleEn: 'I obtained the prize', mnemonic: 'obtain = same as English!' },
+                    { spanish: 'sostener', english: 'to hold/sustain', example: 'Sostén esto', exampleEn: 'Hold this', mnemonic: 'sustain = same as English!' },
+                    { spanish: 'detener', english: 'to stop/detain', example: 'Detén el carro', exampleEn: 'Stop the car', mnemonic: 'detain = same as English!' },
+                    { spanish: 'retener', english: 'to retain', example: 'Retiene el agua', exampleEn: 'It retains water', mnemonic: 'retain = same as English!' },
+                    { spanish: 'entretener', english: 'to entertain', example: 'Me entretiene', exampleEn: 'It entertains me', mnemonic: 'entertain = same root!' },
+                    { spanish: 'atender', english: 'to attend to/serve', example: '¿Quién atiende?', exampleEn: 'Who is serving?', mnemonic: 'attend = same root!' }
+                ]
+            },
+            pon: {
+                name: '-pon-',
+                prefix: 'pon',
+                color: '#84CC16',
+                verbs: [
+                    { spanish: 'poner', english: 'to put', example: 'Pon la mesa', exampleEn: 'Set the table', mnemonic: 'put = PONER (position)' },
+                    { spanish: 'componer', english: 'to compose', example: 'Compuso una canción', exampleEn: 'She composed a song', mnemonic: 'compose = same as English!' },
+                    { spanish: 'disponer', english: 'to arrange/have', example: 'Dispongo de tiempo', exampleEn: 'I have time available', mnemonic: 'dispose/arrange = same root!' },
+                    { spanish: 'exponer', english: 'to expose', example: 'Expuso sus ideas', exampleEn: 'He exposed his ideas', mnemonic: 'expose = same as English!' },
+                    { spanish: 'imponer', english: 'to impose', example: 'Impone respeto', exampleEn: 'He commands respect', mnemonic: 'impose = same as English!' },
+                    { spanish: 'oponer', english: 'to oppose', example: 'Se opone al plan', exampleEn: 'He opposes the plan', mnemonic: 'oppose = same as English!' },
+                    { spanish: 'proponer', english: 'to propose', example: 'Propongo una idea', exampleEn: 'I propose an idea', mnemonic: 'propose = same as English!' },
+                    { spanish: 'suponer', english: 'to suppose', example: 'Supongo que sí', exampleEn: 'I suppose so', mnemonic: 'suppose = same as English!' },
+                    { spanish: 'reponer', english: 'to replace/restock', example: 'Repone las existencias', exampleEn: 'Restock the inventory', mnemonic: 'replace = re-PONER (put again)' }
+                ]
+            },
+            ap: {
+                name: 'ap-',
+                prefix: 'ap',
+                color: '#0EA5E9',
+                verbs: [
+                    { spanish: 'apretar', english: 'to squeeze/tighten', example: 'Aprieta el botón', exampleEn: 'Press the button', mnemonic: 'squeeze = PRIETO (tight)' },
+                    { spanish: 'apostar', english: 'to bet', example: 'Aposté cien dólares', exampleEn: 'I bet a hundred dollars', mnemonic: 'bet = POSTA (stake/wager)' },
+                    { spanish: 'apoyar', english: 'to support', example: 'Te apoyo', exampleEn: 'I support you', mnemonic: 'support = POYO (lean on)' },
+                    { spanish: 'apagar', english: 'to turn off', example: 'Apaga la luz', exampleEn: 'Turn off the light', mnemonic: 'off = PAGAR (pay off/extinguish)' },
+                    { spanish: 'aparecer', english: 'to appear', example: 'Apareció de repente', exampleEn: 'He appeared suddenly', mnemonic: 'appear = same as English!' },
+                    { spanish: 'apartarse', english: 'to move aside', example: 'Apártate del camino', exampleEn: 'Get out of the way', mnemonic: 'apart = same as English!' },
+                    { spanish: 'aplicar', english: 'to apply', example: 'Aplica la crema', exampleEn: 'Apply the cream', mnemonic: 'apply = same as English!' },
+                    { spanish: 'aprender', english: 'to learn', example: 'Aprendo español', exampleEn: 'I learn Spanish', mnemonic: 'learn = APPREHEND (grasp)' },
+                    { spanish: 'aprovechar', english: 'to take advantage', example: 'Aprovecha el tiempo', exampleEn: 'Make the most of time', mnemonic: 'use well = PROVECHO (benefit)' },
+                    { spanish: 'aprobar', english: 'to approve/pass', example: 'Aprobó el examen', exampleEn: 'He passed the exam', mnemonic: 'approve = same as English!' },
+                    { spanish: 'apuntar', english: 'to point/jot down', example: 'Apunta el número', exampleEn: 'Write down the number', mnemonic: 'point = PUNTO (point)' },
+                    { spanish: 'apurar', english: 'to hurry/rush', example: '¡Apúrate!', exampleEn: 'Hurry up!', mnemonic: 'hurry = PURO (pure urgency)' },
+                    { spanish: 'atrapar', english: 'to trap/catch', example: 'Atrapó la pelota', exampleEn: 'He caught the ball', mnemonic: 'trap = same as English!' },
+                    { spanish: 'atravesar', english: 'to cross/go through', example: 'Atravesó la calle', exampleEn: 'He crossed the street', mnemonic: 'traverse = same root!' },
+                    { spanish: 'atreverse', english: 'to dare', example: 'No me atrevo', exampleEn: "I don't dare", mnemonic: 'dare = ATREVER (be bold)' },
+                    { spanish: 'atropellar', english: 'to run over/trample', example: 'El carro atropelló al perro', exampleEn: 'The car ran over the dog', mnemonic: 'run over = TROPEL (rush/stampede)' }
+                ]
+            },
+            tr: {
+                name: 'tr-',
+                prefix: 'tr',
+                color: '#F472B6',
+                verbs: [
+                    { spanish: 'trepar', english: 'to climb', example: 'Trepó al árbol', exampleEn: 'He climbed the tree', mnemonic: 'climb = TREPAR (like trepidation going up!)' },
+                    { spanish: 'tropezar', english: 'to trip/stumble', example: 'Tropezó con la piedra', exampleEn: 'He tripped on the rock', mnemonic: 'trip = TROPEZON (stumble)' },
+                    { spanish: 'trotar', english: 'to jog/trot', example: 'Trota todas las mañanas', exampleEn: 'She jogs every morning', mnemonic: 'trot = same as English!' },
+                    { spanish: 'tronchar', english: 'to snap/break off', example: 'Tronchó la rama', exampleEn: 'He snapped the branch', mnemonic: 'snap = TRONCO (trunk breaks)' },
+                    { spanish: 'triturar', english: 'to grind/crush', example: 'Tritura el ajo', exampleEn: 'Crush the garlic', mnemonic: 'grind = TRITURATE' },
+                    { spanish: 'truncar', english: 'to truncate/cut short', example: 'Truncaron el proyecto', exampleEn: 'They cut the project short', mnemonic: 'truncate = same as English!' }
+                ]
+            }
+        };
+
+        const svg = d3.select('#canvas');
+        const tooltip = d3.select('.tooltip');
+
+        // Create category list
+        const categoryContainer = document.getElementById('categories');
+        Object.entries(categories).forEach(([key, cat]) => {
+            const item = document.createElement('div');
+            item.className = 'category-item';
+            item.style.setProperty('--cat-color', cat.color);
+            item.innerHTML = `${cat.name}<span class="count">${cat.verbs.length}</span>`;
+            item.addEventListener('click', () => selectCategory(key));
+            categoryContainer.appendChild(item);
+        });
+
+        let simulation = null;
+
+        function selectCategory(key) {
+            document.querySelectorAll('.category-item').forEach((el, i) => {
+                const catKey = Object.keys(categories)[i];
+                el.classList.toggle('selected', catKey === key);
+            });
+
+            const category = categories[key];
+            renderVerbs(category);
+        }
+
+        function renderVerbs(category) {
+            svg.selectAll('*').remove();
+
+            // Center node with prefix
+            const centerNode = {
+                id: 'center',
+                isCenter: true,
+                prefix: category.prefix,
+                radius: 55,
+                fx: width / 2,
+                fy: height / 2
+            };
+
+            const verbNodes = category.verbs.map((verb, i) => ({
+                ...verb,
+                id: verb.spanish,
+                isCenter: false,
+                radius: 48,
+                x: width / 2 + (Math.random() - 0.5) * 200,
+                y: height / 2 + (Math.random() - 0.5) * 200
+            }));
+
+            const nodes = [centerNode, ...verbNodes];
+
+            const links = verbNodes.map(v => ({
+                source: 'center',
+                target: v.id
+            }));
+
+            if (simulation) simulation.stop();
+
+            simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(150).strength(0.3))
+                .force('charge', d3.forceManyBody().strength(d => d.isCenter ? 0 : -500))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 8));
+
+            // Draw links
+            const linkElements = svg.append('g')
+                .selectAll('line')
+                .data(links)
+                .enter()
+                .append('line')
+                .attr('stroke', category.color)
+                .attr('stroke-opacity', 0.3)
+                .attr('stroke-width', 2);
+
+            // Create groups
+            const groups = svg.selectAll('g.node')
+                .data(nodes)
+                .enter()
+                .append('g')
+                .attr('class', 'node')
+                .style('cursor', d => d.isCenter ? 'default' : 'pointer');
+
+            // Add circles
+            groups.append('circle')
+                .attr('r', d => d.radius)
+                .attr('fill', d => d.isCenter ? category.color : category.color)
+                .attr('fill-opacity', d => d.isCenter ? 0.9 : 0.15)
+                .attr('stroke', category.color)
+                .attr('stroke-width', d => d.isCenter ? 3 : 2);
+
+            // Center node prefix
+            groups.filter(d => d.isCenter)
+                .append('text')
+                .attr('class', 'prefix-label')
+                .attr('dy', 10)
+                .text(d => d.prefix + '-');
+
+            // Verb labels
+            groups.filter(d => !d.isCenter)
+                .append('text')
+                .attr('class', 'verb-label')
+                .attr('dy', -4)
+                .text(d => d.spanish);
+
+            groups.filter(d => !d.isCenter)
+                .append('text')
+                .attr('class', 'verb-english')
+                .attr('dy', 12)
+                .text(d => d.english);
+
+            // Hover
+            groups.filter(d => !d.isCenter)
+                .on('mouseover', function(event, d) {
+                    d3.select(this).select('circle')
+                        .attr('fill-opacity', 0.4)
+                        .attr('stroke-width', 3);
+
+                    linkElements.attr('stroke-opacity', l => l.target.id === d.id ? 0.7 : 0.2)
+                        .attr('stroke-width', l => l.target.id === d.id ? 3 : 2);
+
+                    // Highlight prefix in verb
+                    const prefix = categories[Object.keys(categories).find(k => categories[k].prefix === category.prefix)].prefix;
+                    const highlighted = d.spanish.replace(new RegExp(`(${prefix})`,'i'), '<span class="highlight">$1</span>');
+
+                    tooltip
+                        .style('opacity', 1)
+                        .style('left', (event.pageX + 15) + 'px')
+                        .style('top', (event.pageY - 10) + 'px')
+                        .html(`
+                            <div class="spanish">${highlighted}</div>
+                            <div class="english">${d.english}</div>
+                            <div class="example">"${d.example}"</div>
+                            <div class="example-trans">${d.exampleEn}</div>
+                            <div class="mnemonic">💡 ${d.mnemonic}</div>
+                        `);
+                })
+                .on('mouseout', function() {
+                    d3.select(this).select('circle')
+                        .attr('fill-opacity', 0.15)
+                        .attr('stroke-width', 2);
+                    linkElements.attr('stroke-opacity', 0.3).attr('stroke-width', 2);
+                    tooltip.style('opacity', 0);
+                })
+                .on('click', function(event, d) {
+                    const utterance = new SpeechSynthesisUtterance(d.spanish);
+                    utterance.lang = 'es-ES';
+                    utterance.rate = 0.8;
+                    speechSynthesis.speak(utterance);
+                });
+
+            simulation.on('tick', () => {
+                linkElements
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                groups.attr('transform', d => {
+                    if (!d.isCenter) {
+                        d.x = Math.max(d.radius, Math.min(width - d.radius, d.x));
+                        d.y = Math.max(d.radius, Math.min(height - d.radius, d.y));
+                    }
+                    return `translate(${d.x}, ${d.y})`;
+                });
+            });
+        }
+
+        selectCategory('arr');
+    </script>
+</body>
+</html>

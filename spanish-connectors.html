@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Connectors</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #111;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .category {
+            margin-bottom: 35px;
+        }
+        .category-title {
+            font-size: 18px;
+            color: #22c55e;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #333;
+        }
+
+        .connectors {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 10px;
+        }
+
+        .connector {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 12px 15px;
+        }
+        .connector-word {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 2px;
+        }
+        .connector-english {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .connector-example {
+            font-size: 13px;
+            color: #ccc;
+            font-style: italic;
+            margin-bottom: 3px;
+        }
+        .connector-translation {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Spanish Connectors</h1>
+    <p class="subtitle">Words and phrases that make you sound fluent</p>
+
+    <div id="content"></div>
+
+    <script>
+    const connectors = {
+        "Contrast & Concession": [
+            { spanish: "aunque", english: "although, even though", example: "Aunque llueve, voy a salir.", translation: "Although it's raining, I'm going out." },
+            { spanish: "sin embargo", english: "however, nevertheless", example: "Es caro. Sin embargo, vale la pena.", translation: "It's expensive. However, it's worth it." },
+            { spanish: "no obstante", english: "nevertheless, notwithstanding", example: "No obstante, seguimos adelante.", translation: "Nevertheless, we continue forward." },
+            { spanish: "a pesar de (que)", english: "despite, in spite of", example: "A pesar de todo, lo logró.", translation: "Despite everything, he achieved it." },
+            { spanish: "por otro lado", english: "on the other hand", example: "Por otro lado, tiene sus ventajas.", translation: "On the other hand, it has its advantages." },
+            { spanish: "en cambio", english: "on the other hand, instead", example: "Él trabaja mucho. Ella, en cambio, descansa.", translation: "He works a lot. She, on the other hand, rests." },
+            { spanish: "pero", english: "but", example: "Quiero ir, pero no puedo.", translation: "I want to go, but I can't." },
+            { spanish: "sino", english: "but rather (after negative)", example: "No es rojo, sino azul.", translation: "It's not red, but rather blue." },
+            { spanish: "mientras que", english: "while, whereas", example: "Yo como carne, mientras que él es vegetariano.", translation: "I eat meat, while he's vegetarian." },
+            { spanish: "aun así", english: "even so, still", example: "Es difícil. Aun así, lo intentaré.", translation: "It's difficult. Even so, I'll try." },
+            { spanish: "de todas formas", english: "anyway, in any case", example: "De todas formas, gracias por intentarlo.", translation: "Anyway, thanks for trying." },
+            { spanish: "de todos modos", english: "anyway, regardless", example: "De todos modos, no importa.", translation: "Anyway, it doesn't matter." }
+        ],
+        "Adding Information": [
+            { spanish: "además", english: "besides, furthermore, also", example: "Además, hay otro problema.", translation: "Besides, there's another problem." },
+            { spanish: "también", english: "also, too", example: "Yo también quiero ir.", translation: "I also want to go." },
+            { spanish: "incluso", english: "even, including", example: "Incluso él lo admitió.", translation: "Even he admitted it." },
+            { spanish: "es más", english: "what's more, moreover", example: "Es más, creo que tiene razón.", translation: "What's more, I think he's right." },
+            { spanish: "encima", english: "on top of that, moreover", example: "Llegó tarde y encima no se disculpó.", translation: "He arrived late and on top of that didn't apologize." },
+            { spanish: "aparte de", english: "apart from, besides", example: "Aparte de eso, todo bien.", translation: "Apart from that, everything's fine." },
+            { spanish: "por añadidura", english: "in addition, furthermore", example: "Por añadidura, nos dieron un regalo.", translation: "In addition, they gave us a gift." },
+            { spanish: "asimismo", english: "likewise, also", example: "Asimismo, debemos considerar el costo.", translation: "Likewise, we should consider the cost." },
+            { spanish: "igualmente", english: "equally, likewise", example: "Igualmente, te deseo lo mejor.", translation: "Likewise, I wish you the best." },
+            { spanish: "tampoco", english: "neither, not either", example: "Yo tampoco lo sabía.", translation: "I didn't know either." },
+            { spanish: "ni siquiera", english: "not even", example: "Ni siquiera me miró.", translation: "He didn't even look at me." }
+        ],
+        "Cause & Reason": [
+            { spanish: "porque", english: "because", example: "Lo hice porque quería.", translation: "I did it because I wanted to." },
+            { spanish: "ya que", english: "since, given that", example: "Ya que estás aquí, ayúdame.", translation: "Since you're here, help me." },
+            { spanish: "puesto que", english: "since, given that", example: "Puesto que no hay más, terminamos.", translation: "Since there's no more, we're done." },
+            { spanish: "dado que", english: "given that", example: "Dado que es tarde, mejor mañana.", translation: "Given that it's late, better tomorrow." },
+            { spanish: "como", english: "since, as (at start of sentence)", example: "Como no tenía dinero, no fui.", translation: "Since I didn't have money, I didn't go." },
+            { spanish: "debido a (que)", english: "due to, because of", example: "Debido a la lluvia, cancelaron el partido.", translation: "Due to the rain, they canceled the game." },
+            { spanish: "gracias a", english: "thanks to", example: "Gracias a ti, lo logré.", translation: "Thanks to you, I achieved it." },
+            { spanish: "por culpa de", english: "because of (blame)", example: "Por culpa de él, llegamos tarde.", translation: "Because of him, we arrived late." },
+            { spanish: "por eso", english: "that's why, therefore", example: "Estaba cansado, por eso me fui.", translation: "I was tired, that's why I left." },
+            { spanish: "por lo tanto", english: "therefore", example: "No estudió, por lo tanto reprobó.", translation: "He didn't study, therefore he failed." },
+            { spanish: "así que", english: "so, therefore", example: "Tengo hambre, así que voy a comer.", translation: "I'm hungry, so I'm going to eat." }
+        ],
+        "Consequence & Result": [
+            { spanish: "por consiguiente", english: "consequently, therefore", example: "Por consiguiente, debemos actuar.", translation: "Consequently, we must act." },
+            { spanish: "en consecuencia", english: "as a consequence", example: "En consecuencia, perdieron todo.", translation: "As a consequence, they lost everything." },
+            { spanish: "de ahí que", english: "hence, that's why", example: "De ahí que no confíe en él.", translation: "Hence why I don't trust him." },
+            { spanish: "de modo que", english: "so that, in such a way that", example: "Habla claro, de modo que te entiendan.", translation: "Speak clearly, so that they understand you." },
+            { spanish: "entonces", english: "then, so", example: "¿Entonces qué hacemos?", translation: "So what do we do?" },
+            { spanish: "total que", english: "so in the end, basically", example: "Total que no fuimos a ningún lado.", translation: "So in the end we didn't go anywhere." },
+            { spanish: "resulta que", english: "it turns out that", example: "Resulta que ya lo sabía.", translation: "It turns out he already knew." }
+        ],
+        "Clarifying & Emphasizing": [
+            { spanish: "de hecho", english: "in fact, actually", example: "De hecho, tienes razón.", translation: "In fact, you're right." },
+            { spanish: "en realidad", english: "actually, in reality", example: "En realidad, no me importa.", translation: "Actually, I don't care." },
+            { spanish: "la verdad es que", english: "the truth is that", example: "La verdad es que no sé.", translation: "The truth is I don't know." },
+            { spanish: "o sea", english: "I mean, that is to say", example: "O sea, no entiendo nada.", translation: "I mean, I don't understand anything." },
+            { spanish: "es decir", english: "that is to say, in other words", example: "Es decir, no hay solución.", translation: "That is to say, there's no solution." },
+            { spanish: "en otras palabras", english: "in other words", example: "En otras palabras, estamos perdidos.", translation: "In other words, we're lost." },
+            { spanish: "mejor dicho", english: "rather, or better said", example: "Es difícil, mejor dicho, imposible.", translation: "It's difficult, or rather, impossible." },
+            { spanish: "sobre todo", english: "above all, especially", example: "Sobre todo, ten cuidado.", translation: "Above all, be careful." },
+            { spanish: "especialmente", english: "especially", example: "Me gusta la fruta, especialmente las fresas.", translation: "I like fruit, especially strawberries." },
+            { spanish: "en particular", english: "in particular", example: "En particular, este punto es importante.", translation: "In particular, this point is important." },
+            { spanish: "precisamente", english: "precisely, exactly", example: "Precisamente eso es lo que dije.", translation: "That's precisely what I said." },
+            { spanish: "justamente", english: "exactly, precisely", example: "Justamente iba a llamarte.", translation: "I was just about to call you." }
+        ],
+        "Sequencing & Time": [
+            { spanish: "primero", english: "first", example: "Primero, lee las instrucciones.", translation: "First, read the instructions." },
+            { spanish: "luego", english: "then, later", example: "Luego hablamos.", translation: "We'll talk later." },
+            { spanish: "después", english: "after, then", example: "Después de comer, descansé.", translation: "After eating, I rested." },
+            { spanish: "a continuación", english: "next, following", example: "A continuación, los resultados.", translation: "Next, the results." },
+            { spanish: "finalmente", english: "finally", example: "Finalmente, llegamos.", translation: "Finally, we arrived." },
+            { spanish: "por último", english: "lastly, finally", example: "Por último, quiero agradecer.", translation: "Lastly, I want to thank." },
+            { spanish: "al final", english: "in the end", example: "Al final, todo salió bien.", translation: "In the end, everything turned out well." },
+            { spanish: "mientras tanto", english: "meanwhile", example: "Mientras tanto, espera aquí.", translation: "Meanwhile, wait here." },
+            { spanish: "en aquel entonces", english: "back then, at that time", example: "En aquel entonces, era joven.", translation: "Back then, I was young." },
+            { spanish: "de repente", english: "suddenly", example: "De repente, empezó a llover.", translation: "Suddenly, it started to rain." },
+            { spanish: "enseguida", english: "right away, immediately", example: "Enseguida vuelvo.", translation: "I'll be right back." },
+            { spanish: "en cuanto", english: "as soon as", example: "En cuanto llegue, te aviso.", translation: "As soon as I arrive, I'll let you know." }
+        ],
+        "Giving Examples": [
+            { spanish: "por ejemplo", english: "for example", example: "Por ejemplo, el español.", translation: "For example, Spanish." },
+            { spanish: "como", english: "like, such as", example: "Frutas como manzanas y naranjas.", translation: "Fruits like apples and oranges." },
+            { spanish: "tal como", english: "such as, just as", example: "Tal como te dije.", translation: "Just as I told you." },
+            { spanish: "así como", english: "as well as, just like", example: "Así como tú, yo también sufrí.", translation: "Just like you, I also suffered." },
+            { spanish: "entre otros", english: "among others", example: "Habla inglés, francés, entre otros.", translation: "He speaks English, French, among others." },
+            { spanish: "a saber", english: "namely", example: "Tres países, a saber: México, España y Argentina.", translation: "Three countries, namely: Mexico, Spain, and Argentina." }
+        ],
+        "Conditionals & Hypotheticals": [
+            { spanish: "si", english: "if", example: "Si puedo, voy.", translation: "If I can, I'll go." },
+            { spanish: "en caso de que", english: "in case", example: "En caso de que llueva, lleva paraguas.", translation: "In case it rains, bring an umbrella." },
+            { spanish: "a menos que", english: "unless", example: "A menos que me llames, no voy.", translation: "Unless you call me, I won't go." },
+            { spanish: "siempre y cuando", english: "as long as, provided that", example: "Siempre y cuando me avises.", translation: "As long as you let me know." },
+            { spanish: "con tal de que", english: "provided that, as long as", example: "Con tal de que sea rápido.", translation: "As long as it's quick." },
+            { spanish: "a no ser que", english: "unless", example: "A no ser que tengas otra idea.", translation: "Unless you have another idea." },
+            { spanish: "suponiendo que", english: "supposing that", example: "Suponiendo que tenga razón...", translation: "Supposing he's right..." },
+            { spanish: "de ser así", english: "if that's the case", example: "De ser así, cambia todo.", translation: "If that's the case, everything changes." }
+        ],
+        "Concluding & Summarizing": [
+            { spanish: "en resumen", english: "in summary", example: "En resumen, fue un éxito.", translation: "In summary, it was a success." },
+            { spanish: "en conclusión", english: "in conclusion", example: "En conclusión, debemos actuar.", translation: "In conclusion, we must act." },
+            { spanish: "para resumir", english: "to summarize", example: "Para resumir, hay tres puntos.", translation: "To summarize, there are three points." },
+            { spanish: "en definitiva", english: "ultimately, in short", example: "En definitiva, no vale la pena.", translation: "Ultimately, it's not worth it." },
+            { spanish: "al fin y al cabo", english: "after all, at the end of the day", example: "Al fin y al cabo, somos amigos.", translation: "After all, we're friends." },
+            { spanish: "en pocas palabras", english: "in a few words, in short", example: "En pocas palabras, no.", translation: "In short, no." },
+            { spanish: "total", english: "in short, basically", example: "Total, que no pasó nada.", translation: "Basically, nothing happened." },
+            { spanish: "a fin de cuentas", english: "in the end, when all is said and done", example: "A fin de cuentas, tú decides.", translation: "In the end, you decide." },
+            { spanish: "dicho esto", english: "having said that", example: "Dicho esto, continuemos.", translation: "Having said that, let's continue." },
+            { spanish: "dicho de otro modo", english: "put another way", example: "Dicho de otro modo, es imposible.", translation: "Put another way, it's impossible." }
+        ],
+        "Opinions & Attitudes": [
+            { spanish: "en mi opinión", english: "in my opinion", example: "En mi opinión, es la mejor.", translation: "In my opinion, it's the best." },
+            { spanish: "a mi parecer", english: "in my view", example: "A mi parecer, exageras.", translation: "In my view, you're exaggerating." },
+            { spanish: "desde mi punto de vista", english: "from my point of view", example: "Desde mi punto de vista, está mal.", translation: "From my point of view, it's wrong." },
+            { spanish: "personalmente", english: "personally", example: "Personalmente, no me gusta.", translation: "Personally, I don't like it." },
+            { spanish: "francamente", english: "frankly", example: "Francamente, no me importa.", translation: "Frankly, I don't care." },
+            { spanish: "sinceramente", english: "sincerely, honestly", example: "Sinceramente, no lo sé.", translation: "Honestly, I don't know." },
+            { spanish: "la verdad", english: "honestly, to be honest", example: "La verdad, prefiero quedarme.", translation: "Honestly, I'd rather stay." },
+            { spanish: "que yo sepa", english: "as far as I know", example: "Que yo sepa, no ha llegado.", translation: "As far as I know, he hasn't arrived." },
+            { spanish: "por lo visto", english: "apparently", example: "Por lo visto, ya se fue.", translation: "Apparently, he already left." },
+            { spanish: "al parecer", english: "apparently, seemingly", example: "Al parecer, no viene.", translation: "Apparently, he's not coming." },
+            { spanish: "supuestamente", english: "supposedly", example: "Supuestamente, es experto.", translation: "Supposedly, he's an expert." }
+        ],
+        "Fillers & Conversation Flow": [
+            { spanish: "bueno", english: "well", example: "Bueno, ya veremos.", translation: "Well, we'll see." },
+            { spanish: "pues", english: "well, so", example: "Pues, no sé qué decir.", translation: "Well, I don't know what to say." },
+            { spanish: "a ver", english: "let's see", example: "A ver, déjame pensar.", translation: "Let's see, let me think." },
+            { spanish: "mira", english: "look (informal)", example: "Mira, te lo explico.", translation: "Look, I'll explain it to you." },
+            { spanish: "oye", english: "hey, listen", example: "Oye, ¿tienes un minuto?", translation: "Hey, do you have a minute?" },
+            { spanish: "fíjate", english: "imagine, get this", example: "Fíjate que no sabía.", translation: "Get this, I didn't know." },
+            { spanish: "eso sí", english: "mind you, that said", example: "Es bueno, eso sí, caro.", translation: "It's good, mind you, expensive." },
+            { spanish: "por cierto", english: "by the way", example: "Por cierto, ¿llamaste a María?", translation: "By the way, did you call María?" },
+            { spanish: "a propósito", english: "by the way, on purpose", example: "A propósito, ¿qué hora es?", translation: "By the way, what time is it?" },
+            { spanish: "hablando de", english: "speaking of", example: "Hablando de eso, tengo noticias.", translation: "Speaking of that, I have news." },
+            { spanish: "en fin", english: "anyway, in short", example: "En fin, así son las cosas.", translation: "Anyway, that's how things are." },
+            { spanish: "vaya", english: "wow, well (surprise)", example: "¡Vaya, qué sorpresa!", translation: "Wow, what a surprise!" },
+            { spanish: "vale", english: "okay (Spain)", example: "Vale, nos vemos mañana.", translation: "Okay, see you tomorrow." },
+            { spanish: "dale", english: "okay, go ahead (Latin America)", example: "Dale, hagámoslo.", translation: "Okay, let's do it." }
+        ]
+    };
+
+    const container = document.getElementById('content');
+
+    Object.entries(connectors).forEach(([category, items]) => {
+        const catDiv = document.createElement('div');
+        catDiv.className = 'category';
+
+        const title = document.createElement('h2');
+        title.className = 'category-title';
+        title.textContent = category;
+        catDiv.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.className = 'connectors';
+
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'connector';
+
+            div.innerHTML = `
+                <div class="connector-word">${item.spanish}</div>
+                <div class="connector-english">${item.english}</div>
+                <div class="connector-example">${item.example}</div>
+                <div class="connector-translation">${item.translation}</div>
+            `;
+
+            grid.appendChild(div);
+        });
+
+        catDiv.appendChild(grid);
+        container.appendChild(catDiv);
+    });
+    </script>
+</body>
+</html>

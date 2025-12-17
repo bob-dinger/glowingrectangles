@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Verb Clusters</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        #canvas {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        .category-list {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            width: 220px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .category-list h2 {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .category-item {
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            background-color: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .category-item:hover {
+            background-color: #2a2a2a;
+            border-color: #555;
+        }
+        .category-item.selected {
+            border-color: var(--cat-color);
+            background-color: #1a1a1a;
+        }
+        .category-item .emoji {
+            margin-right: 8px;
+        }
+        .category-item .count {
+            float: right;
+            color: #555;
+            font-size: 12px;
+        }
+        .info {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            max-width: 600px;
+        }
+        .verb-label {
+            font-size: 14px;
+            font-weight: bold;
+            fill: #fff;
+            pointer-events: none;
+            text-anchor: middle;
+        }
+        .verb-english {
+            font-size: 11px;
+            fill: #aaa;
+            pointer-events: none;
+            text-anchor: middle;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid #444;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            max-width: 280px;
+            z-index: 100;
+        }
+        .tooltip .spanish {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .tooltip .english {
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+        .tooltip .example {
+            font-style: italic;
+            color: #888;
+            font-size: 12px;
+            border-top: 1px solid #333;
+            padding-top: 8px;
+            margin-top: 4px;
+        }
+        .tooltip .example-trans {
+            color: #666;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Spanish Verb Clusters</h1>
+    <p class="subtitle">Related verbs grouped by action type</p>
+
+    <div class="container">
+        <div>
+            <svg id="canvas" width="650" height="600"></svg>
+            <div class="info">Click a verb to hear pronunciation • Hover for examples</div>
+        </div>
+
+        <div class="category-list">
+            <h2>Categories</h2>
+            <div id="categories"></div>
+        </div>
+    </div>
+    <div class="tooltip"></div>
+
+    <script>
+        const width = 650;
+        const height = 600;
+
+        const categories = {
+            mouth: {
+                name: 'Mouth Actions',
+                emoji: '👄',
+                color: '#EF4444',
+                verbs: [
+                    { spanish: 'gritar', english: 'to shout', example: '¡No me grites!', exampleEn: "Don't shout at me!" },
+                    { spanish: 'susurrar', english: 'to whisper', example: 'Me susurró un secreto', exampleEn: 'She whispered a secret to me' },
+                    { spanish: 'soplar', english: 'to blow', example: 'Sopla las velas', exampleEn: 'Blow out the candles' },
+                    { spanish: 'escupir', english: 'to spit', example: 'No escupas en el suelo', exampleEn: "Don't spit on the floor" },
+                    { spanish: 'silbar', english: 'to whistle', example: 'Él silba una canción', exampleEn: 'He whistles a song' },
+                    { spanish: 'besar', english: 'to kiss', example: 'La besó en la mejilla', exampleEn: 'He kissed her on the cheek' },
+                    { spanish: 'morder', english: 'to bite', example: 'El perro me mordió', exampleEn: 'The dog bit me' },
+                    { spanish: 'lamer', english: 'to lick', example: 'El gato lame su pata', exampleEn: 'The cat licks its paw' },
+                    { spanish: 'chupar', english: 'to suck', example: 'El bebé chupa su dedo', exampleEn: 'The baby sucks its thumb' },
+                    { spanish: 'masticar', english: 'to chew', example: 'Mastica bien la comida', exampleEn: 'Chew your food well' },
+                    { spanish: 'tragar', english: 'to swallow', example: 'Traga la pastilla', exampleEn: 'Swallow the pill' }
+                ]
+            },
+            throwing: {
+                name: 'Throwing',
+                emoji: '🎯',
+                color: '#3B82F6',
+                verbs: [
+                    { spanish: 'lanzar', english: 'to throw/launch', example: 'Lanzó la pelota', exampleEn: 'He threw the ball' },
+                    { spanish: 'tirar', english: 'to throw/pull', example: 'Tira la basura', exampleEn: 'Throw away the trash' },
+                    { spanish: 'arrojar', english: 'to hurl/fling', example: 'Arrojó piedras al agua', exampleEn: 'He hurled stones into the water' },
+                    { spanish: 'echar', english: 'to throw/pour', example: 'Échame la pelota', exampleEn: 'Throw me the ball' },
+                    { spanish: 'aventar', english: 'to throw (Mexico)', example: 'Aviéntame las llaves', exampleEn: 'Toss me the keys' },
+                    { spanish: 'botar', english: 'to bounce/throw out', example: 'Bota la pelota', exampleEn: 'Bounce the ball' },
+                    { spanish: 'disparar', english: 'to shoot/fire', example: 'Disparó una flecha', exampleEn: 'He shot an arrow' }
+                ]
+            },
+            looking: {
+                name: 'Looking & Seeing',
+                emoji: '👁️',
+                color: '#8B5CF6',
+                verbs: [
+                    { spanish: 'mirar', english: 'to look at', example: 'Mírame a los ojos', exampleEn: 'Look me in the eyes' },
+                    { spanish: 'ver', english: 'to see', example: '¿Ves eso?', exampleEn: 'Do you see that?' },
+                    { spanish: 'observar', english: 'to observe', example: 'Observa las estrellas', exampleEn: 'Observe the stars' },
+                    { spanish: 'vigilar', english: 'to watch/guard', example: 'Vigila a los niños', exampleEn: 'Watch the children' },
+                    { spanish: 'espiar', english: 'to spy', example: 'Lo estaban espiando', exampleEn: 'They were spying on him' },
+                    { spanish: 'contemplar', english: 'to contemplate', example: 'Contempla el paisaje', exampleEn: 'Contemplate the landscape' },
+                    { spanish: 'ojear', english: 'to glance at', example: 'Ojeó el periódico', exampleEn: 'He glanced at the newspaper' },
+                    { spanish: 'divisar', english: 'to make out/spot', example: 'Divisé un barco', exampleEn: 'I spotted a ship' },
+                    { spanish: 'avistar', english: 'to sight/spot', example: 'Avistaron tierra', exampleEn: 'They sighted land' }
+                ]
+            },
+            hands: {
+                name: 'Hand Actions',
+                emoji: '✋',
+                color: '#22C55E',
+                verbs: [
+                    { spanish: 'agarrar', english: 'to grab', example: 'Agarra mi mano', exampleEn: 'Grab my hand' },
+                    { spanish: 'coger', english: 'to take/grab (Spain)', example: 'Coge el libro', exampleEn: 'Take the book' },
+                    { spanish: 'tomar', english: 'to take', example: 'Toma asiento', exampleEn: 'Take a seat' },
+                    { spanish: 'soltar', english: 'to let go/release', example: '¡Suéltame!', exampleEn: 'Let me go!' },
+                    { spanish: 'apretar', english: 'to squeeze/press', example: 'Aprieta el botón', exampleEn: 'Press the button' },
+                    { spanish: 'empujar', english: 'to push', example: 'Empuja la puerta', exampleEn: 'Push the door' },
+                    { spanish: 'jalar', english: 'to pull (LatAm)', example: 'Jala la cuerda', exampleEn: 'Pull the rope' },
+                    { spanish: 'tocar', english: 'to touch', example: 'No toques eso', exampleEn: "Don't touch that" },
+                    { spanish: 'frotar', english: 'to rub', example: 'Frota tus manos', exampleEn: 'Rub your hands' },
+                    { spanish: 'rascar', english: 'to scratch', example: 'Me rasco la cabeza', exampleEn: 'I scratch my head' },
+                    { spanish: 'pellizcar', english: 'to pinch', example: 'Me pellizcó el brazo', exampleEn: 'She pinched my arm' }
+                ]
+            },
+            movement: {
+                name: 'Movement',
+                emoji: '🏃',
+                color: '#F59E0B',
+                verbs: [
+                    { spanish: 'caminar', english: 'to walk', example: 'Camino al trabajo', exampleEn: 'I walk to work' },
+                    { spanish: 'correr', english: 'to run', example: 'Corre más rápido', exampleEn: 'Run faster' },
+                    { spanish: 'saltar', english: 'to jump', example: 'Salta la cuerda', exampleEn: 'Jump rope' },
+                    { spanish: 'trepar', english: 'to climb', example: 'Trepa el árbol', exampleEn: 'Climb the tree' },
+                    { spanish: 'arrastrarse', english: 'to crawl', example: 'El bebé se arrastra', exampleEn: 'The baby crawls' },
+                    { spanish: 'gatear', english: 'to crawl (on all fours)', example: 'Gatea por el suelo', exampleEn: 'Crawl on the floor' },
+                    { spanish: 'tropezar', english: 'to trip/stumble', example: 'Tropecé con una piedra', exampleEn: 'I tripped on a rock' },
+                    { spanish: 'resbalar', english: 'to slip', example: 'Resbalé en el hielo', exampleEn: 'I slipped on the ice' },
+                    { spanish: 'tambalearse', english: 'to stagger', example: 'Se tambaleó borracho', exampleEn: 'He staggered drunk' }
+                ]
+            },
+            speaking: {
+                name: 'Speaking',
+                emoji: '💬',
+                color: '#EC4899',
+                verbs: [
+                    { spanish: 'hablar', english: 'to speak', example: 'Habla más despacio', exampleEn: 'Speak more slowly' },
+                    { spanish: 'decir', english: 'to say/tell', example: '¿Qué dijiste?', exampleEn: 'What did you say?' },
+                    { spanish: 'contar', english: 'to tell (a story)', example: 'Cuéntame un cuento', exampleEn: 'Tell me a story' },
+                    { spanish: 'explicar', english: 'to explain', example: 'Explícamelo otra vez', exampleEn: 'Explain it to me again' },
+                    { spanish: 'preguntar', english: 'to ask', example: 'Pregúntale su nombre', exampleEn: 'Ask him his name' },
+                    { spanish: 'responder', english: 'to answer', example: 'Responde mi pregunta', exampleEn: 'Answer my question' },
+                    { spanish: 'murmurar', english: 'to murmur', example: 'Murmuró algo', exampleEn: 'He murmured something' },
+                    { spanish: 'charlar', english: 'to chat', example: 'Charlamos toda la noche', exampleEn: 'We chatted all night' },
+                    { spanish: 'discutir', english: 'to argue/discuss', example: 'Discutieron por dinero', exampleEn: 'They argued about money' },
+                    { spanish: 'confesar', english: 'to confess', example: 'Confesó su amor', exampleEn: 'He confessed his love' }
+                ]
+            },
+            breaking: {
+                name: 'Breaking & Cutting',
+                emoji: '💥',
+                color: '#F97316',
+                verbs: [
+                    { spanish: 'romper', english: 'to break', example: 'Rompí el vaso', exampleEn: 'I broke the glass' },
+                    { spanish: 'cortar', english: 'to cut', example: 'Corta el pan', exampleEn: 'Cut the bread' },
+                    { spanish: 'partir', english: 'to split/break', example: 'Parte la manzana en dos', exampleEn: 'Split the apple in two' },
+                    { spanish: 'rasgar', english: 'to tear/rip', example: 'Rasgó el papel', exampleEn: 'He tore the paper' },
+                    { spanish: 'destrozar', english: 'to destroy', example: 'Destrozó todo', exampleEn: 'He destroyed everything' },
+                    { spanish: 'aplastar', english: 'to crush/smash', example: 'Aplastó la lata', exampleEn: 'He crushed the can' },
+                    { spanish: 'picar', english: 'to chop/mince', example: 'Pica la cebolla', exampleEn: 'Chop the onion' },
+                    { spanish: 'rebanar', english: 'to slice', example: 'Rebana el jamón', exampleEn: 'Slice the ham' }
+                ]
+            },
+            emotions: {
+                name: 'Emotions',
+                emoji: '❤️',
+                color: '#DC2626',
+                verbs: [
+                    { spanish: 'amar', english: 'to love', example: 'Te amo', exampleEn: 'I love you' },
+                    { spanish: 'querer', english: 'to want/love', example: 'Te quiero mucho', exampleEn: 'I love you a lot' },
+                    { spanish: 'odiar', english: 'to hate', example: 'Odio las mentiras', exampleEn: 'I hate lies' },
+                    { spanish: 'temer', english: 'to fear', example: 'Temo lo peor', exampleEn: 'I fear the worst' },
+                    { spanish: 'envidiar', english: 'to envy', example: 'Envidia su éxito', exampleEn: 'She envies his success' },
+                    { spanish: 'extrañar', english: 'to miss', example: 'Te extraño', exampleEn: 'I miss you' },
+                    { spanish: 'desear', english: 'to desire/wish', example: 'Deseo verte', exampleEn: 'I wish to see you' },
+                    { spanish: 'detestar', english: 'to detest', example: 'Detesto la injusticia', exampleEn: 'I detest injustice' },
+                    { spanish: 'adorar', english: 'to adore', example: 'Adoro el chocolate', exampleEn: 'I adore chocolate' }
+                ]
+            },
+            thinking: {
+                name: 'Thinking',
+                emoji: '🧠',
+                color: '#6366F1',
+                verbs: [
+                    { spanish: 'pensar', english: 'to think', example: 'Pienso en ti', exampleEn: "I'm thinking of you" },
+                    { spanish: 'creer', english: 'to believe', example: 'No te creo', exampleEn: "I don't believe you" },
+                    { spanish: 'recordar', english: 'to remember', example: 'Recuerdo ese día', exampleEn: 'I remember that day' },
+                    { spanish: 'olvidar', english: 'to forget', example: 'Olvidé mi contraseña', exampleEn: 'I forgot my password' },
+                    { spanish: 'imaginar', english: 'to imagine', example: 'Imagina un mundo mejor', exampleEn: 'Imagine a better world' },
+                    { spanish: 'soñar', english: 'to dream', example: 'Soñé contigo', exampleEn: 'I dreamed about you' },
+                    { spanish: 'dudar', english: 'to doubt', example: 'Dudo que venga', exampleEn: 'I doubt he will come' },
+                    { spanish: 'suponer', english: 'to suppose', example: 'Supongo que sí', exampleEn: 'I suppose so' },
+                    { spanish: 'razonar', english: 'to reason', example: 'Razona antes de actuar', exampleEn: 'Reason before you act' },
+                    { spanish: 'reflexionar', english: 'to reflect', example: 'Reflexiona sobre tu vida', exampleEn: 'Reflect on your life' }
+                ]
+            },
+            cleaning: {
+                name: 'Cleaning',
+                emoji: '🧹',
+                color: '#14B8A6',
+                verbs: [
+                    { spanish: 'limpiar', english: 'to clean', example: 'Limpia tu cuarto', exampleEn: 'Clean your room' },
+                    { spanish: 'lavar', english: 'to wash', example: 'Lava los platos', exampleEn: 'Wash the dishes' },
+                    { spanish: 'barrer', english: 'to sweep', example: 'Barre el piso', exampleEn: 'Sweep the floor' },
+                    { spanish: 'fregar', english: 'to scrub', example: 'Friega la olla', exampleEn: 'Scrub the pot' },
+                    { spanish: 'secar', english: 'to dry', example: 'Seca los platos', exampleEn: 'Dry the dishes' },
+                    { spanish: 'planchar', english: 'to iron', example: 'Plancha la camisa', exampleEn: 'Iron the shirt' },
+                    { spanish: 'sacudir', english: 'to dust/shake', example: 'Sacude las sábanas', exampleEn: 'Shake out the sheets' },
+                    { spanish: 'trapear', english: 'to mop', example: 'Trapea el piso', exampleEn: 'Mop the floor' },
+                    { spanish: 'recoger', english: 'to pick up/tidy', example: 'Recoge tus cosas', exampleEn: 'Pick up your things' }
+                ]
+            },
+            cooking: {
+                name: 'Cooking',
+                emoji: '👨‍🍳',
+                color: '#F59E0B',
+                verbs: [
+                    { spanish: 'cocinar', english: 'to cook', example: 'Cocino para mi familia', exampleEn: 'I cook for my family' },
+                    { spanish: 'hervir', english: 'to boil', example: 'Hierve el agua', exampleEn: 'Boil the water' },
+                    { spanish: 'freír', english: 'to fry', example: 'Fríe el huevo', exampleEn: 'Fry the egg' },
+                    { spanish: 'hornear', english: 'to bake', example: 'Hornea el pastel', exampleEn: 'Bake the cake' },
+                    { spanish: 'asar', english: 'to roast/grill', example: 'Asa la carne', exampleEn: 'Roast the meat' },
+                    { spanish: 'mezclar', english: 'to mix', example: 'Mezcla los ingredientes', exampleEn: 'Mix the ingredients' },
+                    { spanish: 'batir', english: 'to beat/whisk', example: 'Bate los huevos', exampleEn: 'Beat the eggs' },
+                    { spanish: 'pelar', english: 'to peel', example: 'Pela las papas', exampleEn: 'Peel the potatoes' },
+                    { spanish: 'rallar', english: 'to grate', example: 'Ralla el queso', exampleEn: 'Grate the cheese' },
+                    { spanish: 'sazonar', english: 'to season', example: 'Sazona con sal', exampleEn: 'Season with salt' }
+                ]
+            },
+            sleeping: {
+                name: 'Sleep & Rest',
+                emoji: '😴',
+                color: '#818CF8',
+                verbs: [
+                    { spanish: 'dormir', english: 'to sleep', example: 'Duermo ocho horas', exampleEn: 'I sleep eight hours' },
+                    { spanish: 'despertar', english: 'to wake up', example: 'Me desperté temprano', exampleEn: 'I woke up early' },
+                    { spanish: 'descansar', english: 'to rest', example: 'Necesito descansar', exampleEn: 'I need to rest' },
+                    { spanish: 'roncar', english: 'to snore', example: 'Él ronca mucho', exampleEn: 'He snores a lot' },
+                    { spanish: 'bostezar', english: 'to yawn', example: 'No paro de bostezar', exampleEn: "I can't stop yawning" },
+                    { spanish: 'acostarse', english: 'to go to bed', example: 'Me acuesto a las diez', exampleEn: 'I go to bed at ten' },
+                    { spanish: 'levantarse', english: 'to get up', example: 'Me levanto a las seis', exampleEn: 'I get up at six' },
+                    { spanish: 'dormitar', english: 'to doze', example: 'Dormitaba en el sofá', exampleEn: 'He was dozing on the sofa' }
+                ]
+            },
+            water: {
+                name: 'Water Actions',
+                emoji: '💧',
+                color: '#0EA5E9',
+                verbs: [
+                    { spanish: 'nadar', english: 'to swim', example: 'Nado todos los días', exampleEn: 'I swim every day' },
+                    { spanish: 'flotar', english: 'to float', example: 'El barco flota', exampleEn: 'The boat floats' },
+                    { spanish: 'hundir', english: 'to sink', example: 'El barco se hundió', exampleEn: 'The ship sank' },
+                    { spanish: 'bucear', english: 'to dive/scuba', example: 'Buceamos en el mar', exampleEn: 'We dove in the sea' },
+                    { spanish: 'salpicar', english: 'to splash', example: 'Me salpicó agua', exampleEn: 'He splashed water on me' },
+                    { spanish: 'mojar', english: 'to wet', example: 'Moja la esponja', exampleEn: 'Wet the sponge' },
+                    { spanish: 'regar', english: 'to water', example: 'Riega las plantas', exampleEn: 'Water the plants' },
+                    { spanish: 'derramar', english: 'to spill', example: 'Derramé el café', exampleEn: 'I spilled the coffee' },
+                    { spanish: 'gotear', english: 'to drip', example: 'El grifo gotea', exampleEn: 'The faucet drips' }
+                ]
+            },
+            money: {
+                name: 'Money',
+                emoji: '💰',
+                color: '#84CC16',
+                verbs: [
+                    { spanish: 'pagar', english: 'to pay', example: 'Yo pago la cuenta', exampleEn: "I'll pay the bill" },
+                    { spanish: 'cobrar', english: 'to charge/collect', example: 'Me cobró demasiado', exampleEn: 'He charged me too much' },
+                    { spanish: 'ahorrar', english: 'to save', example: 'Ahorro para un carro', exampleEn: "I'm saving for a car" },
+                    { spanish: 'gastar', english: 'to spend', example: 'Gasté todo mi dinero', exampleEn: 'I spent all my money' },
+                    { spanish: 'deber', english: 'to owe', example: 'Te debo veinte dólares', exampleEn: 'I owe you twenty dollars' },
+                    { spanish: 'prestar', english: 'to lend', example: 'Me prestó dinero', exampleEn: 'He lent me money' },
+                    { spanish: 'invertir', english: 'to invest', example: 'Invirtió en acciones', exampleEn: 'He invested in stocks' },
+                    { spanish: 'comprar', english: 'to buy', example: 'Compré un regalo', exampleEn: 'I bought a gift' },
+                    { spanish: 'vender', english: 'to sell', example: 'Vendió su casa', exampleEn: 'She sold her house' }
+                ]
+            },
+            fighting: {
+                name: 'Fighting',
+                emoji: '👊',
+                color: '#EF4444',
+                verbs: [
+                    { spanish: 'pelear', english: 'to fight', example: 'No quiero pelear', exampleEn: "I don't want to fight" },
+                    { spanish: 'golpear', english: 'to hit/punch', example: 'Lo golpeó en la cara', exampleEn: 'He punched him in the face' },
+                    { spanish: 'patear', english: 'to kick', example: 'Pateó la pelota', exampleEn: 'He kicked the ball' },
+                    { spanish: 'luchar', english: 'to struggle/wrestle', example: 'Luchan por sus derechos', exampleEn: 'They fight for their rights' },
+                    { spanish: 'atacar', english: 'to attack', example: 'El perro atacó', exampleEn: 'The dog attacked' },
+                    { spanish: 'defender', english: 'to defend', example: 'Defendió a su amigo', exampleEn: 'He defended his friend' },
+                    { spanish: 'empuñar', english: 'to grip/clench', example: 'Empuñó la espada', exampleEn: 'He gripped the sword' },
+                    { spanish: 'derrotar', english: 'to defeat', example: 'Derrotaron al enemigo', exampleEn: 'They defeated the enemy' },
+                    { spanish: 'vencer', english: 'to overcome/beat', example: 'Venció sus miedos', exampleEn: 'She overcame her fears' }
+                ]
+            },
+            sounds: {
+                name: 'Sounds',
+                emoji: '🔊',
+                color: '#A855F7',
+                verbs: [
+                    { spanish: 'oír', english: 'to hear', example: '¿Oyes eso?', exampleEn: 'Do you hear that?' },
+                    { spanish: 'escuchar', english: 'to listen', example: 'Escucha la música', exampleEn: 'Listen to the music' },
+                    { spanish: 'sonar', english: 'to sound/ring', example: 'Suena el teléfono', exampleEn: 'The phone is ringing' },
+                    { spanish: 'cantar', english: 'to sing', example: 'Canta muy bien', exampleEn: 'She sings very well' },
+                    { spanish: 'gritar', english: 'to shout', example: '¡No me grites!', exampleEn: "Don't shout at me!" },
+                    { spanish: 'llorar', english: 'to cry', example: 'El bebé llora', exampleEn: 'The baby is crying' },
+                    { spanish: 'reír', english: 'to laugh', example: 'Nos reímos mucho', exampleEn: 'We laughed a lot' },
+                    { spanish: 'aplaudir', english: 'to clap', example: 'El público aplaudió', exampleEn: 'The audience clapped' },
+                    { spanish: 'zumbar', english: 'to buzz', example: 'Las abejas zumban', exampleEn: 'The bees buzz' },
+                    { spanish: 'crujir', english: 'to creak/crunch', example: 'La puerta cruje', exampleEn: 'The door creaks' }
+                ]
+            },
+            wearing: {
+                name: 'Wearing & Clothes',
+                emoji: '👕',
+                color: '#F472B6',
+                verbs: [
+                    { spanish: 'vestir', english: 'to dress', example: 'Viste a los niños', exampleEn: 'Dress the children' },
+                    { spanish: 'llevar', english: 'to wear', example: 'Lleva un vestido rojo', exampleEn: "She's wearing a red dress" },
+                    { spanish: 'ponerse', english: 'to put on', example: 'Ponte la chaqueta', exampleEn: 'Put on your jacket' },
+                    { spanish: 'quitarse', english: 'to take off', example: 'Quítate los zapatos', exampleEn: 'Take off your shoes' },
+                    { spanish: 'abotonar', english: 'to button', example: 'Abotona tu camisa', exampleEn: 'Button your shirt' },
+                    { spanish: 'desabotonar', english: 'to unbutton', example: 'Desabotonó su abrigo', exampleEn: 'She unbuttoned her coat' },
+                    { spanish: 'atar', english: 'to tie', example: 'Ata tus zapatos', exampleEn: 'Tie your shoes' },
+                    { spanish: 'desatar', english: 'to untie', example: 'Desata el nudo', exampleEn: 'Untie the knot' },
+                    { spanish: 'probarse', english: 'to try on', example: 'Me probé el vestido', exampleEn: 'I tried on the dress' }
+                ]
+            },
+            creating: {
+                name: 'Creating',
+                emoji: '🎨',
+                color: '#EC4899',
+                verbs: [
+                    { spanish: 'crear', english: 'to create', example: 'Creó una obra de arte', exampleEn: 'He created a work of art' },
+                    { spanish: 'dibujar', english: 'to draw', example: 'Dibuja un árbol', exampleEn: 'Draw a tree' },
+                    { spanish: 'pintar', english: 'to paint', example: 'Pinta la pared', exampleEn: 'Paint the wall' },
+                    { spanish: 'escribir', english: 'to write', example: 'Escribe una carta', exampleEn: 'Write a letter' },
+                    { spanish: 'diseñar', english: 'to design', example: 'Diseñó el logo', exampleEn: 'She designed the logo' },
+                    { spanish: 'construir', english: 'to build', example: 'Construyeron una casa', exampleEn: 'They built a house' },
+                    { spanish: 'inventar', english: 'to invent', example: 'Inventó una máquina', exampleEn: 'He invented a machine' },
+                    { spanish: 'componer', english: 'to compose', example: 'Compuso una canción', exampleEn: 'She composed a song' },
+                    { spanish: 'esculpir', english: 'to sculpt', example: 'Esculpió una estatua', exampleEn: 'He sculpted a statue' },
+                    { spanish: 'tejer', english: 'to knit/weave', example: 'Teje un suéter', exampleEn: 'She knits a sweater' }
+                ]
+            },
+            health: {
+                name: 'Health & Body',
+                emoji: '🏥',
+                color: '#10B981',
+                verbs: [
+                    { spanish: 'respirar', english: 'to breathe', example: 'Respira profundo', exampleEn: 'Breathe deeply' },
+                    { spanish: 'toser', english: 'to cough', example: 'No para de toser', exampleEn: "He can't stop coughing" },
+                    { spanish: 'estornudar', english: 'to sneeze', example: 'Estornudé tres veces', exampleEn: 'I sneezed three times' },
+                    { spanish: 'sudar', english: 'to sweat', example: 'Sudo mucho en verano', exampleEn: 'I sweat a lot in summer' },
+                    { spanish: 'sangrar', english: 'to bleed', example: 'Me sangra la nariz', exampleEn: 'My nose is bleeding' },
+                    { spanish: 'curar', english: 'to heal/cure', example: 'El doctor lo curó', exampleEn: 'The doctor cured him' },
+                    { spanish: 'doler', english: 'to hurt', example: 'Me duele la cabeza', exampleEn: 'My head hurts' },
+                    { spanish: 'vomitar', english: 'to vomit', example: 'El niño vomitó', exampleEn: 'The child vomited' },
+                    { spanish: 'desmayarse', english: 'to faint', example: 'Se desmayó del calor', exampleEn: 'She fainted from the heat' },
+                    { spanish: 'temblar', english: 'to tremble', example: 'Temblaba de frío', exampleEn: 'He was trembling from cold' }
+                ]
+            },
+            hiding: {
+                name: 'Hiding & Seeking',
+                emoji: '🙈',
+                color: '#6B7280',
+                verbs: [
+                    { spanish: 'esconder', english: 'to hide (something)', example: 'Escondió el regalo', exampleEn: 'She hid the gift' },
+                    { spanish: 'esconderse', english: 'to hide (oneself)', example: 'Se escondió debajo de la cama', exampleEn: 'He hid under the bed' },
+                    { spanish: 'ocultar', english: 'to conceal', example: 'Ocultó la verdad', exampleEn: 'He concealed the truth' },
+                    { spanish: 'buscar', english: 'to look for', example: 'Busco mis llaves', exampleEn: "I'm looking for my keys" },
+                    { spanish: 'encontrar', english: 'to find', example: 'Encontré mi cartera', exampleEn: 'I found my wallet' },
+                    { spanish: 'hallar', english: 'to find/discover', example: 'Hallaron el tesoro', exampleEn: 'They found the treasure' },
+                    { spanish: 'descubrir', english: 'to discover', example: 'Descubrí su secreto', exampleEn: 'I discovered his secret' },
+                    { spanish: 'revelar', english: 'to reveal', example: 'Reveló la sorpresa', exampleEn: 'She revealed the surprise' },
+                    { spanish: 'tapar', english: 'to cover up', example: 'Tapa la olla', exampleEn: 'Cover the pot' },
+                    { spanish: 'destapar', english: 'to uncover', example: 'Destapó la botella', exampleEn: 'He uncapped the bottle' }
+                ]
+            },
+            waiting: {
+                name: 'Waiting & Hurrying',
+                emoji: '⏰',
+                color: '#FBBF24',
+                verbs: [
+                    { spanish: 'esperar', english: 'to wait/hope', example: 'Espérame aquí', exampleEn: 'Wait for me here' },
+                    { spanish: 'aguardar', english: 'to await', example: 'Aguardamos tu respuesta', exampleEn: 'We await your response' },
+                    { spanish: 'demorar', english: 'to delay', example: 'No te demores', exampleEn: "Don't take long" },
+                    { spanish: 'tardar', english: 'to take time', example: 'Tardó una hora', exampleEn: 'It took an hour' },
+                    { spanish: 'apresurar', english: 'to hurry (something)', example: 'Apresura el paso', exampleEn: 'Quicken your pace' },
+                    { spanish: 'apurarse', english: 'to hurry up', example: '¡Apúrate!', exampleEn: 'Hurry up!' },
+                    { spanish: 'correr', english: 'to rush', example: 'Corre o llegarás tarde', exampleEn: "Run or you'll be late" },
+                    { spanish: 'adelantar', english: 'to advance/speed up', example: 'Adelantó la reunión', exampleEn: 'She moved up the meeting' },
+                    { spanish: 'atrasar', english: 'to delay/postpone', example: 'Atrasaron el vuelo', exampleEn: 'They delayed the flight' },
+                    { spanish: 'posponer', english: 'to postpone', example: 'Pospusieron la boda', exampleEn: 'They postponed the wedding' }
+                ]
+            },
+            giving: {
+                name: 'Giving & Taking',
+                emoji: '🎁',
+                color: '#F472B6',
+                verbs: [
+                    { spanish: 'dar', english: 'to give', example: 'Dame tu mano', exampleEn: 'Give me your hand' },
+                    { spanish: 'regalar', english: 'to give (as gift)', example: 'Le regalé flores', exampleEn: 'I gave her flowers' },
+                    { spanish: 'entregar', english: 'to hand over', example: 'Entrega el paquete', exampleEn: 'Deliver the package' },
+                    { spanish: 'ofrecer', english: 'to offer', example: 'Te ofrezco mi ayuda', exampleEn: 'I offer you my help' },
+                    { spanish: 'recibir', english: 'to receive', example: 'Recibí tu carta', exampleEn: 'I received your letter' },
+                    { spanish: 'aceptar', english: 'to accept', example: 'Acepto tu oferta', exampleEn: 'I accept your offer' },
+                    { spanish: 'rechazar', english: 'to reject', example: 'Rechazó el regalo', exampleEn: 'She rejected the gift' },
+                    { spanish: 'quitar', english: 'to take away', example: 'Me quitó el teléfono', exampleEn: 'He took my phone away' },
+                    { spanish: 'robar', english: 'to steal', example: 'Le robaron la cartera', exampleEn: 'They stole his wallet' },
+                    { spanish: 'devolver', english: 'to return/give back', example: 'Devuélveme mi libro', exampleEn: 'Return my book' },
+                    { spanish: 'prestar', english: 'to lend', example: 'Préstame tu carro', exampleEn: 'Lend me your car' },
+                    { spanish: 'pedir', english: 'to ask for', example: 'Pidió un favor', exampleEn: 'He asked for a favor' }
+                ]
+            },
+            opening: {
+                name: 'Opening & Closing',
+                emoji: '🚪',
+                color: '#8B5CF6',
+                verbs: [
+                    { spanish: 'abrir', english: 'to open', example: 'Abre la puerta', exampleEn: 'Open the door' },
+                    { spanish: 'cerrar', english: 'to close', example: 'Cierra la ventana', exampleEn: 'Close the window' },
+                    { spanish: 'encender', english: 'to turn on/light', example: 'Enciende la luz', exampleEn: 'Turn on the light' },
+                    { spanish: 'apagar', english: 'to turn off', example: 'Apaga la tele', exampleEn: 'Turn off the TV' },
+                    { spanish: 'conectar', english: 'to connect', example: 'Conecta el cable', exampleEn: 'Connect the cable' },
+                    { spanish: 'desconectar', english: 'to disconnect', example: 'Desconecta el wifi', exampleEn: 'Disconnect the wifi' },
+                    { spanish: 'bloquear', english: 'to block/lock', example: 'Bloquea tu teléfono', exampleEn: 'Lock your phone' },
+                    { spanish: 'desbloquear', english: 'to unlock', example: 'Desbloquea la puerta', exampleEn: 'Unlock the door' },
+                    { spanish: 'sellar', english: 'to seal', example: 'Sella el sobre', exampleEn: 'Seal the envelope' },
+                    { spanish: 'envolver', english: 'to wrap', example: 'Envuelve el regalo', exampleEn: 'Wrap the gift' },
+                    { spanish: 'desenvolver', english: 'to unwrap', example: 'Desenvolvió el paquete', exampleEn: 'She unwrapped the package' }
+                ]
+            },
+            failing: {
+                name: 'Success & Failure',
+                emoji: '🎯',
+                color: '#DC2626',
+                verbs: [
+                    { spanish: 'lograr', english: 'to achieve', example: 'Logró su meta', exampleEn: 'He achieved his goal' },
+                    { spanish: 'conseguir', english: 'to get/obtain', example: 'Conseguí el trabajo', exampleEn: 'I got the job' },
+                    { spanish: 'alcanzar', english: 'to reach', example: 'Alcanzó la cima', exampleEn: 'She reached the top' },
+                    { spanish: 'ganar', english: 'to win', example: 'Ganamos el partido', exampleEn: 'We won the game' },
+                    { spanish: 'triunfar', english: 'to triumph', example: 'Triunfó en la vida', exampleEn: 'He triumphed in life' },
+                    { spanish: 'fallar', english: 'to fail/miss', example: 'Falló el tiro', exampleEn: 'He missed the shot' },
+                    { spanish: 'fracasar', english: 'to fail (completely)', example: 'El negocio fracasó', exampleEn: 'The business failed' },
+                    { spanish: 'perder', english: 'to lose', example: 'Perdimos el juego', exampleEn: 'We lost the game' },
+                    { spanish: 'equivocarse', english: 'to make a mistake', example: 'Me equivoqué', exampleEn: 'I made a mistake' },
+                    { spanish: 'arruinar', english: 'to ruin', example: 'Arruinó la sorpresa', exampleEn: 'He ruined the surprise' },
+                    { spanish: 'mejorar', english: 'to improve', example: 'Mejoró su técnica', exampleEn: 'She improved her technique' },
+                    { spanish: 'empeorar', english: 'to worsen', example: 'La situación empeoró', exampleEn: 'The situation worsened' }
+                ]
+            },
+            changing: {
+                name: 'Change & Transform',
+                emoji: '🔄',
+                color: '#06B6D4',
+                verbs: [
+                    { spanish: 'cambiar', english: 'to change', example: 'Cambia de canal', exampleEn: 'Change the channel' },
+                    { spanish: 'transformar', english: 'to transform', example: 'Transformó su vida', exampleEn: 'She transformed her life' },
+                    { spanish: 'convertir', english: 'to convert', example: 'Convirtió agua en vino', exampleEn: 'He turned water into wine' },
+                    { spanish: 'modificar', english: 'to modify', example: 'Modificó el plan', exampleEn: 'He modified the plan' },
+                    { spanish: 'alterar', english: 'to alter', example: 'No alteres los hechos', exampleEn: "Don't alter the facts" },
+                    { spanish: 'ajustar', english: 'to adjust', example: 'Ajusta el volumen', exampleEn: 'Adjust the volume' },
+                    { spanish: 'adaptar', english: 'to adapt', example: 'Se adaptó rápido', exampleEn: 'He adapted quickly' },
+                    { spanish: 'reemplazar', english: 'to replace', example: 'Reemplazó la batería', exampleEn: 'She replaced the battery' },
+                    { spanish: 'sustituir', english: 'to substitute', example: 'Sustituyó el azúcar', exampleEn: 'She substituted the sugar' },
+                    { spanish: 'renovar', english: 'to renew', example: 'Renovó su pasaporte', exampleEn: 'He renewed his passport' },
+                    { spanish: 'actualizar', english: 'to update', example: 'Actualiza la app', exampleEn: 'Update the app' }
+                ]
+            },
+            carrying: {
+                name: 'Carrying & Moving',
+                emoji: '📦',
+                color: '#92400E',
+                verbs: [
+                    { spanish: 'llevar', english: 'to carry/take', example: 'Lleva esto a la cocina', exampleEn: 'Take this to the kitchen' },
+                    { spanish: 'traer', english: 'to bring', example: 'Trae pan del super', exampleEn: 'Bring bread from the store' },
+                    { spanish: 'cargar', english: 'to load/carry', example: 'Carga las maletas', exampleEn: 'Load the suitcases' },
+                    { spanish: 'descargar', english: 'to unload', example: 'Descarga el camión', exampleEn: 'Unload the truck' },
+                    { spanish: 'arrastrar', english: 'to drag', example: 'Arrastra la silla', exampleEn: 'Drag the chair' },
+                    { spanish: 'empujar', english: 'to push', example: 'Empuja el carro', exampleEn: 'Push the cart' },
+                    { spanish: 'jalar', english: 'to pull', example: 'Jala la puerta', exampleEn: 'Pull the door' },
+                    { spanish: 'levantar', english: 'to lift', example: 'Levanta la caja', exampleEn: 'Lift the box' },
+                    { spanish: 'bajar', english: 'to lower/bring down', example: 'Baja las escaleras', exampleEn: 'Go down the stairs' },
+                    { spanish: 'subir', english: 'to raise/go up', example: 'Sube al segundo piso', exampleEn: 'Go up to the second floor' },
+                    { spanish: 'mover', english: 'to move', example: 'Mueve el sofá', exampleEn: 'Move the sofa' },
+                    { spanish: 'trasladar', english: 'to transfer', example: 'Trasladaron la oficina', exampleEn: 'They moved the office' }
+                ]
+            },
+            starting: {
+                name: 'Starting & Stopping',
+                emoji: '▶️',
+                color: '#059669',
+                verbs: [
+                    { spanish: 'empezar', english: 'to start', example: 'Empieza a trabajar', exampleEn: 'Start working' },
+                    { spanish: 'comenzar', english: 'to begin', example: 'Comienza el partido', exampleEn: 'The game begins' },
+                    { spanish: 'iniciar', english: 'to initiate', example: 'Inicia sesión', exampleEn: 'Log in' },
+                    { spanish: 'arrancar', english: 'to start up', example: 'Arranca el motor', exampleEn: 'Start the engine' },
+                    { spanish: 'terminar', english: 'to finish', example: 'Terminé mi tarea', exampleEn: 'I finished my homework' },
+                    { spanish: 'acabar', english: 'to end/finish', example: 'Acabó la película', exampleEn: 'The movie ended' },
+                    { spanish: 'finalizar', english: 'to finalize', example: 'Finalizó el proyecto', exampleEn: 'He finalized the project' },
+                    { spanish: 'completar', english: 'to complete', example: 'Completó el formulario', exampleEn: 'She completed the form' },
+                    { spanish: 'parar', english: 'to stop', example: 'Para el carro', exampleEn: 'Stop the car' },
+                    { spanish: 'detener', english: 'to halt/detain', example: 'Detén el tráfico', exampleEn: 'Stop the traffic' },
+                    { spanish: 'suspender', english: 'to suspend', example: 'Suspendieron el vuelo', exampleEn: 'They suspended the flight' },
+                    { spanish: 'continuar', english: 'to continue', example: 'Continúa leyendo', exampleEn: 'Continue reading' },
+                    { spanish: 'reanudar', english: 'to resume', example: 'Reanudamos mañana', exampleEn: 'We resume tomorrow' }
+                ]
+            },
+            eating: {
+                name: 'Eating & Drinking',
+                emoji: '🍽️',
+                color: '#EA580C',
+                verbs: [
+                    { spanish: 'comer', english: 'to eat', example: 'Como a las doce', exampleEn: 'I eat at noon' },
+                    { spanish: 'beber', english: 'to drink', example: 'Bebe más agua', exampleEn: 'Drink more water' },
+                    { spanish: 'tomar', english: 'to drink/have', example: 'Tomo café cada mañana', exampleEn: 'I have coffee every morning' },
+                    { spanish: 'desayunar', english: 'to have breakfast', example: 'Desayuno a las siete', exampleEn: 'I have breakfast at seven' },
+                    { spanish: 'almorzar', english: 'to have lunch', example: 'Almorzamos juntos', exampleEn: "Let's have lunch together" },
+                    { spanish: 'cenar', english: 'to have dinner', example: 'Cenamos a las ocho', exampleEn: 'We have dinner at eight' },
+                    { spanish: 'merendar', english: 'to snack', example: 'Los niños meriendan', exampleEn: 'The kids have a snack' },
+                    { spanish: 'probar', english: 'to taste/try', example: 'Prueba la sopa', exampleEn: 'Taste the soup' },
+                    { spanish: 'saborear', english: 'to savor', example: 'Saborea el vino', exampleEn: 'Savor the wine' },
+                    { spanish: 'devorar', english: 'to devour', example: 'Devoró la pizza', exampleEn: 'He devoured the pizza' },
+                    { spanish: 'digerir', english: 'to digest', example: 'No puedo digerir esto', exampleEn: "I can't digest this" },
+                    { spanish: 'atragantarse', english: 'to choke', example: 'Se atragantó con un hueso', exampleEn: 'He choked on a bone' }
+                ]
+            },
+            learning: {
+                name: 'Learning & Teaching',
+                emoji: '📚',
+                color: '#7C3AED',
+                verbs: [
+                    { spanish: 'aprender', english: 'to learn', example: 'Aprendo español', exampleEn: "I'm learning Spanish" },
+                    { spanish: 'enseñar', english: 'to teach', example: 'Enseña matemáticas', exampleEn: 'She teaches math' },
+                    { spanish: 'estudiar', english: 'to study', example: 'Estudio medicina', exampleEn: 'I study medicine' },
+                    { spanish: 'practicar', english: 'to practice', example: 'Practica todos los días', exampleEn: 'Practice every day' },
+                    { spanish: 'memorizar', english: 'to memorize', example: 'Memoriza el poema', exampleEn: 'Memorize the poem' },
+                    { spanish: 'repasar', english: 'to review', example: 'Repasa tus notas', exampleEn: 'Review your notes' },
+                    { spanish: 'investigar', english: 'to research', example: 'Investiga el tema', exampleEn: 'Research the topic' },
+                    { spanish: 'analizar', english: 'to analyze', example: 'Analiza los datos', exampleEn: 'Analyze the data' },
+                    { spanish: 'comprender', english: 'to understand', example: 'Comprendo el problema', exampleEn: 'I understand the problem' },
+                    { spanish: 'dominar', english: 'to master', example: 'Domina tres idiomas', exampleEn: 'She masters three languages' },
+                    { spanish: 'graduarse', english: 'to graduate', example: 'Se graduó con honores', exampleEn: 'She graduated with honors' }
+                ]
+            },
+            trying: {
+                name: 'Trying & Attempting',
+                emoji: '💪',
+                color: '#BE185D',
+                verbs: [
+                    { spanish: 'intentar', english: 'to try', example: 'Intenta otra vez', exampleEn: 'Try again' },
+                    { spanish: 'tratar', english: 'to try', example: 'Traté de llamarte', exampleEn: 'I tried to call you' },
+                    { spanish: 'probar', english: 'to try out', example: 'Prueba este método', exampleEn: 'Try this method' },
+                    { spanish: 'esforzarse', english: 'to make an effort', example: 'Me esfuerzo mucho', exampleEn: 'I try really hard' },
+                    { spanish: 'luchar', english: 'to struggle', example: 'Lucha por sus sueños', exampleEn: 'She fights for her dreams' },
+                    { spanish: 'insistir', english: 'to insist', example: 'Insiste en venir', exampleEn: 'He insists on coming' },
+                    { spanish: 'persistir', english: 'to persist', example: 'Persiste a pesar de todo', exampleEn: 'She persists despite everything' },
+                    { spanish: 'rendirse', english: 'to give up', example: 'No te rindas', exampleEn: "Don't give up" },
+                    { spanish: 'abandonar', english: 'to abandon', example: 'Abandonó el proyecto', exampleEn: 'He abandoned the project' },
+                    { spanish: 'desistir', english: 'to desist', example: 'Desistió de su intento', exampleEn: 'She gave up on her attempt' },
+                    { spanish: 'atreverse', english: 'to dare', example: '¿Te atreves?', exampleEn: 'Do you dare?' },
+                    { spanish: 'arriesgarse', english: 'to take a risk', example: 'Se arriesgó todo', exampleEn: 'He risked everything' }
+                ]
+            },
+            feeling: {
+                name: 'Physical Sensations',
+                emoji: '🌡️',
+                color: '#0891B2',
+                verbs: [
+                    { spanish: 'sentir', english: 'to feel', example: 'Siento frío', exampleEn: 'I feel cold' },
+                    { spanish: 'picar', english: 'to itch/sting', example: 'Me pica la espalda', exampleEn: 'My back itches' },
+                    { spanish: 'arder', english: 'to burn/sting', example: 'Me arden los ojos', exampleEn: 'My eyes sting' },
+                    { spanish: 'hormiguear', english: 'to tingle', example: 'Me hormiguea el pie', exampleEn: 'My foot is tingling' },
+                    { spanish: 'palpitar', english: 'to throb', example: 'Me palpita la cabeza', exampleEn: 'My head is throbbing' },
+                    { spanish: 'latir', english: 'to beat (heart)', example: 'Mi corazón late rápido', exampleEn: 'My heart beats fast' },
+                    { spanish: 'tiritar', english: 'to shiver', example: 'Tiritaba de frío', exampleEn: 'She was shivering from cold' },
+                    { spanish: 'marearse', english: 'to get dizzy', example: 'Me mareo en el carro', exampleEn: 'I get dizzy in the car' },
+                    { spanish: 'cansarse', english: 'to get tired', example: 'Me canso fácilmente', exampleEn: 'I get tired easily' },
+                    { spanish: 'relajarse', english: 'to relax', example: 'Relájate un poco', exampleEn: 'Relax a bit' },
+                    { spanish: 'estirarse', english: 'to stretch', example: 'Me estiro cada mañana', exampleEn: 'I stretch every morning' }
+                ]
+            },
+            smelling: {
+                name: 'Smelling',
+                emoji: '👃',
+                color: '#65A30D',
+                verbs: [
+                    { spanish: 'oler', english: 'to smell', example: 'Huele a rosas', exampleEn: 'It smells like roses' },
+                    { spanish: 'olfatear', english: 'to sniff', example: 'El perro olfatea todo', exampleEn: 'The dog sniffs everything' },
+                    { spanish: 'perfumar', english: 'to perfume', example: 'Perfumó la habitación', exampleEn: 'She perfumed the room' },
+                    { spanish: 'apestar', english: 'to stink', example: 'Apesta a pescado', exampleEn: 'It stinks of fish' },
+                    { spanish: 'heder', english: 'to reek', example: 'La basura hiede', exampleEn: 'The garbage reeks' },
+                    { spanish: 'aromatizar', english: 'to scent', example: 'Aromatiza con canela', exampleEn: 'Scent it with cinnamon' },
+                    { spanish: 'inhalar', english: 'to inhale', example: 'Inhala profundamente', exampleEn: 'Inhale deeply' },
+                    { spanish: 'exhalar', english: 'to exhale', example: 'Exhala lentamente', exampleEn: 'Exhale slowly' }
+                ]
+            }
+        };
+
+        const svg = d3.select('#canvas');
+        const tooltip = d3.select('.tooltip');
+
+        // Create category list
+        const categoryContainer = document.getElementById('categories');
+        Object.entries(categories).forEach(([key, cat]) => {
+            const item = document.createElement('div');
+            item.className = 'category-item';
+            item.style.setProperty('--cat-color', cat.color);
+            item.innerHTML = `<span class="emoji">${cat.emoji}</span>${cat.name}<span class="count">${cat.verbs.length}</span>`;
+            item.addEventListener('click', () => selectCategory(key));
+            categoryContainer.appendChild(item);
+        });
+
+        let simulation = null;
+
+        function selectCategory(key) {
+            // Update selection UI
+            document.querySelectorAll('.category-item').forEach((el, i) => {
+                const catKey = Object.keys(categories)[i];
+                el.classList.toggle('selected', catKey === key);
+            });
+
+            const category = categories[key];
+            renderVerbs(category);
+        }
+
+        function renderVerbs(category) {
+            svg.selectAll('*').remove();
+
+            // Center node with emoji
+            const centerNode = {
+                id: 'center',
+                isCenter: true,
+                emoji: category.emoji,
+                radius: 50,
+                fx: width / 2,  // fixed position
+                fy: height / 2
+            };
+
+            const verbNodes = category.verbs.map((verb, i) => ({
+                ...verb,
+                id: verb.spanish,
+                isCenter: false,
+                radius: 45 + Math.random() * 10,
+                x: width / 2 + (Math.random() - 0.5) * 200,
+                y: height / 2 + (Math.random() - 0.5) * 200
+            }));
+
+            const nodes = [centerNode, ...verbNodes];
+
+            // Create links from center to each verb
+            const links = verbNodes.map(v => ({
+                source: 'center',
+                target: v.id
+            }));
+
+            // Stop previous simulation
+            if (simulation) simulation.stop();
+
+            // Create force simulation
+            simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(140).strength(0.3))
+                .force('charge', d3.forceManyBody().strength(d => d.isCenter ? 0 : -400))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 8));
+
+            // Draw links first (behind nodes)
+            const linkElements = svg.append('g')
+                .selectAll('line')
+                .data(links)
+                .enter()
+                .append('line')
+                .attr('stroke', category.color)
+                .attr('stroke-opacity', 0.2)
+                .attr('stroke-width', 1.5);
+
+            // Create groups for nodes
+            const groups = svg.selectAll('g.node')
+                .data(nodes)
+                .enter()
+                .append('g')
+                .attr('class', 'node')
+                .style('cursor', d => d.isCenter ? 'default' : 'pointer');
+
+            // Add circles
+            groups.append('circle')
+                .attr('r', d => d.radius)
+                .attr('fill', d => d.isCenter ? category.color : category.color)
+                .attr('fill-opacity', d => d.isCenter ? 0.9 : 0.2)
+                .attr('stroke', category.color)
+                .attr('stroke-width', d => d.isCenter ? 3 : 2);
+
+            // Add emoji to center node
+            groups.filter(d => d.isCenter)
+                .append('text')
+                .attr('text-anchor', 'middle')
+                .attr('dy', 12)
+                .attr('font-size', '36px')
+                .text(d => d.emoji);
+
+            // Add Spanish verb label (only for verb nodes)
+            groups.filter(d => !d.isCenter)
+                .append('text')
+                .attr('class', 'verb-label')
+                .attr('dy', -4)
+                .text(d => d.spanish);
+
+            // Add English translation (only for verb nodes)
+            groups.filter(d => !d.isCenter)
+                .append('text')
+                .attr('class', 'verb-english')
+                .attr('dy', 14)
+                .text(d => d.english);
+
+            // Hover interactions (only for verb nodes)
+            groups.filter(d => !d.isCenter)
+                .on('mouseover', function(event, d) {
+                    d3.select(this).select('circle')
+                        .attr('fill-opacity', 0.4)
+                        .attr('stroke-width', 3);
+
+                    // Highlight the link to this node
+                    linkElements.attr('stroke-opacity', l => l.target.id === d.id ? 0.6 : 0.2)
+                        .attr('stroke-width', l => l.target.id === d.id ? 2.5 : 1.5);
+
+                    tooltip
+                        .style('opacity', 1)
+                        .style('left', (event.pageX + 15) + 'px')
+                        .style('top', (event.pageY - 10) + 'px')
+                        .html(`
+                            <div class="spanish">${d.spanish}</div>
+                            <div class="english">${d.english}</div>
+                            <div class="example">"${d.example}"</div>
+                            <div class="example-trans">${d.exampleEn}</div>
+                        `);
+                })
+                .on('mouseout', function(d) {
+                    d3.select(this).select('circle')
+                        .attr('fill-opacity', 0.2)
+                        .attr('stroke-width', 2);
+                    linkElements.attr('stroke-opacity', 0.2).attr('stroke-width', 1.5);
+                    tooltip.style('opacity', 0);
+                })
+                .on('click', function(event, d) {
+                    // Trigger pronunciation
+                    const utterance = new SpeechSynthesisUtterance(d.spanish);
+                    utterance.lang = 'es-ES';
+                    utterance.rate = 0.8;
+                    speechSynthesis.speak(utterance);
+                });
+
+            // Update positions
+            simulation.on('tick', () => {
+                // Update link positions
+                linkElements
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                // Update node positions
+                groups.attr('transform', d => {
+                    if (!d.isCenter) {
+                        d.x = Math.max(d.radius, Math.min(width - d.radius, d.x));
+                        d.y = Math.max(d.radius, Math.min(height - d.radius, d.y));
+                    }
+                    return `translate(${d.x}, ${d.y})`;
+                });
+            });
+        }
+
+        // Select first category by default
+        selectCategory('mouth');
+    </script>
+</body>
+</html>

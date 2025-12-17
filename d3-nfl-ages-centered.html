@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Player Ages - Centered Distribution</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+            max-width: 800px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .age-label {
+            fill: #888;
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+        }
+        .count-label {
+            fill: #555;
+            font-size: 10px;
+            font-family: Arial, sans-serif;
+        }
+        .player-dot {
+            stroke: rgba(255,255,255,0.3);
+            stroke-width: 0.5px;
+            opacity: 0.9;
+        }
+        .legend {
+            color: #aaaaaa;
+            font-size: 11px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>NFL Player Age Distribution (2025)</h1>
+    <p class="description">
+        2,567 players across all 32 NFL teams. Each dot = one player. Stacked and centered by age.
+    </p>
+    <div id="vis"></div>
+    <div class="legend">
+        Each dot = 1 player | Mode: Age 25 (391 players) | Mean: 26.3
+    </div>
+
+    <script>
+        // NFL roster age data (scraped from ESPN, Nov 2025)
+        const ageData = [
+            { age: 41, count: 4 },
+            { age: 40, count: 1 },
+            { age: 39, count: 6 },
+            { age: 38, count: 4 },
+            { age: 37, count: 6 },
+            { age: 36, count: 13 },
+            { age: 35, count: 18 },
+            { age: 34, count: 18 },
+            { age: 33, count: 34 },
+            { age: 32, count: 59 },
+            { age: 31, count: 93 },
+            { age: 30, count: 135 },
+            { age: 29, count: 170 },
+            { age: 28, count: 208 },
+            { age: 27, count: 268 },
+            { age: 26, count: 349 },
+            { age: 25, count: 391 },
+            { age: 24, count: 362 },
+            { age: 23, count: 256 },
+            { age: 22, count: 140 },
+            { age: 21, count: 32 }
+        ];
+
+        const width = 800;
+        const height = 800;
+        const padding = 50;
+
+        // Dot settings
+        const dotRadius = 3.5;
+        const dotDiameter = dotRadius * 2 + 1;
+
+        // Available width for dots
+        const availableWidth = width - padding * 2 - 80;
+        const dotsPerRow = Math.floor(availableWidth / dotDiameter);
+
+        // Calculate how many dot rows each age needs
+        ageData.forEach(d => {
+            d.numDotRows = Math.ceil(d.count / dotsPerRow);
+        });
+
+        // Total "row units" needed (sum of all dot rows)
+        const totalDotRows = ageData.reduce((sum, d) => sum + d.numDotRows, 0);
+
+        // Available height
+        const availableHeight = height - padding * 2;
+
+        // Height per dot row
+        const heightPerDotRow = availableHeight / totalDotRows;
+
+        // Calculate y positions for each age based on cumulative height
+        let cumulativeY = padding;
+        ageData.forEach(d => {
+            d.rowHeight = d.numDotRows * heightPerDotRow;
+            d.startY = cumulativeY;
+            d.centerY = cumulativeY + d.rowHeight / 2;
+            cumulativeY += d.rowHeight;
+        });
+
+        // Color scale - young (green) to prime (blue) to veteran (red)
+        const colorScale = d3.scaleLinear()
+            .domain([21, 28, 41])
+            .range(['#10B981', '#3B82F6', '#EF4444']);
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const centerX = width / 2;
+
+        // Create dots for each age
+        ageData.forEach((d) => {
+            const rowY = d.centerY;
+
+            // Add age label on left
+            svg.append('text')
+                .attr('class', 'age-label')
+                .attr('x', padding - 5)
+                .attr('y', rowY + 4)
+                .attr('text-anchor', 'end')
+                .text(d.age);
+
+            // Add count label on right
+            svg.append('text')
+                .attr('class', 'count-label')
+                .attr('x', width - padding + 5)
+                .attr('y', rowY + 4)
+                .attr('text-anchor', 'start')
+                .text(d.count);
+
+            // Place dots in a centered grid pattern
+            for (let i = 0; i < d.count; i++) {
+                // Which row of dots is this?
+                const dotRow = Math.floor(i / dotsPerRow);
+                // Position within that row
+                const posInRow = i % dotsPerRow;
+
+                // How many dots in this particular row?
+                const isLastRow = dotRow === d.numDotRows - 1;
+                const dotsInThisRow = isLastRow
+                    ? d.count - (dotRow * dotsPerRow)
+                    : dotsPerRow;
+
+                // Center the row horizontally
+                const rowWidth = dotsInThisRow * dotDiameter;
+                const startX = centerX - rowWidth / 2 + dotRadius;
+
+                // Calculate x position
+                const x = startX + posInRow * dotDiameter;
+
+                // Calculate y position (stack vertically, centered on row)
+                const stackOffset = (dotRow - (d.numDotRows - 1) / 2) * dotDiameter;
+                const y = rowY + stackOffset;
+
+                svg.append('circle')
+                    .attr('class', 'player-dot')
+                    .attr('cx', x)
+                    .attr('cy', y)
+                    .attr('r', dotRadius)
+                    .attr('fill', colorScale(d.age));
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anatomy of Clickbait</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Georgia', serif;
+            background-color: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .description {
+            color: #888888;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 14px;
+            max-width: 700px;
+            line-height: 1.6;
+        }
+        .stat {
+            color: #ef4444;
+        }
+        svg {
+            background-color: #050505;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+        .trigger-word {
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .trigger-word:hover {
+            font-size: 120%;
+        }
+        .headline-word {
+            fill: #4a4a4a;
+            font-family: 'Georgia', serif;
+        }
+        .center-label {
+            fill: #666;
+            font-size: 12px;
+            text-anchor: middle;
+        }
+        .legend {
+            color: #666;
+            font-size: 12px;
+            margin-top: 15px;
+            text-align: center;
+            max-width: 600px;
+        }
+        .source {
+            color: #444;
+            font-size: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Anatomy of Clickbait</h1>
+    <p class="description">
+        Analysis of <span class="stat">32,000 clickbait headlines</span> from BuzzFeed, Upworthy, and ViralNova.<br>
+        The manipulation words orbit outside. The bigger the word, the more they use it.
+    </p>
+    <div id="vis"></div>
+    <div class="legend">
+        "You" appears 5,540 times. "Your" 2,540 times. It's always about YOU.<br>
+        "This" creates curiosity gaps. Numbers promise digestible lists. Questions demand answers.
+    </div>
+    <div class="source">
+        Data: Chakraborty et al., "Stop Clickbait" (2016) via GitHub
+    </div>
+
+    <script>
+        const width = 700;
+        const height = 700;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const innerRadius = 180;
+        const outerRadius = 320;
+
+        // Trigger words that orbit outside - the manipulation toolkit
+        // Sized by actual frequency in 32,000 headlines
+        const triggerWords = [
+            { word: "YOU", count: 5540, color: "#ef4444" },
+            { word: "YOUR", count: 2540, color: "#ef4444" },
+            { word: "THIS", count: 1812, color: "#f97316" },
+            { word: "WHAT", count: 1326, color: "#eab308" },
+            { word: "WILL", count: 1242, color: "#eab308" },
+            { word: "WHO", count: 1031, color: "#eab308" },
+            { word: "THINGS", count: 997, color: "#22c55e" },
+            { word: "HOW", count: 918, color: "#eab308" },
+            { word: "WHICH", count: 896, color: "#eab308" },
+            { word: "KNOW", count: 804, color: "#3b82f6" },
+            { word: "MAKE", count: 766, color: "#3b82f6" },
+            { word: "SHOULD", count: 634, color: "#8b5cf6" },
+            { word: "THESE", count: 631, color: "#f97316" },
+            { word: "ACTUALLY", count: 596, color: "#ec4899" },
+            { word: "TIMES", count: 508, color: "#22c55e" },
+            { word: "BEST", count: 472, color: "#22c55e" },
+            { word: "NEED", count: 403, color: "#8b5cf6" },
+            { word: "EVER", count: 332, color: "#22c55e" },
+            { word: "EVERYONE", count: 301, color: "#ef4444" },
+            { word: "ZODIAC", count: 295, color: "#ec4899" },
+            { word: "LOVE", count: 296, color: "#ec4899" },
+            { word: "WAYS", count: 263, color: "#22c55e" },
+            { word: "UNDERSTAND", count: 249, color: "#3b82f6" },
+            { word: "ONLY", count: 258, color: "#8b5cf6" },
+        ];
+
+        // Example headlines for the center (actual headlines from dataset)
+        const sampleHeadlines = [
+            "21 Things You Didn't Know",
+            "Which Character Are You",
+            "This Will Change Your Life",
+            "What Happened Next",
+            "You Won't Believe",
+            "17 Times We All Felt This",
+            "Based On Your Zodiac",
+            "Here's What You Need",
+            "The Best Things About",
+            "How Well Do You Know",
+            "Everyone Should Know This",
+            "Ways To Make Your Life",
+            "Things Only You Understand",
+            "What Your Choice Says",
+            "Times That Actually Happened"
+        ];
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Add subtle circle guides
+        svg.append('circle')
+            .attr('cx', centerX)
+            .attr('cy', centerY)
+            .attr('r', innerRadius)
+            .attr('fill', 'none')
+            .attr('stroke', '#1a1a1a')
+            .attr('stroke-width', 1);
+
+        svg.append('circle')
+            .attr('cx', centerX)
+            .attr('cy', centerY)
+            .attr('r', outerRadius)
+            .attr('fill', 'none')
+            .attr('stroke', '#1a1a1a')
+            .attr('stroke-width', 1);
+
+        // Scale for word sizes based on frequency
+        const fontScale = d3.scaleSqrt()
+            .domain([200, 5540])
+            .range([10, 32]);
+
+        // Position trigger words in orbit
+        const angleStep = (2 * Math.PI) / triggerWords.length;
+
+        triggerWords.forEach((d, i) => {
+            const angle = i * angleStep - Math.PI / 2; // Start at top
+            const radiusVariation = outerRadius + (Math.random() - 0.5) * 40;
+            d.x = centerX + Math.cos(angle) * radiusVariation;
+            d.y = centerY + Math.sin(angle) * radiusVariation;
+            d.angle = angle;
+            d.fontSize = fontScale(d.count);
+        });
+
+        // Draw trigger words orbiting outside
+        const triggerGroup = svg.selectAll('.trigger-word')
+            .data(triggerWords)
+            .enter()
+            .append('text')
+            .attr('class', 'trigger-word')
+            .attr('x', d => d.x)
+            .attr('y', d => d.y)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle')
+            .attr('fill', d => d.color)
+            .attr('font-size', d => d.fontSize + 'px')
+            .attr('opacity', 0.9)
+            .text(d => d.word)
+            .on('mouseover', function(event, d) {
+                d3.select(this)
+                    .attr('opacity', 1)
+                    .attr('font-size', (d.fontSize * 1.3) + 'px');
+
+                // Show count tooltip
+                svg.append('text')
+                    .attr('class', 'tooltip')
+                    .attr('x', centerX)
+                    .attr('y', centerY)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', d.color)
+                    .attr('font-size', '14px')
+                    .text(`"${d.word}" appears ${d.count.toLocaleString()} times`);
+            })
+            .on('mouseout', function(event, d) {
+                d3.select(this)
+                    .attr('opacity', 0.9)
+                    .attr('font-size', d.fontSize + 'px');
+                svg.selectAll('.tooltip').remove();
+            });
+
+        // Add sample headlines in the center (faded, representing the actual content)
+        const headlineGroup = svg.append('g')
+            .attr('class', 'headlines');
+
+        sampleHeadlines.forEach((headline, i) => {
+            const yOffset = (i - sampleHeadlines.length / 2) * 18;
+            headlineGroup.append('text')
+                .attr('class', 'headline-word')
+                .attr('x', centerX)
+                .attr('y', centerY + yOffset)
+                .attr('text-anchor', 'middle')
+                .attr('font-size', '11px')
+                .attr('opacity', 0.4 + Math.random() * 0.3)
+                .text(headline);
+        });
+
+        // Center label
+        svg.append('text')
+            .attr('class', 'center-label')
+            .attr('x', centerX)
+            .attr('y', centerY + innerRadius + 25)
+            .text('32,000 headlines');
+
+        // Slow rotation animation for trigger words
+        function animate() {
+            const elapsed = Date.now() / 50000; // Very slow rotation
+
+            triggerGroup
+                .attr('x', (d, i) => {
+                    const angle = d.angle + elapsed;
+                    return centerX + Math.cos(angle) * (outerRadius + (i % 3) * 15);
+                })
+                .attr('y', (d, i) => {
+                    const angle = d.angle + elapsed;
+                    return centerY + Math.sin(angle) * (outerRadius + (i % 3) * 15);
+                });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

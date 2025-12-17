@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Team Lineups - Draft & Salary - 2023</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .control-group label {
+            font-size: 12px;
+            color: #888;
+        }
+        select {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .field-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .tooltip {
+            position: fixed;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid #444;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 1000;
+        }
+        .tooltip .name {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .tooltip .details {
+            color: #aaa;
+            line-height: 1.6;
+        }
+        .tooltip .salary {
+            color: #4ade80;
+            font-weight: bold;
+        }
+        .tooltip .draft {
+            color: #60a5fa;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+            font-size: 11px;
+            color: #888;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-section {
+            display: flex;
+            gap: 15px;
+            padding: 0 15px;
+            border-right: 1px solid #333;
+        }
+        .legend-section:last-child {
+            border-right: none;
+        }
+        .team-info {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .team-name {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .team-stats {
+            color: #888;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .team-stats span {
+            color: #4ade80;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>NFL Team Lineups</h1>
+    <p class="subtitle">2023 Season — Draft rounds and salaries</p>
+    <div class="controls">
+        <div class="control-group">
+            <label>Team</label>
+            <select id="team-select"></select>
+        </div>
+        <div class="control-group">
+            <label>Color By</label>
+            <select id="color-select">
+                <option value="draft">Draft Round</option>
+                <option value="salary">Salary</option>
+                <option value="side">Offense/Defense</option>
+            </select>
+        </div>
+    </div>
+    <div class="team-info" id="team-info"></div>
+    <div class="legend" id="legend"></div>
+    <div class="field-container" id="field-container"></div>
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        let data = null;
+        const tooltip = document.getElementById('tooltip');
+
+        // Team full names
+        const teamNames = {
+            'ARI': 'Arizona Cardinals', 'ATL': 'Atlanta Falcons', 'BAL': 'Baltimore Ravens',
+            'BUF': 'Buffalo Bills', 'CAR': 'Carolina Panthers', 'CHI': 'Chicago Bears',
+            'CIN': 'Cincinnati Bengals', 'CLE': 'Cleveland Browns', 'DAL': 'Dallas Cowboys',
+            'DEN': 'Denver Broncos', 'DET': 'Detroit Lions', 'GB': 'Green Bay Packers',
+            'HOU': 'Houston Texans', 'IND': 'Indianapolis Colts', 'JAX': 'Jacksonville Jaguars',
+            'KC': 'Kansas City Chiefs', 'LAC': 'Los Angeles Chargers', 'LA': 'Los Angeles Rams',
+            'LV': 'Las Vegas Raiders', 'MIA': 'Miami Dolphins', 'MIN': 'Minnesota Vikings',
+            'NE': 'New England Patriots', 'NO': 'New Orleans Saints', 'NYG': 'New York Giants',
+            'NYJ': 'New York Jets', 'PHI': 'Philadelphia Eagles', 'PIT': 'Pittsburgh Steelers',
+            'SF': 'San Francisco 49ers', 'SEA': 'Seattle Seahawks', 'TB': 'Tampa Bay Buccaneers',
+            'TEN': 'Tennessee Titans', 'WAS': 'Washington Commanders'
+        };
+
+        // Draft round colors
+        const draftColors = {
+            '1': '#FFD700',  // Gold - 1st round
+            '2': '#C0C0C0',  // Silver - 2nd round
+            '3': '#CD7F32',  // Bronze - 3rd round
+            '4': '#3b82f6',  // Blue - 4th round
+            '5': '#8b5cf6',  // Purple - 5th round
+            '6': '#6b7280',  // Gray - 6th round
+            '7': '#4b5563',  // Dark gray - 7th round
+            'UDFA': '#22c55e' // Green - Undrafted
+        };
+
+        // Salary color scale
+        const salaryColorScale = d3.scaleSequential(d3.interpolateYlOrRd)
+            .domain([0, 45000000]);
+
+        // Position coordinates
+        const offensePositions = {
+            'C':  { x: 50, y: 58 },
+            'G':  [{ x: 42, y: 58 }, { x: 58, y: 58 }],
+            'T':  [{ x: 34, y: 58 }, { x: 66, y: 58 }],
+            'QB': { x: 50, y: 70 },
+            'RB': [{ x: 50, y: 80 }, { x: 42, y: 78 }],
+            'FB': { x: 50, y: 72 },
+            'WR': [{ x: 10, y: 55 }, { x: 90, y: 55 }, { x: 15, y: 62 }],
+            'TE': [{ x: 26, y: 58 }, { x: 74, y: 58 }]
+        };
+
+        const defensePositions = {
+            'DE': [{ x: 25, y: 42 }, { x: 75, y: 42 }],
+            'DT': [{ x: 40, y: 42 }, { x: 60, y: 42 }],
+            'NT': { x: 50, y: 42 },
+            'OLB': [{ x: 18, y: 28 }, { x: 82, y: 28 }],
+            'ILB': [{ x: 40, y: 28 }, { x: 60, y: 28 }],
+            'MLB': { x: 50, y: 28 },
+            'CB': [{ x: 12, y: 12 }, { x: 88, y: 12 }],
+            'FS': { x: 50, y: 8 },
+            'SS': { x: 65, y: 12 }
+        };
+
+        // Load data
+        fetch('lineups_extended_2023.json')
+            .then(res => res.json())
+            .then(json => {
+                data = json;
+
+                const teams = Object.keys(data.teams).sort();
+                const teamSelect = document.getElementById('team-select');
+                teams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team;
+                    option.textContent = `${team} - ${teamNames[team] || team}`;
+                    if (team === 'KC') option.selected = true;
+                    teamSelect.appendChild(option);
+                });
+
+                renderTeam('KC', 'draft');
+
+                teamSelect.addEventListener('change', (e) => {
+                    renderTeam(e.target.value, document.getElementById('color-select').value);
+                });
+
+                document.getElementById('color-select').addEventListener('change', (e) => {
+                    renderTeam(document.getElementById('team-select').value, e.target.value);
+                });
+            });
+
+        function updateLegend(colorMode) {
+            const legend = document.getElementById('legend');
+            legend.innerHTML = '';
+
+            if (colorMode === 'draft') {
+                const section = document.createElement('div');
+                section.className = 'legend-section';
+                section.innerHTML = `
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="${draftColors['1']}"/></svg><span>Round 1</span></div>
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="${draftColors['2']}"/></svg><span>Round 2</span></div>
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="${draftColors['3']}"/></svg><span>Round 3</span></div>
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="${draftColors['4']}"/></svg><span>Round 4</span></div>
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="${draftColors['5']}"/></svg><span>Round 5</span></div>
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="${draftColors['6']}"/></svg><span>Round 6-7</span></div>
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="${draftColors['UDFA']}"/></svg><span>UDFA</span></div>
+                `;
+                legend.appendChild(section);
+            } else if (colorMode === 'salary') {
+                const section = document.createElement('div');
+                section.className = 'legend-section';
+                section.innerHTML = `
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="${salaryColorScale(1000000)}"/></svg><span>$1M</span></div>
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="${salaryColorScale(5000000)}"/></svg><span>$5M</span></div>
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="${salaryColorScale(15000000)}"/></svg><span>$15M</span></div>
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="${salaryColorScale(30000000)}"/></svg><span>$30M</span></div>
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="${salaryColorScale(45000000)}"/></svg><span>$45M+</span></div>
+                `;
+                legend.appendChild(section);
+            } else {
+                const section = document.createElement('div');
+                section.className = 'legend-section';
+                section.innerHTML = `
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#3b82f6"/></svg><span>Offense</span></div>
+                    <div class="legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#ef4444"/></svg><span>Defense</span></div>
+                `;
+                legend.appendChild(section);
+            }
+        }
+
+        function getPlayerColor(player, side, colorMode) {
+            if (colorMode === 'draft') {
+                const round = player.draft_round || '';
+                if (!round || round === 'NA') return draftColors['UDFA'];
+                if (round === '6' || round === '7') return draftColors['6'];
+                return draftColors[round] || draftColors['UDFA'];
+            } else if (colorMode === 'salary') {
+                return salaryColorScale(player.salary || 0);
+            } else {
+                return side === 'offense' ? '#3b82f6' : '#ef4444';
+            }
+        }
+
+        function renderTeam(teamCode, colorMode) {
+            const team = data.teams[teamCode];
+            if (!team) return;
+
+            updateLegend(colorMode);
+
+            // Calculate team stats
+            let totalSalary = 0;
+            let round1Count = 0;
+            let playerCount = 0;
+
+            const countPlayers = (side) => {
+                Object.values(team[side]).forEach(players => {
+                    if (players[0]) {
+                        playerCount++;
+                        totalSalary += players[0].salary || 0;
+                        if (players[0].draft_round === '1') round1Count++;
+                    }
+                });
+            };
+            countPlayers('offense');
+            countPlayers('defense');
+
+            document.getElementById('team-info').innerHTML = `
+                <div class="team-name">${teamNames[teamCode] || teamCode}</div>
+                <div class="team-stats">
+                    Starter Payroll: <span>$${Math.round(totalSalary / 1000000)}M</span> &nbsp;|&nbsp;
+                    1st Rounders: <span>${round1Count}</span>
+                </div>
+            `;
+
+            const container = document.getElementById('field-container');
+            container.innerHTML = '';
+
+            const width = 700;
+            const height = 500;
+            const padding = 40;
+
+            const svg = d3.select(container)
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Field background
+            const field = svg.append('g');
+
+            field.append('rect')
+                .attr('x', padding)
+                .attr('y', padding)
+                .attr('width', width - padding * 2)
+                .attr('height', height - padding * 2)
+                .attr('fill', '#1a472a')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2)
+                .attr('rx', 4);
+
+            // Line of scrimmage
+            field.append('line')
+                .attr('x1', padding)
+                .attr('x2', width - padding)
+                .attr('y1', height / 2)
+                .attr('y2', height / 2)
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
+
+            // Yard lines
+            [25, 75].forEach(pct => {
+                const y = padding + (height - padding * 2) * (pct / 100);
+                field.append('line')
+                    .attr('x1', padding)
+                    .attr('x2', width - padding)
+                    .attr('y1', y)
+                    .attr('y2', y)
+                    .attr('stroke', 'rgba(255,255,255,0.2)')
+                    .attr('stroke-width', 1)
+                    .attr('stroke-dasharray', '5,5');
+            });
+
+            // Side labels
+            svg.append('text')
+                .attr('x', width / 2)
+                .attr('y', padding + 20)
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'rgba(255,255,255,0.3)')
+                .attr('font-size', '12px')
+                .attr('letter-spacing', '3px')
+                .text('DEFENSE');
+
+            svg.append('text')
+                .attr('x', width / 2)
+                .attr('y', height - padding - 10)
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'rgba(255,255,255,0.3)')
+                .attr('font-size', '12px')
+                .attr('letter-spacing', '3px')
+                .text('OFFENSE');
+
+            const xScale = (pct) => padding + (width - padding * 2) * (pct / 100);
+            const yScale = (pct) => padding + (height - padding * 2) * (pct / 100);
+
+            // Draw offense
+            const usedOffPositions = {};
+            Object.entries(team.offense).forEach(([pos, players]) => {
+                if (!offensePositions[pos] || players.length === 0) return;
+                if (['CB', 'FS', 'SS', 'ILB', 'OLB', 'DE', 'DT', 'NT', 'MLB'].includes(pos)) return;
+
+                const positions = Array.isArray(offensePositions[pos])
+                    ? offensePositions[pos]
+                    : [offensePositions[pos]];
+
+                players.slice(0, positions.length).forEach((player, i) => {
+                    const posKey = `${pos}_${i}`;
+                    if (usedOffPositions[posKey]) return;
+                    usedOffPositions[posKey] = true;
+
+                    const coords = positions[i];
+                    const x = xScale(coords.x);
+                    const y = yScale(coords.y);
+                    const color = getPlayerColor(player, 'offense', colorMode);
+
+                    drawPlayer(svg, x, y, player, pos, color, colorMode);
+                });
+            });
+
+            // Draw defense
+            const usedDefPositions = {};
+            Object.entries(team.defense).forEach(([pos, players]) => {
+                if (!defensePositions[pos] || players.length === 0) return;
+                if (['QB', 'RB', 'WR', 'TE', 'C', 'G', 'T', 'FB'].includes(pos)) return;
+
+                const positions = Array.isArray(defensePositions[pos])
+                    ? defensePositions[pos]
+                    : [defensePositions[pos]];
+
+                players.slice(0, positions.length).forEach((player, i) => {
+                    const posKey = `${pos}_${i}`;
+                    if (usedDefPositions[posKey]) return;
+                    usedDefPositions[posKey] = true;
+
+                    const coords = positions[i];
+                    const x = xScale(coords.x);
+                    const y = yScale(coords.y);
+                    const color = getPlayerColor(player, 'defense', colorMode);
+
+                    drawPlayer(svg, x, y, player, pos, color, colorMode);
+                });
+            });
+        }
+
+        function drawPlayer(svg, x, y, player, pos, color, colorMode) {
+            const g = svg.append('g')
+                .style('cursor', 'pointer')
+                .on('mouseover', function(event) {
+                    const draftInfo = player.draft_round && player.draft_round !== 'NA'
+                        ? `Round ${player.draft_round}, Pick ${player.draft_pick}`
+                        : 'Undrafted';
+                    const salaryInfo = player.salary
+                        ? `$${(player.salary / 1000000).toFixed(1)}M/year`
+                        : 'N/A';
+
+                    tooltip.innerHTML = `
+                        <div class="name">#${player.number} ${player.name}</div>
+                        <div class="details">
+                            Position: ${pos}<br>
+                            Snaps: ${player.snaps.toLocaleString()}<br><br>
+                            <span class="draft">Draft: ${draftInfo}</span><br>
+                            <span class="salary">Salary: ${salaryInfo}</span>
+                        </div>
+                    `;
+                    tooltip.style.opacity = 1;
+                    tooltip.style.left = (event.clientX + 15) + 'px';
+                    tooltip.style.top = (event.clientY - 10) + 'px';
+                })
+                .on('mouseout', function() {
+                    tooltip.style.opacity = 0;
+                });
+
+            // Player dot
+            g.append('circle')
+                .attr('cx', x)
+                .attr('cy', y)
+                .attr('r', 18)
+                .attr('fill', color)
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
+
+            // Draft round number or salary indicator inside
+            let labelText = pos;
+            if (colorMode === 'draft') {
+                if (player.draft_round && player.draft_round !== 'NA') {
+                    labelText = `R${player.draft_round}`;
+                } else {
+                    labelText = 'UN';
+                }
+            } else if (colorMode === 'salary' && player.salary) {
+                labelText = `$${Math.round(player.salary / 1000000)}`;
+            }
+
+            // For salary mode, always use black text for readability
+            const textColor = colorMode === 'salary' ? '#000' : '#fff';
+
+            g.append('text')
+                .attr('x', x)
+                .attr('y', y)
+                .attr('text-anchor', 'middle')
+                .attr('dy', '0.35em')
+                .attr('fill', textColor)
+                .attr('font-size', '10px')
+                .attr('font-weight', 'bold')
+                .text(labelText);
+
+            // Jersey number below
+            g.append('text')
+                .attr('x', x)
+                .attr('y', y + 28)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#fff')
+                .attr('font-size', '10px')
+                .text(`#${player.number}`);
+        }
+    </script>
+</body>
+</html>

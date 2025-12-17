@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 100 QB TD Seasons</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            padding: 15px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(10,10,10,0.9) 0%, rgba(10,10,10,0) 100%);
+        }
+        .subtitle {
+            font-size: 13px;
+            color: #888;
+            font-weight: normal;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        canvas {
+            display: block;
+        }
+        .tooltip {
+            position: fixed;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid #444;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 1000;
+        }
+        .tooltip .name {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .tooltip .tds {
+            color: #4ade80;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .tooltip .ints {
+            color: #ef4444;
+            font-size: 14px;
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+        button {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        button:hover {
+            background: #333;
+            border-color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Top 100 QB Touchdown Seasons <span class="subtitle">— bubble size = TD passes</span></h1>
+    <div id="canvas-container"></div>
+    <div class="controls">
+        <button id="drop-btn">Drop Again</button>
+        <button id="shake-btn">Shake</button>
+    </div>
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const { Engine, Render, Runner, Bodies, Body, Composite, Mouse, MouseConstraint, Events } = Matter;
+
+        let data = [];
+        let engine, render, runner;
+        let balls = [];
+        const tooltip = document.getElementById('tooltip');
+
+        // Color scale based on TDs
+        function getTDColor(tds) {
+            if (tds >= 50) return '#FFD700';  // Gold - 50+
+            if (tds >= 45) return '#ef4444';  // Red - 45-49
+            if (tds >= 40) return '#f97316';  // Orange - 40-44
+            if (tds >= 35) return '#3b82f6';  // Blue - 35-39
+            return '#6b7280';                  // Gray - 31-34
+        }
+
+        // Load data and initialize
+        fetch('qb_td_seasons.json')
+            .then(res => res.json())
+            .then(json => {
+                data = json;
+                initPhysics();
+                dropBalls();
+            });
+
+        function getInitials(name) {
+            const parts = name.split(' ');
+            if (parts.length >= 2) {
+                return parts[0][0] + parts[parts.length - 1][0];
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        function initPhysics() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // Create engine
+            engine = Engine.create();
+            engine.gravity.y = 0.8;
+
+            // Create renderer
+            render = Render.create({
+                element: document.getElementById('canvas-container'),
+                engine: engine,
+                options: {
+                    width: width,
+                    height: height,
+                    wireframes: false,
+                    background: '#0a0a0a'
+                }
+            });
+
+            // Custom rendering for labels
+            Events.on(render, 'afterRender', function() {
+                const ctx = render.context;
+
+                balls.forEach(ball => {
+                    const pos = ball.body.position;
+                    const initials = getInitials(ball.data.name);
+                    const label = `${initials}-${ball.data.tds}`;
+
+                    ctx.save();
+                    ctx.translate(pos.x, pos.y);
+                    ctx.rotate(ball.body.angle);
+
+                    // Text styling
+                    const fontSize = Math.max(10, ball.radius * 0.45);
+                    ctx.font = `bold ${fontSize}px -apple-system, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = ball.data.tds >= 50 ? '#000' : '#fff';
+                    ctx.fillText(label, 0, 0);
+
+                    ctx.restore();
+                });
+            });
+
+            // Add walls
+            const wallOptions = { isStatic: true, render: { fillStyle: '#1a1a1a' } };
+            const floorY = height - 80;  // Move floor up to leave room for buttons
+            Composite.add(engine.world, [
+                // Floor
+                Bodies.rectangle(width / 2, floorY + 25, width, 50, wallOptions),
+                // Left wall
+                Bodies.rectangle(-25, height / 2, 50, height, wallOptions),
+                // Right wall
+                Bodies.rectangle(width + 25, height / 2, 50, height, wallOptions)
+            ]);
+
+            // Mouse control
+            const mouse = Mouse.create(render.canvas);
+            const mouseConstraint = MouseConstraint.create(engine, {
+                mouse: mouse,
+                constraint: {
+                    stiffness: 0.2,
+                    render: { visible: false }
+                }
+            });
+            Composite.add(engine.world, mouseConstraint);
+            render.mouse = mouse;
+
+            // Hover detection
+            Events.on(engine, 'afterUpdate', function() {
+                const mousePos = mouse.position;
+                let hoveredBall = null;
+
+                for (const ball of balls) {
+                    const dx = ball.body.position.x - mousePos.x;
+                    const dy = ball.body.position.y - mousePos.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < ball.radius) {
+                        hoveredBall = ball;
+                        break;
+                    }
+                }
+
+                if (hoveredBall && !mouseConstraint.body) {
+                    const d = hoveredBall.data;
+                    tooltip.innerHTML = `
+                        <div class="name">${d.name}</div>
+                        <div>${d.season} Season</div>
+                        <div class="tds">${d.tds} TDs</div>
+                        <div class="ints">${d.ints} INTs</div>
+                    `;
+                    tooltip.style.opacity = 1;
+                    tooltip.style.left = (mousePos.x + 15) + 'px';
+                    tooltip.style.top = (mousePos.y - 10) + 'px';
+                } else {
+                    tooltip.style.opacity = 0;
+                }
+            });
+
+            // Start
+            Render.run(render);
+            runner = Runner.create();
+            Runner.run(runner, engine);
+        }
+
+        function dropBalls() {
+            // Clear existing balls
+            balls.forEach(b => Composite.remove(engine.world, b.body));
+            balls = [];
+
+            const width = window.innerWidth;
+
+            // Create balls with staggered drop
+            data.forEach((qb, i) => {
+                setTimeout(() => {
+                    // Radius based on TDs (scale from 15 to 45)
+                    const minTD = 31, maxTD = 55;
+                    const radius = 15 + ((qb.tds - minTD) / (maxTD - minTD)) * 30;
+
+                    // Random x position
+                    const x = 100 + Math.random() * (width - 200);
+                    const y = -50 - Math.random() * 100;
+
+                    // Border thickness based on interceptions (2-20px)
+                    const maxInts = 30;
+                    const borderWidth = 2 + (qb.ints / maxInts) * 18;
+
+                    const body = Bodies.circle(x, y, radius, {
+                        restitution: 0.6,  // Bounciness
+                        friction: 0.1,
+                        frictionAir: 0.001,
+                        render: {
+                            fillStyle: getTDColor(qb.tds),
+                            strokeStyle: '#fff',
+                            lineWidth: borderWidth
+                        }
+                    });
+
+                    Composite.add(engine.world, body);
+                    balls.push({ body, radius, data: qb });
+                }, i * 50);  // Stagger drops by 50ms
+            });
+        }
+
+        function shakeBalls() {
+            balls.forEach(ball => {
+                const force = {
+                    x: (Math.random() - 0.5) * 0.05,
+                    y: -Math.random() * 0.08
+                };
+                Body.applyForce(ball.body, ball.body.position, force);
+            });
+        }
+
+        // Button handlers
+        document.getElementById('drop-btn').addEventListener('click', dropBalls);
+        document.getElementById('shake-btn').addEventListener('click', shakeBalls);
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            render.canvas.width = window.innerWidth;
+            render.canvas.height = window.innerHeight;
+            render.options.width = window.innerWidth;
+            render.options.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

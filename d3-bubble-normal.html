@@ -98,13 +98,33 @@
             .domain([0, maxSize])
             .range([0, 30]);
 
-        const nodes = rawData.map(d => ({
-            id: d.id,
-            radius: radiusScale(d.size),
-            size: d.size,
-            x: Math.random() * width,
-            y: Math.random() * height
-        }));
+        const nodes = rawData.map(d => {
+            const radius = radiusScale(d.size);
+
+            // Start larger bubbles closer to center
+            let startX, startY;
+            if (radius > 25) {
+                // Largest bubbles - start very close to center
+                startX = width / 2 + (Math.random() - 0.5) * 100;
+                startY = height / 2 + (Math.random() - 0.5) * 100;
+            } else if (radius > 15) {
+                // Medium-large bubbles - start in middle ring
+                startX = width / 2 + (Math.random() - 0.5) * 250;
+                startY = height / 2 + (Math.random() - 0.5) * 250;
+            } else {
+                // Smaller bubbles - can start anywhere
+                startX = Math.random() * width;
+                startY = Math.random() * height;
+            }
+
+            return {
+                id: d.id,
+                radius: radius,
+                size: d.size,
+                x: startX,
+                y: startY
+            };
+        });
 
         console.log('Nodes created:', nodes.length);
 
@@ -149,11 +169,23 @@
             return -Math.pow(d.radius, 2.0) * 0.03;
         }
 
+        // Custom centering force - stronger for larger bubbles
+        function customXForce(d) {
+            // Larger bubbles have stronger pull to center
+            const strength = 0.03 + (d.radius / 30) * 0.05;
+            return strength;
+        }
+
+        function customYForce(d) {
+            const strength = 0.03 + (d.radius / 30) * 0.05;
+            return strength;
+        }
+
         // Create force simulation
         const simulation = d3.forceSimulation(nodes)
             .force('charge', d3.forceManyBody().strength(charge))
-            .force('x', d3.forceX().strength(0.05).x(width / 2))
-            .force('y', d3.forceY().strength(0.05).y(height / 2))
+            .force('x', d3.forceX().strength(customXForce).x(width / 2))
+            .force('y', d3.forceY().strength(customYForce).y(height / 2))
             .force('collision', d3.forceCollide().radius(d => d.radius + 2))
             .on('tick', ticked);
 

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Learning Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #ffffff;
+            color: #000000;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        #canvas {
+            background-color: #ffffff;
+        }
+        #actionBtn {
+            padding: 12px 40px;
+            font-size: 16px;
+            background-color: #22C55E;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            min-width: 120px;
+            transition: background-color 0.2s;
+        }
+        #actionBtn:hover {
+            background-color: #16A34A;
+        }
+        #actionBtn.next-state {
+            background-color: #3B82F6;
+        }
+        #actionBtn.next-state:hover {
+            background-color: #2563EB;
+        }
+    </style>
+</head>
+<body>
+    <h1>Spanish Learning Game</h1>
+    <svg id="canvas" width="600" height="600"></svg>
+    <div style="margin-top: 20px;">
+        <button id="actionBtn">Reveal</button>
+    </div>
+
+    <script>
+        const svg = document.getElementById('canvas');
+        const svgNS = "http://www.w3.org/2000/svg";
+
+        const centerX = 300;
+        const centerY = 300;
+        const mainRadius = 200;
+        const smallRadius = 25;
+
+        // Main white circle with black border
+        const mainCircle = document.createElementNS(svgNS, 'circle');
+        mainCircle.setAttribute('cx', centerX);
+        mainCircle.setAttribute('cy', centerY);
+        mainCircle.setAttribute('r', mainRadius);
+        mainCircle.setAttribute('fill', '#ffffff');
+        mainCircle.setAttribute('stroke', '#000000');
+        mainCircle.setAttribute('stroke-width', '4');
+        svg.appendChild(mainCircle);
+
+        // Text elements in center
+        const phraseText = document.createElementNS(svgNS, 'text');
+        phraseText.setAttribute('x', centerX);
+        phraseText.setAttribute('y', centerY - 15);
+        phraseText.setAttribute('text-anchor', 'middle');
+        phraseText.setAttribute('font-size', '28px');
+        phraseText.setAttribute('font-weight', 'bold');
+        phraseText.setAttribute('fill', '#000000');
+        svg.appendChild(phraseText);
+
+        const translationText = document.createElementNS(svgNS, 'text');
+        translationText.setAttribute('x', centerX);
+        translationText.setAttribute('y', centerY + 25);
+        translationText.setAttribute('text-anchor', 'middle');
+        translationText.setAttribute('font-size', '18px');
+        translationText.setAttribute('fill', '#666666');
+        svg.appendChild(translationText);
+
+        // Small circles at clock positions
+        // 12 = you (tú), 3 = they/them, 6 = I/me, 9 = he/she/it, 7:30 = we/us
+        const positions = [
+            { angle: -90, color: '#EF4444', label: 'you' },      // 12 o'clock - red
+            { angle: 0, color: '#22C55E', label: 'they' },       // 3 o'clock - green
+            { angle: 90, color: '#3B82F6', label: 'I' },         // 6 o'clock - blue
+            { angle: 115, color: '#8B5CF6', label: 'we' },       // 6:30 position - purple (left of I)
+            { angle: 180, color: '#F59E0B', label: 'he/she' }    // 9 o'clock - orange
+        ];
+
+        const circles = {};
+
+        positions.forEach(pos => {
+            const radians = pos.angle * (Math.PI / 180);
+            const x = centerX + mainRadius * Math.cos(radians);
+            const y = centerY + mainRadius * Math.sin(radians);
+
+            const circle = document.createElementNS(svgNS, 'circle');
+            circle.setAttribute('cx', x);
+            circle.setAttribute('cy', y);
+            circle.setAttribute('r', smallRadius);
+            circle.setAttribute('fill', '#dddddd');  // Start dim
+            circle.setAttribute('stroke', '#000000');
+            circle.setAttribute('stroke-width', '2');
+            circle.dataset.color = pos.color;
+            circle.dataset.label = pos.label;
+            svg.appendChild(circle);
+
+            // Add label text inside circle
+            const label = document.createElementNS(svgNS, 'text');
+            label.setAttribute('x', x);
+            label.setAttribute('y', y + 5);
+            label.setAttribute('text-anchor', 'middle');
+            label.setAttribute('font-size', '11px');
+            label.setAttribute('font-weight', 'bold');
+            label.setAttribute('fill', '#000000');
+            label.textContent = pos.label;
+            svg.appendChild(label);
+
+            circles[pos.label] = circle;
+        });
+
+        // Tense flash zones (left=past, center=present, right=future)
+        const tenseZones = {
+            past: document.createElementNS(svgNS, 'rect'),
+            present: document.createElementNS(svgNS, 'rect'),
+            future: document.createElementNS(svgNS, 'rect')
+        };
+
+        // Insert zones behind everything
+        const zoneWidth = 200;
+        const zoneHeight = 600;
+
+        tenseZones.past.setAttribute('x', 0);
+        tenseZones.past.setAttribute('y', 0);
+        tenseZones.past.setAttribute('width', zoneWidth);
+        tenseZones.past.setAttribute('height', zoneHeight);
+        tenseZones.past.setAttribute('fill', '#FFE4B5');  // Light orange/sepia for past
+        tenseZones.past.setAttribute('opacity', '0');
+        svg.insertBefore(tenseZones.past, svg.firstChild);
+
+        tenseZones.present.setAttribute('x', 200);
+        tenseZones.present.setAttribute('y', 0);
+        tenseZones.present.setAttribute('width', zoneWidth);
+        tenseZones.present.setAttribute('height', zoneHeight);
+        tenseZones.present.setAttribute('fill', '#90EE90');  // Light green for present
+        tenseZones.present.setAttribute('opacity', '0');
+        svg.insertBefore(tenseZones.present, svg.firstChild);
+
+        tenseZones.future.setAttribute('x', 400);
+        tenseZones.future.setAttribute('y', 0);
+        tenseZones.future.setAttribute('width', zoneWidth);
+        tenseZones.future.setAttribute('height', zoneHeight);
+        tenseZones.future.setAttribute('fill', '#ADD8E6');  // Light blue for future
+        tenseZones.future.setAttribute('opacity', '0');
+        svg.insertBefore(tenseZones.future, svg.firstChild);
+
+        // Phrases with subject, object, and tense (past, present, future)
+        const phrases = [
+            // PRESENT TENSE (34 phrases)
+            { spanish: 'Te necesito', english: 'I need you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me amas', english: 'You love me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Te quiero', english: 'I love you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Lo veo', english: 'I see him', subject: 'I', object: 'he/she', tense: 'present' },
+            { spanish: 'Nos escuchan', english: 'They hear us', subject: 'they', object: 'we', tense: 'present' },
+            { spanish: 'Me conoces', english: 'You know me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Los necesitamos', english: 'We need them', subject: 'we', object: 'they', tense: 'present' },
+            { spanish: 'Te llamo', english: 'I call you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me ayudas', english: 'You help me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Te extraño', english: 'I miss you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me buscas', english: 'You look for me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Lo escuchamos', english: 'We hear him', subject: 'we', object: 'he/she', tense: 'present' },
+            { spanish: 'Nos ven', english: 'They see us', subject: 'they', object: 'we', tense: 'present' },
+            { spanish: 'Te entiendo', english: 'I understand you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me entiendes', english: 'You understand me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'La quiere', english: 'He loves her', subject: 'he/she', object: 'he/she', tense: 'present' },
+            { spanish: 'Los invitamos', english: 'We invite them', subject: 'we', object: 'they', tense: 'present' },
+            { spanish: 'Te espero', english: 'I wait for you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me esperas', english: 'You wait for me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Nos quieren', english: 'They love us', subject: 'they', object: 'we', tense: 'present' },
+            { spanish: 'Te escucho', english: 'I hear you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me escuchas', english: 'You hear me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Los vemos', english: 'We see them', subject: 'we', object: 'they', tense: 'present' },
+            { spanish: 'Te perdono', english: 'I forgive you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me perdonas', english: 'You forgive me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Lo ayudamos', english: 'We help him', subject: 'we', object: 'he/she', tense: 'present' },
+            { spanish: 'Nos llaman', english: 'They call us', subject: 'they', object: 'we', tense: 'present' },
+            { spanish: 'Te busco', english: 'I look for you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me encuentras', english: 'You find me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'La vemos', english: 'We see her', subject: 'we', object: 'he/she', tense: 'present' },
+            { spanish: 'Nos conocen', english: 'They know us', subject: 'they', object: 'we', tense: 'present' },
+            { spanish: 'Te abrazo', english: 'I hug you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me abrazas', english: 'You hug me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Los oímos', english: 'We hear them', subject: 'we', object: 'they', tense: 'present' },
+            { spanish: 'Te creo', english: 'I believe you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me crees', english: 'You believe me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Lo respetamos', english: 'We respect him', subject: 'we', object: 'he/she', tense: 'present' },
+            { spanish: 'Nos respetan', english: 'They respect us', subject: 'they', object: 'we', tense: 'present' },
+            { spanish: 'Te recuerdo', english: 'I remember you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me recuerdas', english: 'You remember me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'La admiramos', english: 'We admire her', subject: 'we', object: 'he/she', tense: 'present' },
+            { spanish: 'Nos admiran', english: 'They admire us', subject: 'they', object: 'we', tense: 'present' },
+            { spanish: 'Te protejo', english: 'I protect you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me proteges', english: 'You protect me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Lo seguimos', english: 'We follow him', subject: 'we', object: 'he/she', tense: 'present' },
+            { spanish: 'Nos siguen', english: 'They follow us', subject: 'they', object: 'we', tense: 'present' },
+            { spanish: 'Te olvido', english: 'I forget you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me olvidas', english: 'You forget me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Los cuidamos', english: 'We take care of them', subject: 'we', object: 'they', tense: 'present' },
+            { spanish: 'Nos cuidan', english: 'They take care of us', subject: 'they', object: 'we', tense: 'present' },
+            { spanish: 'Te apoyo', english: 'I support you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me apoyas', english: 'You support me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'La elegimos', english: 'We choose her', subject: 'we', object: 'he/she', tense: 'present' },
+            { spanish: 'Nos eligen', english: 'They choose us', subject: 'they', object: 'we', tense: 'present' },
+            { spanish: 'Te saludo', english: 'I greet you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me saludas', english: 'You greet me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Lo dejamos', english: 'We leave him', subject: 'we', object: 'he/she', tense: 'present' },
+            { spanish: 'Nos dejan', english: 'They leave us', subject: 'they', object: 'we', tense: 'present' },
+            { spanish: 'Te molesto', english: 'I bother you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me molestas', english: 'You bother me', subject: 'you', object: 'I', tense: 'present' },
+            { spanish: 'Los acompañamos', english: 'We accompany them', subject: 'we', object: 'they', tense: 'present' },
+            { spanish: 'Nos acompañan', english: 'They accompany us', subject: 'they', object: 'we', tense: 'present' },
+            { spanish: 'Te cuido', english: 'I take care of you', subject: 'I', object: 'you', tense: 'present' },
+            { spanish: 'Me cuidas', english: 'You take care of me', subject: 'you', object: 'I', tense: 'present' },
+
+            // PAST TENSE
+            { spanish: 'Te necesité', english: 'I needed you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me amaste', english: 'You loved me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'Te vi', english: 'I saw you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me llamaste', english: 'You called me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'Lo encontré', english: 'I found him', subject: 'I', object: 'he/she', tense: 'past' },
+            { spanish: 'Nos ayudaron', english: 'They helped us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te esperé', english: 'I waited for you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me escuchaste', english: 'You heard me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'Te quise', english: 'I loved you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me viste', english: 'You saw me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'Lo llamamos', english: 'We called him', subject: 'we', object: 'he/she', tense: 'past' },
+            { spanish: 'Nos vieron', english: 'They saw us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te extrañé', english: 'I missed you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me extrañaste', english: 'You missed me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'La encontramos', english: 'We found her', subject: 'we', object: 'he/she', tense: 'past' },
+            { spanish: 'Nos escucharon', english: 'They heard us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te busqué', english: 'I looked for you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me buscaste', english: 'You looked for me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'Los invitamos', english: 'We invited them', subject: 'we', object: 'they', tense: 'past' },
+            { spanish: 'Nos invitaron', english: 'They invited us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te perdoné', english: 'I forgave you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me perdonaste', english: 'You forgave me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'Lo vimos', english: 'We saw him', subject: 'we', object: 'he/she', tense: 'past' },
+            { spanish: 'Nos quisieron', english: 'They loved us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te abracé', english: 'I hugged you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me abrazaste', english: 'You hugged me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'Los ayudamos', english: 'We helped them', subject: 'we', object: 'they', tense: 'past' },
+            { spanish: 'Nos llamaron', english: 'They called us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te oí', english: 'I heard you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me oíste', english: 'You heard me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'La ayudamos', english: 'We helped her', subject: 'we', object: 'he/she', tense: 'past' },
+            { spanish: 'Nos encontraron', english: 'They found us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te conocí', english: 'I met you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Te creí', english: 'I believed you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me creíste', english: 'You believed me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'Lo respetamos', english: 'We respected him', subject: 'we', object: 'he/she', tense: 'past' },
+            { spanish: 'Nos respetaron', english: 'They respected us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te recordé', english: 'I remembered you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me recordaste', english: 'You remembered me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'La admiramos', english: 'We admired her', subject: 'we', object: 'he/she', tense: 'past' },
+            { spanish: 'Nos admiraron', english: 'They admired us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te protegí', english: 'I protected you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me protegiste', english: 'You protected me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'Lo seguimos', english: 'We followed him', subject: 'we', object: 'he/she', tense: 'past' },
+            { spanish: 'Nos siguieron', english: 'They followed us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te olvidé', english: 'I forgot you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me olvidaste', english: 'You forgot me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'Los cuidamos', english: 'We took care of them', subject: 'we', object: 'they', tense: 'past' },
+            { spanish: 'Nos cuidaron', english: 'They took care of us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te apoyé', english: 'I supported you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me apoyaste', english: 'You supported me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'La elegimos', english: 'We chose her', subject: 'we', object: 'he/she', tense: 'past' },
+            { spanish: 'Nos eligieron', english: 'They chose us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te saludé', english: 'I greeted you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me saludaste', english: 'You greeted me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'Lo dejamos', english: 'We left him', subject: 'we', object: 'he/she', tense: 'past' },
+            { spanish: 'Nos dejaron', english: 'They left us', subject: 'they', object: 'we', tense: 'past' },
+            { spanish: 'Te molesté', english: 'I bothered you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me molestaste', english: 'You bothered me', subject: 'you', object: 'I', tense: 'past' },
+            { spanish: 'Te cuidé', english: 'I took care of you', subject: 'I', object: 'you', tense: 'past' },
+            { spanish: 'Me cuidaste', english: 'You took care of me', subject: 'you', object: 'I', tense: 'past' },
+
+            // FUTURE TENSE
+            { spanish: 'Te necesitaré', english: 'I will need you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me amarás', english: 'You will love me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'Te veré', english: 'I will see you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me llamarás', english: 'You will call me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'Lo encontraremos', english: 'We will find him', subject: 'we', object: 'he/she', tense: 'future' },
+            { spanish: 'Nos verán', english: 'They will see us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te esperaré', english: 'I will wait for you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me escucharás', english: 'You will hear me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'Te perdonaré', english: 'I will forgive you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me perdonarás', english: 'You will forgive me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'La querremos', english: 'We will love her', subject: 'we', object: 'he/she', tense: 'future' },
+            { spanish: 'Nos ayudarán', english: 'They will help us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te extrañaré', english: 'I will miss you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me extrañarás', english: 'You will miss me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'Los invitaremos', english: 'We will invite them', subject: 'we', object: 'they', tense: 'future' },
+            { spanish: 'Nos invitarán', english: 'They will invite us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te buscaré', english: 'I will look for you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me buscarás', english: 'You will look for me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'Lo ayudaremos', english: 'We will help him', subject: 'we', object: 'he/she', tense: 'future' },
+            { spanish: 'Nos escucharán', english: 'They will hear us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te abrazaré', english: 'I will hug you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me abrazarás', english: 'You will hug me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'Los veremos', english: 'We will see them', subject: 'we', object: 'they', tense: 'future' },
+            { spanish: 'Nos querrán', english: 'They will love us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te entenderé', english: 'I will understand you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me entenderás', english: 'You will understand me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'La encontraremos', english: 'We will find her', subject: 'we', object: 'he/she', tense: 'future' },
+            { spanish: 'Nos conocerán', english: 'They will know us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te oiré', english: 'I will hear you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me oirás', english: 'You will hear me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'Los llamaremos', english: 'We will call them', subject: 'we', object: 'they', tense: 'future' },
+            { spanish: 'Nos llamarán', english: 'They will call us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te querré', english: 'I will love you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Te creeré', english: 'I will believe you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me creerás', english: 'You will believe me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'Lo respetaremos', english: 'We will respect him', subject: 'we', object: 'he/she', tense: 'future' },
+            { spanish: 'Nos respetarán', english: 'They will respect us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te recordaré', english: 'I will remember you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me recordarás', english: 'You will remember me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'La admiraremos', english: 'We will admire her', subject: 'we', object: 'he/she', tense: 'future' },
+            { spanish: 'Nos admirarán', english: 'They will admire us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te protegeré', english: 'I will protect you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me protegerás', english: 'You will protect me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'Lo seguiremos', english: 'We will follow him', subject: 'we', object: 'he/she', tense: 'future' },
+            { spanish: 'Nos seguirán', english: 'They will follow us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te olvidaré', english: 'I will forget you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me olvidarás', english: 'You will forget me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'Los cuidaremos', english: 'We will take care of them', subject: 'we', object: 'they', tense: 'future' },
+            { spanish: 'Nos cuidarán', english: 'They will take care of us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te apoyaré', english: 'I will support you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me apoyarás', english: 'You will support me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'La elegiremos', english: 'We will choose her', subject: 'we', object: 'he/she', tense: 'future' },
+            { spanish: 'Nos elegirán', english: 'They will choose us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te saludaré', english: 'I will greet you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me saludarás', english: 'You will greet me', subject: 'you', object: 'I', tense: 'future' },
+            { spanish: 'Lo dejaremos', english: 'We will leave him', subject: 'we', object: 'he/she', tense: 'future' },
+            { spanish: 'Nos dejarán', english: 'They will leave us', subject: 'they', object: 'we', tense: 'future' },
+            { spanish: 'Te cuidaré', english: 'I will take care of you', subject: 'I', object: 'you', tense: 'future' },
+            { spanish: 'Me cuidarás', english: 'You will take care of me', subject: 'you', object: 'I', tense: 'future' }
+        ];
+
+        let currentIndex = 0;
+        let shuffledPhrases = [...phrases];
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        shuffle(shuffledPhrases);
+
+        function resetCircles() {
+            Object.values(circles).forEach(circle => {
+                gsap.to(circle, {
+                    attr: { fill: '#dddddd', r: smallRadius },
+                    duration: 0.3
+                });
+            });
+        }
+
+        function resetTenseZones() {
+            Object.values(tenseZones).forEach(zone => {
+                gsap.to(zone, {
+                    attr: { opacity: 0 },
+                    duration: 0.3
+                });
+            });
+        }
+
+        function flashTense(tense) {
+            const zone = tenseZones[tense];
+            if (zone) {
+                gsap.fromTo(zone,
+                    { attr: { opacity: 0.5 } },
+                    { attr: { opacity: 0 }, duration: 1.2, ease: 'power2.out' }
+                );
+            }
+        }
+
+        function lightUp(label) {
+            const circle = circles[label];
+            if (circle) {
+                gsap.to(circle, {
+                    attr: { fill: circle.dataset.color, r: smallRadius * 1.3 },
+                    duration: 0.4,
+                    ease: 'back.out(1.7)'
+                });
+            }
+        }
+
+        let currentPhrase = null;
+        let showSpanishFirst = true;
+
+        function showPhrase(index) {
+            currentPhrase = shuffledPhrases[index];
+            showSpanishFirst = Math.random() > 0.5;
+
+            // Show question
+            if (showSpanishFirst) {
+                phraseText.textContent = currentPhrase.spanish;
+                translationText.textContent = '?';
+            } else {
+                phraseText.textContent = currentPhrase.english;
+                translationText.textContent = '?';
+            }
+
+            resetCircles();
+            resetTenseZones();
+        }
+
+        function revealAnswer() {
+            if (!currentPhrase) return;
+
+            // Show answer
+            if (showSpanishFirst) {
+                translationText.textContent = currentPhrase.english;
+            } else {
+                translationText.textContent = currentPhrase.spanish;
+            }
+
+            // Serial lighting: subject first, then object, then tense
+            setTimeout(() => {
+                lightUp(currentPhrase.subject);
+            }, 100);
+
+            setTimeout(() => {
+                lightUp(currentPhrase.object);
+            }, 600);
+
+            // Flash tense zone after circles
+            setTimeout(() => {
+                flashTense(currentPhrase.tense);
+            }, 1000);
+        }
+
+        let isRevealed = false;
+        const actionBtn = document.getElementById('actionBtn');
+
+        function updateButtonState() {
+            if (isRevealed) {
+                actionBtn.textContent = 'Next';
+                actionBtn.classList.add('next-state');
+            } else {
+                actionBtn.textContent = 'Reveal';
+                actionBtn.classList.remove('next-state');
+            }
+        }
+
+        actionBtn.addEventListener('click', () => {
+            if (isRevealed) {
+                // Next phrase
+                currentIndex = (currentIndex + 1) % shuffledPhrases.length;
+                if (currentIndex === 0) {
+                    shuffle(shuffledPhrases);
+                }
+                showPhrase(currentIndex);
+                isRevealed = false;
+            } else {
+                // Reveal answer
+                revealAnswer();
+                isRevealed = true;
+            }
+            updateButtonState();
+        });
+
+        // Show first phrase
+        showPhrase(0);
+        updateButtonState();
+    </script>
+</body>
+</html>

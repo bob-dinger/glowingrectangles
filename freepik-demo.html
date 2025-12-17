@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freepik API Demo - Dynamic Icons</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: #252525;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .search-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #333;
+            border-radius: 6px;
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 14px;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #5a6fd6;
+        }
+        button:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .icon-card {
+            background: #252525;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .icon-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .icon-card.selected {
+            border-color: #4CAF50;
+            background: #1a2d1a;
+        }
+        .icon-card .icon-container {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
+        .icon-card .icon-container img {
+            max-width: 64px;
+            max-height: 64px;
+        }
+        .icon-card .icon-name {
+            font-size: 11px;
+            color: #aaa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .icon-card .icon-id {
+            font-size: 10px;
+            color: #555;
+        }
+        .icon-card .icon-style {
+            font-size: 9px;
+            color: #667eea;
+            margin-top: 4px;
+        }
+
+        /* Status */
+        .status {
+            background: #252525;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .status.error {
+            border-left: 4px solid #f44336;
+        }
+        .status.success {
+            border-left: 4px solid #4CAF50;
+        }
+        .status.info {
+            border-left: 4px solid #2196F3;
+        }
+        .status.warning {
+            border-left: 4px solid #FF9800;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: #1a2530;
+            border: 1px solid #2196F3;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .info-box h3 {
+            color: #2196F3;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .info-box ul {
+            margin-left: 20px;
+            color: #aaa;
+        }
+        .info-box li {
+            margin-bottom: 4px;
+        }
+        .info-box code {
+            background: #0d1520;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        /* Code Examples */
+        .code-section {
+            margin-top: 40px;
+        }
+        .code-section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        .code-block {
+            background: #0d0d0d;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        .code-block .comment { color: #6a9955; }
+        .code-block .keyword { color: #569cd6; }
+        .code-block .string { color: #ce9178; }
+        .code-block .function { color: #dcdcaa; }
+
+        /* Selected Preview */
+        .preview-section {
+            background: #252525;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        .preview-section.visible {
+            display: block;
+        }
+        .preview-section h3 {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 15px;
+        }
+        .preview-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .preview-item {
+            text-align: center;
+        }
+        .preview-item img {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .preview-item .size-label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .preview-url {
+            flex: 1;
+            min-width: 300px;
+        }
+        .preview-url input {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #aaa;
+            font-family: monospace;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Freepik Icons API Demo</h1>
+        <p class="subtitle">Search and use PNG icons dynamically in visualizations</p>
+
+        <div class="info-box">
+            <h3>How it works</h3>
+            <ul>
+                <li><strong>PNG thumbnails</strong> (128, 256, 512px) are <strong>free</strong> to use from search results</li>
+                <li><strong>SVG downloads</strong> cost <strong>150 credits</strong> each</li>
+                <li>For visualizations, 512px PNGs work great and cost nothing!</li>
+                <li>Use <code>freepik.searchIcons('term')</code> to search, then grab <code>icon.thumbnails[2].url</code> for 512px</li>
+            </ul>
+        </div>
+
+        <div id="status" class="status info">Ready to search...</div>
+
+        <div class="search-section">
+            <div class="search-row">
+                <input type="text" id="searchInput" placeholder="Search for icons (e.g., cooking, football, arrow, brain)" value="cooking" />
+                <button id="searchBtn">Search</button>
+            </div>
+        </div>
+
+        <div id="preview" class="preview-section">
+            <h3>Selected Icon</h3>
+            <div class="preview-row">
+                <div class="preview-item">
+                    <img id="preview128" width="32" height="32" />
+                    <div class="size-label">128px</div>
+                </div>
+                <div class="preview-item">
+                    <img id="preview256" width="64" height="64" />
+                    <div class="size-label">256px</div>
+                </div>
+                <div class="preview-item">
+                    <img id="preview512" width="128" height="128" />
+                    <div class="size-label">512px</div>
+                </div>
+                <div class="preview-url">
+                    <input type="text" id="previewUrl" readonly onclick="this.select()" />
+                </div>
+            </div>
+        </div>
+
+        <div id="resultsGrid" class="results-grid"></div>
+
+        <div class="code-section">
+            <h2>Usage in Your Visualizations</h2>
+
+            <div class="code-block">
+                <span class="comment">// Include the API utility</span><br>
+                &lt;script src=<span class="string">"freepik-api.js"</span>&gt;&lt;/script&gt;<br><br>
+
+                <span class="comment">// Initialize</span><br>
+                <span class="keyword">const</span> freepik = <span class="keyword">new</span> <span class="function">FreepikAPI</span>(<span class="string">'YOUR_API_KEY'</span>);<br><br>
+
+                <span class="comment">// Search and get icon PNG for a D3 visualization</span><br>
+                <span class="keyword">const</span> result = <span class="keyword">await</span> freepik.<span class="function">searchAndGetIcon</span>(<span class="string">'cooking'</span>);<br>
+                console.log(result.pngUrl); <span class="comment">// 512px PNG URL</span>
+            </div>
+
+            <div class="code-block">
+                <span class="comment">// Use in D3 force diagram</span><br>
+                <span class="keyword">const</span> icons = <span class="keyword">await</span> freepik.<span class="function">batchSearch</span>([<span class="string">'pasta'</span>, <span class="string">'tomato'</span>, <span class="string">'cheese'</span>]);<br><br>
+
+                node.<span class="function">append</span>(<span class="string">'image'</span>)<br>
+                &nbsp;&nbsp;.<span class="function">attr</span>(<span class="string">'href'</span>, d => icons.<span class="function">get</span>(d.name)?.pngUrl)<br>
+                &nbsp;&nbsp;.<span class="function">attr</span>(<span class="string">'width'</span>, 40)<br>
+                &nbsp;&nbsp;.<span class="function">attr</span>(<span class="string">'height'</span>, 40);
+            </div>
+
+            <div class="code-block">
+                <span class="comment">// For recipe visualization - preload ingredient icons</span><br>
+                <span class="keyword">const</span> ingredients = [<span class="string">'egg'</span>, <span class="string">'bacon'</span>, <span class="string">'pepper'</span>, <span class="string">'salt'</span>];<br>
+                <span class="keyword">const</span> iconMap = <span class="keyword">await</span> freepik.<span class="function">batchSearch</span>(ingredients);<br><br>
+
+                <span class="comment">// Add to your boxes</span><br>
+                ingredients.<span class="function">forEach</span>(name => {<br>
+                &nbsp;&nbsp;<span class="keyword">const</span> icon = iconMap.<span class="function">get</span>(name);<br>
+                &nbsp;&nbsp;<span class="keyword">if</span> (icon) {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;document.<span class="function">querySelector</span>(<span class="string">`#\${name}-box img`</span>).src = icon.pngUrl;<br>
+                &nbsp;&nbsp;}<br>
+                });
+            </div>
+        </div>
+    </div>
+
+    <script src="freepik-api.js"></script>
+    <script>
+        const API_KEY = 'FPSX98b5430c546d73ef259e47ed0df6eabd';
+
+        const freepik = new FreepikAPI(API_KEY);
+        const statusEl = document.getElementById('status');
+        const searchBtn = document.getElementById('searchBtn');
+        const searchInput = document.getElementById('searchInput');
+        const resultsGrid = document.getElementById('resultsGrid');
+        const previewSection = document.getElementById('preview');
+
+        let selectedIcon = null;
+
+        async function search() {
+            const query = searchInput.value.trim();
+            if (!query) return;
+
+            searchBtn.disabled = true;
+            resultsGrid.innerHTML = '<div class="loading">Searching...</div>';
+            previewSection.classList.remove('visible');
+
+            try {
+                const icons = await freepik.searchIcons(query, { limit: 24 });
+
+                if (icons.length === 0) {
+                    resultsGrid.innerHTML = '<div class="loading">No icons found</div>';
+                    statusEl.className = 'status warning';
+                    statusEl.textContent = `No icons found for "${query}"`;
+                    return;
+                }
+
+                resultsGrid.innerHTML = '';
+
+                icons.forEach(icon => {
+                    const card = document.createElement('div');
+                    card.className = 'icon-card';
+
+                    const thumbnail = icon.thumbnails?.find(t => t.width === 128) || icon.thumbnails?.[0];
+
+                    card.innerHTML = `
+                        <div class="icon-container">
+                            <img src="${thumbnail?.url || ''}" alt="${icon.name}" />
+                        </div>
+                        <div class="icon-name">${icon.name}</div>
+                        <div class="icon-style">${icon.style?.name || ''}</div>
+                        <div class="icon-id">ID: ${icon.id}</div>
+                    `;
+
+                    card.addEventListener('click', () => selectIcon(icon, card));
+                    resultsGrid.appendChild(card);
+                });
+
+                statusEl.className = 'status success';
+                statusEl.textContent = `Found ${icons.length} icons for "${query}" - click one to see all sizes`;
+
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = `Error: ${error.message}`;
+                resultsGrid.innerHTML = '';
+            } finally {
+                searchBtn.disabled = false;
+            }
+        }
+
+        function selectIcon(icon, card) {
+            // Update selection UI
+            document.querySelectorAll('.icon-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+
+            // Show preview
+            previewSection.classList.add('visible');
+            selectedIcon = icon;
+
+            // Get thumbnail URLs
+            const t128 = icon.thumbnails?.find(t => t.width === 128)?.url;
+            const t256 = icon.thumbnails?.find(t => t.width === 256)?.url;
+            const t512 = icon.thumbnails?.find(t => t.width === 512)?.url;
+
+            document.getElementById('preview128').src = t128 || '';
+            document.getElementById('preview256').src = t256 || '';
+            document.getElementById('preview512').src = t512 || '';
+            document.getElementById('previewUrl').value = t512 || t256 || t128 || '';
+
+            statusEl.className = 'status success';
+            statusEl.textContent = `Selected: ${icon.name} (ID: ${icon.id}) - Copy the URL to use in your code!`;
+        }
+
+        // Event listeners
+        searchBtn.addEventListener('click', search);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') search();
+        });
+
+        // Initial search
+        search();
+    </script>
+</body>
+</html>

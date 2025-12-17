@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetric Normal Distribution Tower 1</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        #container {
+            width: 600px;
+            margin: 0 auto;
+        }
+        svg {
+            border: 1px solid #333;
+            width: 600px;
+            height: 600px;
+            background-color: #0a0a0a;
+            border-radius: 8px;
+        }
+        circle {
+            opacity: 0.85;
+        }
+        circle:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Symmetric Normal Distribution - Attempt 1</h1>
+    <p class="description">Perfectly symmetric - 1 center column, equal columns on each side</p>
+    <div id="container">
+        <svg></svg>
+    </div>
+
+    <script>
+        // Create a symmetric distribution
+        // Let's use 41 columns for better fit in 600px
+        const numColumns = 41;
+        const centerIdx = 20; // Middle column (0-indexed)
+
+        let tower = [];
+
+        // Build symmetric tower
+        for (let i = 0; i < numColumns; i++) {
+            const distFromCenter = Math.abs(i - centerIdx);
+            // Quadratic falloff from center
+            const height = Math.max(0, 40 - Math.pow(distFromCenter, 2) / 2);
+            tower.push(Math.round(height));
+        }
+
+        const totalDots = tower.reduce((sum, count) => sum + count, 0);
+        const dotsPerSide = Math.floor(totalDots * 0.05);
+
+        console.log(`Total dots: ${totalDots}`);
+        console.log(`Center column (index ${centerIdx}): ${tower[centerIdx]} dots`);
+        console.log(`Each red side: ${dotsPerSide} dots (5%)`);
+
+        let svg = document.querySelector('svg');
+        let dotCounter = 0;
+
+        tower.forEach((dots, columnIdx) => {
+            for (let i = 0; i < dots; i++) {
+                let circle = document.createElementNS('http://www.w3.org/2000/svg', "circle");
+                circle.setAttribute("r", 5);
+                circle.setAttribute("cx", (columnIdx * 14) + 20);
+                circle.setAttribute("cy", 580 - (i * 14));
+                circle.setAttribute("class", `column${columnIdx}`);
+
+                // Color coding
+                if (dotCounter < dotsPerSide) {
+                    circle.setAttribute("fill", "#EF4444");
+                } else if (dotCounter >= totalDots - dotsPerSide) {
+                    circle.setAttribute("fill", "#EF4444");
+                } else {
+                    circle.setAttribute("fill", "#6B7280");
+                }
+
+                svg.prepend(circle);
+                dotCounter++;
+            }
+        });
+
+        // Mark center
+        const centerX = (centerIdx * 14) + 20;
+        let line = document.createElementNS('http://www.w3.org/2000/svg', "line");
+        line.setAttribute("x1", centerX);
+        line.setAttribute("y1", 585);
+        line.setAttribute("x2", centerX);
+        line.setAttribute("y2", 595);
+        line.setAttribute("stroke", "#8B5CF6");
+        line.setAttribute("stroke-width", 2);
+        svg.appendChild(line);
+    </script>
+</body>
+</html>

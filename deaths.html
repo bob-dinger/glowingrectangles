@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Actually Kills Us - One Year in America</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: normal;
+        }
+
+        .tagline {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .intro {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .link-card {
+            display: flex;
+            align-items: center;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 25px 30px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .link-card:hover {
+            border-color: #444;
+            transform: translateX(5px);
+        }
+
+        .dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 25px;
+            flex-shrink: 0;
+        }
+
+        .link-info {
+            flex-grow: 1;
+        }
+
+        .link-title {
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .link-stat {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .link-count {
+            font-size: 24px;
+            color: #444;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+        }
+
+        .overdose .dot { background: #8b5cf6; }
+        .overdose:hover { border-color: #8b5cf6; }
+        .overdose:hover .link-count { color: #8b5cf6; }
+
+        .suicide .dot { background: #3b82f6; }
+        .suicide:hover { border-color: #3b82f6; }
+        .suicide:hover .link-count { color: #3b82f6; }
+
+        .car .dot { background: #f97316; }
+        .car:hover { border-color: #f97316; }
+        .car:hover .link-count { color: #f97316; }
+
+        .homicide .dot { background: #ef4444; }
+        .homicide:hover { border-color: #ef4444; }
+        .homicide:hover .link-count { color: #ef4444; }
+
+        .footnote {
+            text-align: center;
+            color: #444;
+            font-size: 12px;
+            margin-top: 40px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #555;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .back-link:hover {
+            color: #888;
+        }
+
+        .summary {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #111;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+
+        .summary-stat {
+            font-size: 28px;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            font-size: 13px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>What Actually Kills Us</h1>
+            <p class="tagline">One year in America. Each dot is one person.</p>
+        </header>
+
+        <p class="intro">
+            These four causes kill 219,000+ Americans every year.<br>
+            Click each to see every single death as a dot — same scale, same size.
+        </p>
+
+        <div class="links">
+            <a href="d3-overdose-year.html" class="link-card overdose">
+                <div class="dot"></div>
+                <div class="link-info">
+                    <div class="link-title">Overdose</div>
+                    <div class="link-stat">Leading cause of death for ages 18-44</div>
+                </div>
+                <div class="link-count">105,040</div>
+            </a>
+
+            <a href="d3-suicide-year.html" class="link-card suicide">
+                <div class="dot"></div>
+                <div class="link-info">
+                    <div class="link-title">Suicide</div>
+                    <div class="link-stat">One death every 11 minutes</div>
+                </div>
+                <div class="link-count">49,348</div>
+            </a>
+
+            <a href="d3-car-crashes-year.html" class="link-card car">
+                <div class="dot"></div>
+                <div class="link-info">
+                    <div class="link-title">Car Crashes</div>
+                    <div class="link-stat">Leading cause of death for ages 5-22</div>
+                </div>
+                <div class="link-count">40,924</div>
+            </a>
+
+            <a href="d3-homicide-year.html" class="link-card homicide">
+                <div class="dot"></div>
+                <div class="link-info">
+                    <div class="link-title">Homicide</div>
+                    <div class="link-stat">Dominates the news cycle</div>
+                </div>
+                <div class="link-count">24,024</div>
+            </a>
+        </div>
+
+        <div class="summary">
+            <div class="summary-stat">219,336</div>
+            <div class="summary-label">Total deaths from these four causes in 2023</div>
+        </div>
+
+        <div class="footnote">
+            Data: CDC 2023 (overdose, suicide), NHTSA 2023 (car crashes), FBI/CDC 2023 (homicide)
+        </div>
+
+        <a href="index.html" class="back-link">← Back to Glowing Gardens</a>
+    </div>
+</body>
+</html>

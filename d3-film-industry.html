@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Film Industry Connections</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .description {
+            color: #aaaaaa;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        #canvas {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #aaa;
+        }
+        .legend-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            border: 1px solid #444;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .tooltip .role {
+            color: #888;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <h1>Film Industry Connections</h1>
+    <p class="description">Who knows who, who mingles with who, who wants to know who</p>
+    <svg id="canvas" width="800" height="700"></svg>
+    <div class="legend"></div>
+    <div class="tooltip"></div>
+
+    <script>
+        const svg = d3.select('#canvas');
+        const width = 800;
+        const height = 700;
+        const tooltip = d3.select('.tooltip');
+
+        // Role definitions with colors and base influence
+        const roles = {
+            'A-List Actor': { color: '#FFD700', baseInfluence: 40, count: 3 },
+            'Working Actor': { color: '#FFA500', baseInfluence: 15, count: 8 },
+            'Aspiring Actor': { color: '#CD853F', baseInfluence: 6, count: 10 },
+            'Director': { color: '#EF4444', baseInfluence: 30, count: 5 },
+            'Showrunner': { color: '#F97316', baseInfluence: 28, count: 3 },
+            'Staff Writer': { color: '#FB923C', baseInfluence: 12, count: 6 },
+            'Studio Executive': { color: '#8B5CF6', baseInfluence: 35, count: 4 },
+            'Producer': { color: '#A855F7', baseInfluence: 25, count: 6 },
+            'Casting Director': { color: '#22C55E', baseInfluence: 20, count: 4 },
+            'Agent': { color: '#3B82F6', baseInfluence: 22, count: 5 },
+            'Financier': { color: '#EC4899', baseInfluence: 30, count: 3 }
+        };
+
+        // Generate nodes
+        const nodes = [];
+        let id = 0;
+
+        Object.entries(roles).forEach(([role, config]) => {
+            for (let i = 0; i < config.count; i++) {
+                const variance = (Math.random() - 0.5) * config.baseInfluence * 0.3;
+                nodes.push({
+                    id: id++,
+                    role: role,
+                    name: `${role} ${i + 1}`,
+                    radius: config.baseInfluence + variance,
+                    color: config.color
+                });
+            }
+        });
+
+        // Define connection rules
+        // Returns: { strength: 0-1, type: 'knows'|'mingles'|'wants' }
+        function getConnectionType(source, target) {
+            const s = source.role;
+            const t = target.role;
+
+            // Same role - they mingle
+            if (s === t) {
+                return { strength: 0.6, type: 'mingles' };
+            }
+
+            // A-List actors - everyone wants to know them
+            if (t === 'A-List Actor' && s !== 'A-List Actor') {
+                if (['Director', 'Studio Executive', 'Producer', 'Showrunner'].includes(s)) {
+                    return { strength: 0.8, type: 'knows' };
+                }
+                return { strength: 0.3, type: 'wants' };
+            }
+
+            // Directors and Actors work together
+            if ((s === 'Director' && t.includes('Actor')) || (t === 'Director' && s.includes('Actor'))) {
+                if (t === 'Aspiring Actor' || s === 'Aspiring Actor') {
+                    return { strength: 0.2, type: 'wants' };
+                }
+                return { strength: 0.7, type: 'knows' };
+            }
+
+            // Casting Directors - gatekeepers for actors
+            if (s === 'Casting Director' && t.includes('Actor')) {
+                return { strength: 0.8, type: 'knows' };
+            }
+            if (s.includes('Actor') && t === 'Casting Director') {
+                if (s === 'A-List Actor') return { strength: 0.5, type: 'knows' };
+                return { strength: 0.7, type: 'wants' };
+            }
+
+            // Agents represent talent
+            if (s === 'Agent' && (t.includes('Actor') || t === 'Director' || t.includes('Writer'))) {
+                return { strength: 0.7, type: 'knows' };
+            }
+
+            // Studio Execs and money people
+            if (s === 'Studio Executive' && ['Director', 'Producer', 'A-List Actor', 'Financier'].includes(t)) {
+                return { strength: 0.8, type: 'knows' };
+            }
+            if (s === 'Financier' && ['Studio Executive', 'Producer'].includes(t)) {
+                return { strength: 0.9, type: 'knows' };
+            }
+
+            // Producers connect to everyone above the line
+            if (s === 'Producer' && ['Director', 'A-List Actor', 'Working Actor', 'Showrunner', 'Studio Executive'].includes(t)) {
+                return { strength: 0.7, type: 'knows' };
+            }
+
+            // Writers and Showrunners
+            if (s === 'Staff Writer' && t === 'Showrunner') {
+                return { strength: 0.8, type: 'knows' };
+            }
+            if (s === 'Showrunner' && ['Studio Executive', 'Director', 'Producer'].includes(t)) {
+                return { strength: 0.7, type: 'knows' };
+            }
+
+            // Aspiring actors want to know everyone
+            if (s === 'Aspiring Actor') {
+                return { strength: 0.2, type: 'wants' };
+            }
+
+            // Default - weak mingling
+            return { strength: 0.1, type: 'mingles' };
+        }
+
+        // Generate links based on connection rules
+        const links = [];
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                const conn = getConnectionType(nodes[i], nodes[j]);
+                // Only create link if strength > threshold and random chance
+                if (conn.strength > 0.15 && Math.random() < conn.strength) {
+                    links.push({
+                        source: nodes[i],
+                        target: nodes[j],
+                        type: conn.type,
+                        strength: conn.strength
+                    });
+                }
+            }
+        }
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('link', d3.forceLink(links).id(d => d.id).distance(d => {
+                // Closer = stronger connection
+                return 150 - d.strength * 80;
+            }).strength(d => d.strength * 0.5))
+            .force('charge', d3.forceManyBody().strength(d => -Math.pow(d.radius, 1.5) * 2))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 5));
+
+        // Draw links
+        const link = svg.append('g')
+            .selectAll('line')
+            .data(links)
+            .join('line')
+            .attr('stroke', d => {
+                if (d.type === 'knows') return '#666';
+                if (d.type === 'mingles') return '#444';
+                return '#333';
+            })
+            .attr('stroke-width', d => d.strength * 2)
+            .attr('stroke-dasharray', d => {
+                if (d.type === 'wants') return '3,3';
+                if (d.type === 'mingles') return '1,2';
+                return null;
+            })
+            .attr('opacity', d => d.type === 'wants' ? 0.4 : 0.6);
+
+        // Draw nodes
+        const node = svg.append('g')
+            .selectAll('circle')
+            .data(nodes)
+            .join('circle')
+            .attr('r', d => d.radius)
+            .attr('fill', d => d.color)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 1.5)
+            .attr('cursor', 'pointer')
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        // Hover effects
+        node.on('mouseover', function(event, d) {
+            // Highlight connected nodes
+            const connected = new Set();
+            links.forEach(l => {
+                if (l.source.id === d.id) connected.add(l.target.id);
+                if (l.target.id === d.id) connected.add(l.source.id);
+            });
+
+            node.attr('opacity', n => n.id === d.id || connected.has(n.id) ? 1 : 0.2);
+            link.attr('opacity', l =>
+                l.source.id === d.id || l.target.id === d.id ? 0.8 : 0.05
+            );
+
+            // Show tooltip
+            tooltip
+                .style('opacity', 1)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px')
+                .html(`<div class="role">${d.role}</div>${d.name}<br><small>${connected.size} connections</small>`);
+        })
+        .on('mouseout', function() {
+            node.attr('opacity', 1);
+            link.attr('opacity', d => d.type === 'wants' ? 0.4 : 0.6);
+            tooltip.style('opacity', 0);
+        });
+
+        // Update positions on tick
+        simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            node
+                .attr('cx', d => d.x = Math.max(d.radius, Math.min(width - d.radius, d.x)))
+                .attr('cy', d => d.y = Math.max(d.radius, Math.min(height - d.radius, d.y)));
+        });
+
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // Build legend
+        const legendContainer = d3.select('.legend');
+        Object.entries(roles).forEach(([role, config]) => {
+            const item = legendContainer.append('div').attr('class', 'legend-item');
+            item.append('div')
+                .attr('class', 'legend-circle')
+                .style('background-color', config.color);
+            item.append('span').text(role);
+        });
+    </script>
+</body>
+</html>

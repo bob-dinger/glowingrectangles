@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3 Kids, 30 Minutes Each</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+            max-width: 550px;
+            line-height: 1.5;
+        }
+        #vis {
+            width: 600px;
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 600px;
+            height: 600px;
+        }
+        text {
+            pointer-events: none;
+            font-family: 'Arial', sans-serif;
+        }
+        .insight {
+            color: #888;
+            font-size: 13px;
+            margin-top: 15px;
+            max-width: 500px;
+            text-align: center;
+            line-height: 1.7;
+        }
+        .highlight {
+            color: #F59E0B;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>A Teacher's Day: 5 Hours, 30 Kids</h1>
+    <p class="description">
+        Each child's theoretical share: 10 minutes. But that 1-on-1 time never actually happens.<br>
+        <span style="color: #F59E0B;">The gold borders show kids who could receive 30 minutes from a volunteer — 3× more than the impossible.</span>
+    </p>
+    <div id="vis"></div>
+    <p class="insight">
+        <span class="highlight">30 minutes of reading, once a week.</span><br>
+        More than a teacher can ever give.
+    </p>
+
+    <script>
+        const width = 600;
+        const height = 600;
+
+        const numKids = 30;
+        const teacherMinutes = 300;
+        const kidMinutes = 10;
+
+        const scale = 9;
+        const teacherRadius = Math.sqrt(teacherMinutes) * scale;
+        const kidRadius = Math.sqrt(kidMinutes) * scale;
+
+        // 3 kids get highlighted with gold border
+        const highlightedKids = [7, 15, 23];
+
+        // Create nodes
+        const nodes = [];
+
+        // Teacher node - fixed at center
+        nodes.push({
+            id: 'teacher',
+            type: 'teacher',
+            radius: teacherRadius,
+            label: '5 hrs',
+            x: width / 2,
+            y: height / 2,
+            fx: width / 2,
+            fy: height / 2
+        });
+
+        // Kid nodes - all identical except border
+        for (let i = 0; i < numKids; i++) {
+            nodes.push({
+                id: i + 1,
+                type: 'kid',
+                radius: kidRadius,
+                label: '10 min',
+                highlighted: highlightedKids.includes(i),
+                x: Math.random() * width,
+                y: Math.random() * height
+            });
+        }
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Create groups for each bubble
+        const elements = svg.selectAll('.bubble-group')
+            .data(nodes, d => d.id)
+            .enter()
+            .append('g')
+            .attr('class', 'bubble-group');
+
+        // Add circles
+        const bubbles = elements
+            .append('circle')
+            .attr('r', d => d.radius)
+            .attr('fill', d => {
+                if (d.type === 'teacher') return '#10B981';
+                if (d.highlighted) return '#F59E0B';
+                return '#3B82F6';
+            })
+            .attr('stroke', '#fff')
+            .attr('stroke-width', d => d.highlighted ? 3 : 1.5)
+            .attr('opacity', d => d.highlighted ? 1 : 0.7);
+
+        // Add labels
+        const labels = elements
+            .append('text')
+            .attr('dy', '.35em')
+            .style('text-anchor', 'middle')
+            .style('font-size', d => d.type === 'teacher' ? '14px' : '9px')
+            .style('font-weight', 'bold')
+            .style('fill', '#fff')
+            .text(d => d.label);
+
+        // Charge function
+        function charge(d) {
+            return -Math.pow(d.radius, 2.0) * 0.03;
+        }
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(charge))
+            .force('x', d3.forceX().strength(0.05).x(width / 2))
+            .force('y', d3.forceY().strength(0.05).y(height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 3))
+            .on('tick', ticked);
+
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrition Visualizer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+        #canvas {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        .food-list {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            width: 280px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .food-list h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #888;
+        }
+        .food-item {
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .food-item:hover {
+            background-color: #2a2a2a;
+            border-color: #555;
+        }
+        .food-item.selected {
+            background-color: #1e3a5f;
+            border-color: #3B82F6;
+        }
+        .legend {
+            display: flex;
+            gap: 25px;
+            margin-top: 20px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+        .legend-dot.protein { background-color: #EF4444; }
+        .legend-dot.carbs { background-color: #F59E0B; }
+        .legend-dot.fat { background-color: #3B82F6; }
+        .info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #888;
+        }
+        .bubble-label {
+            font-size: 12px;
+            font-weight: bold;
+            fill: #fff;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Macronutrient Visualizer</h1>
+
+    <div class="container">
+        <div>
+            <svg id="canvas" width="600" height="600"></svg>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot protein"></div>
+                    <span>Protein</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot carbs"></div>
+                    <span>Carbs</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot fat"></div>
+                    <span>Fat</span>
+                </div>
+            </div>
+            <div class="info">Bubble size = grams of each macronutrient</div>
+        </div>
+
+        <div class="food-list">
+            <h2>Click a food item</h2>
+            <div id="food-items"></div>
+        </div>
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 600;
+
+        // Food data: { name, protein (g), carbs (g), fat (g) }
+        const foods = [
+            // Proteins
+            { name: '1 large egg', protein: 6, carbs: 0.5, fat: 5 },
+            { name: '1 lb ground beef (80/20)', protein: 77, carbs: 0, fat: 92 },
+            { name: '1 lb ground beef (90/10)', protein: 88, carbs: 0, fat: 45 },
+            { name: '1 lb chicken breast', protein: 140, carbs: 0, fat: 14 },
+            { name: '1 lb chicken thigh', protein: 90, carbs: 0, fat: 40 },
+            { name: '1 lb pork loin', protein: 100, carbs: 0, fat: 36 },
+            { name: '1 lb bacon', protein: 52, carbs: 2, fat: 180 },
+            { name: '1 lb salmon', protein: 91, carbs: 0, fat: 59 },
+            { name: '1 lb shrimp', protein: 99, carbs: 1, fat: 5 },
+            { name: '1 can tuna (5oz)', protein: 25, carbs: 0, fat: 1 },
+            { name: '1 lb turkey breast', protein: 133, carbs: 0, fat: 7 },
+            { name: '1 lb steak (ribeye)', protein: 85, carbs: 0, fat: 90 },
+            { name: '1 lb tofu', protein: 36, carbs: 8, fat: 20 },
+
+            // Dairy
+            { name: '1 cup whole milk', protein: 8, carbs: 12, fat: 8 },
+            { name: '1 cup Greek yogurt', protein: 17, carbs: 6, fat: 5 },
+            { name: '1 oz cheddar cheese', protein: 7, carbs: 0.4, fat: 9 },
+            { name: '1 stick butter (113g)', protein: 1, carbs: 0, fat: 92 },
+            { name: '1 cup cottage cheese', protein: 28, carbs: 6, fat: 5 },
+            { name: '1 cup heavy cream', protein: 5, carbs: 7, fat: 88 },
+
+            // Grains & Starches
+            { name: '1 cup flour', protein: 13, carbs: 95, fat: 1 },
+            { name: '1 cup white rice (cooked)', protein: 4, carbs: 45, fat: 0.4 },
+            { name: '1 cup brown rice (cooked)', protein: 5, carbs: 45, fat: 2 },
+            { name: '1 cup oatmeal (cooked)', protein: 6, carbs: 27, fat: 4 },
+            { name: '1 cup pasta (cooked)', protein: 8, carbs: 43, fat: 1 },
+            { name: '1 slice bread', protein: 4, carbs: 15, fat: 1 },
+            { name: '1 medium potato', protein: 4, carbs: 37, fat: 0 },
+            { name: '1 cup quinoa (cooked)', protein: 8, carbs: 39, fat: 4 },
+
+            // Fruits
+            { name: '1 banana', protein: 1, carbs: 27, fat: 0.3 },
+            { name: '1 apple', protein: 0.5, carbs: 25, fat: 0.3 },
+            { name: '1 orange', protein: 1, carbs: 15, fat: 0.2 },
+            { name: '1 cup strawberries', protein: 1, carbs: 12, fat: 0.5 },
+            { name: '1 avocado', protein: 4, carbs: 17, fat: 30 },
+            { name: '1 cup grapes', protein: 1, carbs: 27, fat: 0.3 },
+            { name: '1 cup blueberries', protein: 1, carbs: 21, fat: 0.5 },
+
+            // Vegetables
+            { name: '1 cup broccoli', protein: 3, carbs: 6, fat: 0.3 },
+            { name: '1 cup spinach', protein: 1, carbs: 1, fat: 0.1 },
+            { name: '1 cup carrots', protein: 1, carbs: 12, fat: 0.3 },
+            { name: '1 cup corn', protein: 5, carbs: 31, fat: 2 },
+            { name: '1 cup sweet potato', protein: 4, carbs: 41, fat: 0 },
+
+            // Nuts & Seeds
+            { name: '1 cup almonds', protein: 30, carbs: 28, fat: 71 },
+            { name: '1 cup peanuts', protein: 38, carbs: 24, fat: 72 },
+            { name: '2 tbsp peanut butter', protein: 8, carbs: 6, fat: 16 },
+            { name: '1 cup walnuts', protein: 18, carbs: 16, fat: 78 },
+            { name: '1/4 cup chia seeds', protein: 6, carbs: 16, fat: 12 },
+
+            // Oils & Fats
+            { name: '1 tbsp olive oil', protein: 0, carbs: 0, fat: 14 },
+            { name: '1 tbsp coconut oil', protein: 0, carbs: 0, fat: 14 },
+            { name: '1 tbsp vegetable oil', protein: 0, carbs: 0, fat: 14 },
+
+            // Legumes
+            { name: '1 cup black beans', protein: 15, carbs: 41, fat: 1 },
+            { name: '1 cup lentils (cooked)', protein: 18, carbs: 40, fat: 1 },
+            { name: '1 cup chickpeas', protein: 15, carbs: 45, fat: 4 },
+
+            // Sweets & Snacks
+            { name: '1 cup sugar', protein: 0, carbs: 200, fat: 0 },
+            { name: '1 Snickers bar', protein: 4, carbs: 35, fat: 14 },
+            { name: '1 glazed donut', protein: 2, carbs: 25, fat: 14 },
+            { name: '1 cup ice cream', protein: 5, carbs: 32, fat: 15 },
+
+            // Beverages
+            { name: '1 can Coca-Cola (12oz)', protein: 0, carbs: 39, fat: 0 },
+            { name: '1 cup orange juice', protein: 2, carbs: 26, fat: 0.5 },
+            { name: '1 beer (12oz)', protein: 2, carbs: 13, fat: 0 }
+        ];
+
+        const svg = d3.select('#canvas');
+
+        const colors = {
+            protein: '#EF4444',
+            carbs: '#F59E0B',
+            fat: '#3B82F6'
+        };
+
+        // Create food list
+        const foodListContainer = document.getElementById('food-items');
+        foods.forEach((food, index) => {
+            const item = document.createElement('div');
+            item.className = 'food-item';
+            item.textContent = food.name;
+            item.addEventListener('click', () => selectFood(index));
+            foodListContainer.appendChild(item);
+        });
+
+        let simulation = null;
+
+        function selectFood(index) {
+            // Update selection UI
+            document.querySelectorAll('.food-item').forEach((el, i) => {
+                el.classList.toggle('selected', i === index);
+            });
+
+            const food = foods[index];
+            renderBubbles(food);
+        }
+
+        function renderBubbles(food) {
+            svg.selectAll('*').remove();
+
+            // Calculate radius based on grams (sqrt scale for area)
+            const maxGrams = Math.max(food.protein, food.carbs, food.fat, 1);
+            const scale = d3.scaleSqrt()
+                .domain([0, Math.max(maxGrams, 50)])
+                .range([0, 120]);
+
+            const nodes = [
+                { id: 'protein', label: 'Protein', value: food.protein, radius: Math.max(scale(food.protein), 5), color: colors.protein },
+                { id: 'carbs', label: 'Carbs', value: food.carbs, radius: Math.max(scale(food.carbs), 5), color: colors.carbs },
+                { id: 'fat', label: 'Fat', value: food.fat, radius: Math.max(scale(food.fat), 5), color: colors.fat }
+            ].filter(n => n.value > 0);
+
+            // Set initial positions
+            nodes.forEach((n, i) => {
+                n.x = width / 2 + (Math.random() - 0.5) * 100;
+                n.y = height / 2 + (Math.random() - 0.5) * 100;
+            });
+
+            // Create groups
+            const groups = svg.selectAll('g')
+                .data(nodes)
+                .enter()
+                .append('g');
+
+            // Add circles
+            const bubbles = groups.append('circle')
+                .attr('r', d => d.radius)
+                .attr('fill', d => d.color)
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2)
+                .attr('opacity', 0.9);
+
+            // Add labels
+            const labels = groups.append('text')
+                .attr('class', 'bubble-label')
+                .attr('text-anchor', 'middle')
+                .attr('dy', -5)
+                .text(d => d.label);
+
+            // Add value labels
+            const values = groups.append('text')
+                .attr('class', 'bubble-label')
+                .attr('text-anchor', 'middle')
+                .attr('dy', 12)
+                .text(d => `${d.value}g`);
+
+            // Stop previous simulation
+            if (simulation) simulation.stop();
+
+            // Create force simulation
+            simulation = d3.forceSimulation(nodes)
+                .force('charge', d3.forceManyBody().strength(d => -Math.pow(d.radius, 2) * 0.05))
+                .force('x', d3.forceX(width / 2).strength(0.1))
+                .force('y', d3.forceY(height / 2).strength(0.1))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 10))
+                .on('tick', () => {
+                    groups.attr('transform', d => `translate(${d.x}, ${d.y})`);
+                });
+        }
+
+        // Select first food by default
+        selectFood(0);
+    </script>
+</body>
+</html>

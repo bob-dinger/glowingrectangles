@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Verb Gradients</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        /* Gradient Row */
+        .gradient-row {
+            margin-bottom: 35px;
+            background: #0a0a0a;
+            border-radius: 12px;
+            padding: 25px 30px;
+            border: 1px solid #252525;
+        }
+        .gradient-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .gradient-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #666;
+        }
+        .gradient-label-left,
+        .gradient-label-right {
+            font-size: 11px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* The gradient bar */
+        .gradient-bar-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .gradient-bar {
+            height: 8px;
+            border-radius: 4px;
+            position: relative;
+        }
+        .gradient-icons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .gradient-icon {
+            width: 40px;
+            height: 40px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #333;
+        }
+        .gradient-icon img {
+            width: 28px;
+            height: 28px;
+        }
+        .gradient-icon.loading {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Verb markers on the gradient */
+        .verbs-row {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            padding: 0 20px;
+        }
+        .verb-marker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex: 1;
+        }
+        .verb-marker:hover {
+            transform: translateY(-3px);
+        }
+        .verb-marker:hover .verb-dot {
+            transform: scale(1.3);
+        }
+        .verb-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: transform 0.2s;
+        }
+        .verb-spanish {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            text-align: center;
+        }
+        .verb-english {
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid #444;
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            max-width: 300px;
+            z-index: 1000;
+        }
+        .tooltip .spanish {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .tooltip .english {
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        .tooltip .intensity {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+        }
+        .tooltip .example {
+            font-style: italic;
+            color: #888;
+            font-size: 12px;
+        }
+        .tooltip .example-trans {
+            color: #555;
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        /* Loading status */
+        .loading-status {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #888;
+            border: 1px solid #333;
+            transition: opacity 0.3s;
+        }
+
+        .info {
+            text-align: center;
+            font-size: 12px;
+            color: #555;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Spanish Verb Gradients</h1>
+        <p class="subtitle">Intensity spectrums — from subtle to extreme</p>
+
+        <div id="gradients"></div>
+
+        <div class="info">Click any verb to hear pronunciation</div>
+    </div>
+
+    <div class="tooltip"></div>
+    <div id="loadingStatus" class="loading-status">Loading icons...</div>
+
+    <script src="freepik-api.js"></script>
+    <script>
+        const gradients = [
+            {
+                id: 'volume',
+                title: 'Volume / Sound',
+                leftLabel: 'Quiet',
+                rightLabel: 'Loud',
+                leftIcon: 'silence quiet',
+                rightIcon: 'megaphone loud',
+                color: ['#3B82F6', '#EF4444'],
+                verbs: [
+                    { spanish: 'susurrar', english: 'to whisper', intensity: 1, example: 'Me susurró un secreto', exampleEn: 'She whispered a secret to me' },
+                    { spanish: 'murmurar', english: 'to murmur', intensity: 2, example: 'Murmuró algo inaudible', exampleEn: 'He murmured something inaudible' },
+                    { spanish: 'hablar', english: 'to speak', intensity: 3, example: 'Habla más claro', exampleEn: 'Speak more clearly' },
+                    { spanish: 'gritar', english: 'to shout', intensity: 4, example: '¡No me grites!', exampleEn: "Don't shout at me!" },
+                    { spanish: 'chillar', english: 'to scream', intensity: 5, example: 'Chilló de terror', exampleEn: 'She screamed in terror' }
+                ]
+            },
+            {
+                id: 'speed',
+                title: 'Speed / Movement',
+                leftLabel: 'Slow',
+                rightLabel: 'Fast',
+                leftIcon: 'turtle slow',
+                rightIcon: 'rocket fast',
+                color: ['#22C55E', '#F59E0B'],
+                verbs: [
+                    { spanish: 'gatear', english: 'to crawl', intensity: 1, example: 'El bebé gatea por el suelo', exampleEn: 'The baby crawls on the floor' },
+                    { spanish: 'caminar', english: 'to walk', intensity: 2, example: 'Camino al trabajo', exampleEn: 'I walk to work' },
+                    { spanish: 'trotar', english: 'to jog', intensity: 3, example: 'Trota por el parque', exampleEn: 'She jogs through the park' },
+                    { spanish: 'correr', english: 'to run', intensity: 4, example: '¡Corre más rápido!', exampleEn: 'Run faster!' },
+                    { spanish: 'esprintar', english: 'to sprint', intensity: 5, example: 'Esprintó hacia la meta', exampleEn: 'He sprinted to the finish' }
+                ]
+            },
+            {
+                id: 'vision',
+                title: 'Vision / Attention',
+                leftLabel: 'Brief',
+                rightLabel: 'Intense',
+                leftIcon: 'eye blink',
+                rightIcon: 'binoculars focus',
+                color: ['#8B5CF6', '#EC4899'],
+                verbs: [
+                    { spanish: 'ojear', english: 'to glance', intensity: 1, example: 'Ojeó el menú rápidamente', exampleEn: 'She glanced at the menu quickly' },
+                    { spanish: 'mirar', english: 'to look', intensity: 2, example: 'Mírame a los ojos', exampleEn: 'Look me in the eyes' },
+                    { spanish: 'observar', english: 'to observe', intensity: 3, example: 'Observa los detalles', exampleEn: 'Observe the details' },
+                    { spanish: 'contemplar', english: 'to contemplate', intensity: 4, example: 'Contempló el atardecer', exampleEn: 'He contemplated the sunset' },
+                    { spanish: 'escudriñar', english: 'to scrutinize', intensity: 5, example: 'Escudriñó cada palabra', exampleEn: 'She scrutinized every word' }
+                ]
+            },
+            {
+                id: 'emotion',
+                title: 'Affection / Love',
+                leftLabel: 'Mild',
+                rightLabel: 'Intense',
+                leftIcon: 'like thumb',
+                rightIcon: 'heart love',
+                color: ['#F472B6', '#DC2626'],
+                verbs: [
+                    { spanish: 'gustar', english: 'to like', intensity: 1, example: 'Me gusta el café', exampleEn: 'I like coffee' },
+                    { spanish: 'apreciar', english: 'to appreciate', intensity: 2, example: 'Aprecio tu ayuda', exampleEn: 'I appreciate your help' },
+                    { spanish: 'querer', english: 'to love/want', intensity: 3, example: 'Te quiero mucho', exampleEn: 'I love you a lot' },
+                    { spanish: 'amar', english: 'to love deeply', intensity: 4, example: 'Te amo con todo mi corazón', exampleEn: 'I love you with all my heart' },
+                    { spanish: 'adorar', english: 'to adore', intensity: 5, example: 'Adoro a mis hijos', exampleEn: 'I adore my children' }
+                ]
+            },
+            {
+                id: 'eating',
+                title: 'Eating / Consumption',
+                leftLabel: 'Light',
+                rightLabel: 'Extreme',
+                leftIcon: 'cookie snack',
+                rightIcon: 'feast eating',
+                color: ['#84CC16', '#F97316'],
+                verbs: [
+                    { spanish: 'picar', english: 'to nibble', intensity: 1, example: 'Pica unas galletas', exampleEn: 'Nibble some crackers' },
+                    { spanish: 'probar', english: 'to taste', intensity: 2, example: 'Prueba la sopa', exampleEn: 'Taste the soup' },
+                    { spanish: 'comer', english: 'to eat', intensity: 3, example: 'Como a las dos', exampleEn: 'I eat at two' },
+                    { spanish: 'devorar', english: 'to devour', intensity: 4, example: 'Devoró la pizza', exampleEn: 'He devoured the pizza' },
+                    { spanish: 'atiborrarse', english: 'to gorge', intensity: 5, example: 'Se atiborró de dulces', exampleEn: 'She gorged on candy' }
+                ]
+            },
+            {
+                id: 'force',
+                title: 'Force / Impact',
+                leftLabel: 'Gentle',
+                rightLabel: 'Violent',
+                leftIcon: 'feather soft',
+                rightIcon: 'hammer impact',
+                color: ['#0EA5E9', '#EF4444'],
+                verbs: [
+                    { spanish: 'rozar', english: 'to brush/graze', intensity: 1, example: 'Rozó su mano', exampleEn: 'She brushed his hand' },
+                    { spanish: 'tocar', english: 'to touch', intensity: 2, example: 'No toques eso', exampleEn: "Don't touch that" },
+                    { spanish: 'empujar', english: 'to push', intensity: 3, example: 'Empuja la puerta', exampleEn: 'Push the door' },
+                    { spanish: 'golpear', english: 'to hit', intensity: 4, example: 'Golpeó la mesa', exampleEn: 'He hit the table' },
+                    { spanish: 'aplastar', english: 'to crush', intensity: 5, example: 'Aplastó la lata', exampleEn: 'He crushed the can' }
+                ]
+            },
+            {
+                id: 'wetness',
+                title: 'Wetness / Water',
+                leftLabel: 'Damp',
+                rightLabel: 'Flooded',
+                leftIcon: 'drop water',
+                rightIcon: 'wave flood',
+                color: ['#67E8F9', '#1D4ED8'],
+                verbs: [
+                    { spanish: 'humedecer', english: 'to dampen', intensity: 1, example: 'Humedece el trapo', exampleEn: 'Dampen the cloth' },
+                    { spanish: 'mojar', english: 'to wet', intensity: 2, example: 'No te mojes', exampleEn: "Don't get wet" },
+                    { spanish: 'remojar', english: 'to soak', intensity: 3, example: 'Remoja los frijoles', exampleEn: 'Soak the beans' },
+                    { spanish: 'empapar', english: 'to drench', intensity: 4, example: 'La lluvia me empapó', exampleEn: 'The rain drenched me' },
+                    { spanish: 'inundar', english: 'to flood', intensity: 5, example: 'El río inundó el pueblo', exampleEn: 'The river flooded the town' }
+                ]
+            },
+            {
+                id: 'temperature',
+                title: 'Temperature / Heat',
+                leftLabel: 'Cool',
+                rightLabel: 'Burning',
+                leftIcon: 'snowflake cold',
+                rightIcon: 'fire flame',
+                color: ['#38BDF8', '#EF4444'],
+                verbs: [
+                    { spanish: 'enfriar', english: 'to cool', intensity: 1, example: 'Enfría la bebida', exampleEn: 'Cool the drink' },
+                    { spanish: 'templar', english: 'to warm', intensity: 2, example: 'Templa el agua', exampleEn: 'Warm the water' },
+                    { spanish: 'calentar', english: 'to heat', intensity: 3, example: 'Calienta la comida', exampleEn: 'Heat the food' },
+                    { spanish: 'hervir', english: 'to boil', intensity: 4, example: 'Hierve el agua', exampleEn: 'Boil the water' },
+                    { spanish: 'quemar', english: 'to burn', intensity: 5, example: '¡Me quemé la mano!', exampleEn: 'I burned my hand!' }
+                ]
+            },
+            {
+                id: 'fear',
+                title: 'Fear / Anxiety',
+                leftLabel: 'Uneasy',
+                rightLabel: 'Terror',
+                leftIcon: 'worry anxious',
+                rightIcon: 'fear terror',
+                color: ['#A855F7', '#4C1D95'],
+                verbs: [
+                    { spanish: 'inquietar', english: 'to unsettle', intensity: 1, example: 'Me inquieta su silencio', exampleEn: 'His silence unsettles me' },
+                    { spanish: 'preocupar', english: 'to worry', intensity: 2, example: 'Me preocupa su salud', exampleEn: 'His health worries me' },
+                    { spanish: 'asustar', english: 'to scare', intensity: 3, example: 'El ruido me asustó', exampleEn: 'The noise scared me' },
+                    { spanish: 'aterrar', english: 'to terrify', intensity: 4, example: 'Las arañas me aterran', exampleEn: 'Spiders terrify me' },
+                    { spanish: 'horrorizar', english: 'to horrify', intensity: 5, example: 'La noticia me horrorizó', exampleEn: 'The news horrified me' }
+                ]
+            },
+            {
+                id: 'anger',
+                title: 'Anger / Irritation',
+                leftLabel: 'Annoyed',
+                rightLabel: 'Furious',
+                leftIcon: 'annoyed face',
+                rightIcon: 'angry rage',
+                color: ['#FBBF24', '#DC2626'],
+                verbs: [
+                    { spanish: 'molestar', english: 'to annoy', intensity: 1, example: 'No me molestes', exampleEn: "Don't bother me" },
+                    { spanish: 'irritar', english: 'to irritate', intensity: 2, example: 'Su actitud me irrita', exampleEn: 'His attitude irritates me' },
+                    { spanish: 'enojar', english: 'to anger', intensity: 3, example: 'Me enojé con él', exampleEn: 'I got angry with him' },
+                    { spanish: 'enfurecer', english: 'to infuriate', intensity: 4, example: 'Su mentira me enfureció', exampleEn: 'His lie infuriated me' },
+                    { spanish: 'encolerizar', english: 'to enrage', intensity: 5, example: 'La injusticia lo encolerizó', exampleEn: 'The injustice enraged him' }
+                ]
+            }
+        ];
+
+        const tooltip = document.querySelector('.tooltip');
+        const loadingStatus = document.getElementById('loadingStatus');
+        const gradientsContainer = document.getElementById('gradients');
+
+        // Store loaded icons
+        const loadedIcons = new Map();
+
+        // Create gradient rows
+        function createGradientRows() {
+            gradients.forEach(g => {
+                const row = document.createElement('div');
+                row.className = 'gradient-row';
+                row.id = `gradient-${g.id}`;
+
+                const gradientCSS = `linear-gradient(90deg, ${g.color[0]}, ${g.color[1]})`;
+
+                row.innerHTML = `
+                    <div class="gradient-header">
+                        <span class="gradient-label-left">${g.leftLabel}</span>
+                        <span class="gradient-title">${g.title}</span>
+                        <span class="gradient-label-right">${g.rightLabel}</span>
+                    </div>
+                    <div class="gradient-icons">
+                        <div class="gradient-icon loading" id="icon-${g.id}-left"></div>
+                        <div class="gradient-icon loading" id="icon-${g.id}-right"></div>
+                    </div>
+                    <div class="gradient-bar-container">
+                        <div class="gradient-bar" style="background: ${gradientCSS}"></div>
+                    </div>
+                    <div class="verbs-row" id="verbs-${g.id}"></div>
+                `;
+
+                gradientsContainer.appendChild(row);
+
+                // Add verb markers
+                const verbsRow = document.getElementById(`verbs-${g.id}`);
+                g.verbs.forEach((v, i) => {
+                    const position = (v.intensity - 1) / (g.verbs.length - 1);
+                    const color = interpolateColor(g.color[0], g.color[1], position);
+
+                    const marker = document.createElement('div');
+                    marker.className = 'verb-marker';
+                    marker.innerHTML = `
+                        <div class="verb-dot" style="background: ${color}"></div>
+                        <div class="verb-spanish">${v.spanish}</div>
+                        <div class="verb-english">${v.english}</div>
+                    `;
+
+                    marker.addEventListener('click', () => speak(v.spanish));
+                    marker.addEventListener('mouseenter', (e) => showTooltip(e, v, g));
+                    marker.addEventListener('mouseleave', hideTooltip);
+
+                    verbsRow.appendChild(marker);
+                });
+            });
+        }
+
+        // Interpolate between two colors
+        function interpolateColor(color1, color2, factor) {
+            const c1 = hexToRgb(color1);
+            const c2 = hexToRgb(color2);
+            const r = Math.round(c1.r + (c2.r - c1.r) * factor);
+            const g = Math.round(c1.g + (c2.g - c1.g) * factor);
+            const b = Math.round(c1.b + (c2.b - c1.b) * factor);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 0, g: 0, b: 0 };
+        }
+
+        // Load icons for each gradient
+        async function loadIcons() {
+            const freepik = new FreepikAPI();
+            let loaded = 0;
+            const total = gradients.length * 2;
+
+            for (const g of gradients) {
+                // Load left icon
+                try {
+                    const leftResult = await freepik.searchAndGetIcon(g.leftIcon, 128);
+                    const leftContainer = document.getElementById(`icon-${g.id}-left`);
+                    if (leftResult && leftResult.pngUrl) {
+                        leftContainer.innerHTML = `<img src="${leftResult.pngUrl}" alt="${g.leftLabel}" />`;
+                    }
+                    leftContainer.classList.remove('loading');
+                } catch (e) {
+                    document.getElementById(`icon-${g.id}-left`).classList.remove('loading');
+                }
+                loaded++;
+                loadingStatus.textContent = `Loading icons... ${loaded}/${total}`;
+
+                // Load right icon
+                try {
+                    const rightResult = await freepik.searchAndGetIcon(g.rightIcon, 128);
+                    const rightContainer = document.getElementById(`icon-${g.id}-right`);
+                    if (rightResult && rightResult.pngUrl) {
+                        rightContainer.innerHTML = `<img src="${rightResult.pngUrl}" alt="${g.rightLabel}" />`;
+                    }
+                    rightContainer.classList.remove('loading');
+                } catch (e) {
+                    document.getElementById(`icon-${g.id}-right`).classList.remove('loading');
+                }
+                loaded++;
+                loadingStatus.textContent = `Loading icons... ${loaded}/${total}`;
+            }
+
+            loadingStatus.style.opacity = '0';
+            setTimeout(() => loadingStatus.style.display = 'none', 300);
+        }
+
+        // Speak verb
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.8;
+            speechSynthesis.speak(utterance);
+        }
+
+        // Tooltip
+        function showTooltip(e, verb, gradient) {
+            const intensityLabels = ['', 'Very Low', 'Low', 'Medium', 'High', 'Extreme'];
+            tooltip.innerHTML = `
+                <div class="spanish">${verb.spanish}</div>
+                <div class="english">${verb.english}</div>
+                <div class="intensity">${gradient.title}: ${intensityLabels[verb.intensity]}</div>
+                <div class="example">"${verb.example}"</div>
+                <div class="example-trans">${verb.exampleEn}</div>
+            `;
+            tooltip.style.opacity = '1';
+            tooltip.style.left = (e.pageX + 15) + 'px';
+            tooltip.style.top = (e.pageY - 10) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.opacity = '0';
+        }
+
+        // Initialize
+        createGradientRows();
+        loadIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defensive Coverage vs Trips Left</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #111;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 30px;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        h2 {
+            font-size: 18px;
+            font-weight: 400;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        .field {
+            background: #1a472a;
+            width: 800px;
+            height: 500px;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .los {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #fff;
+            opacity: 0.6;
+        }
+        .yard-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #fff;
+            opacity: 0.15;
+        }
+        .player {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            border: 3px solid #fff;
+        }
+        .player.center {
+            background: #6b7280;
+        }
+        .player.oline {
+            background: #6b7280;
+        }
+        .player.qb {
+            background: #ef4444;
+        }
+        .player.rb {
+            background: #3b82f6;
+        }
+        .player.wr {
+            background: #22c55e;
+        }
+        /* Defense */
+        .player.dl {
+            background: #7c3aed;
+            border-color: #c4b5fd;
+        }
+        .player.lb {
+            background: #f59e0b;
+            border-color: #fde68a;
+        }
+        .player.cb {
+            background: #ec4899;
+            border-color: #fbcfe8;
+        }
+        .player.safety {
+            background: #06b6d4;
+            border-color: #a5f3fc;
+        }
+        .description {
+            max-width: 800px;
+            background: #222;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+        .matchup-line {
+            position: absolute;
+            border-top: 2px dashed rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>Man Coverage Matchups vs Unbalanced Trips Left</h1>
+
+    <!-- Man Coverage - Standard 4-3 -->
+    <h2>4-3 Defense - Man Assignments</h2>
+    <div class="field">
+        <div class="yard-line" style="top: 20%;"></div>
+        <div class="yard-line" style="top: 35%;"></div>
+        <div class="los"></div>
+        <div class="yard-line" style="top: 65%;"></div>
+        <div class="yard-line" style="top: 80%;"></div>
+
+        <!-- Offense -->
+        <div class="player center" style="left: 400px; top: 48%;">C</div>
+        <div class="player oline" style="left: 740px; top: 48%;">TE</div>
+        <div class="player oline" style="left: 690px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 640px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 590px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 350px; top: 48%;">OL</div>
+        <div class="player qb" style="left: 400px; top: 62%;">QB</div>
+        <div class="player rb" style="left: 590px; top: 62%;">RB</div>
+        <div class="player wr" style="left: 220px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 120px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 50px; top: 48%;">WR</div>
+
+        <!-- Defense - 4-3 Man -->
+        <!-- D-Line: 4 guys rush -->
+        <div class="player dl" style="left: 430px; top: 42%;">DT</div>
+        <div class="player dl" style="left: 370px; top: 42%;">DT</div>
+        <div class="player dl" style="left: 310px; top: 42%;">DE</div>
+        <div class="player dl" style="left: 500px; top: 42%;">DE</div>
+
+        <!-- Man assignments -->
+        <div class="player cb" style="left: 50px; top: 42%;">CB</div>      <!-- on outside WR -->
+        <div class="player cb" style="left: 120px; top: 48%;">CB</div>     <!-- on slot WR -->
+        <div class="player cb" style="left: 220px; top: 48%;">NCB</div>    <!-- on inside WR -->
+        <div class="player lb" style="left: 740px; top: 38%;">LB</div>     <!-- on TE -->
+        <div class="player lb" style="left: 590px; top: 35%;">LB</div>     <!-- on RB -->
+
+        <!-- Remaining - shifted to strong side -->
+        <div class="player lb" style="left: 620px; top: 28%;">MLB</div>    <!-- FREE - strong side -->
+        <div class="player safety" style="left: 500px; top: 15%;">FS</div> <!-- FREE - cheating strong -->
+    </div>
+    <div class="description">
+        <strong>4-3 Man:</strong> 4 D-linemen rush. CB1 on outside WR, CB2 on middle WR, Nickel CB on inside WR. LB on TE, LB on RB. <strong>Left over: MLB + FS (2 free)</strong> - both cheat toward the strong side to help against the RB and stacked OL. This leaves the deep middle more vulnerable.
+    </div>
+
+    <!-- Nickel Defense -->
+    <h2>Nickel Defense (5 DBs) - Man Assignments</h2>
+    <div class="field">
+        <div class="yard-line" style="top: 20%;"></div>
+        <div class="yard-line" style="top: 35%;"></div>
+        <div class="los"></div>
+        <div class="yard-line" style="top: 65%;"></div>
+        <div class="yard-line" style="top: 80%;"></div>
+
+        <!-- Offense -->
+        <div class="player center" style="left: 400px; top: 48%;">C</div>
+        <div class="player oline" style="left: 740px; top: 48%;">TE</div>
+        <div class="player oline" style="left: 690px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 640px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 590px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 350px; top: 48%;">OL</div>
+        <div class="player qb" style="left: 400px; top: 62%;">QB</div>
+        <div class="player rb" style="left: 590px; top: 62%;">RB</div>
+        <div class="player wr" style="left: 220px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 120px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 50px; top: 48%;">WR</div>
+
+        <!-- Defense - Nickel -->
+        <!-- D-Line: 4 guys rush -->
+        <div class="player dl" style="left: 430px; top: 42%;">DT</div>
+        <div class="player dl" style="left: 370px; top: 42%;">DT</div>
+        <div class="player dl" style="left: 310px; top: 42%;">DE</div>
+        <div class="player dl" style="left: 500px; top: 42%;">DE</div>
+
+        <!-- Man assignments -->
+        <div class="player cb" style="left: 50px; top: 42%;">CB</div>      <!-- on outside WR -->
+        <div class="player cb" style="left: 120px; top: 48%;">CB</div>     <!-- on slot WR -->
+        <div class="player cb" style="left: 220px; top: 48%;">NCB</div>    <!-- on inside WR -->
+        <div class="player safety" style="left: 740px; top: 38%;">SS</div> <!-- on TE -->
+        <div class="player lb" style="left: 590px; top: 35%;">LB</div>     <!-- on RB -->
+
+        <!-- Remaining - shifted to strong side -->
+        <div class="player lb" style="left: 620px; top: 28%;">MLB</div>    <!-- FREE - strong side -->
+        <div class="player safety" style="left: 500px; top: 15%;">FS</div> <!-- FREE - cheating strong -->
+    </div>
+    <div class="description">
+        <strong>Nickel Man:</strong> 4 rush, 5 DBs. SS covers TE, LB on RB. <strong>Left over: MLB + FS (2 free)</strong> - both shifted strong to help vs run/screen to RB. Deep middle is exposed.
+    </div>
+
+    <!-- 3-4 Defense -->
+    <h2>3-4 Defense - Man Assignments</h2>
+    <div class="field">
+        <div class="yard-line" style="top: 20%;"></div>
+        <div class="yard-line" style="top: 35%;"></div>
+        <div class="los"></div>
+        <div class="yard-line" style="top: 65%;"></div>
+        <div class="yard-line" style="top: 80%;"></div>
+
+        <!-- Offense -->
+        <div class="player center" style="left: 400px; top: 48%;">C</div>
+        <div class="player oline" style="left: 740px; top: 48%;">TE</div>
+        <div class="player oline" style="left: 690px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 640px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 590px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 350px; top: 48%;">OL</div>
+        <div class="player qb" style="left: 400px; top: 62%;">QB</div>
+        <div class="player rb" style="left: 590px; top: 62%;">RB</div>
+        <div class="player wr" style="left: 220px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 120px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 50px; top: 48%;">WR</div>
+
+        <!-- Defense - 3-4 -->
+        <!-- D-Line: 3 guys -->
+        <div class="player dl" style="left: 400px; top: 42%;">NT</div>
+        <div class="player dl" style="left: 310px; top: 42%;">DE</div>
+        <div class="player dl" style="left: 490px; top: 42%;">DE</div>
+
+        <!-- OLBs rush -->
+        <div class="player lb" style="left: 250px; top: 42%;">OLB</div>    <!-- rush -->
+        <div class="player lb" style="left: 550px; top: 42%;">OLB</div>    <!-- rush -->
+
+        <!-- Man assignments -->
+        <div class="player cb" style="left: 50px; top: 42%;">CB</div>      <!-- on outside WR -->
+        <div class="player cb" style="left: 120px; top: 48%;">CB</div>     <!-- on slot WR -->
+        <div class="player cb" style="left: 220px; top: 48%;">NCB</div>    <!-- on inside WR -->
+        <div class="player lb" style="left: 740px; top: 38%;">ILB</div>    <!-- on TE -->
+        <div class="player lb" style="left: 590px; top: 35%;">ILB</div>    <!-- on RB -->
+
+        <!-- Remaining - only 1 free, must cheat strong -->
+        <div class="player safety" style="left: 550px; top: 15%;">FS</div> <!-- FREE - cheating strong -->
+    </div>
+    <div class="description">
+        <strong>3-4 Man:</strong> 5 rushers (3 DL + 2 OLB). 3 CBs on WRs, 2 ILBs on TE/RB. <strong>Left over: FS only (1 free)</strong> - must cheat strong to help vs RB screen. Deep weak side is completely exposed. Big play risk to trips side.
+    </div>
+
+    <!-- Cover 0 Blitz -->
+    <h2>Cover 0 Blitz - All Out Man</h2>
+    <div class="field">
+        <div class="yard-line" style="top: 20%;"></div>
+        <div class="yard-line" style="top: 35%;"></div>
+        <div class="los"></div>
+        <div class="yard-line" style="top: 65%;"></div>
+        <div class="yard-line" style="top: 80%;"></div>
+
+        <!-- Offense -->
+        <div class="player center" style="left: 400px; top: 48%;">C</div>
+        <div class="player oline" style="left: 740px; top: 48%;">TE</div>
+        <div class="player oline" style="left: 690px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 640px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 590px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 350px; top: 48%;">OL</div>
+        <div class="player qb" style="left: 400px; top: 62%;">QB</div>
+        <div class="player rb" style="left: 590px; top: 62%;">RB</div>
+        <div class="player wr" style="left: 220px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 120px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 50px; top: 48%;">WR</div>
+
+        <!-- Defense - Cover 0 -->
+        <!-- D-Line: 4 rush -->
+        <div class="player dl" style="left: 430px; top: 42%;">DT</div>
+        <div class="player dl" style="left: 370px; top: 42%;">DT</div>
+        <div class="player dl" style="left: 310px; top: 42%;">DE</div>
+        <div class="player dl" style="left: 500px; top: 42%;">DE</div>
+
+        <!-- LBs blitz -->
+        <div class="player lb" style="left: 450px; top: 35%;">MLB</div>    <!-- BLITZ -->
+        <div class="player lb" style="left: 340px; top: 35%;">LB</div>     <!-- BLITZ -->
+
+        <!-- Man assignments - everyone covered -->
+        <div class="player cb" style="left: 50px; top: 42%;">CB</div>      <!-- on outside WR -->
+        <div class="player cb" style="left: 120px; top: 48%;">CB</div>     <!-- on slot WR -->
+        <div class="player cb" style="left: 220px; top: 48%;">NCB</div>    <!-- on inside WR -->
+        <div class="player safety" style="left: 740px; top: 38%;">SS</div> <!-- on TE -->
+        <div class="player safety" style="left: 590px; top: 35%;">FS</div> <!-- on RB -->
+    </div>
+    <div class="description">
+        <strong>Cover 0:</strong> 6 rushers (4 DL + 2 LB). Every eligible receiver is manned up. <strong>Left over: NOBODY</strong>. No safety help. High risk/high reward. If any receiver beats his man, it's a touchdown. But 6 rushers vs 5 blockers means free rusher at QB.
+    </div>
+
+    <!-- Summary -->
+    <h2>Summary</h2>
+    <div class="description">
+        <strong>Your formation has 5 eligible receivers:</strong> 3 WRs + TE + RB<br><br>
+        <strong>Defense must account for all 5.</strong> With 4 rushing, that leaves 7 in coverage:<br>
+        • 5 defenders man up on receivers<br>
+        • 2 "free" defenders for robber/spy/deep help<br><br>
+        <strong>To get more rushers, defense sacrifices help:</strong><br>
+        • 5 rush = 1 free defender<br>
+        • 6 rush (Cover 0) = 0 free, pure man, big play risk<br><br>
+        The unbalanced look forces the defense to shift and communicate assignments. Any confusion = easy completion.
+    </div>
+
+</body>
+</html>

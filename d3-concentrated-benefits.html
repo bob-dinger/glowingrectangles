@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concentrated Benefits, Diffuse Costs</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 13px;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .section-label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .amount-label {
+            font-size: 11px;
+        }
+        .insight {
+            color: #888;
+            font-size: 12px;
+            margin-top: 15px;
+            max-width: 700px;
+            text-align: center;
+            line-height: 1.6;
+        }
+        .highlight {
+            color: #10B981;
+            font-weight: bold;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 15px;
+        }
+        .stat-box {
+            text-align: center;
+            padding: 15px 25px;
+            border-radius: 8px;
+        }
+        .beneficiaries {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid #EF4444;
+        }
+        .payers {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid #3B82F6;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        .source {
+            color: #666;
+            font-size: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Why Bad Policies Persist: Concentrated Benefits, Diffuse Costs</h1>
+    <p class="description">
+        $1.76 trillion in student loans. The few who benefit have every reason to fight for the status quo.
+        The millions who pay have almost no reason to organize against it.
+    </p>
+
+    <div class="stat-row">
+        <div class="stat-box beneficiaries">
+            <div class="stat-number" style="color: #EF4444;">~5,000</div>
+            <div class="stat-label">College administrators, lobbyists,<br>lenders who benefit massively</div>
+        </div>
+        <div class="stat-box payers">
+            <div class="stat-number" style="color: #3B82F6;">330M</div>
+            <div class="stat-label">Taxpayers who each pay<br>a little ($5,300 each)</div>
+        </div>
+    </div>
+
+    <div id="vis"></div>
+
+    <p class="insight">
+        <span class="highlight">The Math of Inaction:</span> A college president earning $1M+ will spend millions lobbying to keep the system.
+        A taxpayer losing $200/year won't take a day off work to fight it.
+        <br><br>
+        This is why <span class="highlight">66,000:1</span> ratios persist across healthcare, defense, agriculture, finance, and education.
+    </p>
+
+    <div class="source">
+        Concept: Mancur Olson, "The Logic of Collective Action" (1965)
+    </div>
+
+    <script>
+        const width = 800;
+        const height = 500;
+        const centerX = width / 2;
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // The key insight: same total money, very different per-person amounts
+        const totalMoney = 1.76; // trillion
+        const beneficiaries = 5000;
+        const payers = 330000000;
+
+        const perBeneficiary = (totalMoney * 1e12) / beneficiaries; // ~$352 million each
+        const perPayer = (totalMoney * 1e12) / payers; // ~$5,333 each
+
+        // LEFT SIDE: Concentrated Benefits (few people, big amounts)
+        const leftX = 200;
+        const beneficiaryRadius = 12;
+        const numBeneficiaryDots = 50; // Representative sample
+
+        // Arrange beneficiaries in a tight cluster
+        const beneficiaryPositions = [];
+        const cols = 10;
+        for (let i = 0; i < numBeneficiaryDots; i++) {
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            beneficiaryPositions.push({
+                x: leftX - (cols * beneficiaryRadius) + col * beneficiaryRadius * 2.2,
+                y: 180 + row * beneficiaryRadius * 2.2
+            });
+        }
+
+        // Draw beneficiary section
+        svg.append('text')
+            .attr('x', leftX)
+            .attr('y', 50)
+            .attr('text-anchor', 'middle')
+            .attr('class', 'section-label')
+            .attr('fill', '#EF4444')
+            .text('CONCENTRATED BENEFITS');
+
+        svg.append('text')
+            .attr('x', leftX)
+            .attr('y', 70)
+            .attr('text-anchor', 'middle')
+            .attr('class', 'amount-label')
+            .attr('fill', '#888')
+            .text('~5,000 people');
+
+        // Money flowing TO beneficiaries (thick stream)
+        svg.append('path')
+            .attr('d', `M ${leftX} 90 L ${leftX} 160`)
+            .attr('stroke', '#10B981')
+            .attr('stroke-width', 40)
+            .attr('opacity', 0.6);
+
+        svg.append('text')
+            .attr('x', leftX + 35)
+            .attr('y', 130)
+            .attr('fill', '#10B981')
+            .attr('font-size', '12px')
+            .attr('font-weight', 'bold')
+            .text('$352M each');
+
+        // Draw beneficiary dots
+        svg.selectAll('.beneficiary')
+            .data(beneficiaryPositions)
+            .enter()
+            .append('circle')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', beneficiaryRadius)
+            .attr('fill', '#EF4444')
+            .attr('opacity', 0.9)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 1);
+
+        // Label for beneficiaries
+        svg.append('text')
+            .attr('x', leftX)
+            .attr('y', 340)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '11px')
+            .text('College presidents, administrators,');
+        svg.append('text')
+            .attr('x', leftX)
+            .attr('y', 355)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '11px')
+            .text('loan servicers, lobbyists');
+
+        // Incentive text
+        svg.append('text')
+            .attr('x', leftX)
+            .attr('y', 390)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#10B981')
+            .attr('font-size', '13px')
+            .attr('font-weight', 'bold')
+            .text('HIGH INCENTIVE TO LOBBY');
+        svg.append('text')
+            .attr('x', leftX)
+            .attr('y', 410)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#888')
+            .attr('font-size', '11px')
+            .text('Worth spending $10M to protect $352M');
+
+        // CENTER: Arrow showing the transfer
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', 250)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#666')
+            .attr('font-size', '24px')
+            .text('$1.76T');
+
+        svg.append('path')
+            .attr('d', `M ${centerX + 80} 250 L ${centerX - 80} 250`)
+            .attr('stroke', '#444')
+            .attr('stroke-width', 2)
+            .attr('marker-end', 'url(#arrow)');
+
+        // Arrow marker
+        svg.append('defs').append('marker')
+            .attr('id', 'arrow')
+            .attr('viewBox', '0 -5 10 10')
+            .attr('refX', 8)
+            .attr('refY', 0)
+            .attr('markerWidth', 6)
+            .attr('markerHeight', 6)
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M0,-5L10,0L0,5')
+            .attr('fill', '#444');
+
+        // RIGHT SIDE: Diffuse Costs (many people, tiny amounts)
+        const rightX = 600;
+
+        svg.append('text')
+            .attr('x', rightX)
+            .attr('y', 50)
+            .attr('text-anchor', 'middle')
+            .attr('class', 'section-label')
+            .attr('fill', '#3B82F6')
+            .text('DIFFUSE COSTS');
+
+        svg.append('text')
+            .attr('x', rightX)
+            .attr('y', 70)
+            .attr('text-anchor', 'middle')
+            .attr('class', 'amount-label')
+            .attr('fill', '#888')
+            .text('330 million taxpayers');
+
+        // Generate a dense field of tiny dots representing taxpayers
+        const numPayerDots = 2000;
+        const payerPositions = [];
+
+        // Fill a rectangular area with tiny dots
+        for (let i = 0; i < numPayerDots; i++) {
+            // Random position in a rectangular area
+            const x = rightX - 100 + Math.random() * 200;
+            const y = 100 + Math.random() * 200;
+            payerPositions.push({ x, y });
+        }
+
+        // Money flowing FROM payers (thin trickle from each)
+        svg.append('path')
+            .attr('d', `M ${rightX} 310 L ${rightX} 360`)
+            .attr('stroke', '#EF4444')
+            .attr('stroke-width', 3)
+            .attr('opacity', 0.6);
+
+        svg.append('text')
+            .attr('x', rightX + 50)
+            .attr('y', 340)
+            .attr('fill', '#EF4444')
+            .attr('font-size', '12px')
+            .text('$5,333 each');
+
+        // Draw payer dots (very small)
+        svg.selectAll('.payer')
+            .data(payerPositions)
+            .enter()
+            .append('circle')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', 1.5)
+            .attr('fill', '#3B82F6')
+            .attr('opacity', 0.7);
+
+        // Label for payers
+        svg.append('text')
+            .attr('x', rightX)
+            .attr('y', 380)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#3B82F6')
+            .attr('font-size', '11px')
+            .text('Every American taxpayer');
+
+        // Incentive text
+        svg.append('text')
+            .attr('x', rightX)
+            .attr('y', 420)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '13px')
+            .attr('font-weight', 'bold')
+            .text('LOW INCENTIVE TO ORGANIZE');
+        svg.append('text')
+            .attr('x', rightX)
+            .attr('y', 440)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#888')
+            .attr('font-size', '11px')
+            .text('Not worth taking a day off work');
+
+        // Ratio callout
+        svg.append('rect')
+            .attr('x', centerX - 50)
+            .attr('y', 420)
+            .attr('width', 100)
+            .attr('height', 50)
+            .attr('fill', '#1a1a1a')
+            .attr('stroke', '#10B981')
+            .attr('stroke-width', 2)
+            .attr('rx', 5);
+
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', 445)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#10B981')
+            .attr('font-size', '16px')
+            .attr('font-weight', 'bold')
+            .text('66,000:1');
+
+        svg.append('text')
+            .attr('x', centerX)
+            .attr('y', 462)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#888')
+            .attr('font-size', '10px')
+            .text('benefit ratio');
+    </script>
+</body>
+</html>

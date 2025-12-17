@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Power Law of Political Influence</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 13px;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .axis text {
+            fill: #666;
+            font-size: 10px;
+        }
+        .axis path, .axis line {
+            stroke: #333;
+        }
+        .insight {
+            color: #888;
+            font-size: 12px;
+            margin-top: 15px;
+            max-width: 700px;
+            text-align: center;
+            line-height: 1.6;
+        }
+        .highlight {
+            color: #10B981;
+        }
+        .source {
+            color: #666;
+            font-size: 10px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>The Power Law of Political Influence</h1>
+    <p class="description">
+        Why bad policies persist: the benefit per person follows a power law.
+        The few at the top have millions of reasons to lobby. Everyone else has almost none.
+    </p>
+
+    <div id="vis"></div>
+
+    <p class="insight">
+        <span class="highlight">This is why organizing fails:</span> The top 0.001% each gain $350M+ from the student loan system.
+        The bottom 99.99% each lose ~$5,000. Rational self-interest means only the top will fight.
+    </p>
+
+    <div class="source">
+        Based on $1.76T student loan system | Concept: Mancur Olson, "The Logic of Collective Action" (1965)
+    </div>
+
+    <script>
+        const width = 800;
+        const height = 500;
+        const margin = { top: 40, right: 40, bottom: 60, left: 80 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const g = svg.append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Generate power law data
+        // x = rank (1 to 330,000,000)
+        // y = benefit per person (positive for beneficiaries, negative for payers)
+
+        // We'll show this on a log scale for x
+        // Top ~5,000 get positive benefits (avg $352M each = $1.76T total)
+        // Bottom 330M pay (~$5,333 each)
+
+        const totalPeople = 330000000;
+        const beneficiaries = 5000;
+        const totalMoney = 1.76e12;
+
+        // Generate curve points
+        const numPoints = 200;
+        const data = [];
+
+        for (let i = 0; i < numPoints; i++) {
+            // Logarithmic spacing for x (rank)
+            const t = i / (numPoints - 1);
+            const rank = Math.pow(10, t * Math.log10(totalPeople));
+
+            let benefit;
+            if (rank <= beneficiaries) {
+                // Top beneficiaries - power law decay
+                // Rank 1 gets the most, rank 5000 gets less
+                const topBenefit = 500000000; // $500M for top person
+                const alpha = 0.8; // power law exponent
+                benefit = topBenefit * Math.pow(rank, -alpha);
+            } else {
+                // Everyone else pays - relatively flat negative
+                benefit = -5333; // each taxpayer's share
+            }
+
+            data.push({ rank, benefit });
+        }
+
+        // Scales
+        const xScale = d3.scaleLog()
+            .domain([1, totalPeople])
+            .range([0, innerWidth]);
+
+        const yScale = d3.scaleSymlog() // symlog handles positive and negative
+            .domain([-10000, 500000000])
+            .range([innerHeight, 0]);
+
+        // Area fill for benefits (above zero)
+        const benefitArea = d3.area()
+            .x(d => xScale(d.rank))
+            .y0(yScale(0))
+            .y1(d => d.benefit > 0 ? yScale(d.benefit) : yScale(0))
+            .curve(d3.curveMonotoneX);
+
+        // Area fill for costs (below zero)
+        const costArea = d3.area()
+            .x(d => xScale(d.rank))
+            .y0(yScale(0))
+            .y1(d => d.benefit < 0 ? yScale(d.benefit) : yScale(0))
+            .curve(d3.curveMonotoneX);
+
+        // Draw benefit area (green)
+        g.append('path')
+            .datum(data)
+            .attr('d', benefitArea)
+            .attr('fill', 'rgba(16, 185, 129, 0.3)')
+            .attr('stroke', 'none');
+
+        // Draw cost area (red)
+        g.append('path')
+            .datum(data)
+            .attr('d', costArea)
+            .attr('fill', 'rgba(239, 68, 68, 0.3)')
+            .attr('stroke', 'none');
+
+        // Draw the curve line
+        const line = d3.line()
+            .x(d => xScale(d.rank))
+            .y(d => yScale(d.benefit))
+            .curve(d3.curveMonotoneX);
+
+        g.append('path')
+            .datum(data)
+            .attr('d', line)
+            .attr('fill', 'none')
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2);
+
+        // Zero line
+        g.append('line')
+            .attr('x1', 0)
+            .attr('x2', innerWidth)
+            .attr('y1', yScale(0))
+            .attr('y2', yScale(0))
+            .attr('stroke', '#666')
+            .attr('stroke-width', 1)
+            .attr('stroke-dasharray', '5,5');
+
+        // X axis
+        const xAxis = d3.axisBottom(xScale)
+            .tickValues([1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000])
+            .tickFormat(d => {
+                if (d >= 1000000) return (d / 1000000) + 'M';
+                if (d >= 1000) return (d / 1000) + 'K';
+                return d;
+            });
+
+        g.append('g')
+            .attr('class', 'axis')
+            .attr('transform', `translate(0,${innerHeight})`)
+            .call(xAxis);
+
+        // X axis label
+        g.append('text')
+            .attr('x', innerWidth / 2)
+            .attr('y', innerHeight + 45)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#888')
+            .attr('font-size', '12px')
+            .text('Person Rank (log scale) →');
+
+        // Y axis
+        const yAxis = d3.axisLeft(yScale)
+            .tickValues([-5000, 0, 1000000, 100000000, 500000000])
+            .tickFormat(d => {
+                if (d === 0) return '$0';
+                if (d < 0) return '-$' + Math.abs(d / 1000) + 'K';
+                if (d >= 1000000) return '$' + (d / 1000000) + 'M';
+                return '$' + d;
+            });
+
+        g.append('g')
+            .attr('class', 'axis')
+            .call(yAxis);
+
+        // Y axis label
+        g.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -innerHeight / 2)
+            .attr('y', -60)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#888')
+            .attr('font-size', '12px')
+            .text('← Net Benefit/Cost per Person');
+
+        // Annotations
+
+        // Top beneficiaries annotation
+        g.append('text')
+            .attr('x', xScale(10))
+            .attr('y', yScale(100000000))
+            .attr('fill', '#10B981')
+            .attr('font-size', '13px')
+            .attr('font-weight', 'bold')
+            .text('THE FEW');
+
+        g.append('text')
+            .attr('x', xScale(10))
+            .attr('y', yScale(100000000) + 16)
+            .attr('fill', '#10B981')
+            .attr('font-size', '11px')
+            .text('~5,000 people');
+
+        g.append('text')
+            .attr('x', xScale(10))
+            .attr('y', yScale(100000000) + 30)
+            .attr('fill', '#10B981')
+            .attr('font-size', '11px')
+            .text('gain $100M-$500M each');
+
+        // The cliff annotation
+        g.append('line')
+            .attr('x1', xScale(5000))
+            .attr('y1', yScale(0) - 10)
+            .attr('x2', xScale(5000))
+            .attr('y2', yScale(0) + 50)
+            .attr('stroke', '#EF4444')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '3,3');
+
+        g.append('text')
+            .attr('x', xScale(5000))
+            .attr('y', yScale(0) + 70)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '11px')
+            .attr('font-weight', 'bold')
+            .text('THE CLIFF');
+
+        g.append('text')
+            .attr('x', xScale(5000))
+            .attr('y', yScale(0) + 85)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#888')
+            .attr('font-size', '10px')
+            .text('Rank ~5,000');
+
+        // The many annotation
+        g.append('text')
+            .attr('x', xScale(50000000))
+            .attr('y', yScale(-5000) + 30)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '13px')
+            .attr('font-weight', 'bold')
+            .text('THE MANY');
+
+        g.append('text')
+            .attr('x', xScale(50000000))
+            .attr('y', yScale(-5000) + 46)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '11px')
+            .text('330 million people');
+
+        g.append('text')
+            .attr('x', xScale(50000000))
+            .attr('y', yScale(-5000) + 60)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '11px')
+            .text('each lose ~$5,333');
+
+        // Key insight box
+        g.append('rect')
+            .attr('x', innerWidth - 200)
+            .attr('y', 10)
+            .attr('width', 190)
+            .attr('height', 70)
+            .attr('fill', 'rgba(0,0,0,0.7)')
+            .attr('stroke', '#444')
+            .attr('rx', 5);
+
+        g.append('text')
+            .attr('x', innerWidth - 105)
+            .attr('y', 32)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '11px')
+            .attr('font-weight', 'bold')
+            .text('LOBBYING INCENTIVE');
+
+        g.append('text')
+            .attr('x', innerWidth - 105)
+            .attr('y', 50)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#10B981')
+            .attr('font-size', '10px')
+            .text('Top 5,000: Will spend millions');
+
+        g.append('text')
+            .attr('x', innerWidth - 105)
+            .attr('y', 65)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#EF4444')
+            .attr('font-size', '10px')
+            .text('Bottom 330M: Won\'t make a call');
+
+        // Benefit label
+        g.append('text')
+            .attr('x', 10)
+            .attr('y', 20)
+            .attr('fill', '#10B981')
+            .attr('font-size', '11px')
+            .text('↑ GAINS');
+
+        // Cost label
+        g.append('text')
+            .attr('x', 10)
+            .attr('y', innerHeight - 10)
+            .attr('fill', '#EF4444')
+            .attr('font-size', '11px')
+            .text('↓ LOSSES');
+    </script>
+</body>
+</html>

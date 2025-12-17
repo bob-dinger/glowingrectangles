@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetric Normal Distribution Tower 2</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        #container {
+            width: 600px;
+            margin: 0 auto;
+        }
+        svg {
+            border: 1px solid #333;
+            width: 600px;
+            height: 600px;
+            background-color: #0a0a0a;
+            border-radius: 8px;
+        }
+        circle {
+            opacity: 0.85;
+        }
+        circle:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Symmetric Normal Distribution - Full Width</h1>
+    <p class="description">Tails at edges, peak in center - perfectly symmetric</p>
+    <div id="container">
+        <svg></svg>
+    </div>
+
+    <script>
+        // Normal PDF for smooth bell curve
+        function normalPDF(x, mean = 0, stdDev = 1) {
+            const coefficient = 1 / (stdDev * Math.sqrt(2 * Math.PI));
+            const exponent = -Math.pow(x - mean, 2) / (2 * Math.pow(stdDev, 2));
+            return coefficient * Math.exp(exponent);
+        }
+
+        // 60 columns spanning full width (600px / 10px spacing)
+        const numColumns = 60;
+        const centerIdx = 29.5; // Exact center
+        const stdDev = numColumns / 6; // Covers -3 to +3 sigma
+
+        let tower = [];
+        let maxPDF = 0;
+
+        // Calculate heights using normal distribution
+        for (let i = 0; i < numColumns; i++) {
+            const x = i - centerIdx;
+            const pdf = normalPDF(x, 0, stdDev);
+            tower.push(pdf);
+            maxPDF = Math.max(maxPDF, pdf);
+        }
+
+        // Scale to max height of 40 dots
+        tower = tower.map(h => Math.round((h / maxPDF) * 40));
+
+        const totalDots = tower.reduce((sum, count) => sum + count, 0);
+        let dotsPerSide = Math.floor(totalDots * 0.05);
+
+        // Force even number so left and right are exactly equal
+        if (dotsPerSide % 2 !== 0) {
+            dotsPerSide -= 1; // Make it even
+        }
+
+        console.log(`Total dots: ${totalDots}`);
+        console.log(`Each red side: ${dotsPerSide} dots (exactly ${(dotsPerSide / totalDots * 100).toFixed(2)}%)`);
+
+        let svg = document.querySelector('svg');
+
+        // Count dots from each end to find symmetric cutoff columns
+        let leftDotCount = 0;
+        let leftCutoffColumn = 0;
+        for (let i = 0; i < numColumns; i++) {
+            leftDotCount += tower[i];
+            if (leftDotCount >= dotsPerSide) {
+                leftCutoffColumn = i;
+                break;
+            }
+        }
+
+        let rightDotCount = 0;
+        let rightCutoffColumn = numColumns - 1;
+        for (let i = numColumns - 1; i >= 0; i--) {
+            rightDotCount += tower[i];
+            if (rightDotCount >= dotsPerSide) {
+                rightCutoffColumn = i;
+                break;
+            }
+        }
+
+        console.log(`Left red ends at column ${leftCutoffColumn}, right red starts at column ${rightCutoffColumn}`);
+
+        tower.forEach((dots, columnIdx) => {
+            for (let i = 0; i < dots; i++) {
+                let circle = document.createElementNS('http://www.w3.org/2000/svg', "circle");
+                circle.setAttribute("r", 5);
+                circle.setAttribute("cx", (columnIdx * 10) + 5);
+                circle.setAttribute("cy", 580 - (i * 14));
+                circle.setAttribute("class", `column${columnIdx}`);
+
+                // Color by COLUMN position for symmetry
+                if (columnIdx <= leftCutoffColumn) {
+                    circle.setAttribute("fill", "#EF4444");  // Left tail
+                } else if (columnIdx >= rightCutoffColumn) {
+                    circle.setAttribute("fill", "#EF4444");  // Right tail
+                } else {
+                    circle.setAttribute("fill", "#6B7280");  // Middle
+                }
+
+                svg.prepend(circle);
+            }
+        });
+
+        // Mark center
+        const centerX = 300; // Exact center of 600px
+        let line = document.createElementNS('http://www.w3.org/2000/svg', "line");
+        line.setAttribute("x1", centerX);
+        line.setAttribute("y1", 585);
+        line.setAttribute("x2", centerX);
+        line.setAttribute("y2", 595);
+        line.setAttribute("stroke", "#8B5CF6");
+        line.setAttribute("stroke-width", 2);
+        svg.appendChild(line);
+
+        let text = document.createElementNS('http://www.w3.org/2000/svg', "text");
+        text.setAttribute("x", centerX);
+        text.setAttribute("y", 595);
+        text.setAttribute("fill", "#8B5CF6");
+        text.setAttribute("font-size", "10");
+        text.setAttribute("text-anchor", "middle");
+        text.textContent = "μ";
+        svg.appendChild(text);
+    </script>
+</body>
+</html>

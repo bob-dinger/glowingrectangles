@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Verb Grid</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 100px);
+            gap: 5px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .verb {
+            padding: 8px 4px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.15s ease;
+            background: rgba(255,255,255,0.03);
+        }
+        .verb:hover {
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.05);
+        }
+        .category-header {
+            grid-column: 1 / -1;
+            padding: 20px 0 10px 0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #333;
+            margin-top: 20px;
+        }
+        .category-header:first-child {
+            margin-top: 0;
+        }
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+        }
+        #modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #modal-content {
+            width: 90vw;
+            height: 90vh;
+            background: #111;
+            border-radius: 12px;
+            position: relative;
+        }
+        #close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            z-index: 10;
+        }
+        #close-btn:hover {
+            color: #fff;
+        }
+        #modal-title {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 24px;
+            color: #fff;
+        }
+        #force-diagram {
+            width: 100%;
+            height: 100%;
+        }
+        .link {
+            stroke: #444;
+            stroke-opacity: 0.6;
+        }
+        .instructions {
+            text-align: center;
+            padding: 15px;
+            color: #555;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">Click any verb to see related words</div>
+    <div id="grid"></div>
+
+    <div id="modal">
+        <div id="modal-content">
+            <span id="close-btn">&times;</span>
+            <div id="modal-title"></div>
+            <svg id="force-diagram"></svg>
+        </div>
+    </div>
+
+    <script>
+        const categories = {
+            motion: { label: 'Motion & Movement', color: '#22c55e' },
+            communication: { label: 'Communication', color: '#3b82f6' },
+            emotion: { label: 'Emotion & Feeling', color: '#ec4899' },
+            cognition: { label: 'Thinking & Learning', color: '#a855f7' },
+            perception: { label: 'Senses & Perception', color: '#06b6d4' },
+            physical: { label: 'Physical Actions', color: '#f59e0b' },
+            social: { label: 'Social & Relationships', color: '#ef4444' },
+            change: { label: 'Change & Progress', color: '#84cc16' },
+            existence: { label: 'Being & State', color: '#888' }
+        };
+
+        // Translation dictionary
+        const translations = {
+            // Motion
+            'ir': 'to go', 'venir': 'to come', 'andar': 'to walk/go', 'caminar': 'to walk',
+            'correr': 'to run', 'saltar': 'to jump', 'caer': 'to fall', 'subir': 'to go up',
+            'bajar': 'to go down', 'entrar': 'to enter', 'salir': 'to leave/exit', 'volver': 'to return',
+            'llegar': 'to arrive', 'partir': 'to depart', 'pasar': 'to pass', 'cruzar': 'to cross',
+            'seguir': 'to follow/continue', 'mover': 'to move', 'llevar': 'to carry/take',
+            'traer': 'to bring', 'tirar': 'to throw/pull', 'empujar': 'to push', 'volar': 'to fly',
+            'nadar': 'to swim', 'girar': 'to turn/spin', 'marchar': 'to march', 'pasear': 'to stroll',
+            'deambular': 'to wander', 'vagar': 'to roam', 'errar': 'to wander/err', 'recorrer': 'to travel through',
+            'transitar': 'to transit', 'trotar': 'to jog', 'galopar': 'to gallop', 'esprintar': 'to sprint',
+            'acelerar': 'to accelerate', 'apresurarse': 'to hurry', 'precipitarse': 'to rush/plunge',
+            'brincar': 'to hop', 'botar': 'to bounce', 'rebotar': 'to rebound', 'salpicar': 'to splash',
+            'lanzarse': 'to throw oneself', 'abalanzarse': 'to lunge', 'caerse': 'to fall down',
+            'desplomarse': 'to collapse', 'derrumbarse': 'to crumble', 'hundirse': 'to sink',
+            'tropezar': 'to stumble', 'ascender': 'to ascend', 'escalar': 'to climb', 'trepar': 'to climb up',
+            'elevarse': 'to rise', 'alzarse': 'to rise up', 'montar': 'to mount/ride',
+            'descender': 'to descend', 'declinar': 'to decline', 'disminuir': 'to decrease',
+            'apearse': 'to get off', 'desmontar': 'to dismount', 'ingresar': 'to enter (formal)',
+            'penetrar': 'to penetrate', 'introducirse': 'to get into', 'meterse': 'to get in',
+            'acceder': 'to access', 'irrumpir': 'to burst in', 'irse': 'to leave', 'marcharse': 'to go away',
+            'abandonar': 'to abandon', 'emerger': 'to emerge', 'surgir': 'to arise', 'regresar': 'to return',
+            'retornar': 'to return', 'tornar': 'to return (literary)', 'reaparecer': 'to reappear',
+            'reincidir': 'to relapse', 'arribar': 'to arrive (formal)', 'alcanzar': 'to reach',
+            'aterrizar': 'to land', 'aparecer': 'to appear', 'presentarse': 'to show up',
+            'zarpar': 'to set sail', 'despegar': 'to take off', 'arrancar': 'to start/pull out',
+            'atravesar': 'to cross through', 'traspasar': 'to go through', 'circular': 'to circulate',
+            'vadear': 'to wade', 'franquear': 'to cross over', 'continuar': 'to continue',
+            'proseguir': 'to proceed', 'perseguir': 'to pursue', 'rastrear': 'to track',
+            'perseverar': 'to persevere', 'desplazar': 'to displace', 'trasladar': 'to transfer',
+            'agitar': 'to shake', 'menear': 'to wiggle', 'remover': 'to stir', 'transportar': 'to transport',
+            'cargar': 'to load/carry', 'acarrear': 'to haul', 'portar': 'to carry (formal)',
+            'conducir': 'to drive/lead', 'acercar': 'to bring closer', 'lanzar': 'to launch',
+            'arrojar': 'to throw', 'echar': 'to throw/put', 'aventar': 'to throw (Lat Am)',
+            'disparar': 'to shoot', 'jalar': 'to pull', 'impulsar': 'to propel', 'presionar': 'to press',
+            'propulsar': 'to propel', 'arrempujar': 'to shove', 'apretar': 'to squeeze',
+            'planear': 'to glide/plan', 'sobrevolar': 'to fly over', 'revolotear': 'to flutter',
+            'flotar': 'to float', 'bucear': 'to dive', 'sumergirse': 'to submerge', 'bracear': 'to swim (arms)',
+            'chapotear': 'to splash around', 'rotar': 'to rotate', 'voltear': 'to flip', 'torcer': 'to twist',
+            'virar': 'to veer', 'pivotar': 'to pivot', 'dirigirse': 'to head toward',
+            'encaminarse': 'to make one\'s way', 'acudir': 'to attend/come', 'aproximarse': 'to approach',
+
+            // Communication
+            'hablar': 'to speak', 'decir': 'to say/tell', 'contar': 'to tell/count', 'preguntar': 'to ask',
+            'responder': 'to respond', 'llamar': 'to call', 'gritar': 'to shout', 'susurrar': 'to whisper',
+            'explicar': 'to explain', 'pedir': 'to ask for', 'ordenar': 'to order', 'prometer': 'to promise',
+            'negar': 'to deny', 'admitir': 'to admit', 'anunciar': 'to announce', 'advertir': 'to warn',
+            'aconsejar': 'to advise', 'discutir': 'to discuss/argue', 'escribir': 'to write', 'leer': 'to read',
+            'traducir': 'to translate', 'cantar': 'to sing', 'mentir': 'to lie', 'conversar': 'to converse',
+            'charlar': 'to chat', 'platicar': 'to chat (Lat Am)', 'dialogar': 'to dialogue',
+            'comunicar': 'to communicate', 'expresar': 'to express', 'relatar': 'to relate', 'narrar': 'to narrate',
+            'referir': 'to refer', 'describir': 'to describe', 'detallar': 'to detail', 'manifestar': 'to manifest',
+            'declarar': 'to declare', 'afirmar': 'to affirm', 'interrogar': 'to interrogate',
+            'cuestionar': 'to question', 'inquirir': 'to inquire', 'indagar': 'to investigate',
+            'consultar': 'to consult', 'averiguar': 'to find out', 'contestar': 'to answer',
+            'replicar': 'to reply', 'retrucar': 'to retort', 'rebatir': 'to refute', 'corresponder': 'to correspond',
+            'nombrar': 'to name', 'denominar': 'to denominate', 'invocar': 'to invoke', 'convocar': 'to convene',
+            'telefonear': 'to phone', 'chillar': 'to screech', 'vociferar': 'to shout loudly',
+            'bramar': 'to roar', 'aullar': 'to howl', 'berrear': 'to bellow', 'clamar': 'to cry out',
+            'murmurar': 'to murmur', 'cuchichear': 'to whisper', 'bisbisear': 'to whisper softly',
+            'musitar': 'to mutter', 'mascullar': 'to mumble', 'aclarar': 'to clarify', 'exponer': 'to expose/present',
+            'ilustrar': 'to illustrate', 'interpretar': 'to interpret', 'solicitar': 'to request',
+            'rogar': 'to beg', 'suplicar': 'to plead', 'implorar': 'to implore', 'requerir': 'to require',
+            'demandar': 'to demand', 'mandar': 'to send/order', 'comandar': 'to command', 'disponer': 'to arrange',
+            'decretar': 'to decree', 'exigir': 'to demand', 'imponer': 'to impose', 'jurar': 'to swear',
+            'comprometerse': 'to commit', 'asegurar': 'to assure', 'garantizar': 'to guarantee',
+            'obligarse': 'to obligate oneself', 'rechazar': 'to reject', 'denegar': 'to deny (formal)',
+            'rehusar': 'to refuse', 'desmentir': 'to deny/refute', 'contradecir': 'to contradict',
+            'reconocer': 'to recognize', 'aceptar': 'to accept', 'confesar': 'to confess', 'conceder': 'to concede',
+            'permitir': 'to permit', 'proclamar': 'to proclaim', 'notificar': 'to notify', 'publicar': 'to publish',
+            'divulgar': 'to divulge', 'avisar': 'to notify/warn', 'alertar': 'to alert', 'prevenir': 'to prevent/warn',
+            'amonestar': 'to admonish', 'recomendar': 'to recommend', 'sugerir': 'to suggest',
+            'proponer': 'to propose', 'orientar': 'to orient', 'guiar': 'to guide', 'asesorar': 'to advise (professional)',
+            'debatir': 'to debate', 'argumentar': 'to argue', 'polemizar': 'to polemicize',
+            'disputar': 'to dispute', 'controvertir': 'to controvert', 'redactar': 'to draft/write',
+            'componer': 'to compose', 'anotar': 'to note', 'apuntar': 'to point/note', 'transcribir': 'to transcribe',
+            'inscribir': 'to inscribe', 'descifrar': 'to decipher', 'estudiar': 'to study', 'repasar': 'to review',
+            'ojear': 'to glance', 'hojear': 'to leaf through', 'verter': 'to pour/translate', 'convertir': 'to convert',
+            'entonar': 'to intone', 'tararear': 'to hum', 'corear': 'to chorus', 'vocalizar': 'to vocalize',
+            'engañar': 'to deceive', 'falsear': 'to falsify', 'fingir': 'to pretend', 'simular': 'to simulate',
+            'embaucar': 'to trick', 'embustear': 'to lie habitually',
+
+            // Emotion
+            'querer': 'to want/love', 'amar': 'to love', 'odiar': 'to hate', 'gustar': 'to like/please',
+            'desear': 'to desire', 'esperar': 'to hope/wait', 'temer': 'to fear', 'enojar': 'to anger',
+            'alegrar': 'to make happy', 'entristecer': 'to sadden', 'sorprender': 'to surprise',
+            'preocupar': 'to worry', 'calmar': 'to calm', 'sufrir': 'to suffer', 'gozar': 'to enjoy',
+            'llorar': 'to cry', 'reír': 'to laugh', 'avergonzar': 'to embarrass', 'envidiar': 'to envy',
+            'confiar': 'to trust', 'lamentar': 'to lament', 'adorar': 'to adore', 'idolatrar': 'to idolize',
+            'venerar': 'to venerate', 'estimar': 'to esteem', 'apasionarse': 'to become passionate',
+            'detestar': 'to detest', 'aborrecer': 'to loathe', 'despreciar': 'to despise',
+            'repudiar': 'to repudiate', 'abominar': 'to abominate', 'execrar': 'to execrate',
+            'agradar': 'to please', 'encantar': 'to enchant', 'fascinar': 'to fascinate',
+            'deleitar': 'to delight', 'complacer': 'to please', 'satisfacer': 'to satisfy',
+            'anhelar': 'to yearn', 'ansiar': 'to long for', 'ambicionar': 'to aspire to',
+            'codiciar': 'to covet', 'apetecer': 'to crave', 'aguardar': 'to await', 'ilusionarse': 'to get excited',
+            'aspirar': 'to aspire', 'asustarse': 'to get scared', 'aterrorizarse': 'to be terrified',
+            'atemorizarse': 'to become fearful', 'amedrentarse': 'to be intimidated',
+            'acobardarse': 'to lose courage', 'enfadar': 'to annoy', 'molestar': 'to bother',
+            'irritar': 'to irritate', 'fastidiar': 'to annoy', 'exasperar': 'to exasperate',
+            'indignar': 'to outrage', 'contentar': 'to content', 'regocijar': 'to rejoice',
+            'animar': 'to encourage', 'entusiasmar': 'to enthuse', 'apenar': 'to sadden',
+            'afligir': 'to afflict', 'acongojar': 'to distress', 'desconsolar': 'to dishearten',
+            'deprimir': 'to depress', 'abatir': 'to knock down/depress', 'asombrar': 'to astonish',
+            'maravillar': 'to marvel', 'impresionar': 'to impress', 'pasmar': 'to astound',
+            'desconcertar': 'to disconcert', 'inquietar': 'to disturb', 'angustiar': 'to anguish',
+            'intranquilizar': 'to make uneasy', 'desasosegar': 'to disquiet', 'alarmar': 'to alarm',
+            'tranquilizar': 'to tranquilize', 'sosegar': 'to calm', 'apaciguar': 'to appease',
+            'serenar': 'to soothe', 'aplacar': 'to placate', 'relajar': 'to relax', 'padecer': 'to suffer',
+            'penar': 'to suffer/grieve', 'agonizar': 'to agonize', 'dolerse': 'to hurt/grieve',
+            'afligirse': 'to grieve', 'disfrutar': 'to enjoy', 'deleitarse': 'to delight in',
+            'recrearse': 'to amuse oneself', 'regocijarse': 'to rejoice', 'complacerse': 'to take pleasure',
+            'sollozar': 'to sob', 'gimotear': 'to whimper', 'lloriquear': 'to whine',
+            'lagrimear': 'to tear up', 'plañir': 'to wail', 'lamentarse': 'to lament',
+            'sonreír': 'to smile', 'carcajear': 'to guffaw', 'burlarse': 'to mock', 'mofarse': 'to scoff',
+            'bromear': 'to joke', 'abochornar': 'to embarrass', 'sonrojar': 'to make blush',
+            'ruborizar': 'to blush', 'humillar': 'to humiliate', 'deshonrar': 'to dishonor',
+            'celar': 'to be jealous', 'resentir': 'to resent', 'creer': 'to believe', 'fiarse': 'to trust',
+            'depositar': 'to deposit/trust', 'encomendar': 'to entrust', 'deplorar': 'to deplore',
+            'sentir': 'to feel', 'arrepentirse': 'to repent', 'quejarse': 'to complain', 'apreciar': 'to appreciate',
+
+            // Cognition
+            'pensar': 'to think', 'saber': 'to know (facts)', 'conocer': 'to know (people/places)',
+            'entender': 'to understand', 'comprender': 'to comprehend', 'recordar': 'to remember',
+            'olvidar': 'to forget', 'imaginar': 'to imagine', 'soñar': 'to dream', 'decidir': 'to decide',
+            'elegir': 'to choose', 'aprender': 'to learn', 'enseñar': 'to teach', 'investigar': 'to investigate',
+            'analizar': 'to analyze', 'comparar': 'to compare', 'dudar': 'to doubt', 'suponer': 'to suppose',
+            'calcular': 'to calculate', 'planear': 'to plan', 'inventar': 'to invent',
+            'reflexionar': 'to reflect', 'meditar': 'to meditate', 'cavilar': 'to ponder', 'razonar': 'to reason',
+            'considerar': 'to consider', 'deliberar': 'to deliberate', 'opinar': 'to opine',
+            'juzgar': 'to judge', 'dominar': 'to master', 'enterarse': 'to find out',
+            'identificar': 'to identify', 'distinguir': 'to distinguish', 'familiarizarse': 'to familiarize',
+            'captar': 'to grasp', 'asimilar': 'to assimilate', 'percibir': 'to perceive',
+            'concebir': 'to conceive', 'abarcar': 'to encompass', 'acordarse': 'to remember',
+            'rememorar': 'to recall', 'evocar': 'to evoke', 'memorizar': 'to memorize', 'retener': 'to retain',
+            'descuidar': 'to neglect', 'omitir': 'to omit', 'desatender': 'to disregard', 'ignorar': 'to ignore',
+            'fantasear': 'to fantasize', 'idear': 'to devise', 'visualizar': 'to visualize',
+            'determinar': 'to determine', 'resolver': 'to resolve', 'optar': 'to opt', 'escoger': 'to choose',
+            'dictaminar': 'to rule', 'seleccionar': 'to select', 'preferir': 'to prefer',
+            'designar': 'to designate', 'votar': 'to vote', 'instruirse': 'to educate oneself',
+            'educarse': 'to educate oneself', 'capacitarse': 'to train', 'formarse': 'to form oneself',
+            'instruir': 'to instruct', 'educar': 'to educate', 'formar': 'to form', 'adiestrar': 'to train',
+            'capacitar': 'to enable', 'mostrar': 'to show', 'cursar': 'to study (course)',
+            'explorar': 'to explore', 'escudriñar': 'to scrutinize', 'pesquisar': 'to investigate',
+            'examinar': 'to examine', 'descomponer': 'to decompose', 'evaluar': 'to evaluate',
+            'contrastar': 'to contrast', 'cotejar': 'to compare', 'equiparar': 'to equate',
+            'parangonar': 'to compare', 'confrontar': 'to confront', 'vacilar': 'to hesitate',
+            'titubear': 'to waver', 'hesitar': 'to hesitate', 'desconfiar': 'to distrust',
+            'sospechar': 'to suspect', 'presumir': 'to presume', 'asumir': 'to assume',
+            'conjeturar': 'to conjecture', 'especular': 'to speculate', 'hipotetizar': 'to hypothesize',
+            'computar': 'to compute', 'contar': 'to count', 'medir': 'to measure', 'cuantificar': 'to quantify',
+            'planificar': 'to plan', 'proyectar': 'to project', 'programar': 'to program',
+            'organizar': 'to organize', 'diseñar': 'to design', 'trazar': 'to trace', 'crear': 'to create',
+            'ingeniar': 'to devise', 'fabricar': 'to fabricate',
+
+            // Perception
+            'ver': 'to see', 'mirar': 'to look', 'observar': 'to observe', 'oír': 'to hear',
+            'escuchar': 'to listen', 'tocar': 'to touch', 'oler': 'to smell', 'probar': 'to taste/try',
+            'notar': 'to notice', 'descubrir': 'to discover', 'buscar': 'to search', 'encontrar': 'to find',
+            'esconder': 'to hide', 'aparecer': 'to appear', 'desaparecer': 'to disappear',
+            'contemplar': 'to contemplate', 'divisar': 'to discern', 'avistar': 'to sight',
+            'atisbar': 'to glimpse', 'atender': 'to attend', 'auscultar': 'to auscultate',
+            'palpar': 'to feel', 'tantear': 'to grope', 'acariciar': 'to caress', 'rozar': 'to brush',
+            'manosear': 'to handle', 'tañer': 'to play (instrument)', 'olfatear': 'to sniff',
+            'husmear': 'to snoop', 'olisquear': 'to sniff around', 'apestar': 'to stink',
+            'degustar': 'to taste', 'saborear': 'to savor', 'catar': 'to taste (wine)', 'paladear': 'to relish',
+            'advertir': 'to notice/warn', 'detectar': 'to detect', 'reparar': 'to notice/repair',
+            'hallar': 'to find', 'localizar': 'to locate', 'toparse': 'to bump into',
+            'exhibir': 'to exhibit', 'presentar': 'to present', 'demostrar': 'to demonstrate',
+            'revelar': 'to reveal', 'ocultar': 'to hide', 'encubrir': 'to cover up',
+            'disimular': 'to disguise', 'camuflar': 'to camouflage', 'tapar': 'to cover',
+            'enterrar': 'to bury', 'manifestarse': 'to manifest', 'brotar': 'to sprout',
+            'asomar': 'to peek', 'esfumarse': 'to vanish', 'desvanecerse': 'to fade',
+            'evaporarse': 'to evaporate', 'ocultarse': 'to hide oneself', 'ausentarse': 'to absent oneself',
+            'experimentar': 'to experience', 'intuir': 'to intuit',
+
+            // Physical
+            'hacer': 'to do/make', 'tomar': 'to take', 'dar': 'to give', 'poner': 'to put',
+            'quitar': 'to remove', 'abrir': 'to open', 'cerrar': 'to close', 'romper': 'to break',
+            'cortar': 'to cut', 'golpear': 'to hit', 'construir': 'to build', 'destruir': 'to destroy',
+            'usar': 'to use', 'guardar': 'to keep/save', 'limpiar': 'to clean', 'cocinar': 'to cook',
+            'comer': 'to eat', 'beber': 'to drink', 'dormir': 'to sleep', 'despertar': 'to wake up',
+            'vestir': 'to dress', 'trabajar': 'to work', 'jugar': 'to play', 'sentar': 'to seat',
+            'levantar': 'to lift/raise', 'realizar': 'to realize/carry out', 'efectuar': 'to effect',
+            'ejecutar': 'to execute', 'elaborar': 'to elaborate', 'producir': 'to produce',
+            'coger': 'to grab', 'agarrar': 'to grab', 'asir': 'to grasp', 'sujetar': 'to hold',
+            'sostener': 'to sustain', 'empuñar': 'to grip', 'entregar': 'to deliver', 'otorgar': 'to grant',
+            'ofrecer': 'to offer', 'donar': 'to donate', 'regalar': 'to give (gift)',
+            'proporcionar': 'to provide', 'colocar': 'to place', 'situar': 'to situate',
+            'ubicar': 'to locate', 'instalar': 'to install', 'sacar': 'to take out',
+            'retirar': 'to withdraw', 'extraer': 'to extract', 'apartar': 'to separate',
+            'despojar': 'to strip', 'eliminar': 'to eliminate', 'destapar': 'to uncover',
+            'inaugurar': 'to inaugurate', 'estrenar': 'to debut', 'iniciar': 'to initiate',
+            'clausurar': 'to close (formal)', 'sellar': 'to seal', 'obstruir': 'to obstruct',
+            'bloquear': 'to block', 'concluir': 'to conclude', 'quebrar': 'to break',
+            'destrozar': 'to destroy', 'despedazar': 'to tear apart', 'fracturar': 'to fracture',
+            'rasgar': 'to tear', 'tajar': 'to slice', 'seccionar': 'to section', 'rebanar': 'to slice',
+            'trozar': 'to cut up', 'cercenar': 'to sever', 'podar': 'to prune', 'pegar': 'to hit/stick',
+            'atizar': 'to stoke/hit', 'aporrear': 'to beat', 'apalear': 'to beat with stick',
+            'sacudir': 'to shake', 'abofetear': 'to slap', 'edificar': 'to build', 'erigir': 'to erect',
+            'armar': 'to assemble', 'demoler': 'to demolish', 'derribar': 'to knock down',
+            'arrasar': 'to raze', 'devastar': 'to devastate', 'aniquilar': 'to annihilate',
+            'deshacer': 'to undo', 'generar': 'to generate', 'originar': 'to originate',
+            'utilizar': 'to utilize', 'emplear': 'to employ', 'aplicar': 'to apply',
+            'manejar': 'to handle', 'aprovechar': 'to take advantage', 'servirse': 'to help oneself',
+            'almacenar': 'to store', 'conservar': 'to conserve', 'preservar': 'to preserve',
+            'reservar': 'to reserve', 'custodiar': 'to guard', 'archivar': 'to file',
+            'asear': 'to clean', 'fregar': 'to scrub', 'lavar': 'to wash', 'barrer': 'to sweep',
+            'pulir': 'to polish', 'desinfectar': 'to disinfect', 'guisar': 'to stew',
+            'preparar': 'to prepare', 'hornear': 'to bake', 'freír': 'to fry', 'asar': 'to roast',
+            'hervir': 'to boil', 'alimentarse': 'to feed oneself', 'ingerir': 'to ingest',
+            'devorar': 'to devour', 'engullir': 'to gulp', 'masticar': 'to chew', 'tragar': 'to swallow',
+            'sorber': 'to sip', 'libar': 'to sip', 'emborracharse': 'to get drunk',
+            'descansar': 'to rest', 'reposar': 'to rest', 'dormitar': 'to doze', 'cabecear': 'to nod off',
+            'adormecerse': 'to fall asleep', 'yacer': 'to lie', 'despertarse': 'to wake up',
+            'levantarse': 'to get up', 'madrugar': 'to wake early', 'espabilarse': 'to wake up',
+            'avivar': 'to enliven', 'vestirse': 'to dress oneself', 'ponerse': 'to put on',
+            'ataviarse': 'to dress up', 'arreglarse': 'to get ready', 'cubrir': 'to cover',
+            'laborar': 'to labor', 'currar': 'to work (slang)', 'ocuparse': 'to occupy oneself',
+            'ejercer': 'to practice', 'desempeñarse': 'to perform', 'bregar': 'to struggle',
+            'divertirse': 'to have fun', 'entretenerse': 'to entertain oneself', 'competir': 'to compete',
+            'apostar': 'to bet', 'sentarse': 'to sit down', 'acomodarse': 'to make oneself comfortable',
+            'instalarse': 'to settle in', 'aposentarse': 'to lodge', 'posarse': 'to perch',
+            'alzar': 'to raise', 'elevar': 'to elevate', 'izar': 'to hoist', 'erguir': 'to straighten',
+            'enderezar': 'to straighten', 'incorporar': 'to incorporate',
+
+            // Social
+            'vivir': 'to live', 'nacer': 'to be born', 'morir': 'to die', 'casarse': 'to marry',
+            'ayudar': 'to help', 'necesitar': 'to need', 'pertenecer': 'to belong', 'compartir': 'to share',
+            'reunir': 'to gather', 'separar': 'to separate', 'unir': 'to unite', 'dejar': 'to leave/let',
+            'quedar': 'to stay/remain', 'invitar': 'to invite', 'visitar': 'to visit', 'saludar': 'to greet',
+            'despedir': 'to say goodbye', 'respetar': 'to respect', 'obedecer': 'to obey', 'servir': 'to serve',
+            'existir': 'to exist', 'habitar': 'to inhabit', 'residir': 'to reside', 'morar': 'to dwell',
+            'sobrevivir': 'to survive', 'convivir': 'to live together', 'originarse': 'to originate',
+            'provenir': 'to come from', 'fallecer': 'to pass away', 'perecer': 'to perish',
+            'fenecer': 'to die', 'expirar': 'to expire', 'sucumbir': 'to succumb', 'finar': 'to die',
+            'desposarse': 'to wed', 'enlazarse': 'to join', 'relacionarse': 'to relate',
+            'tratar': 'to treat/deal', 'asistir': 'to assist/attend', 'auxiliar': 'to help',
+            'socorrer': 'to help', 'colaborar': 'to collaborate', 'cooperar': 'to cooperate',
+            'apoyar': 'to support', 'precisar': 'to need', 'carecer': 'to lack', 'faltar': 'to lack',
+            'urgir': 'to be urgent', 'integrarse': 'to integrate', 'afiliarse': 'to affiliate',
+            'repartir': 'to distribute', 'dividir': 'to divide', 'distribuir': 'to distribute',
+            'participar': 'to participate', 'juntar': 'to join', 'congregar': 'to congregate',
+            'agrupar': 'to group', 'concentrar': 'to concentrate', 'acopiar': 'to gather',
+            'alejar': 'to move away', 'distanciar': 'to distance', 'aislar': 'to isolate',
+            'segregar': 'to segregate', 'enlazar': 'to link', 'vincular': 'to link',
+            'conectar': 'to connect', 'fusionar': 'to merge', 'ligar': 'to tie', 'acompañar': 'to accompany',
+            'escoltar': 'to escort', 'imitar': 'to imitate', 'soltar': 'to release', 'ceder': 'to yield',
+            'legar': 'to bequeath', 'renunciar': 'to renounce', 'permanecer': 'to remain',
+            'quedarse': 'to stay', 'restar': 'to subtract', 'sobrar': 'to be left over',
+            'acordar': 'to agree', 'citarse': 'to meet up', 'convidar': 'to invite',
+            'brindar': 'to toast', 'agasajar': 'to entertain', 'obsequiar': 'to give a gift',
+            'frecuentar': 'to frequent', 'inspeccionar': 'to inspect', 'recibir': 'to receive',
+            'acoger': 'to welcome', 'honrar': 'to honor', 'acatar': 'to comply',
+            'cumplir': 'to fulfill', 'someterse': 'to submit', 'dirigir': 'to direct',
+            'gobernar': 'to govern', 'enviar': 'to send', 'funcionar': 'to function',
+
+            // Change
+            'cambiar': 'to change', 'crecer': 'to grow', 'aumentar': 'to increase',
+            'mejorar': 'to improve', 'empeorar': 'to worsen', 'comenzar': 'to begin',
+            'terminar': 'to finish', 'parar': 'to stop', 'desarrollar': 'to develop',
+            'transformar': 'to transform', 'adaptar': 'to adapt', 'perder': 'to lose',
+            'ganar': 'to win/earn', 'obtener': 'to obtain', 'lograr': 'to achieve',
+            'fallar': 'to fail', 'arreglar': 'to fix', 'dañar': 'to damage', 'modificar': 'to modify',
+            'alterar': 'to alter', 'variar': 'to vary', 'mudar': 'to change', 'desarrollarse': 'to develop',
+            'expandirse': 'to expand', 'madurar': 'to mature', 'prosperar': 'to prosper',
+            'reducir': 'to reduce', 'menguar': 'to diminish', 'decrecer': 'to decrease',
+            'mermar': 'to dwindle', 'aminorar': 'to lessen', 'incrementar': 'to increment',
+            'acrecentar': 'to increase', 'ampliar': 'to expand', 'agrandar': 'to enlarge',
+            'progresar': 'to progress', 'avanzar': 'to advance', 'perfeccionar': 'to perfect',
+            'optimizar': 'to optimize', 'superar': 'to surpass', 'recuperarse': 'to recover',
+            'deteriorar': 'to deteriorate', 'agravar': 'to aggravate', 'degradar': 'to degrade',
+            'decaer': 'to decay', 'empezar': 'to start', 'inaugurar': 'to inaugurate',
+            'principiar': 'to begin', 'acabar': 'to finish', 'finalizar': 'to finalize',
+            'culminar': 'to culminate', 'completar': 'to complete', 'persistir': 'to persist',
+            'prolongar': 'to prolong', 'mantener': 'to maintain', 'perdurar': 'to endure',
+            'detener': 'to stop', 'cesar': 'to cease', 'frenar': 'to brake', 'interrumpir': 'to interrupt',
+            'suspender': 'to suspend', 'paralizar': 'to paralyze', 'evolucionar': 'to evolve',
+            'expandir': 'to expand', 'fomentar': 'to foster', 'transmutar': 'to transmute',
+            'metamorfosear': 'to metamorphose', 'volver': 'to turn into', 'trocar': 'to exchange',
+            'ajustar': 'to adjust', 'acomodar': 'to accommodate', 'adecuar': 'to adapt',
+            'amoldar': 'to mold', 'extraviar': 'to misplace', 'desperdiciar': 'to waste',
+            'malgastar': 'to squander', 'fracasar': 'to fail', 'arruinar': 'to ruin',
+            'conseguir': 'to get', 'adquirir': 'to acquire', 'vencer': 'to defeat',
+            'triunfar': 'to triumph', 'conquistar': 'to conquer', 'errar': 'to err',
+            'equivocarse': 'to be wrong', 'malograr': 'to spoil', 'frustrarse': 'to get frustrated',
+            'reparar': 'to repair', 'restaurar': 'to restore', 'solucionar': 'to solve',
+            'perjudicar': 'to harm', 'lesionar': 'to injure', 'herir': 'to wound',
+            'estropear': 'to ruin', 'averiar': 'to damage',
+
+            // Existence
+            'ser': 'to be (permanent)', 'estar': 'to be (temporary)', 'haber': 'to have (auxiliary)',
+            'tener': 'to have', 'poder': 'to be able', 'deber': 'to must/owe', 'parecer': 'to seem',
+            'resultar': 'to result', 'ocurrir': 'to occur', 'valer': 'to be worth',
+            'importar': 'to matter', 'significar': 'to mean', 'representar': 'to represent',
+            'consistir': 'to consist', 'depender': 'to depend', 'constituir': 'to constitute',
+            'encontrarse': 'to find oneself', 'hallarse': 'to find oneself', 'situarse': 'to be situated',
+            'subsistir': 'to subsist', 'suceder': 'to happen', 'acontecer': 'to happen',
+            'acaecer': 'to occur', 'sobrevenir': 'to occur', 'transcurrir': 'to elapse',
+            'devenir': 'to become', 'costar': 'to cost', 'merecer': 'to deserve',
+            'equivaler': 'to be equivalent', 'interesar': 'to interest', 'concernir': 'to concern',
+            'afectar': 'to affect', 'incumbir': 'to be incumbent', 'atañer': 'to concern',
+            'simbolizar': 'to symbolize', 'denotar': 'to denote', 'indicar': 'to indicate',
+            'personificar': 'to personify', 'encarnar': 'to embody', 'componerse': 'to be composed',
+            'constar': 'to consist', 'basarse': 'to be based', 'fundamentarse': 'to be founded',
+            'radicar': 'to be rooted', 'pender': 'to hang/depend', 'subordinarse': 'to subordinate',
+            'sujetarse': 'to hold on', 'condicionarse': 'to be conditioned', 'poseer': 'to possess',
+            'disponer': 'to have available', 'gozar': 'to enjoy', 'aparentar': 'to appear',
+            'semejar': 'to resemble', 'asemejarse': 'to resemble', 'lucir': 'to look'
+        };
+
+        // 250 common Spanish verbs with category and related verbs for drill-down
+        const verbs = [
+            // MOTION
+            { word: 'ir', cat: 'motion', related: ['andar', 'caminar', 'marchar', 'partir', 'salir', 'dirigirse', 'encaminarse', 'trasladarse'] },
+            { word: 'venir', cat: 'motion', related: ['llegar', 'acudir', 'presentarse', 'aparecer', 'acercarse', 'aproximarse'] },
+            { word: 'andar', cat: 'motion', related: ['caminar', 'pasear', 'deambular', 'vagar', 'errar', 'recorrer', 'transitar'] },
+            { word: 'caminar', cat: 'motion', related: ['andar', 'pasear', 'marchar', 'avanzar', 'recorrer', 'deambular', 'trotar'] },
+            { word: 'correr', cat: 'motion', related: ['trotar', 'galopar', 'esprintar', 'acelerar', 'apresurarse', 'precipitarse'] },
+            { word: 'saltar', cat: 'motion', related: ['brincar', 'botar', 'rebotar', 'salpicar', 'lanzarse', 'abalanzarse'] },
+            { word: 'caer', cat: 'motion', related: ['caerse', 'desplomarse', 'derrumbarse', 'precipitarse', 'hundirse', 'tropezar'] },
+            { word: 'subir', cat: 'motion', related: ['ascender', 'escalar', 'trepar', 'elevarse', 'alzarse', 'montar'] },
+            { word: 'bajar', cat: 'motion', related: ['descender', 'declinar', 'disminuir', 'caer', 'apearse', 'desmontar'] },
+            { word: 'entrar', cat: 'motion', related: ['ingresar', 'penetrar', 'introducirse', 'meterse', 'acceder', 'irrumpir'] },
+            { word: 'salir', cat: 'motion', related: ['partir', 'irse', 'marcharse', 'abandonar', 'emerger', 'surgir'] },
+            { word: 'volver', cat: 'motion', related: ['regresar', 'retornar', 'tornar', 'reaparecer', 'reincidir'] },
+            { word: 'llegar', cat: 'motion', related: ['arribar', 'alcanzar', 'aterrizar', 'aparecer', 'presentarse'] },
+            { word: 'partir', cat: 'motion', related: ['salir', 'marcharse', 'irse', 'zarpar', 'despegar', 'arrancar'] },
+            { word: 'pasar', cat: 'motion', related: ['cruzar', 'atravesar', 'traspasar', 'transitar', 'circular'] },
+            { word: 'cruzar', cat: 'motion', related: ['atravesar', 'pasar', 'traspasar', 'vadear', 'franquear'] },
+            { word: 'seguir', cat: 'motion', related: ['continuar', 'proseguir', 'perseguir', 'rastrear', 'perseverar'] },
+            { word: 'mover', cat: 'motion', related: ['desplazar', 'trasladar', 'agitar', 'menear', 'remover'] },
+            { word: 'llevar', cat: 'motion', related: ['transportar', 'cargar', 'acarrear', 'portar', 'conducir', 'trasladar'] },
+            { word: 'traer', cat: 'motion', related: ['llevar', 'portar', 'acarrear', 'transportar', 'acercar'] },
+            { word: 'tirar', cat: 'motion', related: ['lanzar', 'arrojar', 'echar', 'aventar', 'disparar', 'jalar'] },
+            { word: 'empujar', cat: 'motion', related: ['impulsar', 'presionar', 'propulsar', 'arrempujar', 'apretar'] },
+            { word: 'volar', cat: 'motion', related: ['planear', 'sobrevolar', 'revolotear', 'elevarse', 'despegar'] },
+            { word: 'nadar', cat: 'motion', related: ['flotar', 'bucear', 'sumergirse', 'bracear', 'chapotear'] },
+            { word: 'girar', cat: 'motion', related: ['rotar', 'voltear', 'torcer', 'virar', 'dar vueltas', 'pivotar'] },
+
+            // COMMUNICATION
+            { word: 'hablar', cat: 'communication', related: ['conversar', 'charlar', 'platicar', 'dialogar', 'comunicar', 'expresar'] },
+            { word: 'decir', cat: 'communication', related: ['contar', 'relatar', 'narrar', 'expresar', 'manifestar', 'declarar', 'afirmar'] },
+            { word: 'contar', cat: 'communication', related: ['relatar', 'narrar', 'referir', 'describir', 'explicar', 'detallar'] },
+            { word: 'preguntar', cat: 'communication', related: ['interrogar', 'cuestionar', 'inquirir', 'indagar', 'consultar', 'averiguar'] },
+            { word: 'responder', cat: 'communication', related: ['contestar', 'replicar', 'retrucar', 'rebatir', 'corresponder'] },
+            { word: 'llamar', cat: 'communication', related: ['nombrar', 'denominar', 'invocar', 'convocar', 'telefonear', 'gritar'] },
+            { word: 'gritar', cat: 'communication', related: ['chillar', 'vociferar', 'bramar', 'aullar', 'berrear', 'clamar'] },
+            { word: 'susurrar', cat: 'communication', related: ['murmurar', 'cuchichear', 'bisbisear', 'musitar', 'mascullar'] },
+            { word: 'explicar', cat: 'communication', related: ['aclarar', 'exponer', 'describir', 'detallar', 'ilustrar', 'interpretar'] },
+            { word: 'pedir', cat: 'communication', related: ['solicitar', 'rogar', 'suplicar', 'implorar', 'requerir', 'demandar'] },
+            { word: 'ordenar', cat: 'communication', related: ['mandar', 'comandar', 'disponer', 'decretar', 'exigir', 'imponer'] },
+            { word: 'prometer', cat: 'communication', related: ['jurar', 'comprometerse', 'asegurar', 'garantizar', 'obligarse'] },
+            { word: 'negar', cat: 'communication', related: ['rechazar', 'denegar', 'rehusar', 'desmentir', 'contradecir'] },
+            { word: 'admitir', cat: 'communication', related: ['reconocer', 'aceptar', 'confesar', 'conceder', 'permitir'] },
+            { word: 'anunciar', cat: 'communication', related: ['proclamar', 'declarar', 'comunicar', 'notificar', 'publicar', 'divulgar'] },
+            { word: 'advertir', cat: 'communication', related: ['avisar', 'alertar', 'prevenir', 'amonestar', 'notificar'] },
+            { word: 'aconsejar', cat: 'communication', related: ['recomendar', 'sugerir', 'proponer', 'orientar', 'guiar', 'asesorar'] },
+            { word: 'discutir', cat: 'communication', related: ['debatir', 'argumentar', 'polemizar', 'disputar', 'controvertir'] },
+            { word: 'escribir', cat: 'communication', related: ['redactar', 'componer', 'anotar', 'apuntar', 'transcribir', 'inscribir'] },
+            { word: 'leer', cat: 'communication', related: ['descifrar', 'interpretar', 'estudiar', 'repasar', 'ojear', 'hojear'] },
+            { word: 'traducir', cat: 'communication', related: ['interpretar', 'trasladar', 'verter', 'convertir', 'descifrar'] },
+            { word: 'cantar', cat: 'communication', related: ['entonar', 'tararear', 'corear', 'vocalizar', 'interpretar'] },
+            { word: 'mentir', cat: 'communication', related: ['engañar', 'falsear', 'fingir', 'simular', 'embaucar', 'embustear'] },
+
+            // EMOTION
+            { word: 'querer', cat: 'emotion', related: ['amar', 'adorar', 'desear', 'anhelar', 'estimar', 'apreciar'] },
+            { word: 'amar', cat: 'emotion', related: ['querer', 'adorar', 'idolatrar', 'venerar', 'estimar', 'apasionarse'] },
+            { word: 'odiar', cat: 'emotion', related: ['detestar', 'aborrecer', 'despreciar', 'repudiar', 'abominar', 'execrar'] },
+            { word: 'gustar', cat: 'emotion', related: ['agradar', 'encantar', 'fascinar', 'deleitar', 'complacer', 'satisfacer'] },
+            { word: 'desear', cat: 'emotion', related: ['querer', 'anhelar', 'ansiar', 'ambicionar', 'codiciar', 'apetecer'] },
+            { word: 'esperar', cat: 'emotion', related: ['aguardar', 'confiar', 'anhelar', 'ilusionarse', 'aspirar'] },
+            { word: 'temer', cat: 'emotion', related: ['asustarse', 'aterrorizarse', 'atemorizarse', 'amedrentarse', 'acobardarse'] },
+            { word: 'enojar', cat: 'emotion', related: ['enfadar', 'molestar', 'irritar', 'fastidiar', 'exasperar', 'indignar'] },
+            { word: 'alegrar', cat: 'emotion', related: ['contentar', 'regocijar', 'animar', 'entusiasmar', 'deleitar'] },
+            { word: 'entristecer', cat: 'emotion', related: ['apenar', 'afligir', 'acongojar', 'desconsolar', 'deprimir', 'abatir'] },
+            { word: 'sorprender', cat: 'emotion', related: ['asombrar', 'maravillar', 'impresionar', 'pasmar', 'desconcertar'] },
+            { word: 'preocupar', cat: 'emotion', related: ['inquietar', 'angustiar', 'intranquilizar', 'desasosegar', 'alarmar'] },
+            { word: 'calmar', cat: 'emotion', related: ['tranquilizar', 'sosegar', 'apaciguar', 'serenar', 'aplacar', 'relajar'] },
+            { word: 'sufrir', cat: 'emotion', related: ['padecer', 'penar', 'agonizar', 'lamentar', 'dolerse', 'afligirse'] },
+            { word: 'gozar', cat: 'emotion', related: ['disfrutar', 'deleitarse', 'recrearse', 'regocijarse', 'complacerse'] },
+            { word: 'llorar', cat: 'emotion', related: ['sollozar', 'gimotear', 'lloriquear', 'lagrimear', 'plañir', 'lamentarse'] },
+            { word: 'reír', cat: 'emotion', related: ['sonreír', 'carcajear', 'burlarse', 'mofarse', 'bromear'] },
+            { word: 'avergonzar', cat: 'emotion', related: ['abochornar', 'sonrojar', 'ruborizar', 'humillar', 'deshonrar'] },
+            { word: 'envidiar', cat: 'emotion', related: ['celar', 'codiciar', 'ambicionar', 'resentir', 'anhelar'] },
+            { word: 'confiar', cat: 'emotion', related: ['creer', 'fiarse', 'esperar', 'depositar', 'encomendar'] },
+            { word: 'lamentar', cat: 'emotion', related: ['deplorar', 'sentir', 'arrepentirse', 'dolerse', 'quejarse'] },
+
+            // COGNITION
+            { word: 'pensar', cat: 'cognition', related: ['reflexionar', 'meditar', 'cavilar', 'razonar', 'considerar', 'deliberar'] },
+            { word: 'creer', cat: 'cognition', related: ['opinar', 'suponer', 'imaginar', 'considerar', 'estimar', 'juzgar'] },
+            { word: 'saber', cat: 'cognition', related: ['conocer', 'entender', 'comprender', 'dominar', 'enterarse'] },
+            { word: 'conocer', cat: 'cognition', related: ['saber', 'reconocer', 'identificar', 'distinguir', 'familiarizarse'] },
+            { word: 'entender', cat: 'cognition', related: ['comprender', 'captar', 'asimilar', 'percibir', 'interpretar'] },
+            { word: 'comprender', cat: 'cognition', related: ['entender', 'captar', 'asimilar', 'concebir', 'abarcar'] },
+            { word: 'recordar', cat: 'cognition', related: ['acordarse', 'rememorar', 'evocar', 'memorizar', 'retener'] },
+            { word: 'olvidar', cat: 'cognition', related: ['descuidar', 'omitir', 'desatender', 'ignorar', 'abandonar'] },
+            { word: 'imaginar', cat: 'cognition', related: ['fantasear', 'soñar', 'idear', 'concebir', 'inventar', 'visualizar'] },
+            { word: 'soñar', cat: 'cognition', related: ['imaginar', 'fantasear', 'anhelar', 'desear', 'ilusionarse'] },
+            { word: 'decidir', cat: 'cognition', related: ['determinar', 'resolver', 'optar', 'elegir', 'escoger', 'dictaminar'] },
+            { word: 'elegir', cat: 'cognition', related: ['escoger', 'seleccionar', 'optar', 'preferir', 'designar', 'votar'] },
+            { word: 'aprender', cat: 'cognition', related: ['estudiar', 'instruirse', 'educarse', 'capacitarse', 'formarse', 'asimilar'] },
+            { word: 'enseñar', cat: 'cognition', related: ['instruir', 'educar', 'formar', 'adiestrar', 'capacitar', 'mostrar'] },
+            { word: 'estudiar', cat: 'cognition', related: ['aprender', 'investigar', 'analizar', 'examinar', 'repasar', 'cursar'] },
+            { word: 'investigar', cat: 'cognition', related: ['indagar', 'explorar', 'averiguar', 'escudriñar', 'rastrear', 'pesquisar'] },
+            { word: 'analizar', cat: 'cognition', related: ['examinar', 'estudiar', 'descomponer', 'evaluar', 'investigar'] },
+            { word: 'comparar', cat: 'cognition', related: ['contrastar', 'cotejar', 'equiparar', 'parangonar', 'confrontar'] },
+            { word: 'dudar', cat: 'cognition', related: ['vacilar', 'titubear', 'hesitar', 'desconfiar', 'cuestionar', 'sospechar'] },
+            { word: 'suponer', cat: 'cognition', related: ['presumir', 'asumir', 'conjeturar', 'imaginar', 'especular', 'hipotetizar'] },
+            { word: 'calcular', cat: 'cognition', related: ['computar', 'contar', 'estimar', 'evaluar', 'medir', 'cuantificar'] },
+            { word: 'planear', cat: 'cognition', related: ['planificar', 'proyectar', 'programar', 'organizar', 'diseñar', 'trazar'] },
+            { word: 'inventar', cat: 'cognition', related: ['crear', 'idear', 'ingeniar', 'diseñar', 'concebir', 'fabricar'] },
+            { word: 'reconocer', cat: 'cognition', related: ['identificar', 'admitir', 'distinguir', 'aceptar', 'confesar'] },
+
+            // PERCEPTION
+            { word: 'ver', cat: 'perception', related: ['mirar', 'observar', 'contemplar', 'divisar', 'percibir', 'avistar'] },
+            { word: 'mirar', cat: 'perception', related: ['observar', 'contemplar', 'ver', 'ojear', 'escudriñar', 'atisbar'] },
+            { word: 'observar', cat: 'perception', related: ['mirar', 'contemplar', 'examinar', 'vigilar', 'notar', 'advertir'] },
+            { word: 'oír', cat: 'perception', related: ['escuchar', 'percibir', 'atender', 'captar', 'sentir'] },
+            { word: 'escuchar', cat: 'perception', related: ['oír', 'atender', 'prestar atención', 'auscultar'] },
+            { word: 'sentir', cat: 'perception', related: ['percibir', 'experimentar', 'notar', 'palpar', 'intuir'] },
+            { word: 'tocar', cat: 'perception', related: ['palpar', 'tantear', 'acariciar', 'rozar', 'manosear', 'tañer'] },
+            { word: 'oler', cat: 'perception', related: ['olfatear', 'husmear', 'olisquear', 'percibir', 'apestar'] },
+            { word: 'probar', cat: 'perception', related: ['degustar', 'saborear', 'catar', 'paladear', 'gustar'] },
+            { word: 'notar', cat: 'perception', related: ['percibir', 'advertir', 'observar', 'detectar', 'reparar', 'apreciar'] },
+            { word: 'percibir', cat: 'perception', related: ['sentir', 'notar', 'captar', 'detectar', 'advertir', 'apreciar'] },
+            { word: 'descubrir', cat: 'perception', related: ['hallar', 'encontrar', 'detectar', 'revelar', 'destapar', 'desvelar'] },
+            { word: 'buscar', cat: 'perception', related: ['rastrear', 'explorar', 'indagar', 'investigar', 'rebuscar', 'escudriñar'] },
+            { word: 'encontrar', cat: 'perception', related: ['hallar', 'descubrir', 'localizar', 'dar con', 'toparse', 'tropezar'] },
+            { word: 'mostrar', cat: 'perception', related: ['enseñar', 'exhibir', 'presentar', 'exponer', 'demostrar', 'revelar'] },
+            { word: 'esconder', cat: 'perception', related: ['ocultar', 'encubrir', 'disimular', 'camuflar', 'tapar', 'enterrar'] },
+            { word: 'aparecer', cat: 'perception', related: ['surgir', 'emerger', 'manifestarse', 'presentarse', 'brotar', 'asomar'] },
+            { word: 'desaparecer', cat: 'perception', related: ['esfumarse', 'desvanecerse', 'evaporarse', 'ocultarse', 'ausentarse'] },
+
+            // PHYSICAL
+            { word: 'hacer', cat: 'physical', related: ['realizar', 'efectuar', 'ejecutar', 'elaborar', 'fabricar', 'producir'] },
+            { word: 'tomar', cat: 'physical', related: ['coger', 'agarrar', 'asir', 'sujetar', 'sostener', 'empuñar'] },
+            { word: 'dar', cat: 'physical', related: ['entregar', 'otorgar', 'conceder', 'ofrecer', 'donar', 'regalar', 'proporcionar'] },
+            { word: 'poner', cat: 'physical', related: ['colocar', 'situar', 'ubicar', 'depositar', 'instalar', 'disponer'] },
+            { word: 'quitar', cat: 'physical', related: ['sacar', 'retirar', 'extraer', 'apartar', 'despojar', 'eliminar'] },
+            { word: 'abrir', cat: 'physical', related: ['destapar', 'descubrir', 'inaugurar', 'estrenar', 'iniciar'] },
+            { word: 'cerrar', cat: 'physical', related: ['clausurar', 'tapar', 'sellar', 'obstruir', 'bloquear', 'concluir'] },
+            { word: 'romper', cat: 'physical', related: ['quebrar', 'destrozar', 'despedazar', 'fracturar', 'partir', 'rasgar'] },
+            { word: 'cortar', cat: 'physical', related: ['tajar', 'seccionar', 'rebanar', 'trozar', 'cercenar', 'podar'] },
+            { word: 'golpear', cat: 'physical', related: ['pegar', 'atizar', 'aporrear', 'apalear', 'sacudir', 'abofetear'] },
+            { word: 'construir', cat: 'physical', related: ['edificar', 'erigir', 'levantar', 'fabricar', 'armar', 'montar'] },
+            { word: 'destruir', cat: 'physical', related: ['demoler', 'derribar', 'arrasar', 'devastar', 'aniquilar', 'deshacer'] },
+            { word: 'crear', cat: 'physical', related: ['producir', 'generar', 'fabricar', 'elaborar', 'formar', 'originar'] },
+            { word: 'usar', cat: 'physical', related: ['utilizar', 'emplear', 'aplicar', 'manejar', 'aprovechar', 'servirse'] },
+            { word: 'guardar', cat: 'physical', related: ['almacenar', 'conservar', 'preservar', 'reservar', 'custodiar', 'archivar'] },
+            { word: 'limpiar', cat: 'physical', related: ['asear', 'fregar', 'lavar', 'barrer', 'pulir', 'desinfectar'] },
+            { word: 'cocinar', cat: 'physical', related: ['guisar', 'preparar', 'hornear', 'freír', 'asar', 'hervir'] },
+            { word: 'comer', cat: 'physical', related: ['alimentarse', 'ingerir', 'devorar', 'engullir', 'masticar', 'tragar'] },
+            { word: 'beber', cat: 'physical', related: ['tomar', 'ingerir', 'sorber', 'tragar', 'libar', 'emborracharse'] },
+            { word: 'dormir', cat: 'physical', related: ['descansar', 'reposar', 'dormitar', 'cabecear', 'adormecerse', 'yacer'] },
+            { word: 'despertar', cat: 'physical', related: ['despertarse', 'levantarse', 'madrugar', 'espabilarse', 'avivar'] },
+            { word: 'vestir', cat: 'physical', related: ['vestirse', 'ponerse', 'ataviarse', 'arreglarse', 'cubrir'] },
+            { word: 'trabajar', cat: 'physical', related: ['laborar', 'currar', 'ocuparse', 'ejercer', 'desempeñarse', 'bregar'] },
+            { word: 'jugar', cat: 'physical', related: ['divertirse', 'entretenerse', 'recrearse', 'competir', 'apostar'] },
+            { word: 'sentar', cat: 'physical', related: ['sentarse', 'acomodarse', 'instalarse', 'aposentarse', 'posarse'] },
+            { word: 'levantar', cat: 'physical', related: ['alzar', 'elevar', 'izar', 'erguir', 'enderezar', 'incorporar'] },
+
+            // SOCIAL
+            { word: 'vivir', cat: 'social', related: ['existir', 'habitar', 'residir', 'morar', 'sobrevivir', 'convivir'] },
+            { word: 'nacer', cat: 'social', related: ['originarse', 'surgir', 'brotar', 'emerger', 'provenir'] },
+            { word: 'morir', cat: 'social', related: ['fallecer', 'perecer', 'fenecer', 'expirar', 'sucumbir', 'finar'] },
+            { word: 'casarse', cat: 'social', related: ['desposarse', 'contraer matrimonio', 'unirse', 'enlazarse'] },
+            { word: 'conocer', cat: 'social', related: ['presentarse', 'encontrarse', 'relacionarse', 'tratar'] },
+            { word: 'ayudar', cat: 'social', related: ['asistir', 'auxiliar', 'socorrer', 'colaborar', 'cooperar', 'apoyar'] },
+            { word: 'necesitar', cat: 'social', related: ['requerir', 'precisar', 'carecer', 'faltar', 'urgir'] },
+            { word: 'pertenecer', cat: 'social', related: ['corresponder', 'formar parte', 'integrarse', 'afiliarse'] },
+            { word: 'compartir', cat: 'social', related: ['repartir', 'dividir', 'distribuir', 'participar', 'colaborar'] },
+            { word: 'reunir', cat: 'social', related: ['juntar', 'congregar', 'agrupar', 'convocar', 'concentrar', 'acopiar'] },
+            { word: 'separar', cat: 'social', related: ['dividir', 'apartar', 'alejar', 'distanciar', 'aislar', 'segregar'] },
+            { word: 'unir', cat: 'social', related: ['juntar', 'enlazar', 'vincular', 'conectar', 'fusionar', 'ligar'] },
+            { word: 'seguir', cat: 'social', related: ['acompañar', 'escoltar', 'perseguir', 'rastrear', 'imitar'] },
+            { word: 'dejar', cat: 'social', related: ['abandonar', 'soltar', 'permitir', 'ceder', 'legar', 'renunciar'] },
+            { word: 'quedar', cat: 'social', related: ['permanecer', 'quedarse', 'restar', 'sobrar', 'acordar', 'citarse'] },
+            { word: 'esperar', cat: 'social', related: ['aguardar', 'quedarse', 'hacer cola', 'demorar'] },
+            { word: 'invitar', cat: 'social', related: ['convidar', 'ofrecer', 'brindar', 'agasajar', 'obsequiar'] },
+            { word: 'visitar', cat: 'social', related: ['frecuentar', 'acudir', 'ir a ver', 'recorrer', 'inspeccionar'] },
+            { word: 'saludar', cat: 'social', related: ['despedir', 'recibir', 'acoger', 'dar la bienvenida'] },
+            { word: 'despedir', cat: 'social', related: ['saludar', 'decir adiós', 'echar', 'destituir', 'cesar'] },
+            { word: 'respetar', cat: 'social', related: ['honrar', 'venerar', 'acatar', 'considerar', 'estimar'] },
+            { word: 'obedecer', cat: 'social', related: ['acatar', 'cumplir', 'someterse', 'seguir', 'respetar'] },
+            { word: 'mandar', cat: 'social', related: ['ordenar', 'dirigir', 'gobernar', 'comandar', 'enviar'] },
+            { word: 'servir', cat: 'social', related: ['atender', 'asistir', 'auxiliar', 'funcionar', 'valer'] },
+
+            // CHANGE
+            { word: 'cambiar', cat: 'change', related: ['modificar', 'alterar', 'transformar', 'variar', 'mudar', 'convertir'] },
+            { word: 'crecer', cat: 'change', related: ['desarrollarse', 'aumentar', 'expandirse', 'madurar', 'prosperar'] },
+            { word: 'disminuir', cat: 'change', related: ['reducir', 'menguar', 'decrecer', 'mermar', 'bajar', 'aminorar'] },
+            { word: 'aumentar', cat: 'change', related: ['incrementar', 'acrecentar', 'ampliar', 'agrandar', 'elevar', 'subir'] },
+            { word: 'mejorar', cat: 'change', related: ['progresar', 'avanzar', 'perfeccionar', 'optimizar', 'superar', 'recuperarse'] },
+            { word: 'empeorar', cat: 'change', related: ['deteriorar', 'agravar', 'degradar', 'decaer', 'declinar'] },
+            { word: 'comenzar', cat: 'change', related: ['empezar', 'iniciar', 'arrancar', 'inaugurar', 'estrenar', 'principiar'] },
+            { word: 'terminar', cat: 'change', related: ['acabar', 'finalizar', 'concluir', 'culminar', 'completar', 'cerrar'] },
+            { word: 'continuar', cat: 'change', related: ['seguir', 'proseguir', 'persistir', 'prolongar', 'mantener', 'perdurar'] },
+            { word: 'parar', cat: 'change', related: ['detener', 'cesar', 'frenar', 'interrumpir', 'suspender', 'paralizar'] },
+            { word: 'desarrollar', cat: 'change', related: ['evolucionar', 'progresar', 'crecer', 'expandir', 'elaborar', 'fomentar'] },
+            { word: 'transformar', cat: 'change', related: ['convertir', 'modificar', 'mudar', 'transmutar', 'metamorfosear'] },
+            { word: 'convertir', cat: 'change', related: ['transformar', 'cambiar', 'volver', 'mudar', 'trocar'] },
+            { word: 'adaptar', cat: 'change', related: ['ajustar', 'acomodar', 'adecuar', 'amoldar', 'modificar'] },
+            { word: 'perder', cat: 'change', related: ['extraviar', 'desperdiciar', 'malgastar', 'fracasar', 'arruinar'] },
+            { word: 'ganar', cat: 'change', related: ['obtener', 'conseguir', 'adquirir', 'lograr', 'vencer', 'triunfar'] },
+            { word: 'obtener', cat: 'change', related: ['conseguir', 'lograr', 'alcanzar', 'adquirir', 'ganar', 'conquistar'] },
+            { word: 'lograr', cat: 'change', related: ['conseguir', 'alcanzar', 'obtener', 'realizar', 'cumplir'] },
+            { word: 'fallar', cat: 'change', related: ['fracasar', 'errar', 'equivocarse', 'malograr', 'frustrarse'] },
+            { word: 'arreglar', cat: 'change', related: ['reparar', 'componer', 'restaurar', 'solucionar', 'resolver', 'ajustar'] },
+            { word: 'dañar', cat: 'change', related: ['perjudicar', 'lesionar', 'herir', 'estropear', 'deteriorar', 'averiar'] },
+
+            // EXISTENCE
+            { word: 'ser', cat: 'existence', related: ['estar', 'existir', 'constituir', 'representar', 'significar'] },
+            { word: 'estar', cat: 'existence', related: ['ser', 'encontrarse', 'hallarse', 'permanecer', 'situarse'] },
+            { word: 'existir', cat: 'existence', related: ['ser', 'vivir', 'haber', 'subsistir', 'perdurar'] },
+            { word: 'haber', cat: 'existence', related: ['existir', 'tener', 'ocurrir', 'acontecer', 'suceder'] },
+            { word: 'tener', cat: 'existence', related: ['poseer', 'disponer', 'contar con', 'gozar', 'disfrutar'] },
+            { word: 'poder', cat: 'existence', related: ['lograr', 'conseguir', 'ser capaz', 'permitirse'] },
+            { word: 'deber', cat: 'existence', related: ['tener que', 'haber de', 'obligarse', 'corresponder'] },
+            { word: 'parecer', cat: 'existence', related: ['aparentar', 'semejar', 'asemejarse', 'lucir', 'dar la impresión'] },
+            { word: 'quedar', cat: 'existence', related: ['permanecer', 'restar', 'sobrar', 'resultar', 'acabar'] },
+            { word: 'resultar', cat: 'existence', related: ['salir', 'acabar', 'terminar', 'derivar', 'proceder'] },
+            { word: 'ocurrir', cat: 'existence', related: ['suceder', 'pasar', 'acontecer', 'acaecer', 'sobrevenir'] },
+            { word: 'pasar', cat: 'existence', related: ['ocurrir', 'suceder', 'acontecer', 'transcurrir', 'devenir'] },
+            { word: 'llegar', cat: 'existence', related: ['alcanzar', 'conseguir', 'lograr', 'arribar', 'venir'] },
+            { word: 'valer', cat: 'existence', related: ['costar', 'importar', 'servir', 'merecer', 'equivaler'] },
+            { word: 'importar', cat: 'existence', related: ['interesar', 'concernir', 'afectar', 'incumbir', 'atañer'] },
+            { word: 'significar', cat: 'existence', related: ['representar', 'simbolizar', 'denotar', 'indicar', 'expresar'] },
+            { word: 'representar', cat: 'existence', related: ['simbolizar', 'significar', 'personificar', 'encarnar', 'constituir'] },
+            { word: 'consistir', cat: 'existence', related: ['componerse', 'constar', 'basarse', 'fundamentarse', 'radicar'] },
+            { word: 'depender', cat: 'existence', related: ['pender', 'subordinarse', 'sujetarse', 'condicionarse'] },
+            { word: 'pertenecer', cat: 'existence', related: ['corresponder', 'concernir', 'atañer', 'incumbir', 'tocar'] }
+        ];
+
+        // Build grid by category
+        const grid = document.getElementById('grid');
+
+        // Group verbs by category
+        const categoryOrder = ['existence', 'motion', 'physical', 'perception', 'cognition', 'communication', 'emotion', 'social', 'change'];
+
+        categoryOrder.forEach(catKey => {
+            const cat = categories[catKey];
+            const catVerbs = verbs.filter(v => v.cat === catKey);
+
+            // Add category header
+            const header = document.createElement('div');
+            header.className = 'category-header';
+            header.style.color = cat.color;
+            header.textContent = cat.label;
+            grid.appendChild(header);
+
+            // Add verbs
+            catVerbs.forEach(verb => {
+                const div = document.createElement('div');
+                div.className = 'verb';
+                div.style.color = cat.color;
+                div.textContent = verb.word;
+                div.onclick = () => showForceModal(verb, cat.color);
+                grid.appendChild(div);
+            });
+        });
+
+        // Force diagram modal
+        function showForceModal(verb, color) {
+            document.getElementById('modal').classList.add('active');
+            document.getElementById('modal-title').textContent = verb.word;
+            document.getElementById('modal-title').style.color = color;
+
+            const modalSvg = d3.select('#force-diagram');
+            modalSvg.selectAll('*').remove();
+
+            const modalWidth = window.innerWidth * 0.9;
+            const modalHeight = window.innerHeight * 0.9;
+
+            modalSvg
+                .attr('width', modalWidth)
+                .attr('height', modalHeight);
+
+            // Build nodes: center verb + related verbs
+            const nodes = [
+                { id: verb.word, group: 'center', fx: modalWidth / 2, fy: modalHeight / 2 }
+            ];
+
+            verb.related.forEach((rel, i) => {
+                nodes.push({ id: rel, group: 'related' });
+            });
+
+            // Build links
+            const links = verb.related.map(rel => ({
+                source: verb.word,
+                target: rel,
+                value: 1
+            }));
+
+            // Create force simulation
+            const simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(120))
+                .force('charge', d3.forceManyBody().strength(-400))
+                .force('center', d3.forceCenter(modalWidth / 2, modalHeight / 2))
+                .force('collision', d3.forceCollide().radius(50));
+
+            // Draw links
+            const link = modalSvg.append('g')
+                .selectAll('line')
+                .data(links)
+                .enter()
+                .append('line')
+                .attr('class', 'link')
+                .attr('stroke-width', 2);
+
+            // Draw nodes
+            const node = modalSvg.append('g')
+                .selectAll('g')
+                .data(nodes)
+                .enter()
+                .append('g')
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+            node.append('circle')
+                .attr('r', d => d.group === 'center' ? 40 : 30)
+                .attr('fill', d => d.group === 'center' ? color : '#333')
+                .attr('stroke', color)
+                .attr('stroke-width', 3);
+
+            // Spanish word
+            node.append('text')
+                .text(d => d.id)
+                .attr('text-anchor', 'middle')
+                .attr('dy', d => d.group === 'center' ? '-0.2em' : '-0.1em')
+                .attr('fill', '#fff')
+                .attr('font-size', d => d.group === 'center' ? '16px' : '13px')
+                .attr('font-weight', d => d.group === 'center' ? 'bold' : 'normal');
+
+            // English translation below
+            node.append('text')
+                .text(d => translations[d.id] || '')
+                .attr('text-anchor', 'middle')
+                .attr('dy', d => d.group === 'center' ? '1.1em' : '1em')
+                .attr('fill', '#999')
+                .attr('font-size', d => d.group === 'center' ? '11px' : '9px');
+
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node.attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                if (d.group !== 'center') {
+                    d.fx = null;
+                    d.fy = null;
+                }
+            }
+        }
+
+        // Close modal
+        document.getElementById('close-btn').onclick = () => {
+            document.getElementById('modal').classList.remove('active');
+        };
+
+        document.getElementById('modal').onclick = (e) => {
+            if (e.target.id === 'modal') {
+                document.getElementById('modal').classList.remove('active');
+            }
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('modal').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

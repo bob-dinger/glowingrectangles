@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voronoi Diagram</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #canvas {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        #refreshBtn {
+            margin-top: 20px;
+            padding: 12px 32px;
+            font-size: 16px;
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #refreshBtn:hover {
+            background-color: #2563EB;
+        }
+    </style>
+</head>
+<body>
+    <h1>Voronoi Diagram</h1>
+    <svg id="canvas" width="600" height="600"></svg>
+    <button id="refreshBtn">Refresh</button>
+
+    <script>
+        const width = 600;
+        const height = 600;
+        const numPoints = 50;
+
+        const svg = d3.select('#canvas');
+
+        function generateVoronoi() {
+            svg.selectAll('*').remove();
+
+            // Generate random points
+            const points = Array.from({ length: numPoints }, () => [
+                Math.random() * width,
+                Math.random() * height
+            ]);
+
+            // Create Delaunay triangulation and Voronoi diagram
+            const delaunay = d3.Delaunay.from(points);
+            const voronoi = delaunay.voronoi([0, 0, width, height]);
+
+            // Draw cells with random white to blue gradient
+            for (let i = 0; i < points.length; i++) {
+                const cell = voronoi.cellPolygon(i);
+                if (cell) {
+                    // Random value from 0 (blue) to 1 (white)
+                    const t = Math.random();
+
+                    // Interpolate from blue (#3B82F6) to white (#ffffff)
+                    const r = Math.round(59 + t * (255 - 59));
+                    const g = Math.round(130 + t * (255 - 130));
+                    const b = Math.round(246 + t * (255 - 246));
+
+                    svg.append('path')
+                        .attr('d', 'M' + cell.join('L') + 'Z')
+                        .attr('fill', `rgb(${r}, ${g}, ${b})`)
+                        .attr('stroke', '#000')
+                        .attr('stroke-width', 1.5)
+                        .attr('opacity', 0.9);
+                }
+            }
+
+            // Draw points
+            points.forEach(point => {
+                svg.append('circle')
+                    .attr('cx', point[0])
+                    .attr('cy', point[1])
+                    .attr('r', 4)
+                    .attr('fill', '#fff')
+                    .attr('stroke', '#000')
+                    .attr('stroke-width', 1);
+            });
+        }
+
+        // Initial generation
+        generateVoronoi();
+
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', generateVoronoi);
+    </script>
+</body>
+</html>

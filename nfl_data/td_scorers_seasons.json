@@ -1,0 +1,902 @@
+[
+  {
+    "name": "LaDainian Tomlinson",
+    "position": "RB",
+    "season": 2006,
+    "tds": 31,
+    "rush_tds": 28,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Shaun Alexander",
+    "position": "RB",
+    "season": 2005,
+    "tds": 28,
+    "rush_tds": 27,
+    "rec_tds": 1,
+    "st_tds": 0
+  },
+  {
+    "name": "Priest Holmes",
+    "position": "RB",
+    "season": 2003,
+    "tds": 27,
+    "rush_tds": 27,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "Marshall Faulk",
+    "position": "RB",
+    "season": 2000,
+    "tds": 26,
+    "rush_tds": 18,
+    "rec_tds": 8,
+    "st_tds": 0
+  },
+  {
+    "name": "Priest Holmes",
+    "position": "RB",
+    "season": 2002,
+    "tds": 24,
+    "rush_tds": 21,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Randy Moss",
+    "position": "WR",
+    "season": 2007,
+    "tds": 23,
+    "rush_tds": 0,
+    "rec_tds": 23,
+    "st_tds": 0
+  },
+  {
+    "name": "Marshall Faulk",
+    "position": "RB",
+    "season": 2001,
+    "tds": 21,
+    "rush_tds": 12,
+    "rec_tds": 9,
+    "st_tds": 0
+  },
+  {
+    "name": "Larry Johnson",
+    "position": "RB",
+    "season": 2005,
+    "tds": 21,
+    "rush_tds": 20,
+    "rec_tds": 1,
+    "st_tds": 0
+  },
+  {
+    "name": "Todd Gurley",
+    "position": "RB",
+    "season": 2018,
+    "tds": 21,
+    "rush_tds": 17,
+    "rec_tds": 4,
+    "st_tds": 0
+  },
+  {
+    "name": "Alvin Kamara",
+    "position": "RB",
+    "season": 2020,
+    "tds": 21,
+    "rush_tds": 16,
+    "rec_tds": 5,
+    "st_tds": 0
+  },
+  {
+    "name": "Raheem Mostert",
+    "position": "RB",
+    "season": 2023,
+    "tds": 21,
+    "rush_tds": 18,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Christian McCaffrey",
+    "position": "RB",
+    "season": 2023,
+    "tds": 21,
+    "rush_tds": 14,
+    "rec_tds": 7,
+    "st_tds": 0
+  },
+  {
+    "name": "Ahman Green",
+    "position": "RB",
+    "season": 2003,
+    "tds": 20,
+    "rush_tds": 15,
+    "rec_tds": 5,
+    "st_tds": 0
+  },
+  {
+    "name": "Shaun Alexander",
+    "position": "RB",
+    "season": 2004,
+    "tds": 20,
+    "rush_tds": 16,
+    "rec_tds": 4,
+    "st_tds": 0
+  },
+  {
+    "name": "LaDainian Tomlinson",
+    "position": "RB",
+    "season": 2005,
+    "tds": 20,
+    "rush_tds": 18,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "DeAngelo Williams",
+    "position": "RB",
+    "season": 2008,
+    "tds": 20,
+    "rush_tds": 18,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "LeSean McCoy",
+    "position": "RB",
+    "season": 2011,
+    "tds": 20,
+    "rush_tds": 17,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "David Johnson",
+    "position": "RB",
+    "season": 2016,
+    "tds": 20,
+    "rush_tds": 16,
+    "rec_tds": 4,
+    "st_tds": 0
+  },
+  {
+    "name": "Austin Ekeler",
+    "position": "RB",
+    "season": 2021,
+    "tds": 20,
+    "rush_tds": 12,
+    "rec_tds": 8,
+    "st_tds": 0
+  },
+  {
+    "name": "Jonathan Taylor",
+    "position": "RB",
+    "season": 2021,
+    "tds": 20,
+    "rush_tds": 18,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Larry Johnson",
+    "position": "RB",
+    "season": 2006,
+    "tds": 19,
+    "rush_tds": 17,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Jamaal Charles",
+    "position": "RB",
+    "season": 2013,
+    "tds": 19,
+    "rush_tds": 12,
+    "rec_tds": 7,
+    "st_tds": 0
+  },
+  {
+    "name": "Todd Gurley",
+    "position": "RB",
+    "season": 2017,
+    "tds": 19,
+    "rush_tds": 13,
+    "rec_tds": 6,
+    "st_tds": 0
+  },
+  {
+    "name": "Christian McCaffrey",
+    "position": "RB",
+    "season": 2019,
+    "tds": 19,
+    "rush_tds": 15,
+    "rec_tds": 4,
+    "st_tds": 0
+  },
+  {
+    "name": "Aaron Jones",
+    "position": "RB",
+    "season": 2019,
+    "tds": 19,
+    "rush_tds": 16,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Jahmyr Gibbs",
+    "position": "RB",
+    "season": 2024,
+    "tds": 19,
+    "rush_tds": 16,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Edgerrin James",
+    "position": "RB",
+    "season": 2000,
+    "tds": 18,
+    "rush_tds": 13,
+    "rec_tds": 5,
+    "st_tds": 0
+  },
+  {
+    "name": "Shaun Alexander",
+    "position": "RB",
+    "season": 2002,
+    "tds": 18,
+    "rush_tds": 16,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "LaDainian Tomlinson",
+    "position": "RB",
+    "season": 2004,
+    "tds": 18,
+    "rush_tds": 17,
+    "rec_tds": 1,
+    "st_tds": 0
+  },
+  {
+    "name": "LaDainian Tomlinson",
+    "position": "RB",
+    "season": 2007,
+    "tds": 18,
+    "rush_tds": 15,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Adrian Peterson",
+    "position": "RB",
+    "season": 2009,
+    "tds": 18,
+    "rush_tds": 18,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "Arian Foster",
+    "position": "RB",
+    "season": 2010,
+    "tds": 18,
+    "rush_tds": 16,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Rob Gronkowski",
+    "position": "TE",
+    "season": 2011,
+    "tds": 18,
+    "rush_tds": 1,
+    "rec_tds": 17,
+    "st_tds": 0
+  },
+  {
+    "name": "LeGarrette Blount",
+    "position": "RB",
+    "season": 2016,
+    "tds": 18,
+    "rush_tds": 18,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "Alvin Kamara",
+    "position": "RB",
+    "season": 2018,
+    "tds": 18,
+    "rush_tds": 14,
+    "rec_tds": 4,
+    "st_tds": 0
+  },
+  {
+    "name": "Derrick Henry",
+    "position": "RB",
+    "season": 2019,
+    "tds": 18,
+    "rush_tds": 16,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Davante Adams",
+    "position": "WR",
+    "season": 2020,
+    "tds": 18,
+    "rush_tds": 0,
+    "rec_tds": 18,
+    "st_tds": 0
+  },
+  {
+    "name": "James Conner",
+    "position": "RB",
+    "season": 2021,
+    "tds": 18,
+    "rush_tds": 15,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Austin Ekeler",
+    "position": "RB",
+    "season": 2022,
+    "tds": 18,
+    "rush_tds": 13,
+    "rec_tds": 5,
+    "st_tds": 0
+  },
+  {
+    "name": "Derrick Henry",
+    "position": "RB",
+    "season": 2024,
+    "tds": 18,
+    "rush_tds": 16,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "James Cook",
+    "position": "RB",
+    "season": 2024,
+    "tds": 18,
+    "rush_tds": 16,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Stephen Davis",
+    "position": "RB",
+    "season": 1999,
+    "tds": 17,
+    "rush_tds": 17,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "Edgerrin James",
+    "position": "RB",
+    "season": 1999,
+    "tds": 17,
+    "rush_tds": 13,
+    "rec_tds": 4,
+    "st_tds": 0
+  },
+  {
+    "name": "Ricky Williams",
+    "position": "RB",
+    "season": 2002,
+    "tds": 17,
+    "rush_tds": 16,
+    "rec_tds": 1,
+    "st_tds": 0
+  },
+  {
+    "name": "Clinton Portis",
+    "position": "RB",
+    "season": 2002,
+    "tds": 17,
+    "rush_tds": 15,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Randy Moss",
+    "position": "WR",
+    "season": 2003,
+    "tds": 17,
+    "rush_tds": 0,
+    "rec_tds": 17,
+    "st_tds": 0
+  },
+  {
+    "name": "LaDainian Tomlinson",
+    "position": "RB",
+    "season": 2003,
+    "tds": 17,
+    "rush_tds": 13,
+    "rec_tds": 4,
+    "st_tds": 0
+  },
+  {
+    "name": "Michael Turner",
+    "position": "RB",
+    "season": 2008,
+    "tds": 17,
+    "rush_tds": 17,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "Arian Foster",
+    "position": "RB",
+    "season": 2012,
+    "tds": 17,
+    "rush_tds": 15,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Marshawn Lynch",
+    "position": "RB",
+    "season": 2014,
+    "tds": 17,
+    "rush_tds": 13,
+    "rec_tds": 4,
+    "st_tds": 0
+  },
+  {
+    "name": "Derrick Henry",
+    "position": "RB",
+    "season": 2020,
+    "tds": 17,
+    "rush_tds": 17,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "Tyreek Hill",
+    "position": "WR",
+    "season": 2020,
+    "tds": 17,
+    "rush_tds": 2,
+    "rec_tds": 15,
+    "st_tds": 0
+  },
+  {
+    "name": "Dalvin Cook",
+    "position": "RB",
+    "season": 2020,
+    "tds": 17,
+    "rush_tds": 16,
+    "rec_tds": 1,
+    "st_tds": 0
+  },
+  {
+    "name": "Jamaal Williams",
+    "position": "RB",
+    "season": 2022,
+    "tds": 17,
+    "rush_tds": 17,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "Ja'Marr Chase",
+    "position": "WR",
+    "season": 2024,
+    "tds": 17,
+    "rush_tds": 0,
+    "rec_tds": 17,
+    "st_tds": 0
+  },
+  {
+    "name": "Eddie George",
+    "position": "RB",
+    "season": 2000,
+    "tds": 16,
+    "rush_tds": 14,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Lamar Smith",
+    "position": "RB",
+    "season": 2000,
+    "tds": 16,
+    "rush_tds": 14,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Terrell Owens",
+    "position": "WR",
+    "season": 2001,
+    "tds": 16,
+    "rush_tds": 0,
+    "rec_tds": 16,
+    "st_tds": 0
+  },
+  {
+    "name": "Shaun Alexander",
+    "position": "RB",
+    "season": 2001,
+    "tds": 16,
+    "rush_tds": 14,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Deuce McAllister",
+    "position": "RB",
+    "season": 2002,
+    "tds": 16,
+    "rush_tds": 13,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Shaun Alexander",
+    "position": "RB",
+    "season": 2003,
+    "tds": 16,
+    "rush_tds": 14,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Muhsin Muhammad",
+    "position": "WR",
+    "season": 2004,
+    "tds": 16,
+    "rush_tds": 0,
+    "rec_tds": 16,
+    "st_tds": 0
+  },
+  {
+    "name": "Willie Parker",
+    "position": "RB",
+    "season": 2006,
+    "tds": 16,
+    "rush_tds": 13,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Steven Jackson",
+    "position": "RB",
+    "season": 2006,
+    "tds": 16,
+    "rush_tds": 13,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Marion Barber",
+    "position": "RB",
+    "season": 2006,
+    "tds": 16,
+    "rush_tds": 14,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Maurice Jones-Drew",
+    "position": "RB",
+    "season": 2006,
+    "tds": 16,
+    "rush_tds": 13,
+    "rec_tds": 2,
+    "st_tds": 1
+  },
+  {
+    "name": "Braylon Edwards",
+    "position": "WR",
+    "season": 2007,
+    "tds": 16,
+    "rush_tds": 0,
+    "rec_tds": 16,
+    "st_tds": 0
+  },
+  {
+    "name": "Maurice Jones-Drew",
+    "position": "RB",
+    "season": 2009,
+    "tds": 16,
+    "rush_tds": 15,
+    "rec_tds": 1,
+    "st_tds": 0
+  },
+  {
+    "name": "Chris Johnson",
+    "position": "RB",
+    "season": 2009,
+    "tds": 16,
+    "rush_tds": 14,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Calvin Johnson",
+    "position": "WR",
+    "season": 2011,
+    "tds": 16,
+    "rush_tds": 0,
+    "rec_tds": 16,
+    "st_tds": 0
+  },
+  {
+    "name": "Jimmy Graham",
+    "position": "TE",
+    "season": 2013,
+    "tds": 16,
+    "rush_tds": 0,
+    "rec_tds": 16,
+    "st_tds": 0
+  },
+  {
+    "name": "Dez Bryant",
+    "position": "WR",
+    "season": 2014,
+    "tds": 16,
+    "rush_tds": 0,
+    "rec_tds": 16,
+    "st_tds": 0
+  },
+  {
+    "name": "Ezekiel Elliott",
+    "position": "RB",
+    "season": 2016,
+    "tds": 16,
+    "rush_tds": 15,
+    "rec_tds": 1,
+    "st_tds": 0
+  },
+  {
+    "name": "Joe Mixon",
+    "position": "RB",
+    "season": 2021,
+    "tds": 16,
+    "rush_tds": 13,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Cooper Kupp",
+    "position": "WR",
+    "season": 2021,
+    "tds": 16,
+    "rush_tds": 0,
+    "rec_tds": 16,
+    "st_tds": 0
+  },
+  {
+    "name": "Josh Jacobs",
+    "position": "RB",
+    "season": 2024,
+    "tds": 16,
+    "rush_tds": 15,
+    "rec_tds": 1,
+    "st_tds": 0
+  },
+  {
+    "name": "Kyren Williams",
+    "position": "RB",
+    "season": 2024,
+    "tds": 16,
+    "rush_tds": 14,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Randy Moss",
+    "position": "WR",
+    "season": 2000,
+    "tds": 15,
+    "rush_tds": 0,
+    "rec_tds": 15,
+    "st_tds": 0
+  },
+  {
+    "name": "Mike Anderson",
+    "position": "RB",
+    "season": 2000,
+    "tds": 15,
+    "rush_tds": 15,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "Marvin Harrison",
+    "position": "WR",
+    "season": 2001,
+    "tds": 15,
+    "rush_tds": 0,
+    "rec_tds": 15,
+    "st_tds": 0
+  },
+  {
+    "name": "LaDainian Tomlinson",
+    "position": "RB",
+    "season": 2002,
+    "tds": 15,
+    "rush_tds": 14,
+    "rec_tds": 1,
+    "st_tds": 0
+  },
+  {
+    "name": "Tiki Barber",
+    "position": "RB",
+    "season": 2004,
+    "tds": 15,
+    "rush_tds": 13,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Marvin Harrison",
+    "position": "WR",
+    "season": 2004,
+    "tds": 15,
+    "rush_tds": 0,
+    "rec_tds": 15,
+    "st_tds": 0
+  },
+  {
+    "name": "Priest Holmes",
+    "position": "RB",
+    "season": 2004,
+    "tds": 15,
+    "rush_tds": 14,
+    "rec_tds": 1,
+    "st_tds": 0
+  },
+  {
+    "name": "Terrell Owens",
+    "position": "WR",
+    "season": 2007,
+    "tds": 15,
+    "rush_tds": 0,
+    "rec_tds": 15,
+    "st_tds": 0
+  },
+  {
+    "name": "Joseph Addai",
+    "position": "RB",
+    "season": 2007,
+    "tds": 15,
+    "rush_tds": 12,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Thomas Jones",
+    "position": "RB",
+    "season": 2008,
+    "tds": 15,
+    "rush_tds": 13,
+    "rec_tds": 2,
+    "st_tds": 0
+  },
+  {
+    "name": "Brandon Jacobs",
+    "position": "RB",
+    "season": 2008,
+    "tds": 15,
+    "rush_tds": 15,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "LenDale White",
+    "position": "RB",
+    "season": 2008,
+    "tds": 15,
+    "rush_tds": 15,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "Dwayne Bowe",
+    "position": "WR",
+    "season": 2010,
+    "tds": 15,
+    "rush_tds": 0,
+    "rec_tds": 15,
+    "st_tds": 0
+  },
+  {
+    "name": "Jordy Nelson",
+    "position": "WR",
+    "season": 2011,
+    "tds": 15,
+    "rush_tds": 0,
+    "rec_tds": 15,
+    "st_tds": 0
+  },
+  {
+    "name": "Ray Rice",
+    "position": "RB",
+    "season": 2011,
+    "tds": 15,
+    "rush_tds": 12,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Antonio Brown",
+    "position": "WR",
+    "season": 2018,
+    "tds": 15,
+    "rush_tds": 0,
+    "rec_tds": 15,
+    "st_tds": 0
+  },
+  {
+    "name": "Saquon Barkley",
+    "position": "RB",
+    "season": 2018,
+    "tds": 15,
+    "rush_tds": 11,
+    "rec_tds": 4,
+    "st_tds": 0
+  },
+  {
+    "name": "Mark Ingram",
+    "position": "RB",
+    "season": 2019,
+    "tds": 15,
+    "rush_tds": 10,
+    "rec_tds": 5,
+    "st_tds": 0
+  },
+  {
+    "name": "Damien Harris",
+    "position": "RB",
+    "season": 2021,
+    "tds": 15,
+    "rush_tds": 15,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "Josh Allen",
+    "position": "QB",
+    "season": 2023,
+    "tds": 15,
+    "rush_tds": 15,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "Jalen Hurts",
+    "position": "QB",
+    "season": 2023,
+    "tds": 15,
+    "rush_tds": 15,
+    "rec_tds": 0,
+    "st_tds": 0
+  },
+  {
+    "name": "Kyren Williams",
+    "position": "RB",
+    "season": 2023,
+    "tds": 15,
+    "rush_tds": 12,
+    "rec_tds": 3,
+    "st_tds": 0
+  },
+  {
+    "name": "Saquon Barkley",
+    "position": "RB",
+    "season": 2024,
+    "tds": 15,
+    "rush_tds": 13,
+    "rec_tds": 2,
+    "st_tds": 0
+  }
+]

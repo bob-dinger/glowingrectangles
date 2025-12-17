@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attention Vampires</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        #canvas {
+            background: #0a0a0a;
+            border-radius: 8px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .play-btn {
+            background: linear-gradient(90deg, #7C3AED, #EF4444);
+            color: white;
+        }
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+        }
+        .reset-btn {
+            background: #333;
+            color: #aaa;
+        }
+        .reset-btn:hover {
+            background: #444;
+            color: #fff;
+        }
+        .stats {
+            display: flex;
+            gap: 50px;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-value.victims { color: #3B82F6; }
+        .stat-value.vampires { color: #EF4444; }
+        .stat-value.drained { color: #6B7280; }
+        .info {
+            max-width: 700px;
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px 25px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .info p {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+        .info strong {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Attention Vampires</h1>
+    <p class="subtitle">They feed on your attention. The more they take, the more powerful they become.</p>
+
+    <div class="controls">
+        <button class="play-btn" id="playBtn">▶ Play</button>
+        <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <svg id="canvas" width="900" height="500"></svg>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value victims" id="activeVictims">100</div>
+            <div class="stat-label">People with Energy</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value vampires" id="vampirePower">5</div>
+            <div class="stat-label">Vampire Power</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value drained" id="drainedCount">0</div>
+            <div class="stat-label">Drained Husks</div>
+        </div>
+    </div>
+
+    <div class="info">
+        <p><strong>What you're seeing:</strong> 3 red vampires feed on nearby blue people. Watch the tendrils of attention flow from victims to vampires. As vampires grow, their reach extends further. Drained people turn gray and stop participating.</p>
+    </div>
+
+    <script>
+        const width = 900;
+        const height = 500;
+        const numPeople = 100;
+        const numVampires = 3;
+
+        const svg = d3.select('#canvas');
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Create people
+        let people = [];
+        for (let i = 0; i < numPeople; i++) {
+            people.push({
+                id: i,
+                type: 'person',
+                x: 50 + Math.random() * 800,
+                y: 50 + Math.random() * 400,
+                energy: 100,
+                radius: 6,
+                drained: false
+            });
+        }
+
+        // Create vampires
+        let vampires = [];
+        const vampirePositions = [
+            { x: 250, y: 250 },
+            { x: 650, y: 200 },
+            { x: 450, y: 350 }
+        ];
+        for (let i = 0; i < numVampires; i++) {
+            vampires.push({
+                id: i,
+                x: vampirePositions[i].x,
+                y: vampirePositions[i].y,
+                power: 1,
+                radius: 15,
+                reach: 80
+            });
+        }
+
+        // Draw tendrils container
+        const tendrilsGroup = svg.append('g').attr('class', 'tendrils');
+
+        // Draw people
+        const personCircles = svg.selectAll('.person')
+            .data(people)
+            .enter()
+            .append('circle')
+            .attr('class', 'person')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', d => d.radius)
+            .attr('fill', '#3B82F6')
+            .attr('opacity', 0.8);
+
+        // Draw vampires with glow
+        const vampireGlows = svg.selectAll('.vampire-glow')
+            .data(vampires)
+            .enter()
+            .append('circle')
+            .attr('class', 'vampire-glow')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', d => d.reach)
+            .attr('fill', 'none')
+            .attr('stroke', '#EF4444')
+            .attr('stroke-width', 1)
+            .attr('opacity', 0.2);
+
+        const vampireCircles = svg.selectAll('.vampire')
+            .data(vampires)
+            .enter()
+            .append('circle')
+            .attr('class', 'vampire')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', d => d.radius)
+            .attr('fill', '#EF4444')
+            .attr('opacity', 0.9);
+
+        let isPlaying = false;
+        let animationTimer = null;
+
+        function distance(a, b) {
+            return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+        }
+
+        function updateStats() {
+            const active = people.filter(p => !p.drained).length;
+            const drained = people.filter(p => p.drained).length;
+            const totalPower = Math.round(vampires.reduce((sum, v) => sum + v.power, 0));
+
+            document.getElementById('activeVictims').textContent = active;
+            document.getElementById('vampirePower').textContent = totalPower;
+            document.getElementById('drainedCount').textContent = drained;
+        }
+
+        function animate() {
+            // Clear old tendrils
+            tendrilsGroup.selectAll('line').remove();
+
+            let feeding = false;
+
+            // Each vampire feeds on nearby people
+            vampires.forEach(vampire => {
+                people.forEach(person => {
+                    if (person.drained) return;
+
+                    const dist = distance(vampire, person);
+                    if (dist < vampire.reach) {
+                        feeding = true;
+
+                        // Draw tendril
+                        tendrilsGroup.append('line')
+                            .attr('x1', person.x)
+                            .attr('y1', person.y)
+                            .attr('x2', vampire.x)
+                            .attr('y2', vampire.y)
+                            .attr('stroke', '#7C3AED')
+                            .attr('stroke-width', 1)
+                            .attr('opacity', 0.4);
+
+                        // Drain energy
+                        const drainAmount = 2 + vampire.power * 0.5;
+                        person.energy -= drainAmount;
+                        vampire.power += drainAmount * 0.02;
+
+                        if (person.energy <= 0) {
+                            person.energy = 0;
+                            person.drained = true;
+                        }
+                    }
+                });
+
+                // Vampire grows with power
+                vampire.radius = 15 + vampire.power * 2;
+                vampire.reach = 80 + vampire.power * 8;
+            });
+
+            // Update person visuals
+            personCircles
+                .transition()
+                .duration(100)
+                .attr('r', d => Math.max(2, 6 * (d.energy / 100)))
+                .attr('fill', d => d.drained ? '#4B5563' : d3.interpolateRgb('#3B82F6', '#93C5FD')(1 - d.energy / 100))
+                .attr('opacity', d => d.drained ? 0.3 : 0.8);
+
+            // Update vampire visuals
+            vampireCircles
+                .transition()
+                .duration(100)
+                .attr('r', d => d.radius);
+
+            vampireGlows
+                .transition()
+                .duration(100)
+                .attr('r', d => d.reach)
+                .attr('opacity', d => 0.1 + d.power * 0.02);
+
+            updateStats();
+
+            const allDrained = people.every(p => p.drained);
+            if (!allDrained) {
+                animationTimer = setTimeout(animate, 150);
+            } else {
+                isPlaying = false;
+                playBtn.textContent = '▶ Play Again';
+            }
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                isPlaying = false;
+                clearTimeout(animationTimer);
+                playBtn.textContent = '▶ Resume';
+            } else {
+                if (people.every(p => p.drained)) {
+                    reset();
+                }
+                isPlaying = true;
+                playBtn.textContent = '⏸ Pause';
+                animate();
+            }
+        });
+
+        function reset() {
+            isPlaying = false;
+            clearTimeout(animationTimer);
+            tendrilsGroup.selectAll('line').remove();
+
+            people.forEach(p => {
+                p.energy = 100;
+                p.drained = false;
+            });
+
+            vampires.forEach(v => {
+                v.power = 1;
+                v.radius = 15;
+                v.reach = 80;
+            });
+
+            personCircles
+                .transition()
+                .duration(500)
+                .attr('r', 6)
+                .attr('fill', '#3B82F6')
+                .attr('opacity', 0.8);
+
+            vampireCircles
+                .transition()
+                .duration(500)
+                .attr('r', 15);
+
+            vampireGlows
+                .transition()
+                .duration(500)
+                .attr('r', 80)
+                .attr('opacity', 0.2);
+
+            playBtn.textContent = '▶ Play';
+            updateStats();
+        }
+
+        resetBtn.addEventListener('click', reset);
+        updateStats();
+    </script>
+</body>
+</html>

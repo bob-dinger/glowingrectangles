@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reality vs Perception</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Georgia', serif;
+            background-color: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .description {
+            color: #888888;
+            margin: 0 0 25px 0;
+            text-align: center;
+            font-size: 14px;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+        .panels {
+            display: flex;
+            gap: 40px;
+        }
+        .panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .panel-title {
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .panel-subtitle {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        svg {
+            background-color: #050505;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+        .bubble {
+            stroke: none;
+        }
+        .vs {
+            color: #333;
+            font-size: 48px;
+            align-self: center;
+            margin-top: 150px;
+        }
+        .stats {
+            display: flex;
+            gap: 200px;
+            margin-top: 20px;
+            color: #666;
+            font-size: 13px;
+        }
+        .stat-box {
+            text-align: center;
+        }
+        .stat-box .number {
+            color: #ef4444;
+            font-size: 24px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reality vs Perception</h1>
+    <p class="description">
+        The same week. The same 450 deaths. Two completely different pictures.
+    </p>
+    <div class="panels">
+        <div class="panel">
+            <div class="panel-title">Reality</div>
+            <div class="panel-subtitle">What actually happened</div>
+            <svg id="reality" width="400" height="400"></svg>
+        </div>
+        <div class="vs">vs</div>
+        <div class="panel">
+            <div class="panel-title">Perception</div>
+            <div class="panel-subtitle">What you heard about</div>
+            <svg id="perception" width="400" height="400"></svg>
+        </div>
+    </div>
+    <div class="stats">
+        <div class="stat-box">
+            <span class="number">450</span>
+            lives lost, each equally tragic
+        </div>
+        <div class="stat-box">
+            <span class="number">3</span>
+            cases you might recognize
+        </div>
+    </div>
+
+    <script>
+        const width = 400;
+        const height = 400;
+        const numMurders = 450;
+
+        // Pick 3 random cases to be "famous"
+        const famousIndices = new Set();
+        while (famousIndices.size < 3) {
+            famousIndices.add(Math.floor(Math.random() * numMurders));
+        }
+
+        // Generate data for reality panel
+        function generateRealityData() {
+            const data = [];
+            for (let i = 0; i < numMurders; i++) {
+                data.push({
+                    id: i,
+                    radius: 6,
+                    famous: famousIndices.has(i),
+                    x: Math.random() * width,
+                    y: Math.random() * height
+                });
+            }
+            return data;
+        }
+
+        // Generate data for perception panel
+        function generatePerceptionData() {
+            const data = [];
+            let idx = 0;
+            for (const i of famousIndices) {
+                data.push({
+                    id: i,
+                    radius: 50,
+                    famous: true,
+                    x: 130 + (idx * 120),
+                    y: height / 2
+                });
+                idx++;
+            }
+            return data;
+        }
+
+        const realityNodes = generateRealityData();
+        const perceptionNodes = generatePerceptionData();
+
+        // Create Reality SVG
+        const realitySvg = d3.select('#reality');
+
+        const realityBubbles = realitySvg.selectAll('.bubble')
+            .data(realityNodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', '#4a4a4a')
+            .attr('opacity', 0.7);
+
+        // Force simulation for reality
+        const realitySimulation = d3.forceSimulation(realityNodes)
+            .force('charge', d3.forceManyBody().strength(-8))
+            .force('x', d3.forceX(width / 2).strength(0.05))
+            .force('y', d3.forceY(height / 2).strength(0.05))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 1))
+            .on('tick', () => {
+                realityBubbles
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+            });
+
+        // Create Perception SVG
+        const perceptionSvg = d3.select('#perception');
+
+        // Add faded "invisible" dots to show what's missing
+        const ghostNodes = realityNodes.filter(d => !d.famous).map(d => ({
+            ...d,
+            x: Math.random() * width,
+            y: Math.random() * height,
+            radius: 3
+        }));
+
+        perceptionSvg.selectAll('.ghost')
+            .data(ghostNodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'ghost')
+            .attr('r', 2)
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('fill', '#1a1a1a')
+            .attr('opacity', 0.3);
+
+        const perceptionBubbles = perceptionSvg.selectAll('.bubble')
+            .data(perceptionNodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', '#ef4444')
+            .attr('opacity', 0.9)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2);
+
+        // Add labels to perception bubbles
+        const labels = ['Case A', 'Case B', 'Case C'];
+        perceptionSvg.selectAll('.label')
+            .data(perceptionNodes)
+            .enter()
+            .append('text')
+            .attr('x', d => d.x)
+            .attr('y', d => d.y)
+            .attr('text-anchor', 'middle')
+            .attr('dy', '.35em')
+            .attr('fill', '#fff')
+            .attr('font-size', '12px')
+            .attr('font-weight', 'bold')
+            .text((d, i) => labels[i]);
+
+        // Force simulation for perception
+        const perceptionSimulation = d3.forceSimulation(perceptionNodes)
+            .force('charge', d3.forceManyBody().strength(-500))
+            .force('x', d3.forceX(width / 2).strength(0.1))
+            .force('y', d3.forceY(height / 2).strength(0.1))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 10))
+            .on('tick', () => {
+                perceptionBubbles
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+                perceptionSvg.selectAll('text')
+                    .attr('x', (d, i) => perceptionNodes[i].x)
+                    .attr('y', (d, i) => perceptionNodes[i].y);
+            });
+    </script>
+</body>
+</html>

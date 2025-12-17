@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL 2002 Class - Brady at Center</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 15px 0;
+            text-align: center;
+            font-size: 12px;
+            max-width: 800px;
+            line-height: 1.5;
+        }
+        #controls {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        button {
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #2563EB;
+        }
+        button:disabled {
+            background-color: #4B5563;
+            cursor: not-allowed;
+        }
+        #year-display {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: bold;
+            min-width: 70px;
+            text-align: center;
+        }
+        #stats {
+            color: #10B981;
+            font-size: 14px;
+            min-width: 200px;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .legend {
+            color: #aaaaaa;
+            font-size: 11px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>NFL 2002 Class: Brady at the Center</h1>
+    <p class="description">
+        1,948 players entered the NFL with Tom Brady in 2002. He's at the center.
+        Watch his classmates disappear as careers end.
+    </p>
+    <div id="controls">
+        <button id="playBtn">Play</button>
+        <button id="resetBtn">Reset</button>
+        <div id="year-display">2002</div>
+        <div id="stats">1,948 players (100%)</div>
+    </div>
+    <div id="vis"></div>
+    <div class="legend">
+        <span style="color: #EF4444;">● Tom Brady</span> &nbsp;|&nbsp;
+        <span style="color: #3B82F6;">● Active classmates</span> &nbsp;|&nbsp;
+        <span style="color: #374151;">● Career ended</span>
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 600;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        let currentYear = 2002;
+        let isPlaying = false;
+        let animationTimer = null;
+
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const yearDisplay = document.getElementById('year-display');
+        const statsDisplay = document.getElementById('stats');
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Load data
+        d3.json('nfl_2002_class.json').then(data => {
+            console.log(`Loaded ${data.length} players`);
+
+            const totalPlayers = data.length;
+            const bradyRadius = 15;
+            const playerRadius = 3;
+
+            // Separate Brady from others
+            const brady = data.find(d => d.is_brady);
+            const others = data.filter(d => !d.is_brady);
+
+            // Pack the other players in concentric circles around center
+            // Use sunflower pattern for even distribution
+            const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // ~137.5 degrees
+            const maxRadius = (width / 2) - playerRadius - 5; // Stay within bounds
+            const innerRadius = bradyRadius + 8; // Start just outside Brady
+
+            others.forEach((d, i) => {
+                // Sunflower/Fermat spiral, scaled to fit
+                const rawR = Math.sqrt(i + 1) / Math.sqrt(others.length); // 0 to 1
+                const r = innerRadius + rawR * (maxRadius - innerRadius);
+                const theta = i * goldenAngle;
+                d.x = centerX + r * Math.cos(theta);
+                d.y = centerY + r * Math.sin(theta);
+            });
+
+            // Draw other players first (so Brady is on top)
+            const playerDots = svg.selectAll('.player-dot')
+                .data(others)
+                .enter()
+                .append('circle')
+                .attr('class', 'player-dot')
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', playerRadius)
+                .attr('fill', '#3B82F6')
+                .attr('stroke', 'rgba(255,255,255,0.1)')
+                .attr('stroke-width', 0.5)
+                .attr('opacity', 0.9);
+
+            // Draw Brady at center
+            svg.append('circle')
+                .attr('class', 'brady-dot')
+                .attr('cx', centerX)
+                .attr('cy', centerY)
+                .attr('r', bradyRadius)
+                .attr('fill', '#EF4444')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
+
+            // Brady label
+            svg.append('text')
+                .attr('x', centerX)
+                .attr('y', centerY + 4)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#fff')
+                .attr('font-size', '10px')
+                .attr('font-weight', 'bold')
+                .text('TB');
+
+            // Update function for each year
+            function updateYear(year) {
+                currentYear = year;
+                yearDisplay.textContent = year;
+
+                // Count survivors
+                const survivors = data.filter(d => d.last_year >= year).length;
+                const pct = (100 * survivors / totalPlayers).toFixed(1);
+                statsDisplay.textContent = `${survivors.toLocaleString()} players (${pct}%)`;
+
+                // Update player dots
+                playerDots.transition()
+                    .duration(400)
+                    .attr('fill', d => d.last_year >= year ? '#3B82F6' : '#374151')
+                    .attr('opacity', d => d.last_year >= year ? 0.9 : 0.15);
+            }
+
+            // Play animation
+            function play() {
+                if (currentYear >= 2022) {
+                    reset();
+                }
+                isPlaying = true;
+                playBtn.textContent = 'Pause';
+
+                animationTimer = setInterval(() => {
+                    if (currentYear < 2022) {
+                        currentYear++;
+                        updateYear(currentYear);
+                    } else {
+                        pause();
+                    }
+                }, 800);
+            }
+
+            function pause() {
+                isPlaying = false;
+                playBtn.textContent = 'Play';
+                if (animationTimer) {
+                    clearInterval(animationTimer);
+                    animationTimer = null;
+                }
+            }
+
+            function reset() {
+                pause();
+                currentYear = 2002;
+                updateYear(2002);
+            }
+
+            playBtn.addEventListener('click', () => {
+                if (isPlaying) {
+                    pause();
+                } else {
+                    play();
+                }
+            });
+
+            resetBtn.addEventListener('click', reset);
+
+            // Initialize
+            updateYear(2002);
+        });
+    </script>
+</body>
+</html>

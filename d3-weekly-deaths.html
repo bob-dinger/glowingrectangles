@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Actually Kills Us - One Week in America</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Georgia', serif;
+            background-color: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .description {
+            color: #888888;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 14px;
+            max-width: 700px;
+            line-height: 1.6;
+        }
+        .stat {
+            color: #ef4444;
+        }
+        svg {
+            background-color: #050505;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+        .bubble {
+            stroke: none;
+            opacity: 0.8;
+        }
+        .legend {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #888;
+            font-size: 13px;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .legend-count {
+            color: #fff;
+            font-weight: bold;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            background: #1a1a1a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #333;
+            border-color: #666;
+        }
+        button.active {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+        .footnote {
+            color: #444;
+            font-size: 11px;
+            margin-top: 20px;
+            text-align: center;
+            max-width: 600px;
+        }
+        .total-stat {
+            color: #ef4444;
+            font-size: 18px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>What Actually Kills Us</h1>
+    <p class="description">
+        <span class="stat">4,218 Americans die every week</span> from these four causes.<br>
+        Each dot represents ~4 lives. This is one week.
+    </p>
+    <div id="vis"></div>
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #8b5cf6;"></div>
+            <span>Overdose: <span class="legend-count">2,020/week</span></span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #3b82f6;"></div>
+            <span>Suicide: <span class="legend-count">949/week</span></span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #f97316;"></div>
+            <span>Car Crashes: <span class="legend-count">787/week</span></span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #ef4444;"></div>
+            <span>Homicide: <span class="legend-count">462/week</span></span>
+        </div>
+    </div>
+    <div class="controls">
+        <button id="mixed" class="active">Stacked by Cause</button>
+        <button id="separated">Separate by Cause</button>
+        <button id="news">Size by News Coverage</button>
+    </div>
+    <div class="footnote">
+        Data: CDC 2023 (overdose, suicide), NHTSA 2023 (car crashes), FBI 2023 (homicide est.)<br>
+        Homicide gets the most news coverage per death. Overdose gets the least.
+    </div>
+
+    <script>
+        const width = 800;
+        const height = 600;
+        const padding = 10;
+
+        // Weekly deaths (2023 data)
+        const causes = [
+            { name: 'overdose', weekly: 2020, color: '#8b5cf6', newsMultiplier: 0.1 },
+            { name: 'suicide', weekly: 949, color: '#3b82f6', newsMultiplier: 0.2 },
+            { name: 'car', weekly: 787, color: '#f97316', newsMultiplier: 0.3 },
+            { name: 'homicide', weekly: 462, color: '#ef4444', newsMultiplier: 3.0 }
+        ];
+
+        const totalDeaths = causes.reduce((sum, c) => sum + c.weekly, 0);
+        const scaleFactor = 1000 / totalDeaths; // Scale to 1000 bubbles
+
+        // Generate data - ordered by cause so colors group together
+        function generateData() {
+            const data = [];
+            let id = 0;
+
+            // Calculate starting positions to stack causes vertically
+            let runningTotal = 0;
+            const totalBubbles = Math.round(totalDeaths * scaleFactor);
+
+            causes.forEach((cause, causeIndex) => {
+                const count = Math.round(cause.weekly * scaleFactor);
+                const startRatio = runningTotal / totalBubbles;
+                const endRatio = (runningTotal + count) / totalBubbles;
+
+                for (let i = 0; i < count; i++) {
+                    // Start positions clustered by cause (vertical bands)
+                    const ratio = startRatio + (i / count) * (endRatio - startRatio);
+                    data.push({
+                        id: id++,
+                        cause: cause.name,
+                        color: cause.color,
+                        radius: 5,
+                        newsRadius: 5 * Math.sqrt(cause.newsMultiplier),
+                        causeIndex: causeIndex,
+                        x: 100 + Math.random() * (width - 200),
+                        y: ratio * (height - 100) + 50 + (Math.random() - 0.5) * 30
+                    });
+                }
+                runningTotal += count;
+            });
+
+            return data;
+        }
+
+        let nodes = generateData();
+        let currentMode = 'mixed';
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Create bubbles
+        const bubbles = svg.selectAll('.bubble')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', d => d.color);
+
+        // Force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(-3))
+            .force('x', d3.forceX(width / 2).strength(0.1))
+            .force('y', d3.forceY(height / 2).strength(0.1))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 1))
+            .on('tick', ticked);
+
+        function ticked() {
+            nodes.forEach(d => {
+                d.x = Math.max(d.radius, Math.min(width - d.radius, d.x));
+                d.y = Math.max(d.radius, Math.min(height - d.radius, d.y));
+            });
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+        }
+
+        // Mode: Stacked by cause (default)
+        function mixedMode() {
+            currentMode = 'mixed';
+
+            nodes.forEach(d => d.radius = 5);
+            bubbles.transition().duration(500).attr('r', 5);
+
+            // Stack causes vertically - overdose on top (biggest), homicide on bottom (smallest)
+            const yPositions = {
+                'overdose': height * 0.24,
+                'suicide': height * 0.48,
+                'car': height * 0.68,
+                'homicide': height * 0.85
+            };
+
+            simulation
+                .force('x', d3.forceX(width / 2).strength(0.12))
+                .force('y', d3.forceY(d => yPositions[d.cause]).strength(0.15))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 1))
+                .alpha(0.5).restart();
+
+            updateButtons('mixed');
+        }
+
+        // Mode: Separated by cause
+        function separatedMode() {
+            currentMode = 'separated';
+
+            nodes.forEach(d => d.radius = 5);
+            bubbles.transition().duration(500).attr('r', 5);
+
+            const positions = {
+                'overdose': { x: width * 0.25, y: height * 0.35 },
+                'suicide': { x: width * 0.75, y: height * 0.35 },
+                'car': { x: width * 0.25, y: height * 0.7 },
+                'homicide': { x: width * 0.75, y: height * 0.7 }
+            };
+
+            simulation
+                .force('x', d3.forceX(d => positions[d.cause].x).strength(0.15))
+                .force('y', d3.forceY(d => positions[d.cause].y).strength(0.15))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 1))
+                .alpha(0.6).restart();
+
+            updateButtons('separated');
+        }
+
+        // Mode: Sized by news coverage
+        function newsMode() {
+            currentMode = 'news';
+
+            nodes.forEach(d => d.radius = d.newsRadius);
+
+            bubbles.transition().duration(800).attr('r', d => d.newsRadius);
+
+            simulation
+                .force('x', d3.forceX(width / 2).strength(0.08))
+                .force('y', d3.forceY(height / 2).strength(0.08))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 1))
+                .alpha(0.6).restart();
+
+            updateButtons('news');
+        }
+
+        function updateButtons(active) {
+            d3.selectAll('.controls button').classed('active', false);
+            d3.select(`#${active}`).classed('active', true);
+        }
+
+        // Button handlers
+        d3.select('#mixed').on('click', mixedMode);
+        d3.select('#separated').on('click', separatedMode);
+        d3.select('#news').on('click', newsMode);
+    </script>
+</body>
+</html>

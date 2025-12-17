@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defensive Coverage vs Split OL Formation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #111;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 30px;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        h2 {
+            font-size: 18px;
+            font-weight: 400;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        .field {
+            background: #1a472a;
+            width: 800px;
+            height: 500px;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .los {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #fff;
+            opacity: 0.6;
+        }
+        .yard-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #fff;
+            opacity: 0.15;
+        }
+        .player {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            border: 3px solid #fff;
+        }
+        .player.center {
+            background: #6b7280;
+        }
+        .player.oline {
+            background: #6b7280;
+        }
+        .player.qb {
+            background: #ef4444;
+        }
+        .player.rb {
+            background: #3b82f6;
+        }
+        .player.wr {
+            background: #22c55e;
+        }
+        /* Defense */
+        .player.dl {
+            background: #7c3aed;
+            border-color: #c4b5fd;
+        }
+        .player.lb {
+            background: #f59e0b;
+            border-color: #fde68a;
+        }
+        .player.cb {
+            background: #ec4899;
+            border-color: #fbcfe8;
+        }
+        .player.safety {
+            background: #06b6d4;
+            border-color: #a5f3fc;
+        }
+        .description {
+            max-width: 800px;
+            background: #222;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Man Coverage vs Split OL Formation</h1>
+
+    <!-- 4-3 Man -->
+    <h2>4-3 Defense - Man Assignments</h2>
+    <div class="field">
+        <div class="yard-line" style="top: 20%;"></div>
+        <div class="yard-line" style="top: 35%;"></div>
+        <div class="los"></div>
+        <div class="yard-line" style="top: 65%;"></div>
+        <div class="yard-line" style="top: 80%;"></div>
+
+        <!-- Offense -->
+        <div class="player center" style="left: 400px; top: 48%;">C</div>
+        <div class="player oline" style="left: 740px; top: 48%;">TE</div>
+        <div class="player oline" style="left: 690px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 640px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 590px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 270px; top: 48%;">OL</div>
+        <div class="player qb" style="left: 400px; top: 62%;">QB</div>
+        <div class="player rb" style="left: 590px; top: 62%;">RB</div>
+        <div class="player wr" style="left: 220px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 120px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 50px; top: 48%;">WR</div>
+
+        <!-- Defense - 4-3 Man -->
+        <div class="player dl" style="left: 430px; top: 42%;">DT</div>
+        <div class="player dl" style="left: 370px; top: 42%;">DT</div>
+        <div class="player dl" style="left: 300px; top: 42%;">DE</div>
+        <div class="player dl" style="left: 500px; top: 42%;">DE</div>
+
+        <!-- Man assignments -->
+        <div class="player cb" style="left: 50px; top: 42%;">CB</div>
+        <div class="player cb" style="left: 120px; top: 48%;">CB</div>
+        <div class="player cb" style="left: 220px; top: 48%;">NCB</div>
+        <div class="player lb" style="left: 740px; top: 38%;">LB</div>
+        <div class="player lb" style="left: 590px; top: 35%;">LB</div>
+
+        <!-- Free - shifted strong -->
+        <div class="player lb" style="left: 620px; top: 28%;">MLB</div>
+        <div class="player safety" style="left: 500px; top: 15%;">FS</div>
+    </div>
+    <div class="description">
+        <strong>4-3 Man:</strong> Same assignments - 3 CBs on WRs, LB on TE, LB on RB. <strong>Problem:</strong> The lone OL on the left creates a huge gap in the middle. DEs have to cover a massive area. Center is isolated - easy A-gap pressure if defense stunts. Free defenders still cheating strong to help vs RB.
+    </div>
+
+    <!-- Nickel - Shift Left -->
+    <h2>Nickel - Shifted to Trips Side</h2>
+    <div class="field">
+        <div class="yard-line" style="top: 20%;"></div>
+        <div class="yard-line" style="top: 35%;"></div>
+        <div class="los"></div>
+        <div class="yard-line" style="top: 65%;"></div>
+        <div class="yard-line" style="top: 80%;"></div>
+
+        <!-- Offense -->
+        <div class="player center" style="left: 400px; top: 48%;">C</div>
+        <div class="player oline" style="left: 740px; top: 48%;">TE</div>
+        <div class="player oline" style="left: 690px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 640px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 590px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 270px; top: 48%;">OL</div>
+        <div class="player qb" style="left: 400px; top: 62%;">QB</div>
+        <div class="player rb" style="left: 590px; top: 62%;">RB</div>
+        <div class="player wr" style="left: 220px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 120px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 50px; top: 48%;">WR</div>
+
+        <!-- Defense - Nickel shifted left -->
+        <div class="player dl" style="left: 430px; top: 42%;">DT</div>
+        <div class="player dl" style="left: 350px; top: 42%;">DT</div>
+        <div class="player dl" style="left: 250px; top: 42%;">DE</div>
+        <div class="player dl" style="left: 520px; top: 42%;">DE</div>
+
+        <!-- Man assignments - heavy to trips -->
+        <div class="player cb" style="left: 50px; top: 42%;">CB</div>
+        <div class="player cb" style="left: 120px; top: 48%;">CB</div>
+        <div class="player cb" style="left: 220px; top: 48%;">NCB</div>
+        <div class="player safety" style="left: 740px; top: 38%;">SS</div>
+        <div class="player lb" style="left: 590px; top: 35%;">LB</div>
+
+        <!-- Free -->
+        <div class="player lb" style="left: 400px; top: 28%;">MLB</div>
+        <div class="player safety" style="left: 300px; top: 15%;">FS</div>
+    </div>
+    <div class="description">
+        <strong>Nickel Shift:</strong> D-line shifts toward trips/OL side. DE lines up over the split OL. FS cheats to trips side for help over the top. <strong>Trade-off:</strong> Strong side (right) now has only SS on TE and LB on RB with no help. Run to the right = big gain.
+    </div>
+
+    <!-- 3-4 Overload -->
+    <h2>3-4 Overload to Strong Side</h2>
+    <div class="field">
+        <div class="yard-line" style="top: 20%;"></div>
+        <div class="yard-line" style="top: 35%;"></div>
+        <div class="los"></div>
+        <div class="yard-line" style="top: 65%;"></div>
+        <div class="yard-line" style="top: 80%;"></div>
+
+        <!-- Offense -->
+        <div class="player center" style="left: 400px; top: 48%;">C</div>
+        <div class="player oline" style="left: 740px; top: 48%;">TE</div>
+        <div class="player oline" style="left: 690px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 640px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 590px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 270px; top: 48%;">OL</div>
+        <div class="player qb" style="left: 400px; top: 62%;">QB</div>
+        <div class="player rb" style="left: 590px; top: 62%;">RB</div>
+        <div class="player wr" style="left: 220px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 120px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 50px; top: 48%;">WR</div>
+
+        <!-- Defense - 3-4 overload strong -->
+        <div class="player dl" style="left: 400px; top: 42%;">NT</div>
+        <div class="player dl" style="left: 550px; top: 42%;">DE</div>
+        <div class="player dl" style="left: 650px; top: 42%;">DE</div>
+
+        <!-- OLBs -->
+        <div class="player lb" style="left: 300px; top: 42%;">OLB</div>
+        <div class="player lb" style="left: 720px; top: 42%;">OLB</div>
+
+        <!-- Man assignments -->
+        <div class="player cb" style="left: 50px; top: 42%;">CB</div>
+        <div class="player cb" style="left: 120px; top: 48%;">CB</div>
+        <div class="player cb" style="left: 220px; top: 48%;">NCB</div>
+        <div class="player lb" style="left: 740px; top: 35%;">ILB</div>
+        <div class="player lb" style="left: 590px; top: 35%;">ILB</div>
+
+        <!-- Free -->
+        <div class="player safety" style="left: 450px; top: 15%;">FS</div>
+    </div>
+    <div class="description">
+        <strong>3-4 Overload:</strong> Stack the box to the strong side. 2 DEs + OLB on the right vs the 4 OL. NT over center. OLB on left can rush or drop. <strong>Problem:</strong> Only 1 free (FS). If offense runs left toward the split OL, just the OLB there to stop it. CBs in man have no safety help on trips side.
+    </div>
+
+    <!-- Cover 0 All Out -->
+    <h2>Cover 0 - All Out Blitz</h2>
+    <div class="field">
+        <div class="yard-line" style="top: 20%;"></div>
+        <div class="yard-line" style="top: 35%;"></div>
+        <div class="los"></div>
+        <div class="yard-line" style="top: 65%;"></div>
+        <div class="yard-line" style="top: 80%;"></div>
+
+        <!-- Offense -->
+        <div class="player center" style="left: 400px; top: 48%;">C</div>
+        <div class="player oline" style="left: 740px; top: 48%;">TE</div>
+        <div class="player oline" style="left: 690px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 640px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 590px; top: 48%;">OL</div>
+        <div class="player oline" style="left: 270px; top: 48%;">OL</div>
+        <div class="player qb" style="left: 400px; top: 62%;">QB</div>
+        <div class="player rb" style="left: 590px; top: 62%;">RB</div>
+        <div class="player wr" style="left: 220px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 120px; top: 55%;">WR</div>
+        <div class="player wr" style="left: 50px; top: 48%;">WR</div>
+
+        <!-- Defense - Cover 0 -->
+        <div class="player dl" style="left: 430px; top: 42%;">DT</div>
+        <div class="player dl" style="left: 370px; top: 42%;">DT</div>
+        <div class="player dl" style="left: 300px; top: 42%;">DE</div>
+        <div class="player dl" style="left: 500px; top: 42%;">DE</div>
+
+        <!-- Blitzing LBs -->
+        <div class="player lb" style="left: 450px; top: 35%;">MLB</div>
+        <div class="player lb" style="left: 340px; top: 35%;">LB</div>
+
+        <!-- Man assignments - everyone covered -->
+        <div class="player cb" style="left: 50px; top: 42%;">CB</div>
+        <div class="player cb" style="left: 120px; top: 48%;">CB</div>
+        <div class="player cb" style="left: 220px; top: 48%;">NCB</div>
+        <div class="player safety" style="left: 740px; top: 38%;">SS</div>
+        <div class="player safety" style="left: 590px; top: 35%;">FS</div>
+    </div>
+    <div class="description">
+        <strong>Cover 0:</strong> 6 rushers vs 6 blockers. Everyone manned up. <strong>Huge risk:</strong> The isolated center creates a free lane. Both LBs blitzing through the A-gaps have a clear path. But if offense gets it out quick or anyone beats their man = touchdown.
+    </div>
+
+    <!-- Summary -->
+    <h2>Summary</h2>
+    <div class="description">
+        <strong>This formation creates problems:</strong><br><br>
+        • <strong>Isolated center</strong> - Easy to exploit gaps on either side<br>
+        • <strong>Split blockers</strong> - Defense can't align traditionally<br>
+        • <strong>Numbers advantage right</strong> - 4 OL + TE + RB can dominate vs run<br>
+        • <strong>Trips left with OL</strong> - Can run screens/sweeps with lead blocker<br><br>
+        <strong>Defense has to pick their poison:</strong><br>
+        • Shift to trips = give up the run right<br>
+        • Stack the box right = trips side has no help<br>
+        • Blitz = one missed tackle is 6 points
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Bubble Force - Top 1%</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        #vis {
+            width: 600px;
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 600px;
+            height: 600px;
+        }
+        .bubble {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            cursor: pointer;
+            opacity: 0.9;
+        }
+        .bubble:hover {
+            opacity: 1;
+            stroke-width: 2.5px;
+        }
+        text {
+            fill: #fff;
+            pointer-events: none;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Top 1% Wealth Distribution</h1>
+    <p class="description">Top 1% wealth = Bottom 99% combined (by area)</p>
+    <div id="vis"></div>
+
+    <script>
+        const width = 600;
+        const height = 600;
+
+        // Generate top 1% data
+        // Top 1% has same total wealth as bottom 99% COMBINED
+        function generateTop1PercentData(n) {
+            const data = [];
+
+            const bottom99Count = n - 1;
+            const individualBottom99Size = 100;  // Each of the 99 gets this
+            const totalBottom99Wealth = bottom99Count * individualBottom99Size;
+
+            // Top 1% gets same total wealth as all 99 combined
+            const top1Size = totalBottom99Wealth;
+
+            // 1 person gets massive wealth (equal to all 99 combined)
+            data.push({
+                id: 1,
+                size: top1Size,
+                group: 'top1'
+            });
+
+            // 99 people get equal tiny portions
+            for (let i = 1; i < n; i++) {
+                data.push({
+                    id: i + 1,
+                    size: individualBottom99Size,
+                    group: 'bottom99'
+                });
+            }
+
+            return data;
+        }
+
+        // Generate the data
+        const rawData = generateTop1PercentData(100);
+
+        // Create nodes with varying radius
+        const maxSize = d3.max(rawData, d => d.size);
+        const radiusScale = d3.scaleSqrt()
+            .domain([0, maxSize])
+            .range([0, 80]);
+
+        const nodes = rawData.map((d, i) => {
+            const radius = radiusScale(d.size);
+
+            // Start the massive one in center, others randomly
+            let startX, startY;
+            if (d.group === 'top1') {
+                startX = width / 2;
+                startY = height / 2;
+            } else {
+                startX = Math.random() * width;
+                startY = Math.random() * height;
+            }
+
+            return {
+                id: d.id,
+                radius: radius,
+                size: d.size,
+                group: d.group,
+                x: startX,
+                y: startY
+            };
+        });
+
+        console.log('Nodes created:', nodes.length);
+
+        // Color scale - gold for top 1%, gray for the rest
+        const colorScale = d3.scaleOrdinal()
+            .domain(['top1', 'bottom99'])
+            .range(['#F59E0B', '#6B7280']);
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        console.log('SVG created');
+
+        // Create groups for each bubble
+        const elements = svg.selectAll('.bubble-group')
+            .data(nodes, d => d.id)
+            .enter()
+            .append('g')
+            .attr('class', 'bubble-group');
+
+        // Add circles
+        const bubbles = elements
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', d => colorScale(d.group));
+
+        // Add labels
+        const labels = elements
+            .append('text')
+            .attr('dy', '.3em')
+            .style('text-anchor', 'middle')
+            .style('font-size', d => d.group === 'top1' ? '24px' : '8px')
+            .text(d => d.group === 'top1' ? '1%' : '');
+
+        console.log('Bubbles and labels created');
+
+        // Charge function
+        function charge(d) {
+            return -Math.pow(d.radius, 2.0) * 0.03;
+        }
+
+        // Custom centering force - much stronger for the top 1%
+        function customXForce(d) {
+            return d.group === 'top1' ? 0.15 : 0.05;
+        }
+
+        function customYForce(d) {
+            return d.group === 'top1' ? 0.15 : 0.05;
+        }
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(charge))
+            .force('x', d3.forceX().strength(customXForce).x(width / 2))
+            .force('y', d3.forceY().strength(customYForce).y(height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 2))
+            .on('tick', ticked);
+
+        console.log('Simulation started');
+
+        // Tick function
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        }
+    </script>
+</body>
+</html>

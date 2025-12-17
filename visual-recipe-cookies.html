@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Recipe: Oatmeal Chocolate Chip Cookies</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #fafafa;
+            color: #333;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #222;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .recipe-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .track-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+            margin-bottom: 8px;
+            margin-top: 25px;
+        }
+        .track-label:first-of-type {
+            margin-top: 0;
+        }
+        .step-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .box {
+            padding: 16px 20px;
+            border-radius: 8px;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .input-box {
+            background: #E8F5E9;
+            border: 2px solid #A5D6A7;
+            width: 240px;
+        }
+        .method-box {
+            background: #FFF3E0;
+            border: 2px solid #FFCC80;
+            width: 180px;
+            text-align: center;
+        }
+        .result-box {
+            background: #E3F2FD;
+            border: 2px solid #90CAF9;
+            width: 220px;
+        }
+        .arrow {
+            font-size: 24px;
+            color: #ccc;
+            margin: 0 12px;
+        }
+        .box-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+        .box-content {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+        .method-detail {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .temp-high { border-color: #EF5350; background: #FFEBEE; }
+        .temp-med { border-color: #FFCC80; background: #FFF3E0; }
+        .temp-low { border-color: #81D4FA; background: #E1F5FE; }
+        .temp-none { border-color: #E0E0E0; background: #FAFAFA; }
+        .temp-oven { border-color: #FF7043; background: #FBE9E7; }
+
+        .merge-indicator {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding-left: 50px;
+        }
+        .merge-line {
+            width: 40px;
+            height: 2px;
+            background: #ccc;
+        }
+        .merge-arrow {
+            font-size: 18px;
+            color: #999;
+            margin: 0 8px;
+        }
+        .merge-label {
+            font-size: 11px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .final-row {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px dashed #ddd;
+        }
+        .final-box {
+            background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+            border: 3px solid #FFD54F;
+            width: 100%;
+            max-width: 680px;
+            text-align: center;
+            padding: 20px;
+        }
+        .final-box .box-content {
+            font-size: 18px;
+        }
+
+        .prep-note {
+            background: #FFF9C4;
+            border-left: 4px solid #FFC107;
+            padding: 10px 15px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .prep-note strong {
+            color: #333;
+        }
+
+        .wait-box {
+            background: #F3E5F5;
+            border: 2px dashed #CE93D8;
+            width: 180px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="recipe-container">
+        <h1>Oatmeal Chocolate Chip Cookies</h1>
+        <p class="subtitle">Makes 24 cookies — Total time: 45 minutes</p>
+
+        <div class="prep-note">
+            <strong>Before starting:</strong> Preheat oven to 350°F (175°C). Line baking sheets with parchment.
+        </div>
+
+        <!-- Track 1: Dry ingredients -->
+        <div class="track-label">Track 1: Dry Ingredients</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Flour (1½ cups) + Baking soda (1 tsp) + Salt (½ tsp) + Cinnamon (1 tsp)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Whisk</div>
+                <div class="method-detail">30 sec • no heat</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Dry mix</div>
+            </div>
+        </div>
+
+        <!-- Track 2: Wet ingredients -->
+        <div class="track-label">Track 2: Wet Ingredients</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Butter (1 cup, softened)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Beat</div>
+                <div class="method-detail">1 min • mixer med</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Fluffy butter</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Fluffy butter + Brown sugar (¾ cup) + White sugar (½ cup)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Cream</div>
+                <div class="method-detail">3 min • mixer med</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Light & fluffy base</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Fluffy base + Eggs (2) + Vanilla (1 tsp)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Beat</div>
+                <div class="method-detail">1 min • mixer med</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Wet mix</div>
+            </div>
+        </div>
+
+        <!-- Merge -->
+        <div class="merge-indicator">
+            <div class="merge-line"></div>
+            <div class="merge-arrow">↓</div>
+            <div class="merge-label">Combine tracks — don't overmix!</div>
+        </div>
+
+        <!-- Combined -->
+        <div class="track-label">Combining</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Wet mix + Dry mix</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Fold</div>
+                <div class="method-detail">30 sec • mixer low</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Base dough</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Base dough + Oats (3 cups)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Mix</div>
+                <div class="method-detail">30 sec • mixer low</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Oat dough</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Oat dough + Chocolate chips (2 cups)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Fold</div>
+                <div class="method-detail">20 sec • by hand</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Cookie dough</div>
+            </div>
+        </div>
+
+        <!-- Baking -->
+        <div class="track-label">Shaping & Baking</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Cookie dough</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Scoop & space</div>
+                <div class="method-detail">2 tbsp each • 2" apart</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Dough balls on sheet</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Dough balls on sheet</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-oven">
+                <div class="box-content">Bake</div>
+                <div class="method-detail">10-12 min • 350°F</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Golden edges, soft center</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Hot cookies on sheet</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box wait-box">
+                <div class="box-content">Rest</div>
+                <div class="method-detail">5 min • on sheet</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Set cookies</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Set cookies</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Transfer</div>
+                <div class="method-detail">to cooling rack</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Cooling cookies</div>
+            </div>
+        </div>
+
+        <!-- Final result -->
+        <div class="step-row final-row">
+            <div class="box final-box">
+                <div class="box-label">Final Result</div>
+                <div class="box-content">🍪 Oatmeal Chocolate Chip Cookies</div>
+                <div class="method-detail">Chewy center, crispy edges, melty chocolate</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

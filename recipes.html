@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Recipes - Glowing Gardens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            margin-bottom: 30px;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        h1 {
+            font-size: 42px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #F59E0B 0%, #EA580C 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tagline {
+            font-size: 16px;
+            color: #888;
+        }
+        .concept {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .concept h2 {
+            font-size: 16px;
+            color: #F59E0B;
+            margin-bottom: 12px;
+        }
+        .concept p {
+            font-size: 14px;
+            color: #888;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        .concept-demo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+        .concept-box {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        .concept-box.input { background: #166534; border: 1px solid #22C55E; }
+        .concept-box.method { background: #92400E; border: 1px solid #F59E0B; }
+        .concept-box.result { background: #1E40AF; border: 1px solid #3B82F6; }
+        .concept-arrow { color: #555; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #F59E0B, #EA580C);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .card:hover {
+            border-color: #F59E0B;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
+        }
+        .card:hover::before {
+            opacity: 1;
+        }
+        .card-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        .card-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .card-description {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        .card-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #555;
+        }
+        .card-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge.new {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22C55E;
+        }
+        .badge.icons {
+            background: rgba(139, 92, 246, 0.2);
+            color: #8B5CF6;
+        }
+
+        .section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #555;
+            margin-bottom: 20px;
+            margin-top: 40px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid #222;
+            color: #555;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+
+        <header>
+            <h1>Visual Recipes</h1>
+            <p class="tagline">Recipes as parallel tracks with timing and merge points</p>
+        </header>
+
+        <div class="concept">
+            <h2>The Format</h2>
+            <p>Every step follows the same pattern: Input → Method → Result. See timing, temperature, and when tracks merge together.</p>
+            <div class="concept-demo">
+                <div class="concept-box input">Ingredients</div>
+                <span class="concept-arrow">→</span>
+                <div class="concept-box method">Method + Time</div>
+                <span class="concept-arrow">→</span>
+                <div class="concept-box result">Result</div>
+            </div>
+        </div>
+
+        <div class="section-title">Recipes</div>
+
+        <div class="grid">
+            <div class="card" onclick="window.location.href='visual-recipe-cookies-icons.html'">
+                <span class="badge icons">Dynamic Icons</span>
+                <div class="card-icon">🍪</div>
+                <div class="card-title">Oatmeal Chocolate Chip Cookies</div>
+                <div class="card-description">With ingredient icons loaded from Freepik. Dry and wet tracks merge into delicious.</div>
+                <div class="card-meta">
+                    <span>45 min</span>
+                    <span>24 cookies</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="window.location.href='visual-recipe-cookies.html'">
+                <div class="card-icon">🍪</div>
+                <div class="card-title">Oatmeal Chocolate Chip Cookies</div>
+                <div class="card-description">Classic version. Dry and wet ingredient tracks, combining step by step.</div>
+                <div class="card-meta">
+                    <span>45 min</span>
+                    <span>24 cookies</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="window.location.href='visual-recipe-carbonara.html'">
+                <div class="card-icon">🍝</div>
+                <div class="card-title">Pasta Carbonara</div>
+                <div class="card-description">Three parallel tracks: pasta, guanciale, egg mixture. Critical merge timing.</div>
+                <div class="card-meta">
+                    <span>25 min</span>
+                    <span>4 servings</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="window.location.href='visual-recipe-stirfry.html'">
+                <div class="card-icon">🥘</div>
+                <div class="card-title">Beef Stir Fry</div>
+                <div class="card-description">Mise en place is critical. High heat, rapid execution, everything ready before you start.</div>
+                <div class="card-meta">
+                    <span>20 min</span>
+                    <span>4 servings</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">Related</div>
+
+        <div class="grid">
+            <div class="card" onclick="window.location.href='nutrition.html'">
+                <div class="card-icon">🥗</div>
+                <div class="card-title">Nutrition Visualizer</div>
+                <div class="card-description">See protein, carbs, and fat as bubbles. Click any food to visualize its macros.</div>
+                <div class="card-meta">
+                    <span>Interactive</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="window.location.href='how-its-made-glass.html'">
+                <div class="card-icon">🏭</div>
+                <div class="card-title">How It's Made: Glass</div>
+                <div class="card-description">Same visual format applied to industrial processes. From sand to transparency.</div>
+                <div class="card-meta">
+                    <span>Float glass process</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Part of <a href="index.html" style="color:#F59E0B;text-decoration:none;">Glowing Gardens</a>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Teacher's Time, Divided</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 13px;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .insight {
+            color: #888;
+            font-size: 12px;
+            margin-top: 20px;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.7;
+        }
+        .highlight {
+            color: #10B981;
+        }
+        .volunteer {
+            color: #F59E0B;
+        }
+    </style>
+</head>
+<body>
+    <h1>A Teacher's Time, Divided by 30</h1>
+    <p class="description">
+        Bubble area = time. The teacher has 60 minutes of 1-on-1 time per day.<br>
+        Divided by 30 kids, each child gets 2 minutes.
+    </p>
+
+    <div id="vis"></div>
+
+    <p class="insight">
+        <span class="volunteer">One volunteer reading for 30 minutes</span> gives a child<br>
+        more individual attention than an entire week of school.
+    </p>
+
+    <script>
+        const width = 600;
+        const height = 600;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Time values
+        const teacherMinutes = 60;
+        const numKids = 30;
+        const minutesPerKid = teacherMinutes / numKids; // 2 minutes
+        const volunteerMinutes = 30;
+
+        // Scale: area proportional to time
+        // r = sqrt(time) * scale
+        const scale = 12;
+        const teacherRadius = Math.sqrt(teacherMinutes) * scale;
+        const kidRadius = Math.sqrt(minutesPerKid) * scale;
+        const volunteerRadius = Math.sqrt(volunteerMinutes) * scale;
+
+        // Create nodes
+        const nodes = [];
+
+        // Teacher node (fixed at center)
+        nodes.push({
+            id: 'teacher',
+            type: 'teacher',
+            radius: teacherRadius,
+            color: '#10B981',
+            label: '60 min',
+            sublabel: 'teacher',
+            fx: centerX,
+            fy: centerY
+        });
+
+        // 30 kid nodes
+        for (let i = 0; i < numKids; i++) {
+            nodes.push({
+                id: `kid-${i}`,
+                type: 'kid',
+                radius: kidRadius,
+                color: '#3B82F6',
+                label: null
+            });
+        }
+
+        // Volunteer node
+        nodes.push({
+            id: 'volunteer',
+            type: 'volunteer',
+            radius: volunteerRadius,
+            color: '#F59E0B',
+            label: '30 min',
+            sublabel: 'volunteer'
+        });
+
+        // Force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(d => d.type === 'teacher' ? 0 : -30))
+            .force('center', d3.forceCenter(centerX, centerY))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 3).strength(1))
+            .force('radial', d3.forceRadial(d => {
+                if (d.type === 'teacher') return 0;
+                if (d.type === 'volunteer') return 200;
+                return 120;
+            }, centerX, centerY).strength(d => d.type === 'teacher' ? 0 : 0.3))
+            .on('tick', ticked);
+
+        // Draw bubbles
+        const bubbles = svg.selectAll('circle')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('r', d => d.radius)
+            .attr('fill', d => d.color)
+            .attr('stroke', d => d.type === 'teacher' || d.type === 'volunteer' ? '#fff' : 'rgba(255,255,255,0.2)')
+            .attr('stroke-width', d => d.type === 'teacher' || d.type === 'volunteer' ? 2 : 0.5)
+            .attr('opacity', d => d.type === 'kid' ? 0.8 : 0.9);
+
+        // Labels
+        const labels = svg.selectAll('text.label')
+            .data(nodes.filter(d => d.label))
+            .enter()
+            .append('text')
+            .attr('class', 'label')
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '14px')
+            .attr('font-weight', 'bold')
+            .text(d => d.label);
+
+        const sublabels = svg.selectAll('text.sublabel')
+            .data(nodes.filter(d => d.sublabel))
+            .enter()
+            .append('text')
+            .attr('class', 'sublabel')
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .attr('font-size', '10px')
+            .text(d => d.sublabel);
+
+        // Kid label (one for all)
+        svg.append('text')
+            .attr('class', 'kid-label')
+            .attr('x', centerX)
+            .attr('y', 35)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#3B82F6')
+            .attr('font-size', '13px')
+            .text('30 children × 2 min each');
+
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y + 5);
+
+            sublabels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y + 20);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Common Curves</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .curves-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .curve-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .curve-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .curve-svg {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        .examples {
+            margin-top: 15px;
+            text-align: center;
+            color: #aaaaaa;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 500px;
+        }
+        .examples strong {
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Common Curves in Nature & Society</h1>
+
+    <div class="curves-grid">
+        <div class="curve-container">
+            <div class="curve-title">S-Curve (Sigmoid)</div>
+            <svg class="curve-svg" id="s-curve" width="500" height="400"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Technology adoption, population growth,
+                learning new skills, market saturation, bacterial growth in limited environment,
+                disease spread, product lifecycle
+            </div>
+        </div>
+
+        <div class="curve-container">
+            <div class="curve-title">Inverted U (Bell Curve)</div>
+            <svg class="curve-svg" id="inverted-u" width="500" height="400"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Stress vs performance (Yerkes-Dodson),
+                drug dosage effectiveness, exercise benefits, caffeine alertness,
+                tax revenue vs rates (Laffer curve), risk vs reward
+            </div>
+        </div>
+
+        <div class="curve-container">
+            <div class="curve-title">Exponential Growth</div>
+            <svg class="curve-svg" id="exponential" width="500" height="400"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Compound interest, viral spread (early stage),
+                Moore's Law, nuclear chain reaction, bacterial growth (unlimited),
+                social media virality, cryptocurrency bubbles
+            </div>
+        </div>
+
+        <div class="curve-container">
+            <div class="curve-title">Power Law</div>
+            <svg class="curve-svg" id="power-law" width="500" height="400"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Wealth distribution, city populations,
+                word frequency (Zipf), earthquake magnitude, website traffic,
+                social media followers, book sales, citations
+            </div>
+        </div>
+
+        <div class="curve-container">
+            <div class="curve-title">Logarithmic</div>
+            <svg class="curve-svg" id="logarithmic" width="500" height="400"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Perceived loudness, Richter scale,
+                human perception of differences (Weber-Fechner), pH scale,
+                learning curve early phase, initial fitness gains
+            </div>
+        </div>
+
+        <div class="curve-container">
+            <div class="curve-title">J-Curve</div>
+            <svg class="curve-svg" id="j-curve" width="500" height="400"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Private equity returns, currency devaluation effects,
+                organizational change, new habit formation, startup trajectory,
+                things getting worse before better
+            </div>
+        </div>
+
+        <div class="curve-container">
+            <div class="curve-title">Diminishing Returns</div>
+            <svg class="curve-svg" id="diminishing" width="500" height="400"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Fertilizer on crops, hours worked vs productivity,
+                practice after mastery, adding team members, eating more food,
+                marginal utility of money
+            </div>
+        </div>
+
+        <div class="curve-container">
+            <div class="curve-title">Hyperbolic Discounting</div>
+            <svg class="curve-svg" id="hyperbolic" width="500" height="400"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> $100 now vs $110 next week, procrastination,
+                addiction behavior, why we don't save for retirement,
+                immediate gratification, impulsive decisions
+            </div>
+        </div>
+
+        <div class="curve-container">
+            <div class="curve-title">Bathtub Curve</div>
+            <svg class="curve-svg" id="bathtub" width="500" height="400"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Product failure rates, human mortality,
+                early defects → stable period → wear-out, car reliability,
+                electronic components, machine maintenance
+            </div>
+        </div>
+
+        <div class="curve-container">
+            <div class="curve-title">Long Tail</div>
+            <svg class="curve-svg" id="long-tail" width="500" height="400"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Netflix catalog, Amazon products,
+                music streaming, niche markets, keyword searches,
+                the 80/20 extended - endless small sellers
+            </div>
+        </div>
+
+        <div class="curve-container">
+            <div class="curve-title">Step Function</div>
+            <svg class="curve-svg" id="step-function" width="500" height="400"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Phase transitions (ice to water), tipping points,
+                paradigm shifts, threshold effects, price tiers,
+                viral moments, sudden regime changes
+            </div>
+        </div>
+
+        <div class="curve-container">
+            <div class="curve-title">Logistic Decay</div>
+            <svg class="curve-svg" id="logistic-decay" width="500" height="400"></svg>
+            <div class="examples">
+                <strong>Examples:</strong> Technology obsolescence, market share loss,
+                dying platforms, fading trends, knowledge forgetting curve,
+                product end-of-life, declining empires
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const svgNS = "http://www.w3.org/2000/svg";
+        const width = 500;
+        const height = 400;
+        const padding = 50;
+
+        function drawAxes(svg) {
+            // X axis
+            const xAxis = document.createElementNS(svgNS, 'line');
+            xAxis.setAttribute('x1', padding);
+            xAxis.setAttribute('y1', height - padding);
+            xAxis.setAttribute('x2', width - padding);
+            xAxis.setAttribute('y2', height - padding);
+            xAxis.setAttribute('stroke', '#555');
+            xAxis.setAttribute('stroke-width', '2');
+            svg.appendChild(xAxis);
+
+            // Y axis
+            const yAxis = document.createElementNS(svgNS, 'line');
+            yAxis.setAttribute('x1', padding);
+            yAxis.setAttribute('y1', padding);
+            yAxis.setAttribute('x2', padding);
+            yAxis.setAttribute('y2', height - padding);
+            yAxis.setAttribute('stroke', '#555');
+            yAxis.setAttribute('stroke-width', '2');
+            svg.appendChild(yAxis);
+        }
+
+        function drawCurve(svg, points, color) {
+            const path = document.createElementNS(svgNS, 'path');
+            let d = `M ${points[0].x} ${points[0].y}`;
+            for (let i = 1; i < points.length; i++) {
+                d += ` L ${points[i].x} ${points[i].y}`;
+            }
+            path.setAttribute('d', d);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', color);
+            path.setAttribute('stroke-width', '3');
+            path.setAttribute('stroke-linecap', 'round');
+            path.setAttribute('stroke-linejoin', 'round');
+            svg.appendChild(path);
+        }
+
+        // S-Curve (Sigmoid)
+        (function() {
+            const svg = document.getElementById('s-curve');
+            drawAxes(svg);
+
+            const points = [];
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            for (let i = 0; i <= 100; i++) {
+                const t = (i / 100) * 12 - 6; // -6 to 6
+                const sigmoid = 1 / (1 + Math.exp(-t));
+                const x = padding + (i / 100) * graphWidth;
+                const y = height - padding - sigmoid * graphHeight;
+                points.push({ x, y });
+            }
+
+            drawCurve(svg, points, '#22C55E');
+        })();
+
+        // Inverted U
+        (function() {
+            const svg = document.getElementById('inverted-u');
+            drawAxes(svg);
+
+            const points = [];
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            for (let i = 0; i <= 100; i++) {
+                const t = (i / 100) * 6 - 3; // -3 to 3
+                const bell = Math.exp(-t * t / 2);
+                const x = padding + (i / 100) * graphWidth;
+                const y = height - padding - bell * graphHeight * 0.95;
+                points.push({ x, y });
+            }
+
+            drawCurve(svg, points, '#F59E0B');
+        })();
+
+        // Exponential
+        (function() {
+            const svg = document.getElementById('exponential');
+            drawAxes(svg);
+
+            const points = [];
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            for (let i = 0; i <= 100; i++) {
+                const t = (i / 100) * 4; // 0 to 4
+                const exp = (Math.exp(t) - 1) / (Math.exp(4) - 1); // Normalized
+                const x = padding + (i / 100) * graphWidth;
+                const y = height - padding - exp * graphHeight;
+                points.push({ x, y });
+            }
+
+            drawCurve(svg, points, '#EF4444');
+        })();
+
+        // Power Law
+        (function() {
+            const svg = document.getElementById('power-law');
+            drawAxes(svg);
+
+            const points = [];
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            for (let i = 1; i <= 100; i++) {
+                const t = i / 100; // 0.01 to 1
+                const power = Math.pow(t, -0.8); // Power law with exponent
+                const normalizedPower = Math.min(power / 10, 1); // Normalize to fit
+                const x = padding + (i / 100) * graphWidth;
+                const y = height - padding - normalizedPower * graphHeight;
+                points.push({ x, y });
+            }
+
+            drawCurve(svg, points, '#8B5CF6');
+        })();
+
+        // Logarithmic
+        (function() {
+            const svg = document.getElementById('logarithmic');
+            drawAxes(svg);
+
+            const points = [];
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            for (let i = 1; i <= 100; i++) {
+                const t = i / 100;
+                const log = Math.log(1 + t * 9) / Math.log(10); // Log base 10, normalized
+                const x = padding + (i / 100) * graphWidth;
+                const y = height - padding - log * graphHeight;
+                points.push({ x, y });
+            }
+
+            drawCurve(svg, points, '#06B6D4');
+        })();
+
+        // J-Curve
+        (function() {
+            const svg = document.getElementById('j-curve');
+            drawAxes(svg);
+
+            const points = [];
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            for (let i = 0; i <= 100; i++) {
+                const t = i / 100;
+                // Dip then rise: combination of negative quadratic and exponential
+                const jcurve = -2 * t * (1 - t) + Math.pow(t, 2.5) * 1.5;
+                const normalized = (jcurve + 0.5) / 1.5; // Shift and normalize
+                const x = padding + t * graphWidth;
+                const y = height - padding - Math.max(0, Math.min(1, normalized)) * graphHeight;
+                points.push({ x, y });
+            }
+
+            drawCurve(svg, points, '#EC4899');
+        })();
+
+        // Diminishing Returns
+        (function() {
+            const svg = document.getElementById('diminishing');
+            drawAxes(svg);
+
+            const points = [];
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            for (let i = 0; i <= 100; i++) {
+                const t = i / 100;
+                const diminish = 1 - Math.exp(-4 * t); // Approaches 1 asymptotically
+                const x = padding + t * graphWidth;
+                const y = height - padding - diminish * graphHeight;
+                points.push({ x, y });
+            }
+
+            drawCurve(svg, points, '#10B981');
+        })();
+
+        // Hyperbolic Discounting
+        (function() {
+            const svg = document.getElementById('hyperbolic');
+            drawAxes(svg);
+
+            const points = [];
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            for (let i = 0; i <= 100; i++) {
+                const t = i / 100;
+                const hyperbolic = 1 / (1 + 5 * t); // Steep initial drop
+                const x = padding + t * graphWidth;
+                const y = height - padding - hyperbolic * graphHeight;
+                points.push({ x, y });
+            }
+
+            drawCurve(svg, points, '#F97316');
+        })();
+
+        // Bathtub Curve
+        (function() {
+            const svg = document.getElementById('bathtub');
+            drawAxes(svg);
+
+            const points = [];
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            for (let i = 0; i <= 100; i++) {
+                const t = i / 100;
+                // High at start, low in middle, high at end
+                const bathtub = Math.exp(-10 * t) + Math.exp(-10 * (1 - t)) + 0.1;
+                const normalized = bathtub / 2.1;
+                const x = padding + t * graphWidth;
+                const y = height - padding - normalized * graphHeight;
+                points.push({ x, y });
+            }
+
+            drawCurve(svg, points, '#6366F1');
+        })();
+
+        // Long Tail
+        (function() {
+            const svg = document.getElementById('long-tail');
+            drawAxes(svg);
+
+            const points = [];
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            for (let i = 1; i <= 100; i++) {
+                const t = i / 100;
+                // Steep drop then long flat tail
+                const longtail = Math.pow(t, -1.5);
+                const normalized = Math.min(longtail / 30, 1);
+                const x = padding + t * graphWidth;
+                const y = height - padding - normalized * graphHeight;
+                points.push({ x, y });
+            }
+
+            drawCurve(svg, points, '#A855F7');
+        })();
+
+        // Step Function
+        (function() {
+            const svg = document.getElementById('step-function');
+            drawAxes(svg);
+
+            const points = [];
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            const steps = [0, 0, 0, 0.3, 0.3, 0.3, 0.7, 0.7, 0.7, 1, 1];
+
+            for (let i = 0; i <= 100; i++) {
+                const t = i / 100;
+                const stepIndex = Math.floor(t * (steps.length - 1));
+                const stepValue = steps[stepIndex];
+                const x = padding + t * graphWidth;
+                const y = height - padding - stepValue * graphHeight;
+                points.push({ x, y });
+            }
+
+            drawCurve(svg, points, '#14B8A6');
+        })();
+
+        // Logistic Decay (inverted S-curve)
+        (function() {
+            const svg = document.getElementById('logistic-decay');
+            drawAxes(svg);
+
+            const points = [];
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            for (let i = 0; i <= 100; i++) {
+                const t = (i / 100) * 12 - 6; // -6 to 6
+                const sigmoid = 1 / (1 + Math.exp(t)); // Inverted sigmoid
+                const x = padding + (i / 100) * graphWidth;
+                const y = height - padding - sigmoid * graphHeight;
+                points.push({ x, y });
+            }
+
+            drawCurve(svg, points, '#F43F5E');
+        })();
+    </script>
+</body>
+</html>

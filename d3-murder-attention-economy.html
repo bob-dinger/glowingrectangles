@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Attention Economy</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Georgia', serif;
+            background-color: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .description {
+            color: #888888;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 14px;
+            max-width: 700px;
+            line-height: 1.6;
+        }
+        svg {
+            background-color: #050505;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+        .bubble {
+            stroke: none;
+            cursor: pointer;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            background: #1a1a1a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #333;
+            border-color: #666;
+        }
+        button.active {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+        .mode-label {
+            color: #ef4444;
+            font-size: 16px;
+            margin-top: 15px;
+            min-height: 24px;
+        }
+        .legend {
+            color: #666;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>The Attention Economy</h1>
+    <p class="description">
+        450 murders. Each one equally tragic. But watch what happens when we size them by media coverage.
+    </p>
+    <div id="vis"></div>
+    <div class="mode-label" id="mode-label">Sized by: Actual occurrence (all equal)</div>
+    <div class="controls">
+        <button id="equal" class="active">Equal (Reality)</button>
+        <button id="coverage">Media Coverage</button>
+        <button id="searches">Google Searches</button>
+        <button id="tweets">Tweets About It</button>
+    </div>
+    <div class="legend">
+        Each dot is one murder. Size = attention received.
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 500;
+        const numMurders = 450;
+        const padding = 20;
+
+        // Assign random "virality" scores (power law distribution)
+        // Most get almost nothing, a few explode
+        function generateData() {
+            const data = [];
+
+            // Pick 3 to go viral
+            const viralIndices = new Set();
+            while (viralIndices.size < 3) {
+                viralIndices.add(Math.floor(Math.random() * numMurders));
+            }
+
+            // Pick 10 more to get moderate coverage
+            const moderateIndices = new Set(viralIndices);
+            while (moderateIndices.size < 13) {
+                moderateIndices.add(Math.floor(Math.random() * numMurders));
+            }
+
+            for (let i = 0; i < numMurders; i++) {
+                let coverageScore, searchScore, tweetScore;
+
+                if (viralIndices.has(i)) {
+                    coverageScore = 800 + Math.random() * 400;
+                    searchScore = 1000 + Math.random() * 500;
+                    tweetScore = 1200 + Math.random() * 600;
+                } else if (moderateIndices.has(i)) {
+                    coverageScore = 100 + Math.random() * 150;
+                    searchScore = 80 + Math.random() * 120;
+                    tweetScore = 150 + Math.random() * 200;
+                } else {
+                    coverageScore = Math.random() * 5;
+                    searchScore = Math.random() * 3;
+                    tweetScore = Math.random() * 2;
+                }
+
+                data.push({
+                    id: i,
+                    equalRadius: 7,
+                    coverageRadius: Math.sqrt(coverageScore) * 1.2 + 2,
+                    searchRadius: Math.sqrt(searchScore) * 1.2 + 2,
+                    tweetRadius: Math.sqrt(tweetScore) * 1.2 + 2,
+                    currentRadius: 7,
+                    viral: viralIndices.has(i),
+                    moderate: moderateIndices.has(i) && !viralIndices.has(i),
+                    x: padding + Math.random() * (width - 2 * padding),
+                    y: padding + Math.random() * (height - 2 * padding)
+                });
+            }
+            return data;
+        }
+
+        let nodes = generateData();
+        let currentMode = 'equal';
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Create bubbles
+        const bubbles = svg.selectAll('.bubble')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.currentRadius)
+            .attr('fill', '#4a4a4a')
+            .attr('opacity', 0.7);
+
+        // Force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(d => -Math.pow(d.currentRadius, 1.5) * 0.2))
+            .force('x', d3.forceX(width / 2).strength(0.12))
+            .force('y', d3.forceY(height / 2).strength(0.12))
+            .force('collision', d3.forceCollide().radius(d => d.currentRadius + 1))
+            .on('tick', ticked);
+
+        function ticked() {
+            // Clamp to bounds
+            nodes.forEach(d => {
+                d.x = Math.max(d.currentRadius, Math.min(width - d.currentRadius, d.x));
+                d.y = Math.max(d.currentRadius, Math.min(height - d.currentRadius, d.y));
+            });
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+        }
+
+        // Switch modes
+        function switchMode(mode) {
+            currentMode = mode;
+
+            const labels = {
+                'equal': 'Sized by: Actual occurrence (all equal)',
+                'coverage': 'Sized by: Media coverage (articles written)',
+                'searches': 'Sized by: Google searches',
+                'tweets': 'Sized by: Tweets and social media posts'
+            };
+
+            d3.select('#mode-label').text(labels[mode]);
+
+            nodes.forEach(n => {
+                if (mode === 'equal') {
+                    n.currentRadius = n.equalRadius;
+                } else if (mode === 'coverage') {
+                    n.currentRadius = n.coverageRadius;
+                } else if (mode === 'searches') {
+                    n.currentRadius = n.searchRadius;
+                } else if (mode === 'tweets') {
+                    n.currentRadius = n.tweetRadius;
+                }
+            });
+
+            // Update visuals
+            bubbles
+                .transition()
+                .duration(800)
+                .attr('r', d => d.currentRadius)
+                .attr('fill', d => {
+                    if (mode === 'equal') return '#4a4a4a';
+                    if (d.viral) return '#ef4444';
+                    if (d.moderate) return '#f97316';
+                    return '#1a1a1a';
+                })
+                .attr('opacity', d => {
+                    if (mode === 'equal') return 0.7;
+                    if (d.viral || d.moderate) return 0.9;
+                    return 0.3;
+                });
+
+            // Update forces
+            simulation
+                .force('charge', d3.forceManyBody().strength(d => -Math.pow(d.currentRadius, 1.5) * 0.3))
+                .force('collision', d3.forceCollide().radius(d => d.currentRadius + 2));
+            simulation.alpha(0.6).restart();
+
+            // Update buttons
+            d3.selectAll('.controls button').classed('active', false);
+            d3.select(`#${mode}`).classed('active', true);
+        }
+
+        // Button handlers
+        d3.select('#equal').on('click', () => switchMode('equal'));
+        d3.select('#coverage').on('click', () => switchMode('coverage'));
+        d3.select('#searches').on('click', () => switchMode('searches'));
+        d3.select('#tweets').on('click', () => switchMode('tweets'));
+    </script>
+</body>
+</html>

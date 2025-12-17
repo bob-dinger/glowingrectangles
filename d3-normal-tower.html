@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Normal Distribution Tower</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        #container {
+            width: 960px;
+            margin: 0 auto;
+        }
+        svg {
+            border: 1px solid #333;
+            width: 960px;
+            height: 600px;
+            background-color: #0a0a0a;
+            border-radius: 8px;
+        }
+        circle {
+            opacity: 0.85;
+        }
+        circle:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Normal Distribution Tower</h1>
+    <p class="description">Bell curve formed by stacking dots - gray (middle 90%), red extremes (5% each side)</p>
+    <div id="container">
+        <svg></svg>
+    </div>
+
+    <script>
+        // 64 columns forming a bell curve
+        // Heights follow normal distribution
+        let tower = [
+            3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 8, 9, 10, 12, 13, 14,
+            16, 17, 19, 20, 22, 24, 26, 28, 30, 30, 32, 32, 34, 34, 35, 35,
+            35, 34, 34, 32, 32, 30, 30, 28, 26, 24, 22, 20, 19, 17, 16, 14,
+            13, 12, 10, 9, 8, 7, 6, 6, 5, 5, 4, 4, 4, 3, 3
+        ];
+
+        // Calculate total dots
+        const totalDots = tower.reduce((sum, count) => sum + count, 0);
+        const dotsPerSide = Math.floor(totalDots * 0.05); // 5% on each side
+
+        let svg = document.querySelector('svg');
+        let dotCounter = 0;
+
+        tower.forEach((dots, columnIdx) => {
+            for (let i = 0; i < dots; i++) {
+                let circle = document.createElementNS('http://www.w3.org/2000/svg', "circle");
+                circle.setAttribute("r", 7);
+                circle.setAttribute("cx", (columnIdx * 15) + 10);
+                circle.setAttribute("cy", 590 - (i * 15));
+                circle.setAttribute("class", `column${columnIdx}`);
+
+                // Color by counting total dots from left to right
+                // First 5% = red (left), last 5% = red (right), middle 90% = gray
+                if (dotCounter < dotsPerSide) {
+                    circle.setAttribute("fill", "#EF4444");  // Red - left 5%
+                } else if (dotCounter >= totalDots - dotsPerSide) {
+                    circle.setAttribute("fill", "#EF4444");  // Red - right 5%
+                } else {
+                    circle.setAttribute("fill", "#6B7280");  // Gray - middle 90%
+                }
+
+                svg.prepend(circle);
+                dotCounter++;
+            }
+        });
+
+        console.log(`Total dots: ${totalDots}, Each red side: ${dotsPerSide} dots (5%)`);
+
+        // Example animation - you can animate any column
+        // gsap.to(".column31", 0.5, {y: "-=30", yoyo: true, repeat: 1});
+    </script>
+</body>
+</html>

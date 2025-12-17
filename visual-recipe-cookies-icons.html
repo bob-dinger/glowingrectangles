@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Recipe: Oatmeal Chocolate Chip Cookies (with Icons)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #faf8f5;
+            color: #333;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            color: #222;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .recipe-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Ingredients Grid with Icons */
+        .ingredients-section {
+            background: linear-gradient(135deg, #fff9e6, #fff3cd);
+            border: 2px solid #f0d77c;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 35px;
+        }
+        .ingredients-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a08000;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ingredients-title::before {
+            content: '';
+            width: 30px;
+            height: 2px;
+            background: #d4a800;
+        }
+        .ingredients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+        }
+        .ingredient-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .ingredient-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .ingredient-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            border-radius: 50%;
+            padding: 8px;
+        }
+        .ingredient-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .ingredient-icon.loading {
+            background: #f0f0f0;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        .ingredient-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 3px;
+        }
+        .ingredient-amount {
+            font-size: 11px;
+            color: #888;
+        }
+
+        /* Track labels */
+        .track-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+            margin-bottom: 12px;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .track-label::before {
+            content: '';
+            width: 20px;
+            height: 2px;
+            background: #ccc;
+        }
+        .track-label:first-of-type {
+            margin-top: 0;
+        }
+
+        /* Step rows */
+        .step-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .box {
+            padding: 14px 18px;
+            border-radius: 10px;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .input-box {
+            background: #E8F5E9;
+            border: 2px solid #A5D6A7;
+            width: 280px;
+        }
+        .input-box .ingredient-icons-inline {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .input-box .ingredient-icons-inline img {
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 50%;
+            padding: 4px;
+        }
+        .method-box {
+            background: #FFF3E0;
+            border: 2px solid #FFCC80;
+            width: 160px;
+            text-align: center;
+        }
+        .result-box {
+            background: #E3F2FD;
+            border: 2px solid #90CAF9;
+            width: 200px;
+        }
+        .arrow {
+            font-size: 24px;
+            color: #ccc;
+            margin: 0 12px;
+        }
+        .box-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .box-content {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+        .method-detail {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Temperature styles */
+        .temp-high { border-color: #EF5350; background: #FFEBEE; }
+        .temp-med { border-color: #FFCC80; background: #FFF3E0; }
+        .temp-none { border-color: #E0E0E0; background: #FAFAFA; }
+        .temp-oven { border-color: #FF7043; background: #FBE9E7; }
+
+        /* Merge indicator */
+        .merge-indicator {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            padding-left: 60px;
+        }
+        .merge-line {
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, #A5D6A7, #90CAF9);
+        }
+        .merge-arrow {
+            font-size: 20px;
+            color: #888;
+            margin: 0 10px;
+        }
+        .merge-label {
+            font-size: 12px;
+            color: #888;
+            font-style: italic;
+        }
+
+        /* Final result */
+        .final-row {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px dashed #ddd;
+        }
+        .final-box {
+            background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+            border: 3px solid #FFD54F;
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+            padding: 25px;
+            border-radius: 12px;
+        }
+        .final-box .box-content {
+            font-size: 22px;
+        }
+        .final-box .final-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        /* Wait/rest box */
+        .wait-box {
+            background: #F3E5F5;
+            border: 2px dashed #CE93D8;
+            width: 160px;
+            text-align: center;
+        }
+
+        /* Prep note */
+        .prep-note {
+            background: #fff;
+            border-left: 4px solid #FF7043;
+            padding: 12px 18px;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 25px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .prep-note strong {
+            color: #FF7043;
+        }
+
+        /* Loading status */
+        .loading-status {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="recipe-container">
+        <h1>Oatmeal Chocolate Chip Cookies</h1>
+        <p class="subtitle">Makes 24 cookies — Total time: 45 minutes — with dynamic ingredient icons!</p>
+
+        <!-- Ingredients with Icons -->
+        <div class="ingredients-section">
+            <div class="ingredients-title">Ingredients</div>
+            <div id="ingredientsGrid" class="ingredients-grid">
+                <!-- Icons will be loaded here -->
+            </div>
+            <div id="loadingStatus" class="loading-status">Loading ingredient icons...</div>
+        </div>
+
+        <div class="prep-note">
+            <strong>Before starting:</strong> Preheat oven to 350°F (175°C). Line baking sheets with parchment paper. Let butter soften at room temp for 30 min.
+        </div>
+
+        <!-- Track 1: Dry ingredients -->
+        <div class="track-label">Track 1: Dry Ingredients</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Flour + Baking Soda + Salt + Cinnamon</div>
+                <div class="ingredient-icons-inline" data-ingredients="flour,baking-soda,salt,cinnamon"></div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Whisk</div>
+                <div class="method-detail">30 sec • combine</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Dry mix</div>
+            </div>
+        </div>
+
+        <!-- Track 2: Wet ingredients -->
+        <div class="track-label">Track 2: Wet Ingredients</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Butter (softened)</div>
+                <div class="ingredient-icons-inline" data-ingredients="butter"></div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Beat</div>
+                <div class="method-detail">1 min • fluffy</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Fluffy butter</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Fluffy butter + Brown sugar + White sugar</div>
+                <div class="ingredient-icons-inline" data-ingredients="brown-sugar,sugar"></div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Cream</div>
+                <div class="method-detail">3 min • light & airy</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Creamed base</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Creamed base + Eggs + Vanilla</div>
+                <div class="ingredient-icons-inline" data-ingredients="egg,vanilla"></div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Beat</div>
+                <div class="method-detail">1 min • combined</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Wet mix</div>
+            </div>
+        </div>
+
+        <!-- Merge -->
+        <div class="merge-indicator">
+            <div class="merge-line"></div>
+            <div class="merge-arrow">↓</div>
+            <div class="merge-label">Combine tracks — don't overmix!</div>
+        </div>
+
+        <!-- Combined -->
+        <div class="track-label">Combining</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Wet mix + Dry mix</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Fold</div>
+                <div class="method-detail">30 sec • just combined</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Base dough</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Base dough + Oats</div>
+                <div class="ingredient-icons-inline" data-ingredients="oats"></div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Mix</div>
+                <div class="method-detail">30 sec • incorporated</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Oat dough</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Oat dough + Chocolate chips</div>
+                <div class="ingredient-icons-inline" data-ingredients="chocolate"></div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Fold</div>
+                <div class="method-detail">20 sec • by hand</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Cookie dough</div>
+            </div>
+        </div>
+
+        <!-- Baking -->
+        <div class="track-label">Shaping & Baking</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Cookie dough</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Scoop</div>
+                <div class="method-detail">2 tbsp balls • 2" apart</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Dough balls on sheet</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Dough balls</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-oven">
+                <div class="box-content">Bake</div>
+                <div class="method-detail">10-12 min • 350°F</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Golden edges</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Hot cookies</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box wait-box">
+                <div class="box-content">Rest</div>
+                <div class="method-detail">5 min • on sheet</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Set & chewy</div>
+            </div>
+        </div>
+
+        <!-- Final result -->
+        <div class="step-row final-row">
+            <div class="box final-box">
+                <div class="final-icon">🍪</div>
+                <div class="box-label">Final Result</div>
+                <div class="box-content">Oatmeal Chocolate Chip Cookies</div>
+                <div class="method-detail">Chewy center • Crispy edges • Melty chocolate</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="freepik-api.js"></script>
+    <script>
+        // Ingredient data with search terms and amounts
+        const ingredients = [
+            { id: 'flour', name: 'Flour', amount: '1½ cups', search: 'wheat flour' },
+            { id: 'butter', name: 'Butter', amount: '1 cup', search: 'butter' },
+            { id: 'brown-sugar', name: 'Brown Sugar', amount: '¾ cup', search: 'brown sugar' },
+            { id: 'sugar', name: 'White Sugar', amount: '½ cup', search: 'sugar cube' },
+            { id: 'egg', name: 'Eggs', amount: '2 large', search: 'egg' },
+            { id: 'vanilla', name: 'Vanilla', amount: '1 tsp', search: 'vanilla extract' },
+            { id: 'baking-soda', name: 'Baking Soda', amount: '1 tsp', search: 'baking soda' },
+            { id: 'salt', name: 'Salt', amount: '½ tsp', search: 'salt shaker' },
+            { id: 'cinnamon', name: 'Cinnamon', amount: '1 tsp', search: 'cinnamon' },
+            { id: 'oats', name: 'Oats', amount: '3 cups', search: 'oatmeal' },
+            { id: 'chocolate', name: 'Chocolate Chips', amount: '2 cups', search: 'chocolate chip' }
+        ];
+
+        // Store loaded icons for inline use
+        const loadedIcons = new Map();
+
+        async function loadIngredientIcons() {
+            const freepik = new FreepikAPI();
+            const grid = document.getElementById('ingredientsGrid');
+            const status = document.getElementById('loadingStatus');
+
+            // Create placeholder cards
+            ingredients.forEach(ing => {
+                const card = document.createElement('div');
+                card.className = 'ingredient-card';
+                card.id = `card-${ing.id}`;
+                card.innerHTML = `
+                    <div class="ingredient-icon loading" id="icon-${ing.id}"></div>
+                    <div class="ingredient-name">${ing.name}</div>
+                    <div class="ingredient-amount">${ing.amount}</div>
+                `;
+                grid.appendChild(card);
+            });
+
+            // Load icons in batches
+            let loaded = 0;
+            for (const ing of ingredients) {
+                try {
+                    const result = await freepik.searchAndGetIcon(ing.search, 128);
+                    const iconContainer = document.getElementById(`icon-${ing.id}`);
+
+                    if (result && result.pngUrl) {
+                        iconContainer.innerHTML = `<img src="${result.pngUrl}" alt="${ing.name}" />`;
+                        iconContainer.classList.remove('loading');
+                        loadedIcons.set(ing.id, result.pngUrl);
+                    } else {
+                        iconContainer.innerHTML = '🔸';
+                        iconContainer.classList.remove('loading');
+                    }
+
+                    loaded++;
+                    status.textContent = `Loaded ${loaded}/${ingredients.length} icons...`;
+                } catch (e) {
+                    console.error(`Failed to load icon for ${ing.name}:`, e);
+                    const iconContainer = document.getElementById(`icon-${ing.id}`);
+                    iconContainer.innerHTML = '🔸';
+                    iconContainer.classList.remove('loading');
+                }
+            }
+
+            status.style.display = 'none';
+
+            // Now populate inline icons in step boxes
+            populateInlineIcons();
+        }
+
+        function populateInlineIcons() {
+            document.querySelectorAll('.ingredient-icons-inline').forEach(container => {
+                const ingredientIds = container.dataset.ingredients.split(',');
+                ingredientIds.forEach(id => {
+                    const url = loadedIcons.get(id.trim());
+                    if (url) {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = id;
+                        container.appendChild(img);
+                    }
+                });
+            });
+        }
+
+        // Start loading when page loads
+        loadIngredientIcons();
+    </script>
+</body>
+</html>

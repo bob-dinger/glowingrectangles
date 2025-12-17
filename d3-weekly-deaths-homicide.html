@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What We Focus On - One Week in America</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Georgia', serif;
+            background-color: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .description {
+            color: #888888;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 14px;
+            max-width: 700px;
+            line-height: 1.6;
+        }
+        .stat {
+            color: #ef4444;
+        }
+        svg {
+            background-color: #050505;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+        .bubble {
+            stroke: none;
+        }
+        .legend {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-size: 13px;
+        }
+        .legend-item.highlight {
+            color: #fff;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .legend-count {
+            font-weight: bold;
+        }
+        .highlight .legend-count {
+            color: #ef4444;
+        }
+        .footnote {
+            color: #444;
+            font-size: 11px;
+            margin-top: 20px;
+            text-align: center;
+            max-width: 600px;
+        }
+        .callout {
+            color: #ef4444;
+            font-size: 16px;
+            margin-top: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>What We Focus On</h1>
+    <p class="description">
+        <span class="stat">4,218 Americans die every week</span> from these four causes.<br>
+        Each dot is ~4 lives. The red dots are what makes the news.
+    </p>
+    <div id="vis"></div>
+    <div class="callout">
+        Homicide: 11% of these deaths. ~90% of the coverage.
+    </div>
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #333;"></div>
+            <span>Overdose: <span class="legend-count">2,020/week</span></span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #444;"></div>
+            <span>Suicide: <span class="legend-count">949/week</span></span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #555;"></div>
+            <span>Car Crashes: <span class="legend-count">787/week</span></span>
+        </div>
+        <div class="legend-item highlight">
+            <div class="legend-dot" style="background: #ef4444;"></div>
+            <span>Homicide: <span class="legend-count">462/week</span></span>
+        </div>
+    </div>
+    <div class="footnote">
+        Data: CDC 2023 (overdose, suicide), NHTSA 2023 (car crashes), FBI 2023 (homicide est.)
+    </div>
+
+    <script>
+        const width = 800;
+        const height = 600;
+
+        // Weekly deaths (2023 data)
+        const causes = [
+            { name: 'overdose', weekly: 2020, color: '#2a2a2a' },
+            { name: 'suicide', weekly: 949, color: '#3a3a3a' },
+            { name: 'car', weekly: 787, color: '#4a4a4a' },
+            { name: 'homicide', weekly: 462, color: '#ef4444' }
+        ];
+
+        const totalDeaths = causes.reduce((sum, c) => sum + c.weekly, 0);
+        const scaleFactor = 1000 / totalDeaths;
+
+        // Generate data - ordered by cause
+        function generateData() {
+            const data = [];
+            let id = 0;
+            let runningTotal = 0;
+            const totalBubbles = Math.round(totalDeaths * scaleFactor);
+
+            causes.forEach((cause, causeIndex) => {
+                const count = Math.round(cause.weekly * scaleFactor);
+                const startRatio = runningTotal / totalBubbles;
+                const endRatio = (runningTotal + count) / totalBubbles;
+
+                for (let i = 0; i < count; i++) {
+                    const ratio = startRatio + (i / count) * (endRatio - startRatio);
+                    data.push({
+                        id: id++,
+                        cause: cause.name,
+                        color: cause.color,
+                        radius: 5,
+                        causeIndex: causeIndex,
+                        x: 100 + Math.random() * (width - 200),
+                        y: ratio * (height - 100) + 50 + (Math.random() - 0.5) * 30
+                    });
+                }
+                runningTotal += count;
+            });
+
+            return data;
+        }
+
+        let nodes = generateData();
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Create bubbles
+        const bubbles = svg.selectAll('.bubble')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.radius)
+            .attr('fill', d => d.color)
+            .attr('opacity', d => d.cause === 'homicide' ? 0.9 : 0.5);
+
+        // Stack causes vertically
+        const yPositions = {
+            'overdose': height * 0.24,
+            'suicide': height * 0.48,
+            'car': height * 0.68,
+            'homicide': height * 0.85
+        };
+
+        // Force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(-3))
+            .force('x', d3.forceX(width / 2).strength(0.12))
+            .force('y', d3.forceY(d => yPositions[d.cause]).strength(0.15))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 1))
+            .on('tick', ticked);
+
+        function ticked() {
+            nodes.forEach(d => {
+                d.x = Math.max(d.radius, Math.min(width - d.radius, d.x));
+                d.y = Math.max(d.radius, Math.min(height - d.radius, d.y));
+            });
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+        }
+    </script>
+</body>
+</html>

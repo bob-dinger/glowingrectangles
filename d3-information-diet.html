@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Many Opinions You Hear Per Day</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 4px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .container {
+            display: flex;
+            gap: 40px;
+            flex: 1;
+            align-items: center;
+            justify-content: center;
+        }
+        .panel {
+            text-align: center;
+        }
+        .panel-title {
+            font-size: 22px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .panel-title.old { color: #A78BFA; }
+        .panel-title.new { color: #EF4444; }
+        .panel-subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .brain-container {
+            position: relative;
+        }
+        .canvas {
+            background: #111;
+            border-radius: 50%;
+            border: 2px solid #333;
+        }
+        .opinion-count {
+            font-size: 36px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        .opinion-count.old { color: #A78BFA; }
+        .opinion-count.new { color: #EF4444; }
+        .opinion-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        button {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .play-btn {
+            background: linear-gradient(90deg, #A78BFA, #EF4444);
+            color: white;
+        }
+        .play-btn:hover {
+            transform: translateY(-2px);
+        }
+        .reset-btn {
+            background: #222;
+            color: #666;
+        }
+        .reset-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+        .time-label {
+            font-size: 14px;
+            color: #F59E0B;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+        .comparison {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 48px;
+            color: #333;
+        }
+        .stress-meter {
+            margin-top: 10px;
+            width: 100%;
+            height: 8px;
+            background: #222;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .stress-fill {
+            height: 100%;
+            transition: width 0.3s, background 0.3s;
+        }
+        .stress-label {
+            font-size: 10px;
+            color: #666;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>How Many Opinions You Hear Per Day</h1>
+    <p class="subtitle">1975 vs 2025</p>
+
+    <div class="time-label" id="timeLabel"></div>
+
+    <div class="container">
+        <div class="panel">
+            <div class="panel-title old">1975</div>
+            <div class="panel-subtitle">Morning paper. Evening news. That's it.</div>
+            <div class="brain-container">
+                <svg id="brain1975" class="canvas"></svg>
+            </div>
+            <div class="opinion-count old" id="count1975">0</div>
+            <div class="opinion-label">opinions / day</div>
+            <div class="stress-meter">
+                <div class="stress-fill" id="stress1975" style="width: 0%; background: #22C55E;"></div>
+            </div>
+            <div class="stress-label">Cognitive load</div>
+        </div>
+
+        <div class="comparison">→</div>
+
+        <div class="panel">
+            <div class="panel-title new">2025</div>
+            <div class="panel-subtitle">Infinite scroll. Algorithmic outrage.</div>
+            <div class="brain-container">
+                <svg id="brain2024" class="canvas"></svg>
+            </div>
+            <div class="opinion-count new" id="count2024">0</div>
+            <div class="opinion-label">opinions / day</div>
+            <div class="stress-meter">
+                <div class="stress-fill" id="stress2024" style="width: 0%; background: #22C55E;"></div>
+            </div>
+            <div class="stress-label">Cognitive load</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="play-btn" id="playBtn">▶ Live One Day</button>
+        <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <script>
+        // Responsive sizing
+        const availableHeight = window.innerHeight - 280;
+        const availableWidth = (window.innerWidth - 150) / 2;
+        const size = Math.min(availableHeight, availableWidth, 350);
+
+        const svg1975 = d3.select('#brain1975').attr('width', size).attr('height', size);
+        const svg2024 = d3.select('#brain2024').attr('width', size).attr('height', size);
+
+        const centerX = size / 2;
+        const centerY = size / 2;
+        const brainRadius = (size / 2) - 20;
+
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const timeLabel = document.getElementById('timeLabel');
+
+        // Draw brain outlines
+        [svg1975, svg2024].forEach(svg => {
+            svg.append('circle')
+                .attr('cx', centerX)
+                .attr('cy', centerY)
+                .attr('r', brainRadius)
+                .attr('fill', '#1a1a1a')
+                .attr('stroke', '#333')
+                .attr('stroke-width', 1);
+        });
+
+        // Timeline of a day
+        const timeline1975 = [
+            { time: '6:00 AM', event: 'Wake up', opinions: 0 },
+            { time: '6:30 AM', event: 'Morning paper', opinions: 15 },
+            { time: '8:00 AM', event: 'Commute (radio)', opinions: 5 },
+            { time: '9:00 AM', event: 'Work - coworkers', opinions: 10 },
+            { time: '12:00 PM', event: 'Lunch chat', opinions: 8 },
+            { time: '5:00 PM', event: 'Commute home', opinions: 3 },
+            { time: '6:00 PM', event: 'Evening news (30 min)', opinions: 12 },
+            { time: '10:00 PM', event: 'Sleep', opinions: 0 }
+        ];
+
+        const timeline2024 = [
+            { time: '6:00 AM', event: 'Wake up - check phone', opinions: 150 },
+            { time: '6:15 AM', event: 'Bathroom scroll', opinions: 200 },
+            { time: '7:00 AM', event: 'News alerts', opinions: 50 },
+            { time: '8:00 AM', event: 'Commute - podcast + twitter', opinions: 300 },
+            { time: '9:00 AM', event: 'Work - Slack, email, news tabs', opinions: 400 },
+            { time: '12:00 PM', event: 'Lunch doomscroll', opinions: 500 },
+            { time: '1:00 PM', event: 'Afternoon - more of the same', opinions: 600 },
+            { time: '5:00 PM', event: 'Commute - more podcasts', opinions: 250 },
+            { time: '6:00 PM', event: 'Dinner scroll', opinions: 300 },
+            { time: '8:00 PM', event: 'Evening scroll', opinions: 400 },
+            { time: '10:00 PM', event: 'Bedtime scroll', opinions: 350 },
+            { time: '11:00 PM', event: 'Can\'t sleep - more scrolling', opinions: 200 }
+        ];
+
+        let opinions1975 = [];
+        let opinions2024 = [];
+        let count1975 = 0;
+        let count2024 = 0;
+        let isPlaying = false;
+        let currentStep = 0;
+
+        function addOpinions(svg, opinions, count, isModern) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * (brainRadius - 10);
+                const x = centerX + Math.cos(angle) * dist;
+                const y = centerY + Math.sin(angle) * dist;
+
+                // Modern opinions are angrier (more red/orange)
+                let color;
+                if (isModern) {
+                    const anger = Math.random();
+                    if (anger > 0.6) {
+                        color = '#EF4444'; // Angry red
+                    } else if (anger > 0.3) {
+                        color = '#F97316'; // Orange
+                    } else {
+                        color = '#FBBF24'; // Yellow
+                    }
+                } else {
+                    // 1975 - calmer colors
+                    const r = Math.random();
+                    if (r > 0.7) {
+                        color = '#A78BFA'; // Purple
+                    } else if (r > 0.4) {
+                        color = '#60A5FA'; // Blue
+                    } else {
+                        color = '#34D399'; // Green
+                    }
+                }
+
+                const opinion = {
+                    x, y, color,
+                    radius: isModern ? 2 : 3
+                };
+                opinions.push(opinion);
+
+                svg.append('circle')
+                    .attr('cx', x)
+                    .attr('cy', y)
+                    .attr('r', 0)
+                    .attr('fill', color)
+                    .attr('opacity', isModern ? 0.6 : 0.8)
+                    .transition()
+                    .duration(200)
+                    .attr('r', opinion.radius);
+            }
+        }
+
+        function updateStress(id, count, max) {
+            const pct = Math.min(100, (count / max) * 100);
+            const el = document.getElementById(id);
+            el.style.width = pct + '%';
+
+            if (pct < 30) {
+                el.style.background = '#22C55E';
+            } else if (pct < 60) {
+                el.style.background = '#F59E0B';
+            } else {
+                el.style.background = '#EF4444';
+            }
+        }
+
+        function step() {
+            if (currentStep >= Math.max(timeline1975.length, timeline2024.length)) {
+                isPlaying = false;
+                playBtn.textContent = '▶ Live Again';
+                timeLabel.textContent = 'Day complete. Look at the difference.';
+                return;
+            }
+
+            // 1975 step
+            if (currentStep < timeline1975.length) {
+                const event1975 = timeline1975[currentStep];
+                if (event1975.opinions > 0) {
+                    addOpinions(svg1975, opinions1975, event1975.opinions, false);
+                    count1975 += event1975.opinions;
+                }
+            }
+
+            // 2024 step
+            if (currentStep < timeline2024.length) {
+                const event2024 = timeline2024[currentStep];
+                timeLabel.textContent = `${event2024.time} — ${event2024.event}`;
+                if (event2024.opinions > 0) {
+                    addOpinions(svg2024, opinions2024, event2024.opinions, true);
+                    count2024 += event2024.opinions;
+                }
+            }
+
+            document.getElementById('count1975').textContent = count1975.toLocaleString();
+            document.getElementById('count2024').textContent = count2024.toLocaleString();
+
+            updateStress('stress1975', count1975, 100);
+            updateStress('stress2024', count2024, 3000);
+
+            currentStep++;
+            setTimeout(step, 800);
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) return;
+
+            if (currentStep >= Math.max(timeline1975.length, timeline2024.length)) {
+                reset();
+                setTimeout(() => {
+                    isPlaying = true;
+                    playBtn.textContent = 'Living...';
+                    step();
+                }, 500);
+            } else {
+                isPlaying = true;
+                playBtn.textContent = 'Living...';
+                step();
+            }
+        });
+
+        function reset() {
+            isPlaying = false;
+            currentStep = 0;
+            count1975 = 0;
+            count2024 = 0;
+            opinions1975 = [];
+            opinions2024 = [];
+
+            svg1975.selectAll('circle:not(:first-child)').remove();
+            svg2024.selectAll('circle:not(:first-child)').remove();
+
+            document.getElementById('count1975').textContent = '0';
+            document.getElementById('count2024').textContent = '0';
+            document.getElementById('stress1975').style.width = '0%';
+            document.getElementById('stress2024').style.width = '0%';
+            timeLabel.textContent = '';
+
+            playBtn.textContent = '▶ Live One Day';
+        }
+
+        resetBtn.addEventListener('click', reset);
+
+        // Auto-start on page load
+        setTimeout(() => {
+            isPlaying = true;
+            playBtn.textContent = 'Living...';
+            step();
+        }, 500);
+    </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared Time: 1 to Many</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+            max-width: 550px;
+            line-height: 1.5;
+        }
+        #vis {
+            width: 600px;
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            width: 600px;
+            height: 600px;
+        }
+        text {
+            pointer-events: none;
+            font-family: 'Arial', sans-serif;
+        }
+        .insight {
+            color: #888;
+            font-size: 13px;
+            margin-top: 15px;
+            max-width: 500px;
+            text-align: center;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+    <h1>Shared Time: 1 Teacher, 30 Students</h1>
+    <p class="description">
+        Everyone shares the same 300 minutes. Same time. Same room.<br>
+        This is 1-to-many. Not 1-to-1.
+    </p>
+    <div id="vis"></div>
+    <p class="insight">
+        300 minutes together. Zero minutes alone.
+    </p>
+
+    <script>
+        const width = 600;
+        const height = 600;
+
+        const numKids = 30;
+        const sharedMinutes = 300;
+
+        const teacherRadius = 60;
+        const kidRadius = 18;
+
+        // Create nodes
+        const nodes = [];
+
+        // Teacher node
+        nodes.push({
+            id: 'teacher',
+            type: 'teacher',
+            radius: teacherRadius,
+            label: '300 min',
+            x: width / 2,
+            y: height / 2,
+            fx: width / 2,
+            fy: height / 2
+        });
+
+        // Kid nodes - all same time as teacher
+        for (let i = 0; i < numKids; i++) {
+            nodes.push({
+                id: i + 1,
+                type: 'kid',
+                radius: kidRadius,
+                label: '300 min',
+                x: Math.random() * width,
+                y: Math.random() * height
+            });
+        }
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Create groups for each bubble
+        const elements = svg.selectAll('.bubble-group')
+            .data(nodes, d => d.id)
+            .enter()
+            .append('g')
+            .attr('class', 'bubble-group');
+
+        // Add circles - all full opacity
+        const bubbles = elements
+            .append('circle')
+            .attr('r', d => d.radius)
+            .attr('fill', d => d.type === 'teacher' ? '#10B981' : '#3B82F6')
+            .attr('stroke', '#fff')
+            .attr('stroke-width', d => d.type === 'teacher' ? 2 : 1.5)
+            .attr('opacity', 0.9);
+
+        // Add labels
+        const labels = elements
+            .append('text')
+            .attr('dy', '.35em')
+            .style('text-anchor', 'middle')
+            .style('font-size', d => d.type === 'teacher' ? '14px' : '8px')
+            .style('font-weight', 'bold')
+            .style('fill', '#fff')
+            .text(d => d.label);
+
+        // Charge function
+        function charge(d) {
+            return -Math.pow(d.radius, 2.0) * 0.03;
+        }
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(charge))
+            .force('x', d3.forceX().strength(0.05).x(width / 2))
+            .force('y', d3.forceY().strength(0.05).y(height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 8))
+            .on('tick', ticked);
+
+        function ticked() {
+            bubbles
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        }
+    </script>
+</body>
+</html>

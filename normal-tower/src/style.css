@@ -1,0 +1,9 @@
+svg{
+  border:1px solid navy;
+  width:960px;
+  height:600px;
+}
+#container{
+  width:960px;
+  margin:0 auto;
+}

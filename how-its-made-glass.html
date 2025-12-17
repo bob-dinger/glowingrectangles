@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How It's Made: Glass</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .recipe-container {
+            max-width: 950px;
+            margin: 0 auto;
+        }
+        .track-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 8px;
+            margin-top: 30px;
+        }
+        .track-label:first-of-type {
+            margin-top: 0;
+        }
+        .step-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .box {
+            padding: 16px 20px;
+            border-radius: 8px;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .input-box {
+            background: #2d2d2d;
+            border: 2px solid #4a4a4a;
+            width: 240px;
+        }
+        .method-box {
+            background: #2d2d2d;
+            border: 2px solid #4a4a4a;
+            width: 200px;
+            text-align: center;
+        }
+        .result-box {
+            background: #2d2d2d;
+            border: 2px solid #4a4a4a;
+            width: 220px;
+        }
+        .arrow {
+            font-size: 24px;
+            color: #444;
+            margin: 0 12px;
+        }
+        .box-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .box-content {
+            font-size: 14px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        .method-detail {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* Temperature colors for industrial processes */
+        .temp-extreme { border-color: #FF5722; background: linear-gradient(135deg, #3d2020, #2d1515); }
+        .temp-high { border-color: #FF9800; background: linear-gradient(135deg, #3d3020, #2d2515); }
+        .temp-med { border-color: #FFC107; background: linear-gradient(135deg, #3d3520, #2d2a15); }
+        .temp-cool { border-color: #2196F3; background: linear-gradient(135deg, #203040, #152535); }
+        .temp-ambient { border-color: #4CAF50; background: linear-gradient(135deg, #203d20, #152d15); }
+        .temp-mechanical { border-color: #9E9E9E; background: linear-gradient(135deg, #353535, #2a2a2a); }
+
+        .final-row {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px dashed #333;
+        }
+        .final-box {
+            background: linear-gradient(135deg, #1a3a4a, #0d2530);
+            border: 3px solid #4FC3F7;
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+            padding: 20px;
+        }
+        .final-box .box-content {
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .info-note {
+            background: #252525;
+            border-left: 4px solid #4FC3F7;
+            padding: 12px 15px;
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 25px;
+        }
+        .info-note strong {
+            color: #4FC3F7;
+        }
+
+        .raw-materials {
+            background: #252525;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .raw-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        .raw-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .raw-item {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+        }
+        .raw-item strong {
+            display: block;
+            color: #e0e0e0;
+            margin-bottom: 3px;
+            font-size: 13px;
+        }
+        .raw-item span {
+            color: #666;
+            font-size: 11px;
+        }
+        .raw-item .percent {
+            color: #4FC3F7;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .temp-badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+        .temp-badge.extreme { background: #FF5722; color: white; }
+        .temp-badge.high { background: #FF9800; color: black; }
+        .temp-badge.cool { background: #2196F3; color: white; }
+    </style>
+</head>
+<body>
+    <div class="recipe-container">
+        <h1>How It's Made: Glass</h1>
+        <p class="subtitle">From sand to transparency — Float glass process</p>
+
+        <div class="info-note">
+            <strong>The magic:</strong> Sand (silicon dioxide) melts at 1,700°C. Add soda ash to lower melting point to 1,500°C. Add limestone so it doesn't dissolve in water. The result: a material that's technically a supercooled liquid.
+        </div>
+
+        <!-- Raw materials -->
+        <div class="raw-materials">
+            <div class="raw-title">Raw Materials (Batch)</div>
+            <div class="raw-grid">
+                <div class="raw-item">
+                    <strong>Silica Sand</strong>
+                    <span>SiO₂</span>
+                    <div class="percent">~72%</div>
+                </div>
+                <div class="raw-item">
+                    <strong>Soda Ash</strong>
+                    <span>Na₂CO₃</span>
+                    <div class="percent">~14%</div>
+                </div>
+                <div class="raw-item">
+                    <strong>Limestone</strong>
+                    <span>CaCO₃</span>
+                    <div class="percent">~10%</div>
+                </div>
+                <div class="raw-item">
+                    <strong>Other</strong>
+                    <span>MgO, Al₂O₃</span>
+                    <div class="percent">~4%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stage 1: Batching -->
+        <div class="track-label">Stage 1: Batching</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Raw materials + Cullet (recycled glass)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-mechanical">
+                <div class="box-content">Weigh & Mix</div>
+                <div class="method-detail">Precise ratios • continuous</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Batch mixture</div>
+            </div>
+        </div>
+
+        <!-- Stage 2: Melting -->
+        <div class="track-label">Stage 2: Melting <span class="temp-badge extreme">1,500°C+</span></div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Batch mixture</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-extreme">
+                <div class="box-content">Furnace</div>
+                <div class="method-detail">1,500-1,600°C • 24hrs</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Molten glass (with bubbles)</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Molten glass (with bubbles)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-extreme">
+                <div class="box-content">Refining</div>
+                <div class="method-detail">1,500°C • bubbles rise out</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Homogeneous molten glass</div>
+            </div>
+        </div>
+
+        <!-- Stage 3: Float Bath -->
+        <div class="track-label">Stage 3: Float Bath <span class="temp-badge high">1,100°C → 600°C</span></div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Molten glass</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-high">
+                <div class="box-content">Pour onto tin</div>
+                <div class="method-detail">1,100°C • molten tin bath</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Floating glass ribbon</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Floating glass ribbon</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-high">
+                <div class="box-content">Spread & cool</div>
+                <div class="method-detail">1,100°C → 600°C • nitrogen atmosphere</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Flat glass ribbon (soft)</div>
+            </div>
+        </div>
+
+        <!-- Stage 4: Annealing -->
+        <div class="track-label">Stage 4: Annealing (Stress Relief) <span class="temp-badge cool">600°C → 100°C</span></div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Soft glass ribbon</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-cool">
+                <div class="box-content">Lehr (annealing oven)</div>
+                <div class="method-detail">Controlled cooling • ~100m long</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Stress-free solid glass</div>
+            </div>
+        </div>
+
+        <!-- Stage 5: Cutting -->
+        <div class="track-label">Stage 5: Cutting & Inspection</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Continuous glass ribbon</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-mechanical">
+                <div class="box-content">Score & snap</div>
+                <div class="method-detail">Diamond cutters • automated</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Glass sheets</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Glass sheets</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-mechanical">
+                <div class="box-content">Inspect</div>
+                <div class="method-detail">Lasers detect flaws</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Quality-checked glass</div>
+            </div>
+        </div>
+
+        <!-- Final result -->
+        <div class="step-row final-row">
+            <div class="box final-box">
+                <div class="box-label">Final Product</div>
+                <div class="box-content">🪟 Float Glass</div>
+                <div class="method-detail">Perfectly flat • optically clear • ready for windows, mirrors, screens</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Recipe: Beef Stir Fry</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #fafafa;
+            color: #333;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #222;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .recipe-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .track-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+            margin-bottom: 8px;
+            margin-top: 25px;
+        }
+        .track-label:first-of-type {
+            margin-top: 0;
+        }
+        .step-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .box {
+            padding: 16px 20px;
+            border-radius: 8px;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .input-box {
+            background: #E8F5E9;
+            border: 2px solid #A5D6A7;
+            width: 240px;
+        }
+        .method-box {
+            background: #FFF3E0;
+            border: 2px solid #FFCC80;
+            width: 180px;
+            text-align: center;
+        }
+        .result-box {
+            background: #E3F2FD;
+            border: 2px solid #90CAF9;
+            width: 220px;
+        }
+        .arrow {
+            font-size: 24px;
+            color: #ccc;
+            margin: 0 12px;
+        }
+        .box-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+        .box-content {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+        .method-detail {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .temp-high { border-color: #EF5350; background: #FFEBEE; }
+        .temp-med { border-color: #FFCC80; background: #FFF3E0; }
+        .temp-low { border-color: #81D4FA; background: #E1F5FE; }
+        .temp-none { border-color: #E0E0E0; background: #FAFAFA; }
+
+        .final-row {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px dashed #ddd;
+        }
+        .final-box {
+            background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+            border: 3px solid #FFD54F;
+            width: 100%;
+            max-width: 680px;
+            text-align: center;
+            padding: 20px;
+        }
+        .final-box .box-content {
+            font-size: 18px;
+        }
+
+        .prep-note {
+            background: #FFCDD2;
+            border-left: 4px solid #EF5350;
+            padding: 12px 15px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .prep-note strong {
+            color: #C62828;
+        }
+
+        .mise-section {
+            background: #F5F5F5;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .mise-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        .mise-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .mise-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 12px;
+        }
+        .mise-item strong {
+            display: block;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        .mise-item span {
+            color: #888;
+            font-size: 11px;
+        }
+
+        .speed-indicator {
+            display: inline-block;
+            background: #EF5350;
+            color: white;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="recipe-container">
+        <h1>Beef Stir Fry</h1>
+        <p class="subtitle">Serves 2 — Active cooking: 8 minutes</p>
+
+        <div class="prep-note">
+            <strong>⚡ Speed is everything.</strong> Once you start cooking, there's no time to prep. Have everything sliced, measured, and within arm's reach before the wok gets hot.
+        </div>
+
+        <!-- Mise en place -->
+        <div class="mise-section">
+            <div class="mise-title">Mise en Place — Prep all of this first</div>
+            <div class="mise-grid">
+                <div class="mise-item">
+                    <strong>Flank steak (12 oz)</strong>
+                    <span>Sliced thin against grain</span>
+                </div>
+                <div class="mise-item">
+                    <strong>Broccoli (2 cups)</strong>
+                    <span>Small florets</span>
+                </div>
+                <div class="mise-item">
+                    <strong>Bell pepper (1)</strong>
+                    <span>Sliced thin</span>
+                </div>
+                <div class="mise-item">
+                    <strong>Garlic (4 cloves)</strong>
+                    <span>Minced</span>
+                </div>
+                <div class="mise-item">
+                    <strong>Ginger (1 tbsp)</strong>
+                    <span>Minced</span>
+                </div>
+                <div class="mise-item">
+                    <strong>Green onions (4)</strong>
+                    <span>Sliced, whites/greens separate</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Track 1: Sauce (prep) -->
+        <div class="track-label">Track 1: Sauce (make ahead)</div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Soy sauce (3 tbsp) + Oyster sauce (2 tbsp) + Sesame oil (1 tsp) + Cornstarch (1 tsp) + Water (2 tbsp)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Whisk</div>
+                <div class="method-detail">30 sec • set aside</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Stir fry sauce</div>
+            </div>
+        </div>
+
+        <!-- Track 2: Wok cooking -->
+        <div class="track-label">Track 2: Wok <span class="speed-indicator">Fast</span></div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Wok + Oil (2 tbsp)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-high">
+                <div class="box-content">Heat</div>
+                <div class="method-detail">2 min • smoking hot</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Screaming hot wok</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Hot wok + Beef (single layer!)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-high">
+                <div class="box-content">Sear</div>
+                <div class="method-detail">90 sec • don't touch</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Seared beef (remove)</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Empty wok + Oil (1 tbsp)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-high">
+                <div class="box-content">Heat</div>
+                <div class="method-detail">15 sec</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Hot wok ready</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Hot wok + Broccoli</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-high">
+                <div class="box-content">Stir fry</div>
+                <div class="method-detail">2 min • toss often</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Charred broccoli</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Wok + Bell pepper</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-high">
+                <div class="box-content">Stir fry</div>
+                <div class="method-detail">1 min • still crisp</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Crisp-tender veg</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Wok + Garlic + Ginger + Onion whites</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-high">
+                <div class="box-content">Bloom</div>
+                <div class="method-detail">30 sec • fragrant</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Aromatic base</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Wok + Beef (back in) + Sauce</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-high">
+                <div class="box-content">Toss</div>
+                <div class="method-detail">45 sec • sauce thickens</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Glazed stir fry</div>
+            </div>
+        </div>
+
+        <div class="step-row">
+            <div class="box input-box">
+                <div class="box-label">Input</div>
+                <div class="box-content">Glazed stir fry + Green onion tops</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box method-box temp-none">
+                <div class="box-content">Toss & serve</div>
+                <div class="method-detail">off heat</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box result-box">
+                <div class="box-label">Result</div>
+                <div class="box-content">Finished stir fry</div>
+            </div>
+        </div>
+
+        <!-- Final result -->
+        <div class="step-row final-row">
+            <div class="box final-box">
+                <div class="box-label">Final Result</div>
+                <div class="box-content">🥢 Beef Stir Fry</div>
+                <div class="method-detail">Serve immediately over rice • Garnish with sesame seeds</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

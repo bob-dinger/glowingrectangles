@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Player Ages - Row Distribution</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .description {
+            color: #aaaaaa;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 12px;
+            max-width: 800px;
+            line-height: 1.5;
+        }
+        #vis {
+            margin: 0 auto;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .age-label {
+            fill: #888;
+            font-size: 11px;
+            font-family: Arial, sans-serif;
+        }
+        .count-label {
+            fill: #666;
+            font-size: 9px;
+            font-family: Arial, sans-serif;
+        }
+        .player-dot {
+            stroke: none;
+            opacity: 0.9;
+        }
+        .legend {
+            color: #aaaaaa;
+            font-size: 11px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>NFL Player Age Distribution (2025)</h1>
+    <p class="description">
+        2,567 players across all 32 NFL teams. Each dot = one player. Age 41 at top, age 21 at bottom.
+    </p>
+    <div id="vis"></div>
+    <div class="legend">
+        Each dot = 1 player | Color: young (green) → prime (blue) → veteran (red)
+    </div>
+
+    <script>
+        // NFL roster age data (scraped from ESPN, Nov 2025)
+        const ageData = [
+            { age: 41, count: 4 },
+            { age: 40, count: 1 },
+            { age: 39, count: 6 },
+            { age: 38, count: 4 },
+            { age: 37, count: 6 },
+            { age: 36, count: 13 },
+            { age: 35, count: 18 },
+            { age: 34, count: 18 },
+            { age: 33, count: 34 },
+            { age: 32, count: 59 },
+            { age: 31, count: 93 },
+            { age: 30, count: 135 },
+            { age: 29, count: 170 },
+            { age: 28, count: 208 },
+            { age: 27, count: 268 },
+            { age: 26, count: 349 },
+            { age: 25, count: 391 },
+            { age: 24, count: 362 },
+            { age: 23, count: 256 },
+            { age: 22, count: 140 },
+            { age: 21, count: 32 }
+        ];
+
+        // Layout settings
+        const maxCount = d3.max(ageData, d => d.count);
+        const dotRadius = 3;
+        const dotSpacing = dotRadius * 2 + 1;  // Space between dot centers
+        const rowHeight = 28;
+        const labelWidth = 35;
+        const countWidth = 40;
+        const padding = 15;
+
+        // Calculate width needed for max dots
+        const dotsAreaWidth = maxCount * dotSpacing + 20;
+        const width = labelWidth + dotsAreaWidth + countWidth + padding * 2;
+        const height = ageData.length * rowHeight + padding * 2;
+
+        // Color scale - young (green) to prime (blue) to veteran (red)
+        const colorScale = d3.scaleLinear()
+            .domain([21, 28, 41])
+            .range(['#10B981', '#3B82F6', '#EF4444']);
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Create a group for each age row
+        const rows = svg.selectAll('.age-row')
+            .data(ageData)
+            .enter()
+            .append('g')
+            .attr('class', 'age-row')
+            .attr('transform', (d, i) => `translate(${padding}, ${padding + i * rowHeight + rowHeight / 2})`);
+
+        // Add age labels on left
+        rows.append('text')
+            .attr('class', 'age-label')
+            .attr('x', 0)
+            .attr('y', 4)
+            .attr('text-anchor', 'start')
+            .text(d => d.age);
+
+        // Add dots for each player
+        rows.each(function(d) {
+            const row = d3.select(this);
+            const dots = [];
+            for (let i = 0; i < d.count; i++) {
+                dots.push(i);
+            }
+
+            row.selectAll('.player-dot')
+                .data(dots)
+                .enter()
+                .append('circle')
+                .attr('class', 'player-dot')
+                .attr('cx', (_, i) => labelWidth + i * dotSpacing)
+                .attr('cy', 0)
+                .attr('r', dotRadius)
+                .attr('fill', colorScale(d.age));
+        });
+
+        // Add count labels on right
+        rows.append('text')
+            .attr('class', 'count-label')
+            .attr('x', labelWidth + dotsAreaWidth)
+            .attr('y', 4)
+            .attr('text-anchor', 'start')
+            .text(d => `(${d.count})`);
+    </script>
+</body>
+</html>
