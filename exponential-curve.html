@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exponential Growth</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container { display: flex; height: 100vh; }
+        .graph-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+        }
+        .examples-section {
+            width: 320px;
+            background: #111118;
+            border-left: 1px solid #222;
+            padding: 40px 30px;
+            overflow-y: auto;
+        }
+        h1 { font-size: 28px; margin-bottom: 10px; color: #fff; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; }
+        h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 20px; }
+        .example-item {
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .example-item:hover { background: rgba(255,255,255,0.08); border-color: #333; }
+        .example-item.active { background: rgba(251, 191, 36, 0.15); border-color: #FBBF24; }
+        .example-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+        .example-desc { font-size: 12px; color: #888; }
+        svg { overflow: visible; }
+        .curve-path { fill: none; stroke: #FBBF24; stroke-width: 3; }
+        .axis-line { stroke: #333; stroke-width: 1; }
+        .axis-label { fill: #666; font-size: 12px; }
+        .phase-label { font-size: 16px; font-weight: 600; fill: #fff; opacity: 0; }
+        .phase-label.visible { opacity: 1; }
+        .dot { fill: #FBBF24; stroke: #fff; stroke-width: 2; opacity: 0; }
+        .dot.visible { opacity: 1; }
+        .value-label { font-size: 13px; fill: #FBBF24; opacity: 0; }
+        .value-label.visible { opacity: 1; }
+        .instructions { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); color: #555; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="graph-section">
+            <h1>Exponential Growth</h1>
+            <p class="subtitle">Doubling leads to explosion</p>
+            <div id="graph"></div>
+            <p class="instructions">Click an example to see the doubling effect</p>
+        </div>
+        <div class="examples-section">
+            <h2>Examples</h2>
+            <div class="example-item" data-example="compound">
+                <div class="example-title">Compound Interest</div>
+                <div class="example-desc">Money making money</div>
+            </div>
+            <div class="example-item" data-example="virus">
+                <div class="example-title">Viral Spread</div>
+                <div class="example-desc">Each person infects multiple others</div>
+            </div>
+            <div class="example-item" data-example="moore">
+                <div class="example-title">Moore's Law</div>
+                <div class="example-desc">Computing power doubles every 2 years</div>
+            </div>
+            <div class="example-item" data-example="bacteria">
+                <div class="example-title">Bacteria Growth</div>
+                <div class="example-desc">Cell division doubles population</div>
+            </div>
+            <div class="example-item" data-example="social">
+                <div class="example-title">Social Media Virality</div>
+                <div class="example-desc">Shares lead to more shares</div>
+            </div>
+            <div class="example-item" data-example="nuclear">
+                <div class="example-title">Nuclear Chain Reaction</div>
+                <div class="example-desc">One atom splits many</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 450;
+        const margin = { top: 40, right: 40, bottom: 60, left: 70 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        // Exponential function
+        function expGrowth(x, rate = 5) {
+            return Math.exp(rate * x) / Math.exp(rate);
+        }
+
+        // Generate curve data
+        const curveData = [];
+        for (let i = 0; i <= 100; i++) {
+            const x = i / 100;
+            curveData.push({ x, y: expGrowth(x) });
+        }
+
+        // Create SVG
+        const svg = d3.select('#graph')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const g = svg.append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Scales
+        const xScale = d3.scaleLinear().domain([0, 1]).range([0, innerWidth]);
+        const yScale = d3.scaleLinear().domain([0, 1]).range([innerHeight, 0]);
+
+        // Axes
+        g.append('line').attr('class', 'axis-line')
+            .attr('x1', 0).attr('y1', innerHeight).attr('x2', innerWidth).attr('y2', innerHeight);
+        g.append('line').attr('class', 'axis-line')
+            .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', innerHeight);
+
+        g.append('text').attr('class', 'axis-label')
+            .attr('x', innerWidth / 2).attr('y', innerHeight + 45)
+            .attr('text-anchor', 'middle').text('Time');
+
+        g.append('text').attr('class', 'axis-label')
+            .attr('x', -innerHeight / 2).attr('y', -50)
+            .attr('text-anchor', 'middle').attr('transform', 'rotate(-90)').text('Quantity');
+
+        // Line generator
+        const line = d3.line()
+            .x(d => xScale(d.x))
+            .y(d => yScale(d.y))
+            .curve(d3.curveMonotoneX);
+
+        // Draw curve
+        g.append('path').datum(curveData).attr('class', 'curve-path').attr('d', line);
+
+        // Moving dot
+        const dot = g.append('circle').attr('class', 'dot').attr('r', 8);
+
+        // Labels
+        const phaseLabel = g.append('text').attr('class', 'phase-label').attr('text-anchor', 'middle');
+        const valueLabel = g.append('text').attr('class', 'value-label').attr('text-anchor', 'start');
+
+        // Example data
+        const exampleData = {
+            compound: {
+                doublings: ['$1,000', '$2,000', '$4,000', '$8,000', '$16,000', '$32,000', '$64,000'],
+                years: ['Year 0', 'Year 10', 'Year 20', 'Year 30', 'Year 40', 'Year 50', 'Year 60']
+            },
+            virus: {
+                doublings: ['1', '2', '4', '8', '16', '32', '1,024', '1M+'],
+                years: ['Day 0', 'Day 3', 'Day 6', 'Day 9', 'Day 12', 'Day 15', 'Day 30', 'Day 60']
+            },
+            moore: {
+                doublings: ['1K', '2K', '4K', '16K', '256K', '4M', '1B', '50B+'],
+                years: ['1970', '1972', '1974', '1980', '1990', '2000', '2010', '2020']
+            },
+            bacteria: {
+                doublings: ['1', '2', '4', '8', '16', '256', '65K', '16M'],
+                years: ['0 min', '20 min', '40 min', '1 hr', '1.5 hr', '3 hr', '5 hr', '8 hr']
+            },
+            social: {
+                doublings: ['1', '10', '100', '1K', '10K', '100K', '1M', '10M'],
+                years: ['Post', 'Hour 1', 'Hour 2', 'Hour 4', 'Hour 8', 'Day 1', 'Day 2', 'Day 3']
+            },
+            nuclear: {
+                doublings: ['1', '2', '4', '8', '64', '1M', '1T', '∞'],
+                years: ['Gen 0', 'Gen 1', 'Gen 2', 'Gen 3', 'Gen 6', 'Gen 20', 'Gen 40', 'Explosion']
+            }
+        };
+
+        let currentAnimation = null;
+
+        function animateExample(exampleKey) {
+            if (currentAnimation) { currentAnimation.stop(); }
+
+            const data = exampleData[exampleKey];
+            const duration = 8000;
+            const startTime = Date.now();
+
+            dot.classed('visible', true);
+            valueLabel.classed('visible', true);
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const x = progress;
+                const y = expGrowth(x);
+
+                dot.attr('cx', xScale(x)).attr('cy', yScale(y));
+
+                // Determine which doubling we're at
+                const doublingIndex = Math.min(Math.floor(progress * data.doublings.length), data.doublings.length - 1);
+
+                phaseLabel
+                    .attr('x', xScale(x))
+                    .attr('y', Math.max(yScale(y) - 25, 20))
+                    .attr('class', 'phase-label visible')
+                    .text(data.doublings[doublingIndex]);
+
+                valueLabel
+                    .attr('x', 10)
+                    .attr('y', 30)
+                    .text(data.years[doublingIndex]);
+
+                if (progress < 1) {
+                    currentAnimation.frameId = requestAnimationFrame(animate);
+                }
+            }
+
+            currentAnimation = {
+                frameId: requestAnimationFrame(animate),
+                stop: function() { cancelAnimationFrame(this.frameId); }
+            };
+        }
+
+        document.querySelectorAll('.example-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.example-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                animateExample(item.dataset.example);
+            });
+        });
+    </script>
+</body>
+</html>

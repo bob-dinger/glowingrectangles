@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waves</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            overflow: hidden;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 13px;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            z-index: 10;
+        }
+        .back-link:hover { color: #fff; }
+
+        .ocean {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60vh;
+        }
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+        }
+
+        .wave svg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .shore {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 15vh;
+            background: linear-gradient(to bottom, #1a1510 0%, #0d0b08 100%);
+        }
+
+        .foam {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            filter: blur(2px);
+        }
+
+        .info {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            color: rgba(255, 255, 255, 0.6);
+            z-index: 5;
+            pointer-events: none;
+        }
+        .info h1 {
+            font-size: 48px;
+            font-weight: 200;
+            letter-spacing: 8px;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .info p {
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+
+        .cycle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            font-family: monospace;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <a href="../../home.html" class="back-link">← Back</a>
+
+    <div class="info">
+        <h1>WAVES</h1>
+        <p>IN — PAUSE — OUT — PAUSE</p>
+    </div>
+
+    <div class="shore">
+        <div class="foam" id="foam"></div>
+    </div>
+
+    <div class="ocean" id="ocean">
+        <svg id="waveSvg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#1e3a5f;stop-opacity:0.9" />
+                    <stop offset="50%" style="stop-color:#0f2744;stop-opacity:0.95" />
+                    <stop offset="100%" style="stop-color:#0a1628;stop-opacity:1" />
+                </linearGradient>
+                <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#2a4a6f;stop-opacity:0.6" />
+                    <stop offset="100%" style="stop-color:#1a3050;stop-opacity:0.8" />
+                </linearGradient>
+                <linearGradient id="waveGradient3" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:0.3" />
+                    <stop offset="100%" style="stop-color:#1e40af;stop-opacity:0.5" />
+                </linearGradient>
+            </defs>
+            <path id="wave1" fill="url(#waveGradient)" d=""/>
+            <path id="wave2" fill="url(#waveGradient2)" d=""/>
+            <path id="wave3" fill="url(#waveGradient3)" d=""/>
+        </svg>
+    </div>
+
+    <div class="cycle" id="cycle">IN</div>
+
+    <script>
+        const wave1 = document.getElementById('wave1');
+        const wave2 = document.getElementById('wave2');
+        const wave3 = document.getElementById('wave3');
+        const foam = document.getElementById('foam');
+        const cycleEl = document.getElementById('cycle');
+
+        // Wave timing (like breathing)
+        const inDuration = 4000;      // 4 seconds in
+        const holdIn = 2000;          // 2 second pause at peak
+        const outDuration = 4000;     // 4 seconds out
+        const holdOut = 2000;         // 2 second pause at bottom
+        const totalCycle = inDuration + holdIn + outDuration + holdOut;
+
+        let startTime = performance.now();
+
+        function easeInOutSine(t) {
+            return -(Math.cos(Math.PI * t) - 1) / 2;
+        }
+
+        function generateWavePath(baseY, amplitude, frequency, phase, width = 1440, height = 320) {
+            let d = `M0,${height}`;
+
+            for (let x = 0; x <= width; x += 10) {
+                const y = baseY +
+                    Math.sin((x * frequency) + phase) * amplitude * 0.5 +
+                    Math.sin((x * frequency * 2.3) + phase * 1.5) * amplitude * 0.3 +
+                    Math.sin((x * frequency * 0.7) + phase * 0.8) * amplitude * 0.2;
+                d += ` L${x},${y}`;
+            }
+
+            d += ` L${width},${height} L0,${height} Z`;
+            return d;
+        }
+
+        function animate(currentTime) {
+            const elapsed = (currentTime - startTime) % totalCycle;
+
+            let tideProgress;
+            let phase;
+
+            if (elapsed < inDuration) {
+                // Coming in
+                tideProgress = easeInOutSine(elapsed / inDuration);
+                phase = 'IN';
+            } else if (elapsed < inDuration + holdIn) {
+                // Hold at peak
+                tideProgress = 1;
+                phase = 'HOLD';
+            } else if (elapsed < inDuration + holdIn + outDuration) {
+                // Going out
+                const outElapsed = elapsed - inDuration - holdIn;
+                tideProgress = 1 - easeInOutSine(outElapsed / outDuration);
+                phase = 'OUT';
+            } else {
+                // Hold at bottom
+                tideProgress = 0;
+                phase = 'HOLD';
+            }
+
+            cycleEl.textContent = phase;
+
+            // Base positions (higher number = lower on screen in SVG coords)
+            const baseHigh = 80;   // Peak (water high)
+            const baseLow = 200;   // Trough (water low)
+
+            const currentBase = baseLow - (baseLow - baseHigh) * tideProgress;
+
+            // Continuous wave motion
+            const time = currentTime * 0.001;
+
+            // Generate three wave layers with different characteristics
+            const path1 = generateWavePath(
+                currentBase,
+                15 + tideProgress * 10,  // Bigger waves when tide is in
+                0.008,
+                time * 0.8
+            );
+
+            const path2 = generateWavePath(
+                currentBase + 20,
+                12 + tideProgress * 8,
+                0.012,
+                time * 1.2 + 2
+            );
+
+            const path3 = generateWavePath(
+                currentBase + 35,
+                8 + tideProgress * 5,
+                0.015,
+                time * 1.6 + 4
+            );
+
+            wave1.setAttribute('d', path1);
+            wave2.setAttribute('d', path2);
+            wave3.setAttribute('d', path3);
+
+            // Foam intensity based on tide
+            const foamOpacity = 0.1 + tideProgress * 0.4;
+            const foamHeight = 2 + tideProgress * 6;
+            foam.style.opacity = foamOpacity;
+            foam.style.height = foamHeight + 'px';
+            foam.style.bottom = (tideProgress * 50) + 'px';
+
+            requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

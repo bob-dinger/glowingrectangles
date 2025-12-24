@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-Curve Sphere</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 10;
+        }
+        .back-link:hover { color: #fff; }
+
+        .left {
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            border-right: 1px solid #222;
+        }
+
+        .right {
+            width: 60%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .curve-title {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        .curve-container {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        #curveCanvas {
+            width: 100%;
+            border: 1px solid #222;
+            border-radius: 8px;
+        }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-label {
+            color: #888;
+        }
+
+        .legend-pct {
+            margin-left: auto;
+            color: #555;
+            font-family: monospace;
+        }
+
+        .progress-bar {
+            width: 100%;
+            max-width: 350px;
+            height: 4px;
+            background: #222;
+            border-radius: 2px;
+            margin-top: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #3B82F6;
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        #sphereCanvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <a href="home.html" class="back-link">← Back</a>
+
+    <div class="left">
+        <div class="curve-title">Adoption Curve</div>
+        <div class="curve-container">
+            <canvas id="curveCanvas" width="350" height="250"></canvas>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #8B5CF6;"></div>
+                <span class="legend-label">Innovators</span>
+                <span class="legend-pct">2.5%</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #3B82F6;"></div>
+                <span class="legend-label">Early Adopters</span>
+                <span class="legend-pct">13.5%</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #22C55E;"></div>
+                <span class="legend-label">Early Majority</span>
+                <span class="legend-pct">34%</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #EAB308;"></div>
+                <span class="legend-label">Late Majority</span>
+                <span class="legend-pct">34%</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #EF4444;"></div>
+                <span class="legend-label">Laggards</span>
+                <span class="legend-pct">16%</span>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <div class="right">
+        <canvas id="sphereCanvas"></canvas>
+    </div>
+
+    <script>
+        const curveCanvas = document.getElementById('curveCanvas');
+        const curveCtx = curveCanvas.getContext('2d');
+        const sphereCanvas = document.getElementById('sphereCanvas');
+        const sphereCtx = sphereCanvas.getContext('2d');
+        const progressFill = document.getElementById('progressFill');
+
+        // Adoption segments (cumulative thresholds)
+        const segments = [
+            { threshold: 0.025, color: '#8B5CF6', name: 'Innovators' },
+            { threshold: 0.16, color: '#3B82F6', name: 'Early Adopters' },
+            { threshold: 0.50, color: '#22C55E', name: 'Early Majority' },
+            { threshold: 0.84, color: '#EAB308', name: 'Late Majority' },
+            { threshold: 1.0, color: '#EF4444', name: 'Laggards' }
+        ];
+
+        function getColor(adoptionPoint) {
+            for (let seg of segments) {
+                if (adoptionPoint <= seg.threshold) {
+                    return seg.color;
+                }
+            }
+            return segments[segments.length - 1].color;
+        }
+
+        // Sphere setup
+        let sphereWidth, sphereHeight, centerX, centerY, radius;
+
+        function resizeSphere() {
+            const container = document.querySelector('.right');
+            sphereWidth = container.clientWidth;
+            sphereHeight = container.clientHeight;
+            sphereCanvas.width = sphereWidth;
+            sphereCanvas.height = sphereHeight;
+            centerX = sphereWidth / 2;
+            centerY = sphereHeight / 2;
+            radius = Math.min(sphereWidth, sphereHeight) * 0.38;
+        }
+        resizeSphere();
+        window.addEventListener('resize', resizeSphere);
+
+        // S-curve function
+        function sigmoid(t, k = 10) {
+            return 1 / (1 + Math.exp(-k * (t - 0.5)));
+        }
+
+        // Generate sphere points
+        const numPoints = 300;
+        const points = [];
+
+        for (let i = 0; i < numPoints; i++) {
+            const phi = Math.acos(1 - 2 * (i + 0.5) / numPoints);
+            const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+            const adoptionPoint = (i + 1) / numPoints; // When this point adopts (0-1)
+
+            points.push({
+                phi,
+                theta,
+                adoptionPoint,
+                color: getColor(adoptionPoint),
+                size: 3 + Math.random() * 2
+            });
+        }
+
+        let time = 0;
+        const cycleDuration = 10000;
+
+        function drawCurve(progress) {
+            const w = curveCanvas.width;
+            const h = curveCanvas.height;
+            const padding = 30;
+            const graphW = w - padding * 2;
+            const graphH = h - padding * 2;
+
+            curveCtx.fillStyle = '#0a0a0f';
+            curveCtx.fillRect(0, 0, w, h);
+
+            // Draw S-curve with colored segments
+            curveCtx.lineWidth = 3;
+
+            let prevX = padding;
+            let prevY = h - padding;
+            let prevSeg = 0;
+
+            for (let t = 0; t <= 1; t += 0.005) {
+                const x = padding + t * graphW;
+                const y = h - padding - sigmoid(t, 10) * graphH;
+                const segIdx = segments.findIndex(s => sigmoid(t, 10) <= s.threshold);
+
+                curveCtx.beginPath();
+                curveCtx.moveTo(prevX, prevY);
+                curveCtx.lineTo(x, y);
+                curveCtx.strokeStyle = segments[segIdx >= 0 ? segIdx : segments.length - 1].color;
+                curveCtx.stroke();
+
+                prevX = x;
+                prevY = y;
+            }
+
+            // Draw progress marker
+            const markerX = padding + progress * graphW;
+            const markerY = h - padding - sigmoid(progress, 10) * graphH;
+
+            // Vertical line to show position
+            curveCtx.beginPath();
+            curveCtx.moveTo(markerX, h - padding);
+            curveCtx.lineTo(markerX, markerY);
+            curveCtx.strokeStyle = 'rgba(255,255,255,0.2)';
+            curveCtx.lineWidth = 1;
+            curveCtx.stroke();
+
+            // Marker dot
+            curveCtx.beginPath();
+            curveCtx.arc(markerX, markerY, 6, 0, Math.PI * 2);
+            curveCtx.fillStyle = '#fff';
+            curveCtx.fill();
+
+            // Axes
+            curveCtx.strokeStyle = '#333';
+            curveCtx.lineWidth = 1;
+            curveCtx.beginPath();
+            curveCtx.moveTo(padding, padding);
+            curveCtx.lineTo(padding, h - padding);
+            curveCtx.lineTo(w - padding, h - padding);
+            curveCtx.stroke();
+
+            // Labels
+            curveCtx.fillStyle = '#555';
+            curveCtx.font = '10px -apple-system, sans-serif';
+            curveCtx.fillText('Time →', w - padding - 40, h - padding + 20);
+            curveCtx.save();
+            curveCtx.translate(15, padding + 50);
+            curveCtx.rotate(-Math.PI / 2);
+            curveCtx.fillText('Adoption →', 0, 0);
+            curveCtx.restore();
+        }
+
+        function drawSphere(progress) {
+            sphereCtx.fillStyle = '#0a0a0f';
+            sphereCtx.fillRect(0, 0, sphereWidth, sphereHeight);
+
+            const adoptionLevel = sigmoid(progress, 10);
+            const rotationY = time * 0.2;
+            const rotationX = 0.3;
+
+            // Project and sort points
+            const projected = points.map(p => {
+                let x = Math.sin(p.phi) * Math.cos(p.theta + rotationY);
+                let y = Math.cos(p.phi);
+                let z = Math.sin(p.phi) * Math.sin(p.theta + rotationY);
+
+                const y2 = y * Math.cos(rotationX) - z * Math.sin(rotationX);
+                const z2 = y * Math.sin(rotationX) + z * Math.cos(rotationX);
+                y = y2;
+                z = z2;
+
+                const activated = adoptionLevel >= p.adoptionPoint;
+
+                return { x, y, z, activated, color: p.color, size: p.size };
+            });
+
+            projected.sort((a, b) => a.z - b.z);
+
+            // Draw sphere outline
+            sphereCtx.beginPath();
+            sphereCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            sphereCtx.strokeStyle = 'rgba(255,255,255,0.05)';
+            sphereCtx.lineWidth = 1;
+            sphereCtx.stroke();
+
+            // Draw points
+            projected.forEach(p => {
+                const scale = (p.z + 1.5) / 2.5;
+                const screenX = centerX + p.x * radius;
+                const screenY = centerY + p.y * radius;
+                const size = p.size * scale;
+
+                sphereCtx.beginPath();
+                sphereCtx.arc(screenX, screenY, size, 0, Math.PI * 2);
+
+                if (p.activated) {
+                    sphereCtx.fillStyle = p.color;
+                    if (p.z > 0.3) {
+                        sphereCtx.shadowColor = p.color;
+                        sphereCtx.shadowBlur = 12;
+                    }
+                } else {
+                    sphereCtx.fillStyle = `rgba(60, 60, 60, ${0.2 + scale * 0.2})`;
+                    sphereCtx.shadowBlur = 0;
+                }
+
+                sphereCtx.fill();
+                sphereCtx.shadowBlur = 0;
+            });
+        }
+
+        function animate() {
+            const elapsed = (performance.now() % cycleDuration) / cycleDuration;
+
+            drawCurve(elapsed);
+            drawSphere(elapsed);
+            progressFill.style.width = (elapsed * 100) + '%';
+
+            time += 0.016;
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

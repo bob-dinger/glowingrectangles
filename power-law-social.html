@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Law of Social Media</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a12;
+            color: #fff;
+            font-family: 'Georgia', serif;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            padding-top: 40px;
+            overflow-y: auto;
+        }
+
+        .info-section {
+            width: 340px;
+            background: #0d0d18;
+            border-left: 1px solid #2a2a3a;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: #e8e0d0;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .viz-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        .viz-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .viz-label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #curveViz, #circleViz {
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+        }
+
+        .axis text {
+            fill: #666;
+            font-size: 11px;
+        }
+
+        .axis line, .axis path {
+            stroke: #333;
+        }
+
+        .info-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #c0b8a8;
+        }
+
+        .info-text {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .highlight {
+            color: #e8a050;
+            font-weight: 600;
+        }
+
+        .highlight-blue {
+            color: #7090c0;
+        }
+
+        .example-box {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .example-box h4 {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .example-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a1a2a;
+            font-size: 0.9rem;
+        }
+
+        .example-item:last-child {
+            border-bottom: none;
+        }
+
+        .example-item .label {
+            color: #888;
+        }
+
+        .example-item .value {
+            color: #e8a050;
+            font-weight: 600;
+        }
+
+        .divider {
+            height: 1px;
+            background: #2a2a3a;
+            margin: 20px 0;
+        }
+
+        .footnote {
+            margin-top: auto;
+            padding-top: 20px;
+            color: #555;
+            font-size: 0.8rem;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        .outer-circle {
+            fill: none;
+            stroke: #333;
+            stroke-width: 2;
+        }
+
+        .connector {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+            font-size: 2rem;
+            padding: 0 10px;
+        }
+
+        .connector::before {
+            content: "→";
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="viz-section">
+            <h1>The Power Law of Voices</h1>
+            <p class="subtitle">Why a few dominate every platform</p>
+
+            <div class="viz-row">
+                <div class="viz-box">
+                    <div class="viz-label">The Distribution</div>
+                    <svg id="curveViz" width="380" height="380"></svg>
+                </div>
+
+                <div class="connector"></div>
+
+                <div class="viz-box">
+                    <div class="viz-label">The Reality</div>
+                    <svg id="circleViz" width="380" height="380"></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-title">Power Law Distribution</div>
+
+            <p class="info-text">
+                Social media follows a <span class="highlight">power law</span>: a mathematical pattern where a tiny minority holds most of the influence.
+            </p>
+
+            <p class="info-text">
+                Unlike a bell curve where most people cluster in the middle, power laws have a <span class="highlight">"long tail"</span> — millions of small voices, and a handful of massive ones.
+            </p>
+
+            <div class="divider"></div>
+
+            <div class="example-box">
+                <h4>Twitter/X (typical)</h4>
+                <div class="example-item">
+                    <span class="label">Top 1% of users create</span>
+                    <span class="value">~50% of posts</span>
+                </div>
+                <div class="example-item">
+                    <span class="label">Top 10% of users create</span>
+                    <span class="value">~90% of posts</span>
+                </div>
+                <div class="example-item">
+                    <span class="label">Bottom 50% create</span>
+                    <span class="value">~2% of posts</span>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <h4>Same pattern everywhere</h4>
+                <div class="example-item">
+                    <span class="label">Wikipedia editors</span>
+                    <span class="value">1% → 77% of edits</span>
+                </div>
+                <div class="example-item">
+                    <span class="label">YouTube creators</span>
+                    <span class="value">3% → 90% of views</span>
+                </div>
+                <div class="example-item">
+                    <span class="label">Reddit posters</span>
+                    <span class="value">4% → 70% of posts</span>
+                </div>
+            </div>
+
+            <div class="footnote">
+                This is the Pareto principle on steroids. The curve on the left becomes the circle on the right: the loud few literally surround and define the experience for the quiet many.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === CURVE VISUALIZATION ===
+        const curveWidth = 380;
+        const curveHeight = 380;
+        const curveMargin = { top: 40, right: 30, bottom: 50, left: 50 };
+        const cw = curveWidth - curveMargin.left - curveMargin.right;
+        const ch = curveHeight - curveMargin.top - curveMargin.bottom;
+
+        const curveSvg = d3.select("#curveViz")
+            .append("g")
+            .attr("transform", `translate(${curveMargin.left},${curveMargin.top})`);
+
+        // Power law data: y = x^(-alpha)
+        const alpha = 1.5;
+        const powerData = [];
+        for (let x = 1; x <= 100; x++) {
+            powerData.push({
+                x: x,
+                y: Math.pow(x, -alpha) * 100
+            });
+        }
+
+        const xScale = d3.scaleLinear()
+            .domain([0, 100])
+            .range([0, cw]);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, 100])
+            .range([ch, 0]);
+
+        // Gradient for area
+        const defs = curveSvg.append("defs");
+        const areaGradient = defs.append("linearGradient")
+            .attr("id", "areaGradient")
+            .attr("x1", "0%").attr("y1", "0%")
+            .attr("x2", "100%").attr("y2", "0%");
+
+        areaGradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "#e8a050")
+            .attr("stop-opacity", 0.6);
+
+        areaGradient.append("stop")
+            .attr("offset", "20%")
+            .attr("stop-color", "#7090c0")
+            .attr("stop-opacity", 0.3);
+
+        areaGradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "#7090c0")
+            .attr("stop-opacity", 0.1);
+
+        // Area under curve
+        const area = d3.area()
+            .x(d => xScale(d.x))
+            .y0(ch)
+            .y1(d => yScale(d.y))
+            .curve(d3.curveBasis);
+
+        curveSvg.append("path")
+            .datum(powerData)
+            .attr("fill", "url(#areaGradient)")
+            .attr("d", area);
+
+        // Line
+        const line = d3.line()
+            .x(d => xScale(d.x))
+            .y(d => yScale(d.y))
+            .curve(d3.curveBasis);
+
+        curveSvg.append("path")
+            .datum(powerData)
+            .attr("fill", "none")
+            .attr("stroke", "#e8a050")
+            .attr("stroke-width", 3)
+            .attr("d", line);
+
+        // Axes
+        curveSvg.append("g")
+            .attr("class", "axis")
+            .attr("transform", `translate(0,${ch})`)
+            .call(d3.axisBottom(xScale).ticks(5).tickFormat(d => d + "%"))
+            .append("text")
+            .attr("x", cw / 2)
+            .attr("y", 40)
+            .attr("fill", "#888")
+            .attr("text-anchor", "middle")
+            .text("Users (ranked by activity)");
+
+        curveSvg.append("g")
+            .attr("class", "axis")
+            .call(d3.axisLeft(yScale).ticks(5).tickFormat(d => d + "%"))
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -ch / 2)
+            .attr("y", -35)
+            .attr("fill", "#888")
+            .attr("text-anchor", "middle")
+            .text("Content Created");
+
+        // Annotation: top 10%
+        curveSvg.append("line")
+            .attr("x1", xScale(10))
+            .attr("y1", 0)
+            .attr("x2", xScale(10))
+            .attr("y2", ch)
+            .attr("stroke", "#e8a050")
+            .attr("stroke-dasharray", "4,4")
+            .attr("opacity", 0.6);
+
+        curveSvg.append("text")
+            .attr("x", xScale(5))
+            .attr("y", 20)
+            .attr("fill", "#e8a050")
+            .attr("text-anchor", "middle")
+            .attr("font-size", "12px")
+            .text("Top 10%");
+
+        // === CIRCLE VISUALIZATION ===
+        const circleWidth = 380;
+        const circleHeight = 380;
+        const centerX = circleWidth / 2;
+        const centerY = circleHeight / 2;
+        const outerRadius = 160;
+
+        const totalCircles = 200;
+        const growingCount = Math.floor(totalCircles * 0.1);
+
+        const smallRadius = 5;
+        const largeRadius = 20;
+
+        const circleSvg = d3.select("#circleViz");
+
+        // Outer boundary
+        circleSvg.append("circle")
+            .attr("class", "outer-circle")
+            .attr("cx", centerX)
+            .attr("cy", centerY)
+            .attr("r", outerRadius);
+
+        // Gradients
+        const circleDefs = circleSvg.append("defs");
+
+        const growingGrad = circleDefs.append("radialGradient").attr("id", "growGrad");
+        growingGrad.append("stop").attr("offset", "0%").attr("stop-color", "#ffd080");
+        growingGrad.append("stop").attr("offset", "100%").attr("stop-color", "#c07030");
+
+        const smallGrad = circleDefs.append("radialGradient").attr("id", "smallGrad");
+        smallGrad.append("stop").attr("offset", "0%").attr("stop-color", "#90b0e0");
+        smallGrad.append("stop").attr("offset", "100%").attr("stop-color", "#4060a0");
+
+        // Create nodes - already in final position
+        const nodes = [];
+        const growingIndices = new Set();
+        while (growingIndices.size < growingCount) {
+            growingIndices.add(Math.floor(Math.random() * totalCircles));
+        }
+
+        for (let i = 0; i < totalCircles; i++) {
+            const isGrowing = growingIndices.has(i);
+
+            if (isGrowing) {
+                // Place on edge
+                const angle = (i / growingCount) * Math.PI * 2 + Math.random() * 0.3;
+                const r = outerRadius - largeRadius - 2;
+                nodes.push({
+                    x: centerX + Math.cos(angle) * r,
+                    y: centerY + Math.sin(angle) * r,
+                    radius: largeRadius,
+                    isGrowing: true
+                });
+            } else {
+                // Place in center
+                const angle = Math.random() * Math.PI * 2;
+                const r = Math.sqrt(Math.random()) * (outerRadius - largeRadius - smallRadius - 30);
+                nodes.push({
+                    x: centerX + Math.cos(angle) * r,
+                    y: centerY + Math.sin(angle) * r,
+                    radius: smallRadius,
+                    isGrowing: false
+                });
+            }
+        }
+
+        // Run quick simulation to settle
+        const simulation = d3.forceSimulation(nodes)
+            .force("collide", d3.forceCollide(d => d.radius + 1).strength(0.8).iterations(2))
+            .force("boundary", function(alpha) {
+                for (const node of nodes) {
+                    const dx = node.x - centerX;
+                    const dy = node.y - centerY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const maxDist = outerRadius - node.radius - 2;
+                    if (dist > maxDist) {
+                        const scale = maxDist / dist;
+                        node.x = centerX + dx * scale;
+                        node.y = centerY + dy * scale;
+                    }
+                }
+            })
+            .force("edge", function(alpha) {
+                for (const node of nodes) {
+                    if (node.isGrowing) {
+                        const dx = node.x - centerX;
+                        const dy = node.y - centerY;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist > 1) {
+                            const targetDist = outerRadius - node.radius - 2;
+                            node.vx += (dx / dist) * alpha * 2;
+                            node.vy += (dy / dist) * alpha * 2;
+                        }
+                    }
+                }
+            })
+            .force("center", function(alpha) {
+                for (const node of nodes) {
+                    if (!node.isGrowing) {
+                        node.vx += (centerX - node.x) * alpha * 0.02;
+                        node.vy += (centerY - node.y) * alpha * 0.02;
+                    }
+                }
+            })
+            .stop();
+
+        // Run simulation
+        for (let i = 0; i < 150; i++) simulation.tick();
+
+        // Draw circles
+        circleSvg.selectAll(".node")
+            .data(nodes)
+            .join("circle")
+            .attr("class", "node")
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("r", d => d.radius)
+            .attr("fill", d => d.isGrowing ? "url(#growGrad)" : "url(#smallGrad)")
+            .attr("opacity", 0.85)
+            .attr("stroke", d => d.isGrowing ? "#ffd080" : "#6080b0")
+            .attr("stroke-width", 0.5);
+    </script>
+</body>
+</html>

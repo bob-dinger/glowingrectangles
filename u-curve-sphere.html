@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>U-Curve Sphere</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f; color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh; display: flex; overflow: hidden;
+        }
+        .back-link { position: fixed; top: 20px; left: 20px; color: #666; text-decoration: none; font-size: 13px; z-index: 10; }
+        .back-link:hover { color: #fff; }
+        .left { width: 40%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; border-right: 1px solid #222; }
+        .right { width: 60%; display: flex; justify-content: center; align-items: center; }
+        .curve-title { font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+        .curve-container { position: relative; width: 100%; max-width: 350px; }
+        #curveCanvas { width: 100%; border: 1px solid #222; border-radius: 8px; }
+        .legend { display: flex; flex-direction: column; gap: 12px; margin-top: 30px; width: 100%; max-width: 350px; }
+        .legend-item { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .legend-label { color: #888; }
+        .insight { margin-top: 25px; padding: 15px; background: #111; border: 1px solid #222; border-radius: 8px; max-width: 350px; font-size: 13px; color: #888; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <a href="home.html" class="back-link">← Back</a>
+    <div class="left">
+        <div class="curve-title">The U-Curve</div>
+        <div class="curve-container">
+            <canvas id="curveCanvas" width="350" height="250"></canvas>
+        </div>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #22C55E;"></div>
+                <span class="legend-label">High at Start</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #EF4444;"></div>
+                <span class="legend-label">The Valley</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #3B82F6;"></div>
+                <span class="legend-label">High at End</span>
+            </div>
+        </div>
+        <div class="insight">
+            Happiness over lifespan. Culture shock. Relationship satisfaction over time. Things get worse before getting better — then better than before.
+        </div>
+    </div>
+    <div class="right">
+        <canvas id="sphereCanvas"></canvas>
+    </div>
+
+    <script>
+        const curveCanvas = document.getElementById('curveCanvas');
+        const curveCtx = curveCanvas.getContext('2d');
+        const sphereCanvas = document.getElementById('sphereCanvas');
+        const sphereCtx = sphereCanvas.getContext('2d');
+
+        function uCurve(x) {
+            return 4 * Math.pow(x - 0.5, 2);
+        }
+
+        function getColor(x) {
+            if (x < 0.25) return '#22C55E';
+            if (x > 0.75) return '#3B82F6';
+            return '#EF4444';
+        }
+
+        let sphereWidth, sphereHeight, centerX, centerY, radius;
+
+        function resizeSphere() {
+            const container = document.querySelector('.right');
+            sphereWidth = container.clientWidth;
+            sphereHeight = container.clientHeight;
+            sphereCanvas.width = sphereWidth;
+            sphereCanvas.height = sphereHeight;
+            centerX = sphereWidth / 2;
+            centerY = sphereHeight / 2;
+            radius = Math.min(sphereWidth, sphereHeight) * 0.38;
+        }
+        resizeSphere();
+        window.addEventListener('resize', resizeSphere);
+
+        const numPoints = 300;
+        const points = [];
+
+        for (let i = 0; i < numPoints; i++) {
+            const phi = Math.acos(1 - 2 * (i + 0.5) / numPoints);
+            const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+            const t = (i + 1) / numPoints;
+
+            points.push({
+                phi, theta, t,
+                color: getColor(t),
+                value: uCurve(t),
+                size: 3 + Math.random() * 2
+            });
+        }
+
+        let time = 0;
+        const cycleDuration = 10000;
+
+        function drawCurve(progress) {
+            const w = curveCanvas.width, h = curveCanvas.height;
+            const padding = 30, graphW = w - padding * 2, graphH = h - padding * 2;
+
+            curveCtx.fillStyle = '#0a0a0f';
+            curveCtx.fillRect(0, 0, w, h);
+
+            curveCtx.lineWidth = 3;
+            let prevX = padding, prevY = h - padding - uCurve(0) * graphH;
+
+            for (let t = 0; t <= 1; t += 0.01) {
+                const x = padding + t * graphW;
+                const y = h - padding - uCurve(t) * graphH;
+
+                curveCtx.beginPath();
+                curveCtx.moveTo(prevX, prevY);
+                curveCtx.lineTo(x, y);
+                curveCtx.strokeStyle = getColor(t);
+                curveCtx.stroke();
+
+                prevX = x; prevY = y;
+            }
+
+            const markerX = padding + progress * graphW;
+            const markerY = h - padding - uCurve(progress) * graphH;
+
+            curveCtx.beginPath();
+            curveCtx.arc(markerX, markerY, 6, 0, Math.PI * 2);
+            curveCtx.fillStyle = '#fff';
+            curveCtx.fill();
+
+            curveCtx.strokeStyle = '#333';
+            curveCtx.lineWidth = 1;
+            curveCtx.beginPath();
+            curveCtx.moveTo(padding, padding);
+            curveCtx.lineTo(padding, h - padding);
+            curveCtx.lineTo(w - padding, h - padding);
+            curveCtx.stroke();
+        }
+
+        function drawSphere(progress) {
+            sphereCtx.fillStyle = '#0a0a0f';
+            sphereCtx.fillRect(0, 0, sphereWidth, sphereHeight);
+
+            const rotationY = time * 0.2;
+            const rotationX = 0.3;
+
+            const projected = points.map(p => {
+                let x = Math.sin(p.phi) * Math.cos(p.theta + rotationY);
+                let y = Math.cos(p.phi);
+                let z = Math.sin(p.phi) * Math.sin(p.theta + rotationY);
+
+                const y2 = y * Math.cos(rotationX) - z * Math.sin(rotationX);
+                const z2 = y * Math.sin(rotationX) + z * Math.cos(rotationX);
+                y = y2; z = z2;
+
+                const activated = progress >= p.t;
+
+                return { x, y, z, activated, color: p.color, size: p.size, value: p.value };
+            });
+
+            projected.sort((a, b) => a.z - b.z);
+
+            sphereCtx.beginPath();
+            sphereCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            sphereCtx.strokeStyle = 'rgba(255,255,255,0.05)';
+            sphereCtx.lineWidth = 1;
+            sphereCtx.stroke();
+
+            projected.forEach(p => {
+                const scale = (p.z + 1.5) / 2.5;
+                const screenX = centerX + p.x * radius;
+                const screenY = centerY + p.y * radius;
+                const size = p.size * scale * (0.5 + p.value * 0.7);
+
+                sphereCtx.beginPath();
+                sphereCtx.arc(screenX, screenY, Math.max(size, 1.5), 0, Math.PI * 2);
+
+                if (p.activated) {
+                    sphereCtx.fillStyle = p.color;
+                    if (p.z > 0.3 && p.value > 0.5) {
+                        sphereCtx.shadowColor = p.color;
+                        sphereCtx.shadowBlur = 10;
+                    }
+                } else {
+                    sphereCtx.fillStyle = `rgba(40, 40, 40, ${0.2 + scale * 0.2})`;
+                    sphereCtx.shadowBlur = 0;
+                }
+
+                sphereCtx.fill();
+                sphereCtx.shadowBlur = 0;
+            });
+        }
+
+        function animate() {
+            const elapsed = (performance.now() % cycleDuration) / cycleDuration;
+            drawCurve(elapsed);
+            drawSphere(elapsed);
+            time += 0.016;
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

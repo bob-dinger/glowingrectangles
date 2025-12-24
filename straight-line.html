@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Straight Line Instinct</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .main {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar {
+            width: 350px;
+            background: #111118;
+            border-left: 1px solid #222;
+            padding: 40px 30px;
+            overflow-y: auto;
+        }
+
+        h1 { font-size: 28px; margin-bottom: 8px; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; text-align: center; max-width: 500px; }
+
+        .chart-container {
+            position: relative;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-title {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        svg {
+            display: block;
+        }
+        .axis text { fill: #666; font-size: 11px; }
+        .axis line, .axis path { stroke: #333; }
+        .grid line { stroke: #222; }
+
+        .line-actual {
+            fill: none;
+            stroke: #3B82F6;
+            stroke-width: 3;
+        }
+        .line-straight {
+            fill: none;
+            stroke: #EF4444;
+            stroke-width: 2;
+            stroke-dasharray: 8, 4;
+            opacity: 0;
+        }
+        .line-straight.visible {
+            opacity: 1;
+        }
+
+        .area-actual {
+            fill: url(#blueGradient);
+            opacity: 0.3;
+        }
+
+        .annotation {
+            font-size: 12px;
+            fill: #888;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #252525;
+            border-color: #3B82F6;
+        }
+        button.active {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+
+        .sidebar h2 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .insight {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .insight-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .insight-text {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+        .insight-stat {
+            font-size: 28px;
+            color: #3B82F6;
+            margin-top: 10px;
+        }
+
+        .quote {
+            border-left: 3px solid #3B82F6;
+            padding-left: 15px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #888;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .quote-author {
+            color: #555;
+            font-style: normal;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 15px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #888;
+        }
+        .legend-line {
+            width: 24px;
+            height: 3px;
+            border-radius: 2px;
+        }
+        .legend-line.actual { background: #3B82F6; }
+        .legend-line.straight { background: #EF4444; height: 2px; border-style: dashed; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main">
+            <h1>The Straight Line Instinct</h1>
+            <p class="subtitle">We assume trends will continue in a straight line. But most things in life follow curves.</p>
+
+            <div class="controls">
+                <button class="active" data-chart="population">World Population</button>
+                <button data-chart="birthrate">Birth Rate</button>
+                <button data-chart="children">Children in World</button>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title" id="chartTitle">World Population (billions)</div>
+                <svg id="chart" width="600" height="400"></svg>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-line actual"></div>
+                        <span>Reality</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line straight" style="background: repeating-linear-gradient(90deg, #EF4444 0, #EF4444 8px, transparent 8px, transparent 12px);"></div>
+                        <span>Straight-line thinking</span>
+                    </div>
+                </div>
+            </div>
+
+            <button id="showStraight">Show what people expect →</button>
+        </div>
+
+        <div class="sidebar">
+            <h2>The Insight</h2>
+
+            <div class="quote">
+                "There's no room for facts when our minds are occupied by fear."
+                <div class="quote-author">— Hans Rosling, Factfulness</div>
+            </div>
+
+            <div class="insight">
+                <div class="insight-title">🧠 The Instinct</div>
+                <div class="insight-text">
+                    When we see a line going up, we assume it will keep going up at the same rate. Our brains project straight lines into the future.
+                </div>
+            </div>
+
+            <div class="insight">
+                <div class="insight-title">📉 The Reality</div>
+                <div class="insight-text">
+                    Most trends follow S-curves, not straight lines. Things speed up, then slow down. Birth rates are falling everywhere in the world.
+                </div>
+            </div>
+
+            <div class="insight">
+                <div class="insight-title">👶 Children</div>
+                <div class="insight-text">
+                    The number of children (0-14) in the world stopped growing around 2000. It's been flat at ~2 billion for 20+ years.
+                </div>
+                <div class="insight-stat">~2 billion</div>
+            </div>
+
+            <div class="insight">
+                <div class="insight-title">🌍 Population Peak</div>
+                <div class="insight-text">
+                    Population will likely peak around 10-11 billion by 2100, then potentially decline. Not because of disaster - because of development.
+                </div>
+                <div class="insight-stat">~10-11 billion</div>
+            </div>
+
+            <div class="insight">
+                <div class="insight-title">📊 Why It Matters</div>
+                <div class="insight-text">
+                    Understanding curves vs lines changes everything: retirement planning, climate policy, resource allocation. The future isn't a straight line from today.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 400;
+        const margin = { top: 30, right: 30, bottom: 50, left: 60 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        const svg = d3.select('#chart');
+        const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Gradients
+        const defs = svg.append('defs');
+        const gradient = defs.append('linearGradient')
+            .attr('id', 'blueGradient')
+            .attr('x1', '0%').attr('y1', '0%')
+            .attr('x2', '0%').attr('y2', '100%');
+        gradient.append('stop').attr('offset', '0%').attr('stop-color', '#3B82F6');
+        gradient.append('stop').attr('offset', '100%').attr('stop-color', '#3B82F6').attr('stop-opacity', 0);
+
+        // Data
+        const data = {
+            population: {
+                title: 'World Population (billions)',
+                actual: [
+                    {year: 1950, value: 2.5}, {year: 1960, value: 3.0}, {year: 1970, value: 3.7},
+                    {year: 1980, value: 4.4}, {year: 1990, value: 5.3}, {year: 2000, value: 6.1},
+                    {year: 2010, value: 6.9}, {year: 2020, value: 7.8}, {year: 2030, value: 8.5},
+                    {year: 2040, value: 9.2}, {year: 2050, value: 9.7}, {year: 2060, value: 10.1},
+                    {year: 2070, value: 10.4}, {year: 2080, value: 10.5}, {year: 2090, value: 10.6},
+                    {year: 2100, value: 10.4}
+                ],
+                straight: [
+                    {year: 1950, value: 2.5}, {year: 2100, value: 16}
+                ],
+                yMax: 17
+            },
+            birthrate: {
+                title: 'Global Birth Rate (births per woman)',
+                actual: [
+                    {year: 1950, value: 5.0}, {year: 1960, value: 5.0}, {year: 1970, value: 4.7},
+                    {year: 1980, value: 3.7}, {year: 1990, value: 3.2}, {year: 2000, value: 2.7},
+                    {year: 2010, value: 2.5}, {year: 2020, value: 2.3}, {year: 2030, value: 2.1},
+                    {year: 2040, value: 2.0}, {year: 2050, value: 1.9}, {year: 2060, value: 1.8},
+                    {year: 2070, value: 1.8}, {year: 2080, value: 1.8}, {year: 2090, value: 1.8},
+                    {year: 2100, value: 1.8}
+                ],
+                straight: [
+                    {year: 1950, value: 5.0}, {year: 2100, value: 5.0}
+                ],
+                yMax: 6
+            },
+            children: {
+                title: 'Children in the World, 0-14 years (billions)',
+                actual: [
+                    {year: 1950, value: 0.9}, {year: 1960, value: 1.1}, {year: 1970, value: 1.4},
+                    {year: 1980, value: 1.6}, {year: 1990, value: 1.8}, {year: 2000, value: 1.9},
+                    {year: 2010, value: 1.96}, {year: 2020, value: 1.98}, {year: 2030, value: 2.0},
+                    {year: 2040, value: 2.0}, {year: 2050, value: 1.99}, {year: 2060, value: 1.95},
+                    {year: 2070, value: 1.9}, {year: 2080, value: 1.85}, {year: 2090, value: 1.8},
+                    {year: 2100, value: 1.75}
+                ],
+                straight: [
+                    {year: 1950, value: 0.9}, {year: 2100, value: 4.5}
+                ],
+                yMax: 5
+            }
+        };
+
+        let currentChart = 'population';
+        let showingStraight = false;
+
+        function drawChart(chartKey) {
+            const chartData = data[chartKey];
+            document.getElementById('chartTitle').textContent = chartData.title;
+
+            g.selectAll('*').remove();
+
+            const x = d3.scaleLinear()
+                .domain([1950, 2100])
+                .range([0, innerWidth]);
+
+            const y = d3.scaleLinear()
+                .domain([0, chartData.yMax])
+                .range([innerHeight, 0]);
+
+            // Grid
+            g.append('g')
+                .attr('class', 'grid')
+                .selectAll('line')
+                .data(y.ticks(5))
+                .enter().append('line')
+                .attr('x1', 0).attr('x2', innerWidth)
+                .attr('y1', d => y(d)).attr('y2', d => y(d));
+
+            // Axes
+            g.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${innerHeight})`)
+                .call(d3.axisBottom(x).tickFormat(d3.format('d')).ticks(8));
+
+            g.append('g')
+                .attr('class', 'axis')
+                .call(d3.axisLeft(y).ticks(5));
+
+            // Area
+            const area = d3.area()
+                .x(d => x(d.year))
+                .y0(innerHeight)
+                .y1(d => y(d.value))
+                .curve(d3.curveMonotoneX);
+
+            g.append('path')
+                .datum(chartData.actual)
+                .attr('class', 'area-actual')
+                .attr('d', area);
+
+            // Actual line
+            const line = d3.line()
+                .x(d => x(d.year))
+                .y(d => y(d.value))
+                .curve(d3.curveMonotoneX);
+
+            g.append('path')
+                .datum(chartData.actual)
+                .attr('class', 'line-actual')
+                .attr('d', line);
+
+            // Straight line (hidden initially)
+            const straightLine = d3.line()
+                .x(d => x(d.year))
+                .y(d => y(d.value));
+
+            g.append('path')
+                .datum(chartData.straight)
+                .attr('class', 'line-straight')
+                .classed('visible', showingStraight)
+                .attr('d', straightLine);
+
+            // Today marker
+            g.append('line')
+                .attr('x1', x(2024)).attr('x2', x(2024))
+                .attr('y1', 0).attr('y2', innerHeight)
+                .attr('stroke', '#444')
+                .attr('stroke-dasharray', '4,4');
+
+            g.append('text')
+                .attr('class', 'annotation')
+                .attr('x', x(2024) + 5)
+                .attr('y', 15)
+                .text('Today');
+
+            g.append('text')
+                .attr('class', 'annotation')
+                .attr('x', x(2060))
+                .attr('y', 15)
+                .text('Projected →');
+        }
+
+        function toggleStraight() {
+            showingStraight = !showingStraight;
+            d3.select('.line-straight').classed('visible', showingStraight);
+            document.getElementById('showStraight').textContent =
+                showingStraight ? '← Hide straight line' : 'Show what people expect →';
+        }
+
+        // Event listeners
+        document.querySelectorAll('.controls button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentChart = btn.dataset.chart;
+                showingStraight = false;
+                document.getElementById('showStraight').textContent = 'Show what people expect →';
+                drawChart(currentChart);
+            });
+        });
+
+        document.getElementById('showStraight').addEventListener('click', toggleStraight);
+
+        // Initial draw
+        drawChart('population');
+    </script>
+</body>
+</html>

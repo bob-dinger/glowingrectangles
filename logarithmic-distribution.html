@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logarithmic Distribution</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container { display: flex; height: 100vh; }
+        .graph-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        .examples-section {
+            width: 320px;
+            background: #111118;
+            border-left: 1px solid #222;
+            padding: 40px 30px;
+            overflow-y: auto;
+        }
+        h1 { font-size: 28px; margin-bottom: 10px; color: #fff; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; }
+        h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 20px; }
+        .example-item {
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .example-item:hover { background: rgba(255,255,255,0.08); border-color: #333; }
+        .example-item.active { background: rgba(59, 130, 246, 0.15); border-color: #3B82F6; }
+        .example-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+        .example-desc { font-size: 12px; color: #888; }
+        svg { overflow: visible; }
+        .bubble { stroke: #fff; stroke-width: 1; opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="graph-section">
+            <h1>Logarithmic Distribution</h1>
+            <p class="subtitle">Lower values are exponentially more common</p>
+            <svg id="graph" width="500" height="500"></svg>
+        </div>
+        <div class="examples-section">
+            <h2>Examples</h2>
+            <div class="example-item active" data-example="benford">
+                <div class="example-title">Benford's Law</div>
+                <div class="example-desc">First digits in natural datasets</div>
+            </div>
+            <div class="example-item" data-example="cities">
+                <div class="example-title">City Populations</div>
+                <div class="example-desc">Many small towns, few megacities</div>
+            </div>
+            <div class="example-item" data-example="files">
+                <div class="example-title">File Sizes</div>
+                <div class="example-desc">Most files are small</div>
+            </div>
+            <div class="example-item" data-example="words">
+                <div class="example-title">Word Frequency</div>
+                <div class="example-desc">Common words dominate</div>
+            </div>
+            <div class="example-item" data-example="earthquakes">
+                <div class="example-title">Earthquake Magnitude</div>
+                <div class="example-desc">Small quakes vastly outnumber big</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 500;
+        const height = 500;
+        const numPoints = 80;
+
+        const svg = d3.select('#graph');
+        let simulation = null;
+
+        const colorScale = d3.scaleSequential(d3.interpolateBlues).domain([0, 30]);
+
+        function drawLogarithmic() {
+            svg.selectAll('*').remove();
+
+            const nodes = [];
+            for (let i = 0; i < numPoints; i++) {
+                // Logarithmic: sizes increase slowly, most are small
+                const t = (i + 1) / numPoints;
+                const size = Math.log(1 + t * 9) / Math.log(10) * 25 + 5;
+
+                nodes.push({
+                    id: i,
+                    radius: size,
+                    x: width / 2 + (Math.random() - 0.5) * 200,
+                    y: height / 2 + (Math.random() - 0.5) * 200
+                });
+            }
+
+            // Shuffle so small ones aren't all together
+            nodes.sort(() => Math.random() - 0.5);
+
+            const bubbles = svg.selectAll('circle')
+                .data(nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'bubble')
+                .attr('r', d => d.radius)
+                .attr('fill', d => colorScale(d.radius));
+
+            if (simulation) simulation.stop();
+
+            simulation = d3.forceSimulation(nodes)
+                .force('charge', d3.forceManyBody().strength(d => -Math.pow(d.radius, 2) * 0.03))
+                .force('x', d3.forceX(width / 2).strength(0.05))
+                .force('y', d3.forceY(height / 2).strength(0.05))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 2))
+                .on('tick', () => {
+                    bubbles.attr('cx', d => d.x).attr('cy', d => d.y);
+                });
+        }
+
+        document.querySelectorAll('.example-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.example-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                drawLogarithmic();
+            });
+        });
+
+        drawLogarithmic();
+    </script>
+</body>
+</html>

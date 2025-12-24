@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cooking Times</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 { font-size: 28px; text-align: center; margin-bottom: 8px; }
+        .subtitle { color: #666; font-size: 14px; text-align: center; margin-bottom: 30px; }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .tab:hover { border-color: #555; color: #fff; }
+        .tab.active { background: #F97316; border-color: #F97316; color: #fff; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+        .item {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .item-icon {
+            font-size: 32px;
+            width: 50px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .item-content { flex: 1; }
+
+        .item-name {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .item-time {
+            font-size: 20px;
+            font-weight: 600;
+            color: #F97316;
+        }
+
+        .item-temp {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .item-bar {
+            height: 4px;
+            background: #222;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .item-bar-fill {
+            height: 100%;
+            background: #F97316;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <a href="../../home.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <h1>Cooking Times</h1>
+        <p class="subtitle">Quick reference for common foods</p>
+
+        <div class="tabs">
+            <div class="tab active" data-cat="meat">Meat</div>
+            <div class="tab" data-cat="poultry">Poultry</div>
+            <div class="tab" data-cat="seafood">Seafood</div>
+            <div class="tab" data-cat="eggs">Eggs</div>
+            <div class="tab" data-cat="veg">Vegetables</div>
+            <div class="tab" data-cat="grains">Grains</div>
+        </div>
+
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <script>
+        const foods = {
+            meat: [
+                { name: 'Steak (rare)', icon: '🥩', time: '2-3 min/side', temp: '125°F internal', mins: 5 },
+                { name: 'Steak (medium)', icon: '🥩', time: '4-5 min/side', temp: '135°F internal', mins: 9 },
+                { name: 'Steak (well done)', icon: '🥩', time: '6-7 min/side', temp: '155°F internal', mins: 13 },
+                { name: 'Burger patty', icon: '🍔', time: '4-5 min/side', temp: '160°F internal', mins: 9 },
+                { name: 'Pork chop', icon: '🍖', time: '4-5 min/side', temp: '145°F internal', mins: 9 },
+                { name: 'Bacon', icon: '🥓', time: '8-12 min', temp: 'Medium heat', mins: 10 },
+                { name: 'Lamb chop', icon: '🍖', time: '3-4 min/side', temp: '145°F internal', mins: 7 },
+                { name: 'Pork tenderloin', icon: '🍖', time: '20-25 min', temp: '400°F oven', mins: 22 },
+            ],
+            poultry: [
+                { name: 'Chicken breast', icon: '🍗', time: '6-8 min/side', temp: '165°F internal', mins: 14 },
+                { name: 'Chicken thigh', icon: '🍗', time: '8-10 min/side', temp: '165°F internal', mins: 18 },
+                { name: 'Whole chicken', icon: '🐔', time: '1-1.5 hrs', temp: '425°F oven', mins: 75 },
+                { name: 'Turkey breast', icon: '🦃', time: '15-18 min/lb', temp: '325°F oven', mins: 90 },
+                { name: 'Chicken wings', icon: '🍗', time: '20-25 min', temp: '400°F oven', mins: 22 },
+                { name: 'Duck breast', icon: '🦆', time: '6-8 min/side', temp: '135°F internal', mins: 14 },
+            ],
+            seafood: [
+                { name: 'Salmon fillet', icon: '🐟', time: '4-5 min/side', temp: '145°F internal', mins: 9 },
+                { name: 'Shrimp', icon: '🦐', time: '2-3 min/side', temp: 'Until pink', mins: 5 },
+                { name: 'Tuna steak', icon: '🐟', time: '1-2 min/side', temp: 'Seared rare', mins: 3 },
+                { name: 'Cod fillet', icon: '🐟', time: '4-5 min/side', temp: '145°F internal', mins: 9 },
+                { name: 'Lobster tail', icon: '🦞', time: '8-12 min', temp: 'Boil or broil', mins: 10 },
+                { name: 'Scallops', icon: '🐚', time: '2 min/side', temp: 'High heat', mins: 4 },
+                { name: 'Mussels', icon: '🐚', time: '5-7 min', temp: 'Until shells open', mins: 6 },
+            ],
+            eggs: [
+                { name: 'Soft boiled', icon: '🥚', time: '6-7 min', temp: 'Boiling water', mins: 6 },
+                { name: 'Medium boiled', icon: '🥚', time: '9-10 min', temp: 'Boiling water', mins: 9 },
+                { name: 'Hard boiled', icon: '🥚', time: '12-14 min', temp: 'Boiling water', mins: 13 },
+                { name: 'Fried egg', icon: '🍳', time: '2-3 min', temp: 'Medium heat', mins: 2 },
+                { name: 'Scrambled', icon: '🍳', time: '3-5 min', temp: 'Low-medium heat', mins: 4 },
+                { name: 'Poached', icon: '🥚', time: '3-4 min', temp: 'Simmering water', mins: 3 },
+                { name: 'Omelette', icon: '🍳', time: '2-4 min', temp: 'Medium heat', mins: 3 },
+            ],
+            veg: [
+                { name: 'Broccoli (steam)', icon: '🥦', time: '5-7 min', temp: 'Steaming', mins: 6 },
+                { name: 'Carrots (roast)', icon: '🥕', time: '25-30 min', temp: '400°F oven', mins: 27 },
+                { name: 'Asparagus', icon: '🌿', time: '8-10 min', temp: '400°F oven', mins: 9 },
+                { name: 'Brussels sprouts', icon: '🥬', time: '20-25 min', temp: '400°F oven', mins: 22 },
+                { name: 'Corn on cob', icon: '🌽', time: '10-15 min', temp: 'Boiling water', mins: 12 },
+                { name: 'Baked potato', icon: '🥔', time: '45-60 min', temp: '400°F oven', mins: 52 },
+                { name: 'Green beans', icon: '🫛', time: '5-7 min', temp: 'Boiling/sauté', mins: 6 },
+                { name: 'Zucchini (sauté)', icon: '🥒', time: '5-7 min', temp: 'Medium-high', mins: 6 },
+            ],
+            grains: [
+                { name: 'White rice', icon: '🍚', time: '18-20 min', temp: 'Simmer covered', mins: 19 },
+                { name: 'Brown rice', icon: '🍚', time: '40-45 min', temp: 'Simmer covered', mins: 42 },
+                { name: 'Pasta', icon: '🍝', time: '8-12 min', temp: 'Boiling water', mins: 10 },
+                { name: 'Quinoa', icon: '🌾', time: '15-20 min', temp: 'Simmer covered', mins: 17 },
+                { name: 'Oatmeal', icon: '🥣', time: '5 min', temp: 'Boiling water', mins: 5 },
+                { name: 'Couscous', icon: '🌾', time: '5 min', temp: 'Just boiled water', mins: 5 },
+                { name: 'Lentils', icon: '🫘', time: '20-30 min', temp: 'Simmer', mins: 25 },
+            ]
+        };
+
+        const maxMins = 90;
+        const grid = document.getElementById('grid');
+        const tabs = document.querySelectorAll('.tab');
+
+        function render(category) {
+            grid.innerHTML = foods[category].map(f => `
+                <div class="item">
+                    <div class="item-icon">${f.icon}</div>
+                    <div class="item-content">
+                        <div class="item-name">${f.name}</div>
+                        <div class="item-time">${f.time}</div>
+                        <div class="item-temp">${f.temp}</div>
+                        <div class="item-bar">
+                            <div class="item-bar-fill" style="width: ${(f.mins / maxMins) * 100}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                render(tab.dataset.cat);
+            });
+        });
+
+        render('meat');
+    </script>
+</body>
+</html>

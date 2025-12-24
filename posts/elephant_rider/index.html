@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Elephant & The Rider</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 10;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 50px;
+        }
+
+        .scene {
+            position: relative;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin-bottom: 50px;
+        }
+
+        .elephant {
+            position: relative;
+            width: 280px;
+            height: 220px;
+        }
+
+        .elephant-body {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 150px;
+            background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+            border-radius: 50% 50% 40% 40%;
+        }
+
+        .elephant-head {
+            position: absolute;
+            bottom: 100px;
+            left: 10px;
+            width: 100px;
+            height: 90px;
+            background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+            border-radius: 50% 50% 40% 50%;
+        }
+
+        .elephant-ear {
+            position: absolute;
+            bottom: 110px;
+            left: -25px;
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%);
+            border-radius: 50% 50% 50% 50%;
+        }
+
+        .elephant-trunk {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            width: 25px;
+            height: 100px;
+            background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+            border-radius: 20px;
+            transform-origin: top center;
+            animation: trunkSway 3s ease-in-out infinite;
+        }
+
+        @keyframes trunkSway {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+        }
+
+        .elephant-eye {
+            position: absolute;
+            bottom: 150px;
+            left: 60px;
+            width: 12px;
+            height: 12px;
+            background: #1F2937;
+            border-radius: 50%;
+        }
+
+        .elephant-leg {
+            position: absolute;
+            bottom: -50px;
+            width: 35px;
+            height: 70px;
+            background: linear-gradient(135deg, #4B5563 0%, #374151 100%);
+            border-radius: 10px 10px 15px 15px;
+        }
+        .elephant-leg.front-left { left: 60px; }
+        .elephant-leg.front-right { left: 100px; }
+        .elephant-leg.back-left { left: 150px; }
+        .elephant-leg.back-right { left: 190px; }
+
+        .rider {
+            position: absolute;
+            bottom: 180px;
+            left: 50%;
+            transform: translateX(-30%);
+        }
+
+        .rider-body {
+            width: 30px;
+            height: 40px;
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            border-radius: 8px 8px 5px 5px;
+        }
+
+        .rider-head {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            background: #FCD34D;
+            border-radius: 50%;
+        }
+
+        .rider-arm {
+            position: absolute;
+            top: 10px;
+            width: 20px;
+            height: 6px;
+            background: #3B82F6;
+            border-radius: 3px;
+        }
+        .rider-arm.left { left: -15px; transform: rotate(-20deg); }
+        .rider-arm.right { right: -15px; transform: rotate(20deg); }
+
+        .labels {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-bottom: 50px;
+        }
+
+        .label {
+            text-align: center;
+            padding: 15px 25px;
+            border-radius: 8px;
+            background: #111;
+            border: 1px solid #333;
+        }
+
+        .label-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .label-elephant .label-title { color: #9CA3AF; }
+        .label-rider .label-title { color: #3B82F6; }
+
+        .label-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .insight {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .insight-title {
+            font-size: 18px;
+            color: #F59E0B;
+            margin-bottom: 15px;
+        }
+
+        .insight p {
+            color: #888;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .insight p:last-child { margin-bottom: 0; }
+
+        .examples {
+            margin-top: 40px;
+        }
+
+        .examples h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .example-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .example-card:hover {
+            border-color: #F59E0B;
+            transform: translateY(-2px);
+        }
+
+        .example-card.active {
+            border-color: #EF4444;
+            background: #1a1010;
+        }
+
+        .example-rider {
+            font-size: 14px;
+            color: #3B82F6;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .example-rider::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #3B82F6;
+            border-radius: 50%;
+        }
+
+        .example-elephant {
+            font-size: 14px;
+            color: #9CA3AF;
+            display: none;
+        }
+
+        .example-card.active .example-elephant {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+
+        .example-elephant::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: #9CA3AF;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .click-hint {
+            font-size: 12px;
+            color: #555;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .scale-comparison {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+            padding: 30px;
+            background: #111;
+            border-radius: 12px;
+        }
+
+        .scale-item {
+            text-align: center;
+        }
+
+        .scale-bar {
+            width: 60px;
+            border-radius: 8px 8px 0 0;
+            margin: 0 auto 10px;
+        }
+
+        .scale-bar.elephant {
+            height: 200px;
+            background: linear-gradient(to top, #4B5563, #9CA3AF);
+        }
+
+        .scale-bar.rider {
+            height: 40px;
+            background: linear-gradient(to top, #2563EB, #60A5FA);
+        }
+
+        .scale-label {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .scale-percent {
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .scale-item.elephant .scale-percent { color: #9CA3AF; }
+        .scale-item.rider .scale-percent { color: #3B82F6; }
+    </style>
+</head>
+<body>
+    <a href="../../home.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <h1>The Elephant & The Rider</h1>
+        <p class="subtitle">Understanding the divided mind</p>
+
+        <div class="scene">
+            <div class="elephant">
+                <div class="elephant-ear"></div>
+                <div class="elephant-body"></div>
+                <div class="elephant-head"></div>
+                <div class="elephant-trunk"></div>
+                <div class="elephant-eye"></div>
+                <div class="elephant-leg front-left"></div>
+                <div class="elephant-leg front-right"></div>
+                <div class="elephant-leg back-left"></div>
+                <div class="elephant-leg back-right"></div>
+                <div class="rider">
+                    <div class="rider-head"></div>
+                    <div class="rider-body"></div>
+                    <div class="rider-arm left"></div>
+                    <div class="rider-arm right"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="labels">
+            <div class="label label-elephant">
+                <div class="label-title">The Elephant</div>
+                <div class="label-desc">Emotion, Intuition, Automatic</div>
+            </div>
+            <div class="label label-rider">
+                <div class="label-title">The Rider</div>
+                <div class="label-desc">Reason, Logic, Controlled</div>
+            </div>
+        </div>
+
+        <div class="insight">
+            <div class="insight-title">The Key Insight</div>
+            <p>
+                Psychologist Jonathan Haidt uses the metaphor of an elephant and rider to describe how our minds work.
+                <strong style="color: #9CA3AF;">The elephant is our emotional, intuitive side</strong> — it's automatic,
+                fast, and incredibly powerful. <strong style="color: #3B82F6;">The rider is our rational, analytical side</strong>
+                — it's controlled, deliberate, and much smaller.
+            </p>
+            <p>
+                The rider can see further ahead and plan for the future, but the elephant provides the power.
+                When there's a disagreement about which way to go, <strong style="color: #F59E0B;">the elephant usually wins</strong>.
+            </p>
+            <p>
+                Most importantly: the rider's job is often not to steer, but to <em>justify</em> wherever the elephant
+                decided to go. We don't reason our way to conclusions — we feel them first, then construct arguments after.
+            </p>
+        </div>
+
+        <div class="scale-comparison">
+            <div class="scale-item elephant">
+                <div class="scale-bar elephant"></div>
+                <div class="scale-label">Elephant</div>
+                <div class="scale-percent">~95%</div>
+            </div>
+            <div class="scale-item rider">
+                <div class="scale-bar rider"></div>
+                <div class="scale-label">Rider</div>
+                <div class="scale-percent">~5%</div>
+            </div>
+        </div>
+
+        <div class="examples">
+            <h3>Sound familiar?</h3>
+            <p class="click-hint">Click to see what the elephant says</p>
+            <div class="example-grid">
+                <div class="example-card" onclick="this.classList.toggle('active')">
+                    <div class="example-rider">"I'm going to the gym at 5am tomorrow"</div>
+                    <div class="example-elephant">"It's cold. The bed is warm. I'll start Monday."</div>
+                </div>
+                <div class="example-card" onclick="this.classList.toggle('active')">
+                    <div class="example-rider">"I'm not having dessert tonight"</div>
+                    <div class="example-elephant">"One piece won't hurt. I've been good all week."</div>
+                </div>
+                <div class="example-card" onclick="this.classList.toggle('active')">
+                    <div class="example-rider">"I'm only having 2 drinks tonight"</div>
+                    <div class="example-elephant">"Everyone else is having another round. It's fine."</div>
+                </div>
+                <div class="example-card" onclick="this.classList.toggle('active')">
+                    <div class="example-rider">"I'm not checking social media today"</div>
+                    <div class="example-elephant">"Just a quick look. What if something important happened?"</div>
+                </div>
+                <div class="example-card" onclick="this.classList.toggle('active')">
+                    <div class="example-rider">"I'm saving money this month"</div>
+                    <div class="example-elephant">"It's on sale. I deserve this. It's basically investing."</div>
+                </div>
+                <div class="example-card" onclick="this.classList.toggle('active')">
+                    <div class="example-rider">"I'm going to bed early tonight"</div>
+                    <div class="example-elephant">"One more episode. I need to unwind first."</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="insight" style="margin-top: 40px;">
+            <div class="insight-title">Working With the Elephant</div>
+            <p>
+                The solution isn't to fight the elephant — you'll lose. Instead, work with it:
+            </p>
+            <p>
+                <strong style="color: #22C55E;">Shape the path</strong> — Make the right behavior the easy behavior.
+                Put your gym clothes by the bed. Remove junk food from the house. Delete the apps.
+            </p>
+            <p>
+                <strong style="color: #22C55E;">Motivate the elephant</strong> — Connect goals to feelings, not logic.
+                The elephant doesn't care about statistics. It cares about identity, belonging, and immediate rewards.
+            </p>
+            <p>
+                <strong style="color: #22C55E;">Shrink the change</strong> — Make it so small the elephant doesn't resist.
+                Not "go to the gym" — just "put on workout clothes." The elephant will often keep going.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

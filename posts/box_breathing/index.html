@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box Breathing</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        .box {
+            width: 300px;
+            height: 300px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .ball {
+            width: 20px;
+            height: 20px;
+            background: #3B82F6;
+            border-radius: 50%;
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+        }
+
+        .circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3B82F6;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+        }
+
+        .instruction {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            pointer-events: none;
+        }
+
+        #startBtn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 60px;
+            background: #3B82F6;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        #startBtn:hover { background: #2563EB; }
+        #startBtn.hidden { display: none; }
+    </style>
+</head>
+<body>
+    <a href="../../home.html" class="back-link">← Back</a>
+
+    <div class="box" id="box">
+        <button id="startBtn">Start</button>
+        <div class="ball" id="ball"></div>
+        <div class="circle" id="circle"></div>
+        <div class="instruction" id="instruction"></div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('startBtn');
+        const box = document.getElementById('box');
+        const ball = document.getElementById('ball');
+        const circle = document.getElementById('circle');
+        const instruction = document.getElementById('instruction');
+
+        const duration = 4000;
+        const size = 300;
+
+        const phases = [
+            { x: size, y: 0, text: 'Inhale', scale: 2.5 },
+            { x: size, y: size, text: 'Hold', scale: 2.5 },
+            { x: 0, y: size, text: 'Exhale', scale: 1 },
+            { x: 0, y: 0, text: 'Hold', scale: 1 }
+        ];
+
+        function run() {
+            let phase = 0;
+
+            function next() {
+                const p = phases[phase];
+
+                instruction.textContent = p.text;
+
+                ball.style.transition = `left ${duration}ms linear, top ${duration}ms linear`;
+                ball.style.left = (p.x - 10) + 'px';
+                ball.style.top = (p.y - 10) + 'px';
+
+                circle.style.transition = `transform ${duration}ms ease-in-out`;
+                circle.style.transform = `translate(-50%, -50%) scale(${p.scale})`;
+
+                phase = (phase + 1) % 4;
+                setTimeout(next, duration);
+            }
+
+            next();
+        }
+
+        startBtn.addEventListener('click', () => {
+            startBtn.classList.add('hidden');
+            run();
+        });
+    </script>
+</body>
+</html>

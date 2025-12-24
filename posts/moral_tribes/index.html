@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moral Tribes</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container { display: flex; height: 100vh; }
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            padding-top: 50px;
+        }
+        .info-section {
+            width: 380px;
+            background: #16162a;
+            border-left: 1px solid #2a2a4a;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .info-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .info-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #bbb;
+        }
+        .info-text p {
+            margin-bottom: 14px;
+        }
+        .info-traits {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .trait {
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .info-outcome {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #999;
+            font-style: italic;
+            line-height: 1.6;
+        }
+        h1 { font-size: 28px; margin-bottom: 8px; color: #fff; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 10px; }
+        .source { color: #666; font-size: 12px; margin-bottom: 30px; }
+        .source a { color: #8b5cf6; text-decoration: none; }
+        .source a:hover { text-decoration: underline; }
+        #tribesMap {
+            margin: 20px 0;
+        }
+
+        .tribe-region {
+            transition: all 0.3s ease;
+        }
+        .tribe-region:hover > rect:first-child {
+            opacity: 0.4 !important;
+        }
+        .tribe-region.active > rect:first-child {
+            opacity: 0.5 !important;
+            stroke-width: 3;
+        }
+        .tribe-region.active[data-tribe="north"] > rect:first-child { stroke: #3b82f6; }
+        .tribe-region.active[data-tribe="south"] > rect:first-child { stroke: #ef4444; }
+        .tribe-region.active[data-tribe="east"] > rect:first-child { stroke: #10b981; }
+        .tribe-region.active[data-tribe="west"] > rect:first-child { stroke: #f59e0b; }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="viz-section">
+            <h1>Moral Tribes</h1>
+            <p class="subtitle">Why do our values differ?</p>
+            <p class="source">From Joshua Greene's <a href="https://www.amazon.com/Moral-Tribes-Emotion-Reason-Between/dp/0143126059" target="_blank">Moral Tribes</a></p>
+
+            <svg id="tribesMap" width="700" height="520" viewBox="0 0 700 520">
+                <!-- Forest in center -->
+                <rect x="250" y="185" width="200" height="150" fill="#1a472a" rx="8"/>
+                <text x="350" y="265" text-anchor="middle" fill="#2d5a3d" font-size="14" font-weight="600">Forest</text>
+                <text x="350" y="245" text-anchor="middle" font-size="24">🌲🌲🌲</text>
+                <text x="350" y="285" text-anchor="middle" font-size="24">🌲🌲🌲</text>
+
+                <!-- NORTH - Private fenced plots (varying sizes and fertility) -->
+                <g class="tribe-region" data-tribe="north" style="cursor: pointer;">
+                    <rect x="240" y="15" width="220" height="130" fill="#3b82f6" opacity="0.2" rx="8"/>
+                    <text x="350" y="35" text-anchor="middle" fill="#3b82f6" font-size="14" font-weight="600">NORTH</text>
+                    <!-- Individual fenced plots - varying sizes and colors -->
+                    <!-- Large wealthy plot - lush green -->
+                    <rect x="250" y="42" width="85" height="55" fill="#4ade80" stroke="#8b5a2b" stroke-width="2" rx="2"/>
+                    <!-- Medium plot - decent land -->
+                    <rect x="340" y="42" width="50" height="40" fill="#6ee7a0" stroke="#8b5a2b" stroke-width="2" rx="2"/>
+                    <!-- Small poor plot - brown/dry -->
+                    <rect x="395" y="42" width="35" height="35" fill="#a3886e" stroke="#8b5a2b" stroke-width="2" rx="2"/>
+                    <!-- Medium-large plot - good land -->
+                    <rect x="250" y="102" width="70" height="38" fill="#5dd994" stroke="#8b5a2b" stroke-width="2" rx="2"/>
+                    <!-- Small struggling plot - yellowish -->
+                    <rect x="325" y="87" width="40" height="30" fill="#c4a574" stroke="#8b5a2b" stroke-width="2" rx="2"/>
+                    <!-- Tiny plot - poor brown -->
+                    <rect x="370" y="82" width="30" height="28" fill="#8b7355" stroke="#8b5a2b" stroke-width="2" rx="2"/>
+                    <!-- Medium plot -->
+                    <rect x="405" y="82" width="45" height="50" fill="#7dd3a3" stroke="#8b5a2b" stroke-width="2" rx="2"/>
+                    <!-- Houses & sheep varying amounts -->
+                    <text x="280" y="65" font-size="14">🏠</text><text x="275" y="88" font-size="10">🐑🐑🐑🐑🐑🐑</text>
+                    <text x="352" y="62" font-size="12">🏠</text><text x="350" y="77" font-size="8">🐑🐑🐑</text>
+                    <text x="402" y="60" font-size="10">🏠</text><text x="403" y="72" font-size="6">🐑</text>
+                    <text x="272" y="118" font-size="12">🏠</text><text x="270" y="133" font-size="8">🐑🐑🐑🐑</text>
+                    <text x="335" y="100" font-size="10">🏠</text><text x="335" y="112" font-size="6">🐑🐑</text>
+                    <text x="377" y="95" font-size="9">🏠</text><text x="377" y="105" font-size="5">🐑</text>
+                    <text x="418" y="100" font-size="12">🏠</text><text x="415" y="122" font-size="8">🐑🐑🐑🐑🐑</text>
+                </g>
+
+                <!-- SOUTH - Communal, equal distribution -->
+                <g class="tribe-region" data-tribe="south" style="cursor: pointer;">
+                    <rect x="240" y="375" width="220" height="130" fill="#ef4444" opacity="0.2" rx="8"/>
+                    <text x="350" y="500" text-anchor="middle" fill="#ef4444" font-size="14" font-weight="600">SOUTH</text>
+                    <!-- One big commons -->
+                    <rect x="255" y="388" width="190" height="95" fill="#4ade80" stroke="#4ade80" stroke-width="2" rx="4"/>
+                    <!-- Council hall in center -->
+                    <text x="340" y="430" font-size="20">🏛️</text>
+                    <!-- Houses around edges, sheep distributed evenly -->
+                    <text x="270" y="410" font-size="12">🏠</text><text x="270" y="425" font-size="8">🐑🐑</text>
+                    <text x="300" y="455" font-size="12">🏠</text><text x="300" y="470" font-size="8">🐑🐑</text>
+                    <text x="380" y="410" font-size="12">🏠</text><text x="380" y="425" font-size="8">🐑🐑</text>
+                    <text x="410" y="455" font-size="12">🏠</text><text x="410" y="470" font-size="8">🐑🐑</text>
+                </g>
+
+                <!-- WEST - Family-size based -->
+                <g class="tribe-region" data-tribe="west" style="cursor: pointer;">
+                    <rect x="10" y="185" width="200" height="150" fill="#f59e0b" opacity="0.2" rx="8"/>
+                    <text x="110" y="205" text-anchor="middle" fill="#f59e0b" font-size="14" font-weight="600">WEST</text>
+                    <!-- Common pasture -->
+                    <rect x="20" y="215" width="180" height="110" fill="#4ade80" rx="4"/>
+                    <!-- Families with different sizes = different sheep -->
+                    <text x="45" y="240" font-size="12">🏠</text>
+                    <text x="35" y="255" font-size="8">👨‍👩‍👧‍👦</text>
+                    <text x="35" y="270" font-size="8">🐑🐑🐑🐑</text>
+
+                    <text x="115" y="240" font-size="12">🏠</text>
+                    <text x="108" y="255" font-size="8">👫</text>
+                    <text x="108" y="270" font-size="8">🐑🐑</text>
+
+                    <text x="165" y="240" font-size="12">🏠</text>
+                    <text x="150" y="255" font-size="8">👨‍👩‍👧‍👦👶</text>
+                    <text x="150" y="270" font-size="8">🐑🐑🐑🐑🐑</text>
+
+                    <text x="80" y="295" font-size="12">🏠</text>
+                    <text x="70" y="310" font-size="8">👨‍👩‍👧</text>
+                    <text x="70" y="322" font-size="8">🐑🐑🐑</text>
+                </g>
+
+                <!-- EAST - Equal shares regulated -->
+                <g class="tribe-region" data-tribe="east" style="cursor: pointer;">
+                    <rect x="490" y="185" width="200" height="150" fill="#10b981" opacity="0.2" rx="8"/>
+                    <text x="590" y="205" text-anchor="middle" fill="#10b981" font-size="14" font-weight="600">EAST</text>
+                    <!-- Common pasture with grid overlay suggesting regulation -->
+                    <rect x="500" y="215" width="180" height="110" fill="#4ade80" rx="4"/>
+                    <!-- Equal plots, equal sheep -->
+                    <rect x="505" y="220" width="55" height="50" fill="none" stroke="#047857" stroke-width="1" stroke-dasharray="3,3"/>
+                    <rect x="565" y="220" width="55" height="50" fill="none" stroke="#047857" stroke-width="1" stroke-dasharray="3,3"/>
+                    <rect x="625" y="220" width="50" height="50" fill="none" stroke="#047857" stroke-width="1" stroke-dasharray="3,3"/>
+                    <rect x="505" y="275" width="55" height="45" fill="none" stroke="#047857" stroke-width="1" stroke-dasharray="3,3"/>
+                    <rect x="565" y="275" width="55" height="45" fill="none" stroke="#047857" stroke-width="1" stroke-dasharray="3,3"/>
+                    <rect x="625" y="275" width="50" height="45" fill="none" stroke="#047857" stroke-width="1" stroke-dasharray="3,3"/>
+
+                    <text x="520" y="245" font-size="12">🏠</text><text x="520" y="262" font-size="8">🐑🐑🐑</text>
+                    <text x="580" y="245" font-size="12">🏠</text><text x="580" y="262" font-size="8">🐑🐑🐑</text>
+                    <text x="640" y="245" font-size="12">🏠</text><text x="640" y="262" font-size="8">🐑🐑🐑</text>
+                    <text x="520" y="295" font-size="12">🏠</text><text x="520" y="312" font-size="8">🐑🐑🐑</text>
+                    <text x="580" y="295" font-size="12">🏠</text><text x="580" y="312" font-size="8">🐑🐑🐑</text>
+                    <text x="640" y="295" font-size="12">🏠</text><text x="640" y="312" font-size="8">🐑🐑🐑</text>
+                </g>
+            </svg>
+        </div>
+
+        <div class="info-section" id="infoSection">
+            <div class="info-title" id="infoTitle">The Parable</div>
+            <div class="info-text" id="infoText">
+                <p>Imagine a world with four neighboring tribes, each living on a common pasture surrounding a central forest. Each tribe has developed its own way of organizing society.</p>
+                <p>They all face the same fundamental challenge: <em>how should resources be shared among members?</em></p>
+                <p>Click on any tribe to learn about their moral and economic philosophy.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tribes = {
+            north: {
+                title: "The Northerners",
+                color: "#3b82f6",
+                description: "Each family has its own plot of land, surrounded by a fence. Some herders are wiser and more industrious, accumulating surplus to purchase additional land. Others possess substantial holdings through inheritance. The elders primarily ensure that herders keep their promises and respect one another's property.",
+                traits: ["Private Property", "Individual Liberty", "Minimal Government", "Market Economy"],
+                outcome: "Each year, some Northerners die in winter for want of food and warmth. Yet most families have prospered, with vast differences in wealth."
+            },
+            south: {
+                title: "The Southerners",
+                color: "#ef4444",
+                description: "Their council of elders is very busy managing the herd, assigning work, and distributing resources equally among members. While some members are wiser and more industrious than others, the tribe maintains stability through social pressure and collective values.",
+                traits: ["Collective Ownership", "Equal Distribution", "Strong Government", "Basic Security"],
+                outcome: "In the South no one has ever died in winter for want of food or warmth. Though residents achieve less individual prosperity than northern counterparts."
+            },
+            east: {
+                title: "The Easterners",
+                color: "#10b981",
+                description: "A tribe of herders raises sheep on a common pasture. Here the rule is simple: Each family gets the same number of sheep. Families send representatives to a council of elders, which governs the commons and makes difficult decisions when families try to game the system.",
+                traits: ["Regulated Commons", "Democratic Council", "Equal Shares", "Rule Enforcement"],
+                outcome: "Despite challenges like families breeding larger sheep or poisoning neighbors' flocks, the Eastern tribe has survived, as its families have prospered, some more than others."
+            },
+            west: {
+                title: "The Westerners",
+                color: "#f59e0b",
+                description: "Herders share a common pasture, but the size of a family's flock is determined by the family's size. The council of elders navigates tensions when one family has twelve children while another loses five of six children to illness.",
+                traits: ["Needs-Based", "Common Resources", "Family Units", "Situational Justice"],
+                outcome: "Despite competing interests within the group, the Western tribe has survived, as its families have prospered, some more than others."
+            }
+        };
+
+        function selectTribe(tribeKey) {
+            const tribe = tribes[tribeKey];
+
+            // Update active states
+            document.querySelectorAll('.tribe-region').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.tribe-region[data-tribe="${tribeKey}"]`).classList.add('active');
+
+            // Update sidebar
+            document.getElementById('infoTitle').textContent = tribe.title;
+            document.getElementById('infoTitle').style.color = tribe.color;
+            document.getElementById('infoText').innerHTML = `
+                <p>${tribe.description}</p>
+                <div class="info-traits">
+                    ${tribe.traits.map(t => `<span class="trait" style="border: 1px solid ${tribe.color};">${t}</span>`).join('')}
+                </div>
+                <div class="info-outcome">${tribe.outcome}</div>
+            `;
+        }
+
+        // Add click handlers for SVG regions
+        document.querySelectorAll('.tribe-region[data-tribe]').forEach(el => {
+            el.addEventListener('click', () => selectTribe(el.dataset.tribe));
+        });
+    </script>
+</body>
+</html>

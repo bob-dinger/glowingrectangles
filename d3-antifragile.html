@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragile, Resilient, Antifragile</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        #container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+        }
+        .panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .panel-title {
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .panel-desc {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+            max-width: 280px;
+            height: 36px;
+        }
+        canvas {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        button {
+            margin-top: 15px;
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #2563EB;
+        }
+        button:disabled {
+            background-color: #4B5563;
+            cursor: not-allowed;
+        }
+        .status {
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 8px;
+            height: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fragile → Resilient → Antifragile</h1>
+    <p class="subtitle">How systems respond to stress and volatility</p>
+
+    <div id="container">
+        <!-- Fragile Panel -->
+        <div class="panel">
+            <div class="panel-title" style="color: #E53E3E;">Fragile</div>
+            <div class="panel-desc">Harmed by volatility. Breaks under pressure and stays broken.</div>
+            <canvas id="fragile" width="300" height="400"></canvas>
+            <button id="fragile-btn">Drop It</button>
+            <div class="status" id="fragile-status"></div>
+        </div>
+
+        <!-- Resilient Panel -->
+        <div class="panel">
+            <div class="panel-title" style="color: #38A169;">Resilient</div>
+            <div class="panel-desc">Absorbs stress. Returns to original state.</div>
+            <canvas id="resilient" width="300" height="400"></canvas>
+            <button id="resilient-btn">Drop It</button>
+            <div class="status" id="resilient-status"></div>
+        </div>
+
+        <!-- Antifragile Panel -->
+        <div class="panel">
+            <div class="panel-title" style="color: #805AD5;">Antifragile</div>
+            <div class="panel-desc">Gains from volatility. Stress makes it stronger.</div>
+            <canvas id="antifragile" width="300" height="400"></canvas>
+            <button id="antifragile-btn">Drop It</button>
+            <div class="status" id="antifragile-status">Drops: 0</div>
+        </div>
+    </div>
+
+    <script>
+        const { Engine, Render, Runner, Bodies, Body, Composite, Constraint, Events, Vector } = Matter;
+
+        const width = 300;
+        const height = 400;
+
+        // Helper: Create a triangle body using vertices for precise positioning
+        function createTriangle(cx, cy, sideLength, pointUp, options) {
+            const h = sideLength * Math.sqrt(3) / 2;
+
+            let vertices;
+            if (pointUp) {
+                vertices = [
+                    { x: cx, y: cy - h * 2/3 },
+                    { x: cx + sideLength/2, y: cy + h/3 },
+                    { x: cx - sideLength/2, y: cy + h/3 }
+                ];
+            } else {
+                vertices = [
+                    { x: cx, y: cy + h * 2/3 },
+                    { x: cx - sideLength/2, y: cy - h/3 },
+                    { x: cx + sideLength/2, y: cy - h/3 }
+                ];
+            }
+
+            return Bodies.fromVertices(cx, cy, vertices, options);
+        }
+
+        // ==================== FRAGILE ====================
+        const fragileEngine = Engine.create();
+        const fragileRender = Render.create({
+            element: document.querySelector('.panel:nth-child(1)'),
+            canvas: document.getElementById('fragile'),
+            engine: fragileEngine,
+            options: {
+                width: width,
+                height: height,
+                wireframes: false,
+                background: '#0a0a0a'
+            }
+        });
+
+        // Ground
+        const fragileGround = Bodies.rectangle(150, 385, 300, 30, {
+            isStatic: true,
+            render: { fillStyle: '#333' }
+        });
+        // Walls to keep pieces visible
+        const fragileWallL = Bodies.rectangle(-10, 200, 20, 400, { isStatic: true, render: { fillStyle: '#333' } });
+        const fragileWallR = Bodies.rectangle(310, 200, 20, 400, { isStatic: true, render: { fillStyle: '#333' } });
+        Composite.add(fragileEngine.world, [fragileGround, fragileWallL, fragileWallR]);
+
+        let fragileBody = [];
+        let fragileConstraints = [];
+        let fragileDropped = false;
+
+        function createFragileTriangle() {
+            const rows = 4;
+            const triSize = 28;
+            const h = triSize * Math.sqrt(3) / 2;
+            const centerX = 150;
+            const topY = 50;
+
+            fragileBody = [];
+            fragileConstraints = [];
+
+            // Create triangular tessellation
+            // Row 0 = top (1 up triangle), Row 1 = (2 up, 1 down), etc.
+            for (let row = 0; row < rows; row++) {
+                const numUp = row + 1;
+                const numDown = row;
+
+                // Up-pointing triangles in this row
+                for (let i = 0; i < numUp; i++) {
+                    const x = centerX + (i - row/2) * triSize;
+                    const y = topY + row * h + h * 2/3;
+
+                    const tri = createTriangle(x, y, triSize, true, {
+                        isStatic: true,
+                        render: { fillStyle: '#3B82F6' },
+                        friction: 0.6,
+                        restitution: 0.1
+                    });
+                    fragileBody.push(tri);
+                }
+
+                // Down-pointing triangles in this row (fills gaps)
+                for (let i = 0; i < numDown; i++) {
+                    const x = centerX + (i - (row-1)/2) * triSize;
+                    const y = topY + row * h + h/3;
+
+                    const tri = createTriangle(x, y, triSize, false, {
+                        isStatic: true,
+                        render: { fillStyle: '#3B82F6' },
+                        friction: 0.6,
+                        restitution: 0.1
+                    });
+                    fragileBody.push(tri);
+                }
+            }
+
+            // Create constraints between adjacent triangles
+            for (let i = 0; i < fragileBody.length; i++) {
+                for (let j = i + 1; j < fragileBody.length; j++) {
+                    const dist = Vector.magnitude(Vector.sub(fragileBody[i].position, fragileBody[j].position));
+                    if (dist < triSize * 1.2) {
+                        const constraint = Constraint.create({
+                            bodyA: fragileBody[i],
+                            bodyB: fragileBody[j],
+                            stiffness: 0.8,
+                            length: dist,
+                            render: { visible: false }
+                        });
+                        fragileConstraints.push(constraint);
+                    }
+                }
+            }
+
+            Composite.add(fragileEngine.world, fragileBody);
+            Composite.add(fragileEngine.world, fragileConstraints);
+        }
+
+        createFragileTriangle();
+
+        // Collision detection for fragile
+        Events.on(fragileEngine, 'collisionStart', (event) => {
+            event.pairs.forEach(pair => {
+                if (pair.bodyA === fragileGround || pair.bodyB === fragileGround) {
+                    fragileConstraints.forEach(c => {
+                        Composite.remove(fragileEngine.world, c);
+                    });
+                    fragileConstraints = [];
+                    document.getElementById('fragile-status').textContent = 'SHATTERED';
+                    document.getElementById('fragile-btn').textContent = 'Broken Forever';
+                    document.getElementById('fragile-btn').disabled = true;
+                }
+            });
+        });
+
+        document.getElementById('fragile-btn').addEventListener('click', function() {
+            if (fragileDropped) return;
+            fragileDropped = true;
+            this.disabled = true;
+            document.getElementById('fragile-status').textContent = 'Falling...';
+
+            fragileBody.forEach(piece => {
+                Body.setStatic(piece, false);
+            });
+        });
+
+        Render.run(fragileRender);
+        Runner.run(Runner.create(), fragileEngine);
+
+        // ==================== RESILIENT ====================
+        const resilientEngine = Engine.create();
+        const resilientRender = Render.create({
+            element: document.querySelector('.panel:nth-child(2)'),
+            canvas: document.getElementById('resilient'),
+            engine: resilientEngine,
+            options: {
+                width: width,
+                height: height,
+                wireframes: false,
+                background: '#0a0a0a'
+            }
+        });
+
+        // Ground and walls
+        const resilientGround = Bodies.rectangle(150, 385, 300, 30, {
+            isStatic: true,
+            render: { fillStyle: '#333' }
+        });
+        const resilientWallL = Bodies.rectangle(-10, 200, 20, 400, { isStatic: true, render: { fillStyle: '#333' } });
+        const resilientWallR = Bodies.rectangle(310, 200, 20, 400, { isStatic: true, render: { fillStyle: '#333' } });
+        Composite.add(resilientEngine.world, [resilientGround, resilientWallL, resilientWallR]);
+
+        // Single solid triangle - very bouncy
+        const resilientTri = Bodies.polygon(150, 100, 3, 45, {
+            isStatic: true,
+            restitution: 0.92,
+            friction: 0.01,
+            frictionAir: 0.001,
+            render: { fillStyle: '#38A169' }
+        });
+        Composite.add(resilientEngine.world, resilientTri);
+
+        let resilientDrops = 0;
+        let resilientSettled = false;
+
+        document.getElementById('resilient-btn').addEventListener('click', function() {
+            this.disabled = true;
+            document.getElementById('resilient-status').textContent = 'Falling...';
+            resilientSettled = false;
+
+            Body.setPosition(resilientTri, { x: 150, y: 100 });
+            Body.setVelocity(resilientTri, { x: (Math.random() - 0.5) * 3, y: 0 });
+            Body.setAngularVelocity(resilientTri, 0.15);
+            Body.setAngle(resilientTri, Math.PI / 6);
+            Body.setStatic(resilientTri, false);
+        });
+
+        Events.on(resilientEngine, 'afterUpdate', () => {
+            if (!Body.isStatic(resilientTri) && !resilientSettled) {
+                const velocity = resilientTri.velocity;
+                const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+                const angSpeed = Math.abs(resilientTri.angularVelocity);
+
+                if (speed < 0.1 && angSpeed < 0.01 && resilientTri.position.y > 280) {
+                    resilientSettled = true;
+                    setTimeout(() => {
+                        Body.setStatic(resilientTri, true);
+                        Body.setPosition(resilientTri, { x: 150, y: 100 });
+                        Body.setAngle(resilientTri, 0);
+                        resilientDrops++;
+                        document.getElementById('resilient-status').textContent = `Returned to original (${resilientDrops}x)`;
+                        document.getElementById('resilient-btn').disabled = false;
+                    }, 500);
+                }
+            }
+        });
+
+        Render.run(resilientRender);
+        Runner.run(Runner.create(), resilientEngine);
+
+        // ==================== ANTIFRAGILE ====================
+        const antifragileEngine = Engine.create();
+        const antifragileRender = Render.create({
+            element: document.querySelector('.panel:nth-child(3)'),
+            canvas: document.getElementById('antifragile'),
+            engine: antifragileEngine,
+            options: {
+                width: width,
+                height: height,
+                wireframes: false,
+                background: '#0a0a0a'
+            }
+        });
+
+        const antifragileGround = Bodies.rectangle(150, 385, 300, 30, {
+            isStatic: true,
+            render: { fillStyle: '#333' }
+        });
+        const antifragileWallL = Bodies.rectangle(-10, 200, 20, 400, { isStatic: true, render: { fillStyle: '#333' } });
+        const antifragileWallR = Bodies.rectangle(310, 200, 20, 400, { isStatic: true, render: { fillStyle: '#333' } });
+        Composite.add(antifragileEngine.world, [antifragileGround, antifragileWallL, antifragileWallR]);
+
+        let antifragileDrops = 0;
+        let antifragileBodies = [];
+        let antifragileConstraints = [];
+        let antifragileDropped = false;
+
+        function createAntifragileTriangle() {
+            antifragileBodies.forEach(b => Composite.remove(antifragileEngine.world, b));
+            antifragileConstraints.forEach(c => Composite.remove(antifragileEngine.world, c));
+            antifragileBodies = [];
+            antifragileConstraints = [];
+
+            // Fewer rows = stronger (4 -> 3 -> 2 -> 1)
+            const rows = Math.max(1, 4 - antifragileDrops);
+            const triSize = 28 + antifragileDrops * 8; // Gets bigger as it consolidates
+            const h = triSize * Math.sqrt(3) / 2;
+            const centerX = 150;
+            const topY = 50;
+
+            // Color intensifies
+            const intensity = Math.min(255, 128 + antifragileDrops * 35);
+            const color = `rgb(${intensity}, ${80 + antifragileDrops * 30}, ${213})`;
+
+            for (let row = 0; row < rows; row++) {
+                const numUp = row + 1;
+                const numDown = row;
+
+                // Up-pointing triangles
+                for (let i = 0; i < numUp; i++) {
+                    const x = centerX + (i - row/2) * triSize;
+                    const y = topY + row * h + h * 2/3;
+
+                    const tri = createTriangle(x, y, triSize, true, {
+                        isStatic: true,
+                        render: { fillStyle: color },
+                        friction: 0.4,
+                        restitution: 0.3 + antifragileDrops * 0.15
+                    });
+                    antifragileBodies.push(tri);
+                }
+
+                // Down-pointing triangles
+                for (let i = 0; i < numDown; i++) {
+                    const x = centerX + (i - (row-1)/2) * triSize;
+                    const y = topY + row * h + h/3;
+
+                    const tri = createTriangle(x, y, triSize, false, {
+                        isStatic: true,
+                        render: { fillStyle: color },
+                        friction: 0.4,
+                        restitution: 0.3 + antifragileDrops * 0.15
+                    });
+                    antifragileBodies.push(tri);
+                }
+            }
+
+            // Constraints get stronger each time
+            const stiffness = Math.min(1, 0.4 + antifragileDrops * 0.25);
+
+            for (let i = 0; i < antifragileBodies.length; i++) {
+                for (let j = i + 1; j < antifragileBodies.length; j++) {
+                    const dist = Vector.magnitude(Vector.sub(antifragileBodies[i].position, antifragileBodies[j].position));
+                    if (dist < triSize * 1.3) {
+                        const constraint = Constraint.create({
+                            bodyA: antifragileBodies[i],
+                            bodyB: antifragileBodies[j],
+                            stiffness: stiffness,
+                            length: dist,
+                            render: { visible: false }
+                        });
+                        antifragileConstraints.push(constraint);
+                    }
+                }
+            }
+
+            Composite.add(antifragileEngine.world, antifragileBodies);
+            Composite.add(antifragileEngine.world, antifragileConstraints);
+        }
+
+        createAntifragileTriangle();
+
+        let antifragileSettleCheck = null;
+
+        function dropAntifragile() {
+            antifragileDropped = true;
+            document.getElementById('antifragile-status').textContent = 'Falling...';
+
+            // On first drop, break constraints immediately like fragile
+            if (antifragileDrops === 0) {
+                // Remove constraints so it shatters
+                antifragileConstraints.forEach(c => Composite.remove(antifragileEngine.world, c));
+                antifragileConstraints = [];
+            }
+
+            antifragileBodies.forEach(piece => {
+                Body.setStatic(piece, false);
+            });
+
+            antifragileSettleCheck = setInterval(() => {
+                const allSlow = antifragileBodies.every(body => {
+                    const speed = Math.sqrt(body.velocity.x ** 2 + body.velocity.y ** 2);
+                    return speed < 0.5;
+                });
+
+                const allLow = antifragileBodies.every(body => body.position.y > 250);
+
+                if (allSlow && allLow) {
+                    clearInterval(antifragileSettleCheck);
+
+                    setTimeout(() => {
+                        antifragileBodies.forEach(b => Composite.remove(antifragileEngine.world, b));
+                        antifragileConstraints.forEach(c => Composite.remove(antifragileEngine.world, c));
+
+                        antifragileDrops++;
+
+                        if (antifragileDrops >= 4) {
+                            document.getElementById('antifragile-status').textContent = `Drops: ${antifragileDrops} - UNBREAKABLE`;
+                            document.getElementById('antifragile-btn').disabled = true;
+                            document.getElementById('antifragile-btn').textContent = 'Complete';
+                            antifragileDropped = false;
+                        } else {
+                            document.getElementById('antifragile-status').textContent = `Drops: ${antifragileDrops} - Rebuilding stronger...`;
+                            createAntifragileTriangle();
+
+                            // Auto-drop again after a short pause
+                            setTimeout(() => {
+                                dropAntifragile();
+                            }, 1000);
+                        }
+                    }, 600);
+                }
+            }, 100);
+        }
+
+        document.getElementById('antifragile-btn').addEventListener('click', function() {
+            if (antifragileDropped) return;
+            this.disabled = true;
+            dropAntifragile();
+        });
+
+        Render.run(antifragileRender);
+        Runner.run(Runner.create(), antifragileEngine);
+    </script>
+</body>
+</html>

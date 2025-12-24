@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Loudest 10% - Social Media Reality</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a12;
+            color: #fff;
+            font-family: 'Georgia', serif;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            padding-top: 50px;
+        }
+
+        .info-section {
+            width: 340px;
+            background: #0d0d18;
+            border-left: 1px solid #2a2a3a;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: #e8e0d0;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        #visualization {
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .viz-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding-top: 120px;
+        }
+
+        button {
+            background: linear-gradient(to bottom, #3a3a4a, #2a2a3a);
+            border: 1px solid #5a5a6a;
+            color: #d0d0e0;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(to bottom, #4a4a5a, #3a3a4a);
+            box-shadow: 0 0 15px rgba(100,100,150,0.3);
+        }
+
+        .outer-circle {
+            fill: none;
+            stroke: #333;
+            stroke-width: 2;
+        }
+
+        /* Info section styles */
+        .info-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #c0b8a8;
+        }
+
+        .stats-box {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .stat-large {
+            font-size: 2rem;
+            color: #e8a050;
+            font-weight: bold;
+        }
+
+        .stat-small {
+            font-size: 2rem;
+            color: #7090c0;
+            font-weight: bold;
+        }
+
+        .stats-label {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        .narrative-phase {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            border-left: 3px solid #333;
+            transition: all 0.6s ease;
+        }
+
+        .narrative-phase.active {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .narrative-phase h3 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            transition: color 0.6s ease;
+        }
+
+        .narrative-phase p {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            transition: color 0.6s ease;
+        }
+
+        .narrative-phase.active p {
+            color: #999;
+        }
+
+        #phase1 { border-left-color: #7090c0; }
+        #phase1 h3 { color: #7090c0; }
+
+        #phase2 { border-left-color: #e8a050; opacity: 0.3; }
+        #phase2 h3 { color: #e8a050; }
+
+        #phase3 { border-left-color: #c06040; opacity: 0.3; }
+        #phase3 h3 { color: #c06040; }
+
+        #phase1.active, #phase2.active, #phase3.active {
+            opacity: 1;
+        }
+
+        .divider {
+            height: 1px;
+            background: #2a2a3a;
+            margin: 20px 0;
+        }
+
+        .footnote {
+            margin-top: auto;
+            padding-top: 20px;
+            color: #555;
+            font-size: 0.8rem;
+            font-style: italic;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="viz-section">
+            <h1>The Loudest 10%</h1>
+            <p class="subtitle">How a vocal minority dominates social media</p>
+
+            <div class="viz-wrapper">
+                <div id="visualization"></div>
+
+                <div class="controls">
+                    <button id="startBtn">Watch It Happen</button>
+                    <button id="resetBtn">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-title">The Platform</div>
+
+            <div class="stats-box">
+                <span class="stat-large">10%</span> create<br>
+                <span class="stat-small">90%</span> consume
+                <div class="stats-label">Content creators vs. passive users</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="narrative-phase active" id="phase1">
+                <h3>1. We all start equal</h3>
+                <p>500 users join the platform. Everyone has the same voice, the same reach, the same tiny circle of influence.</p>
+            </div>
+
+            <div class="narrative-phase" id="phase2">
+                <h3>2. Some voices grow louder</h3>
+                <p>10% figure out the algorithm. They post more, engage more, grow their following. Their influence expands.</p>
+            </div>
+
+            <div class="narrative-phase" id="phase3">
+                <h3>3. They become the boundary</h3>
+                <p>The vocal minority now defines the conversation. They surround the silent majority. The 90% see the world through the lens of the 10%.</p>
+            </div>
+
+            <div class="footnote">
+                Research suggests that on most social platforms, roughly 10% of users generate 80-90% of all content. The silent majority experiences the platform through the filter of the vocal few.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 600;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const outerRadius = 260;
+
+        const totalCircles = 500;
+        const growingCount = Math.floor(totalCircles * 0.1);
+
+        const smallRadius = 5;
+        const largeRadius = 24;
+
+        let nodes = [];
+        let simulation = null;
+        let isTransformed = false;
+
+        const svg = d3.select("#visualization")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Outer boundary circle
+        svg.append("circle")
+            .attr("class", "outer-circle")
+            .attr("cx", centerX)
+            .attr("cy", centerY)
+            .attr("r", outerRadius);
+
+        // Create gradient definitions
+        const defs = svg.append("defs");
+
+        // Gradient for growing circles
+        const growingGradient = defs.append("radialGradient")
+            .attr("id", "growingGradient");
+        growingGradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "#ffd080");
+        growingGradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "#c07030");
+
+        // Gradient for small circles
+        const smallGradient = defs.append("radialGradient")
+            .attr("id", "smallGradient");
+        smallGradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "#90b0e0");
+        smallGradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "#4060a0");
+
+        function initializeNodes() {
+            nodes = [];
+
+            const growingIndices = new Set();
+            while (growingIndices.size < growingCount) {
+                growingIndices.add(Math.floor(Math.random() * totalCircles));
+            }
+
+            for (let i = 0; i < totalCircles; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const r = Math.sqrt(Math.random()) * (outerRadius - smallRadius - 10);
+
+                nodes.push({
+                    id: i,
+                    x: centerX + Math.cos(angle) * r,
+                    y: centerY + Math.sin(angle) * r,
+                    radius: smallRadius,
+                    targetRadius: smallRadius,
+                    isGrowing: growingIndices.has(i),
+                    atEdge: false
+                });
+            }
+        }
+
+        function createSimulation() {
+            simulation = d3.forceSimulation(nodes)
+                .force("collide", d3.forceCollide(d => d.radius + 1).strength(0.8).iterations(3))
+                .force("center", d3.forceCenter(centerX, centerY).strength(0.02))
+                .force("boundary", forceBoundary())
+                .force("radial", null)
+                .alphaDecay(0.01)
+                .on("tick", ticked);
+        }
+
+        function forceBoundary() {
+            return function(alpha) {
+                for (const node of nodes) {
+                    const dx = node.x - centerX;
+                    const dy = node.y - centerY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const maxDist = outerRadius - node.radius - 2;
+
+                    if (dist > maxDist) {
+                        const scale = maxDist / dist;
+                        node.x = centerX + dx * scale;
+                        node.y = centerY + dy * scale;
+                    }
+                }
+            };
+        }
+
+        function forceToEdge() {
+            return function(alpha) {
+                for (const node of nodes) {
+                    if (node.isGrowing) {
+                        const dx = node.x - centerX;
+                        const dy = node.y - centerY;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 1) {
+                            const angle = Math.random() * Math.PI * 2;
+                            node.vx += Math.cos(angle) * alpha * 5;
+                            node.vy += Math.sin(angle) * alpha * 5;
+                        } else {
+                            const pushStrength = alpha * 3;
+                            node.vx += (dx / dist) * pushStrength;
+                            node.vy += (dy / dist) * pushStrength;
+                        }
+                    }
+                }
+            };
+        }
+
+        function forceToCenter() {
+            return function(alpha) {
+                for (const node of nodes) {
+                    if (!node.isGrowing) {
+                        const dx = centerX - node.x;
+                        const dy = centerY - node.y;
+                        node.vx += dx * alpha * 0.03;
+                        node.vy += dy * alpha * 0.03;
+                    }
+                }
+            };
+        }
+
+        let circles;
+
+        function render() {
+            circles = svg.selectAll(".node")
+                .data(nodes, d => d.id)
+                .join("circle")
+                .attr("class", "node")
+                .attr("r", d => d.radius)
+                .attr("fill", d => d.isGrowing ? "url(#growingGradient)" : "url(#smallGradient)")
+                .attr("opacity", 0.85)
+                .attr("stroke", d => d.isGrowing ? "#ffd080" : "#6080b0")
+                .attr("stroke-width", 0.5);
+        }
+
+        function ticked() {
+            circles
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y)
+                .attr("r", d => d.radius);
+        }
+
+        function startTransformation() {
+            if (isTransformed) return;
+            isTransformed = true;
+            document.getElementById("startBtn").textContent = "Transforming...";
+
+            // Activate phase 2
+            setTimeout(() => {
+                document.getElementById("phase2").classList.add("active");
+            }, 500);
+
+            const growDuration = 2500;
+            const startTime = Date.now();
+
+            function animateGrowth() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / growDuration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                nodes.forEach(node => {
+                    if (node.isGrowing) {
+                        node.radius = smallRadius + (largeRadius - smallRadius) * eased;
+                        node.targetRadius = node.radius;
+                    }
+                });
+
+                simulation.force("collide", d3.forceCollide(d => d.radius + 1).strength(0.8).iterations(3));
+                simulation.alpha(0.5).restart();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateGrowth);
+                } else {
+                    startEdgePhase();
+                }
+            }
+
+            animateGrowth();
+        }
+
+        function startEdgePhase() {
+            // Activate phase 3
+            document.getElementById("phase3").classList.add("active");
+
+            simulation
+                .force("radial", forceToEdge())
+                .force("toCenter", forceToCenter())
+                .force("center", null)
+                .alpha(1)
+                .restart();
+
+            setTimeout(() => {
+                document.getElementById("startBtn").textContent = "This Is Social Media";
+            }, 3000);
+        }
+
+        function reset() {
+            isTransformed = false;
+            document.getElementById("startBtn").textContent = "Watch It Happen";
+            document.getElementById("phase2").classList.remove("active");
+            document.getElementById("phase3").classList.remove("active");
+
+            if (simulation) simulation.stop();
+
+            initializeNodes();
+            createSimulation();
+            render();
+            simulation.alpha(1).restart();
+        }
+
+        // Initialize
+        initializeNodes();
+        createSimulation();
+        render();
+
+        document.getElementById("startBtn").addEventListener("click", startTransformation);
+        document.getElementById("resetBtn").addEventListener("click", reset);
+    </script>
+</body>
+</html>

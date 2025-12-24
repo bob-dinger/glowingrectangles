@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uniformity vs. Diversity</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a12;
+            color: #fff;
+            font-family: 'Georgia', serif;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            padding-top: 40px;
+            overflow-y: auto;
+        }
+
+        .info-section {
+            width: 340px;
+            background: #0d0d18;
+            border-left: 1px solid #2a2a3a;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: #e8e0d0;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .viz-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .viz-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .viz-label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .viz-container {
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .viz-title {
+            font-size: 1.1rem;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .uniform-title { color: #8B5CF6; }
+        .diverse-title { color: #10B981; }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 1rem;
+        }
+
+        button {
+            background: linear-gradient(to bottom, #3a3a4a, #2a2a3a);
+            border: 1px solid #5a5a6a;
+            color: #d0d0e0;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(to bottom, #4a4a5a, #3a3a4a);
+            box-shadow: 0 0 15px rgba(100,100,150,0.3);
+        }
+
+        .info-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #c0b8a8;
+        }
+
+        .info-text {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .highlight-purple { color: #8B5CF6; font-weight: 600; }
+        .highlight-green { color: #10B981; font-weight: 600; }
+
+        .comparison-box {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .comparison-box h4 {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .comparison-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #1a1a2a;
+            font-size: 0.9rem;
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .comp-uniform { color: #8B5CF6; }
+        .comp-diverse { color: #10B981; }
+
+        .divider {
+            height: 1px;
+            background: #2a2a3a;
+            margin: 20px 0;
+        }
+
+        .key-insight {
+            background: rgba(232, 160, 80, 0.1);
+            border: 1px solid rgba(232, 160, 80, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .key-insight h4 {
+            color: #e8a050;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .key-insight p {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .footnote {
+            margin-top: auto;
+            padding-top: 20px;
+            color: #555;
+            font-size: 0.8rem;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        .bubble { stroke: #fff; stroke-width: 1; opacity: 0.9; }
+
+        .vs-connector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+            font-size: 1.5rem;
+            font-style: italic;
+            padding: 0 5px;
+            margin-top: 180px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="viz-section">
+            <h1>Two Extremes</h1>
+            <p class="subtitle">Uniformity and diversity as endpoints of a spectrum</p>
+
+            <div class="viz-row">
+                <div class="viz-box">
+                    <div class="viz-label">Uniformity</div>
+                    <div class="viz-container">
+                        <svg id="uniformViz" width="400" height="400"></svg>
+                    </div>
+                    <div class="viz-title uniform-title">Everything the same</div>
+                </div>
+
+                <div class="vs-connector">vs</div>
+
+                <div class="viz-box">
+                    <div class="viz-label">Diversity</div>
+                    <div class="viz-container">
+                        <svg id="diverseViz" width="400" height="400"></svg>
+                    </div>
+                    <div class="viz-title diverse-title">Everything different</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="reshuffleBtn">Reshuffle</button>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-title">The Spectrum of Sameness</div>
+
+            <p class="info-text">
+                These are the two extremes: <span class="highlight-purple">perfect uniformity</span> where everything is identical, and <span class="highlight-green">maximum diversity</span> where everything differs.
+            </p>
+
+            <p class="info-text">
+                Most real systems exist somewhere between these poles — and where they land matters enormously.
+            </p>
+
+            <div class="divider"></div>
+
+            <div class="comparison-box">
+                <h4>Uniformity</h4>
+                <div class="comparison-row">
+                    <span class="comp-uniform">Predictable</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comp-uniform">Efficient</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comp-uniform">Fragile to change</span>
+                </div>
+            </div>
+
+            <div class="comparison-box">
+                <h4>Diversity</h4>
+                <div class="comparison-row">
+                    <span class="comp-diverse">Adaptable</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comp-diverse">Resilient</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comp-diverse">Harder to coordinate</span>
+                </div>
+            </div>
+
+            <div class="key-insight">
+                <h4>The Tradeoff</h4>
+                <p>Uniformity optimizes for today's conditions. Diversity hedges against tomorrow's unknowns. The right balance depends on how stable your environment is.</p>
+            </div>
+
+            <div class="footnote">
+                Monocultures (crops, ideas, investments) are efficient until conditions change. Diverse systems sacrifice efficiency for survival across more scenarios.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uniformWidth = 400;
+        const uniformHeight = 400;
+        const diverseWidth = 400;
+        const diverseHeight = 400;
+
+        const uniformSvg = d3.select('#uniformViz');
+        const diverseSvg = d3.select('#diverseViz');
+
+        let uniformSimulation = null;
+        let diverseSimulation = null;
+
+        // Uniform distribution - all same size and color
+        function drawUniform() {
+            uniformSvg.selectAll('*').remove();
+
+            const numPoints = 80;
+            const uniformRadius = 14;
+
+            const nodes = Array.from({ length: numPoints }, (_, i) => ({
+                id: i,
+                radius: uniformRadius,
+                x: uniformWidth / 2 + (Math.random() - 0.5) * 150,
+                y: uniformHeight / 2 + (Math.random() - 0.5) * 150
+            }));
+
+            const bubbles = uniformSvg.selectAll('circle')
+                .data(nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'bubble')
+                .attr('r', d => d.radius)
+                .attr('fill', '#8B5CF6');
+
+            if (uniformSimulation) uniformSimulation.stop();
+
+            uniformSimulation = d3.forceSimulation(nodes)
+                .force('charge', d3.forceManyBody().strength(-20))
+                .force('x', d3.forceX(uniformWidth / 2).strength(0.05))
+                .force('y', d3.forceY(uniformHeight / 2).strength(0.05))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 2))
+                .on('tick', () => {
+                    bubbles.attr('cx', d => d.x).attr('cy', d => d.y);
+                });
+        }
+
+        // Diverse distribution - varied sizes and colors
+        function drawDiverse() {
+            diverseSvg.selectAll('*').remove();
+
+            const colors = ['#22C55E', '#84CC16', '#EAB308', '#F97316', '#EF4444', '#EC4899', '#A855F7', '#3B82F6', '#14B8A6'];
+            const numBubbles = 60;
+
+            const nodes = Array.from({ length: numBubbles }, (_, i) => ({
+                id: i,
+                radius: 8 + Math.random() * 18,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                x: diverseWidth / 2 + (Math.random() - 0.5) * 150,
+                y: diverseHeight / 2 + (Math.random() - 0.5) * 150
+            }));
+
+            const bubbles = diverseSvg.selectAll('circle')
+                .data(nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'bubble')
+                .attr('r', d => d.radius)
+                .attr('fill', d => d.color);
+
+            if (diverseSimulation) diverseSimulation.stop();
+
+            diverseSimulation = d3.forceSimulation(nodes)
+                .force('charge', d3.forceManyBody().strength(d => -Math.pow(d.radius, 1.5) * 0.4))
+                .force('x', d3.forceX(diverseWidth / 2).strength(0.05))
+                .force('y', d3.forceY(diverseHeight / 2).strength(0.05))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 2))
+                .on('tick', () => {
+                    bubbles.attr('cx', d => d.x).attr('cy', d => d.y);
+                });
+        }
+
+        function reshuffle() {
+            drawUniform();
+            drawDiverse();
+        }
+
+        document.getElementById('reshuffleBtn').addEventListener('click', reshuffle);
+
+        // Initial draw
+        drawUniform();
+        drawDiverse();
+    </script>
+</body>
+</html>

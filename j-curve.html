@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The J-Curve</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container { display: flex; height: 100vh; }
+        .graph-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+        }
+        .examples-section {
+            width: 320px;
+            background: #111118;
+            border-left: 1px solid #222;
+            padding: 40px 30px;
+            overflow-y: auto;
+        }
+        h1 { font-size: 28px; margin-bottom: 10px; color: #fff; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; }
+        h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 20px; }
+        .example-item {
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .example-item:hover { background: rgba(255,255,255,0.08); border-color: #333; }
+        .example-item.active { background: rgba(34, 197, 94, 0.15); border-color: #22C55E; }
+        .example-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+        .example-desc { font-size: 12px; color: #888; }
+        svg { overflow: visible; }
+        .curve-path { fill: none; stroke: #22C55E; stroke-width: 3; }
+        .axis-line { stroke: #333; stroke-width: 1; }
+        .axis-label { fill: #666; font-size: 12px; }
+        .phase-label { font-size: 16px; font-weight: 600; fill: #fff; opacity: 0; }
+        .phase-label.visible { opacity: 1; }
+        .dot { fill: #22C55E; stroke: #fff; stroke-width: 2; opacity: 0; }
+        .dot.visible { opacity: 1; }
+        .baseline { stroke: #444; stroke-width: 1; stroke-dasharray: 5,5; }
+        .instructions { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); color: #555; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="graph-section">
+            <h1>The J-Curve</h1>
+            <p class="subtitle">Things get worse before they get better</p>
+            <div id="graph"></div>
+            <p class="instructions">Click an example to see the journey</p>
+        </div>
+        <div class="examples-section">
+            <h2>Examples</h2>
+            <div class="example-item" data-example="startup">
+                <div class="example-title">Startup Investment</div>
+                <div class="example-desc">Burn cash before making returns</div>
+            </div>
+            <div class="example-item" data-example="reform">
+                <div class="example-title">Economic Reform</div>
+                <div class="example-desc">Short-term pain, long-term gain</div>
+            </div>
+            <div class="example-item" data-example="exercise">
+                <div class="example-title">Starting Exercise</div>
+                <div class="example-desc">Soreness before strength</div>
+            </div>
+            <div class="example-item" data-example="learning">
+                <div class="example-title">Learning New Skills</div>
+                <div class="example-desc">Confusion before clarity</div>
+            </div>
+            <div class="example-item" data-example="democracy">
+                <div class="example-title">Democratization</div>
+                <div class="example-desc">Instability before stability</div>
+            </div>
+            <div class="example-item" data-example="renovation">
+                <div class="example-title">Home Renovation</div>
+                <div class="example-desc">Destruction before beauty</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 450;
+        const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        // J-curve function
+        function jCurve(x) {
+            if (x < 0.4) {
+                return 0.5 - 0.4 * Math.sin(x * Math.PI / 0.4);
+            } else {
+                return 0.1 + 0.9 * Math.pow((x - 0.4) / 0.6, 1.5);
+            }
+        }
+
+        // Generate curve data
+        const curveData = [];
+        for (let i = 0; i <= 100; i++) {
+            const x = i / 100;
+            curveData.push({ x, y: jCurve(x) });
+        }
+
+        // Create SVG
+        const svg = d3.select('#graph')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const g = svg.append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Scales
+        const xScale = d3.scaleLinear().domain([0, 1]).range([0, innerWidth]);
+        const yScale = d3.scaleLinear().domain([0, 1]).range([innerHeight, 0]);
+
+        // Axes
+        g.append('line').attr('class', 'axis-line')
+            .attr('x1', 0).attr('y1', innerHeight).attr('x2', innerWidth).attr('y2', innerHeight);
+        g.append('line').attr('class', 'axis-line')
+            .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', innerHeight);
+
+        // Baseline (starting point)
+        g.append('line').attr('class', 'baseline')
+            .attr('x1', 0).attr('y1', yScale(0.5)).attr('x2', innerWidth).attr('y2', yScale(0.5));
+
+        g.append('text').attr('class', 'axis-label')
+            .attr('x', innerWidth / 2).attr('y', innerHeight + 45)
+            .attr('text-anchor', 'middle').text('Time');
+
+        g.append('text').attr('class', 'axis-label')
+            .attr('x', -innerHeight / 2).attr('y', -40)
+            .attr('text-anchor', 'middle').attr('transform', 'rotate(-90)').text('Performance / Value');
+
+        g.append('text').attr('fill', '#555').attr('font-size', '11px')
+            .attr('x', innerWidth - 5).attr('y', yScale(0.5) - 5)
+            .attr('text-anchor', 'end').text('Starting Point');
+
+        // Line generator
+        const line = d3.line()
+            .x(d => xScale(d.x))
+            .y(d => yScale(d.y))
+            .curve(d3.curveMonotoneX);
+
+        // Draw curve
+        g.append('path').datum(curveData).attr('class', 'curve-path').attr('d', line);
+
+        // Moving dot
+        const dot = g.append('circle').attr('class', 'dot').attr('r', 8);
+
+        // Phase label
+        const phaseLabel = g.append('text').attr('class', 'phase-label').attr('text-anchor', 'middle');
+
+        // Example phases
+        const examplePhases = {
+            startup: [
+                { range: [0, 0.15], label: 'Seed Investment' },
+                { range: [0.15, 0.35], label: 'Burning Cash' },
+                { range: [0.35, 0.45], label: 'Valley of Death' },
+                { range: [0.45, 0.7], label: 'Growth Phase' },
+                { range: [0.7, 1], label: 'Returns' }
+            ],
+            reform: [
+                { range: [0, 0.15], label: 'Status Quo' },
+                { range: [0.15, 0.35], label: 'Disruption' },
+                { range: [0.35, 0.45], label: 'Crisis Point' },
+                { range: [0.45, 0.7], label: 'Adjustment' },
+                { range: [0.7, 1], label: 'New Prosperity' }
+            ],
+            exercise: [
+                { range: [0, 0.15], label: 'Day 1 Enthusiasm' },
+                { range: [0.15, 0.35], label: 'Muscle Soreness' },
+                { range: [0.35, 0.45], label: 'Want to Quit' },
+                { range: [0.45, 0.7], label: 'Building Habit' },
+                { range: [0.7, 1], label: 'Peak Fitness' }
+            ],
+            learning: [
+                { range: [0, 0.15], label: 'Beginner Optimism' },
+                { range: [0.15, 0.35], label: 'Overwhelmed' },
+                { range: [0.35, 0.45], label: 'Impostor Syndrome' },
+                { range: [0.45, 0.7], label: 'Competence' },
+                { range: [0.7, 1], label: 'Mastery' }
+            ],
+            democracy: [
+                { range: [0, 0.15], label: 'Authoritarian Stability' },
+                { range: [0.15, 0.35], label: 'Revolution' },
+                { range: [0.35, 0.45], label: 'Chaos' },
+                { range: [0.45, 0.7], label: 'Institution Building' },
+                { range: [0.7, 1], label: 'Democratic Stability' }
+            ],
+            renovation: [
+                { range: [0, 0.15], label: 'Old but Functional' },
+                { range: [0.15, 0.35], label: 'Demo Day' },
+                { range: [0.35, 0.45], label: 'Living in Chaos' },
+                { range: [0.45, 0.7], label: 'Rebuilding' },
+                { range: [0.7, 1], label: 'Dream Home' }
+            ]
+        };
+
+        let currentAnimation = null;
+
+        function animateExample(exampleKey) {
+            if (currentAnimation) { currentAnimation.stop(); }
+
+            const phases = examplePhases[exampleKey];
+            const duration = 8000;
+            const startTime = Date.now();
+
+            dot.classed('visible', true);
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const x = progress;
+                const y = jCurve(x);
+
+                dot.attr('cx', xScale(x)).attr('cy', yScale(y));
+
+                const currentPhase = phases.find(p => x >= p.range[0] && x < p.range[1]) || phases[phases.length - 1];
+
+                phaseLabel
+                    .attr('x', xScale(x))
+                    .attr('y', yScale(y) - 20)
+                    .attr('class', 'phase-label visible')
+                    .text(currentPhase.label);
+
+                if (progress < 1) {
+                    currentAnimation.frameId = requestAnimationFrame(animate);
+                }
+            }
+
+            currentAnimation = {
+                frameId: requestAnimationFrame(animate),
+                stop: function() { cancelAnimationFrame(this.frameId); }
+            };
+        }
+
+        document.querySelectorAll('.example-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.example-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                animateExample(item.dataset.example);
+            });
+        });
+    </script>
+</body>
+</html>

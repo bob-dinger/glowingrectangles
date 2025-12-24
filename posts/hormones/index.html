@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hormones</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 { font-size: 32px; margin-bottom: 8px; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 40px; }
+
+        .hormone-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 15px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .hormone-card:hover {
+            border-color: #444;
+            transform: translateX(5px);
+        }
+
+        .hormone-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .hormone-info { flex: 1; }
+        .hormone-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .hormone-aka {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .hormone-desc {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        .hormone-detail {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+        .hormone-card.expanded .hormone-detail {
+            display: block;
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 13px;
+        }
+        .detail-label { color: #666; }
+        .detail-value { color: #fff; }
+    </style>
+</head>
+<body>
+    <a href="../../home.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <h1>Hormones</h1>
+        <p class="subtitle">Chemical messengers that control your body</p>
+
+        <div class="hormone-card" style="--color: #EF4444" onclick="this.classList.toggle('expanded')">
+            <div class="hormone-icon" style="background: rgba(239,68,68,0.2); color: #EF4444">⚡</div>
+            <div class="hormone-info">
+                <div class="hormone-name">Cortisol</div>
+                <div class="hormone-aka">The stress hormone</div>
+                <div class="hormone-desc">Wakes you up in the morning. Spikes when you're stressed. Too much = anxiety, weight gain.</div>
+                <div class="hormone-detail">
+                    <div class="detail-item"><span class="detail-label">Made in</span><span class="detail-value">Adrenal glands</span></div>
+                    <div class="detail-item"><span class="detail-label">Peak time</span><span class="detail-value">6-8 AM</span></div>
+                    <div class="detail-item"><span class="detail-label">Lowers with</span><span class="detail-value">Sleep, exercise, relaxation</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hormone-card" onclick="this.classList.toggle('expanded')">
+            <div class="hormone-icon" style="background: rgba(59,130,246,0.2); color: #3B82F6">🍬</div>
+            <div class="hormone-info">
+                <div class="hormone-name">Insulin</div>
+                <div class="hormone-aka">The blood sugar hormone</div>
+                <div class="hormone-desc">Lets cells absorb sugar from blood. Without it = diabetes. Spikes after eating carbs.</div>
+                <div class="hormone-detail">
+                    <div class="detail-item"><span class="detail-label">Made in</span><span class="detail-value">Pancreas</span></div>
+                    <div class="detail-item"><span class="detail-label">Triggered by</span><span class="detail-value">Eating (especially carbs)</span></div>
+                    <div class="detail-item"><span class="detail-label">Related to</span><span class="detail-value">Ozempic, GLP-1</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hormone-card" onclick="this.classList.toggle('expanded')">
+            <div class="hormone-icon" style="background: rgba(236,72,153,0.2); color: #EC4899">💕</div>
+            <div class="hormone-info">
+                <div class="hormone-name">Oxytocin</div>
+                <div class="hormone-aka">The love hormone</div>
+                <div class="hormone-desc">Released during hugs, sex, breastfeeding. Creates bonding and trust. Makes you feel connected.</div>
+                <div class="hormone-detail">
+                    <div class="detail-item"><span class="detail-label">Made in</span><span class="detail-value">Hypothalamus</span></div>
+                    <div class="detail-item"><span class="detail-label">Triggered by</span><span class="detail-value">Physical touch, eye contact</span></div>
+                    <div class="detail-item"><span class="detail-label">Also helps with</span><span class="detail-value">Childbirth, milk production</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hormone-card" onclick="this.classList.toggle('expanded')">
+            <div class="hormone-icon" style="background: rgba(34,197,94,0.2); color: #22C55E">😴</div>
+            <div class="hormone-info">
+                <div class="hormone-name">Melatonin</div>
+                <div class="hormone-aka">The sleep hormone</div>
+                <div class="hormone-desc">Makes you sleepy when it's dark. Screens suppress it. Take it to fix jet lag.</div>
+                <div class="hormone-detail">
+                    <div class="detail-item"><span class="detail-label">Made in</span><span class="detail-value">Pineal gland</span></div>
+                    <div class="detail-item"><span class="detail-label">Triggered by</span><span class="detail-value">Darkness</span></div>
+                    <div class="detail-item"><span class="detail-label">Blocked by</span><span class="detail-value">Blue light from screens</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hormone-card" onclick="this.classList.toggle('expanded')">
+            <div class="hormone-icon" style="background: rgba(251,191,36,0.2); color: #FBBF24">🎯</div>
+            <div class="hormone-info">
+                <div class="hormone-name">Dopamine</div>
+                <div class="hormone-aka">The reward hormone</div>
+                <div class="hormone-desc">Makes you feel good when you achieve something. Drives motivation. Social media hijacks it.</div>
+                <div class="hormone-detail">
+                    <div class="detail-item"><span class="detail-label">Made in</span><span class="detail-value">Brain (several areas)</span></div>
+                    <div class="detail-item"><span class="detail-label">Triggered by</span><span class="detail-value">Rewards, anticipation, novelty</span></div>
+                    <div class="detail-item"><span class="detail-label">Depleted by</span><span class="detail-value">Addiction, chronic stress</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hormone-card" onclick="this.classList.toggle('expanded')">
+            <div class="hormone-icon" style="background: rgba(249,115,22,0.2); color: #F97316">🍔</div>
+            <div class="hormone-info">
+                <div class="hormone-name">Ghrelin</div>
+                <div class="hormone-aka">The hunger hormone</div>
+                <div class="hormone-desc">Tells your brain you're hungry. Rises before meals. Falls after eating.</div>
+                <div class="hormone-detail">
+                    <div class="detail-item"><span class="detail-label">Made in</span><span class="detail-value">Stomach</span></div>
+                    <div class="detail-item"><span class="detail-label">Peaks</span><span class="detail-value">Before meals</span></div>
+                    <div class="detail-item"><span class="detail-label">Opposite of</span><span class="detail-value">Leptin (fullness)</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hormone-card" onclick="this.classList.toggle('expanded')">
+            <div class="hormone-icon" style="background: rgba(139,92,246,0.2); color: #8B5CF6">💪</div>
+            <div class="hormone-info">
+                <div class="hormone-name">Testosterone</div>
+                <div class="hormone-aka">The male hormone</div>
+                <div class="hormone-desc">Builds muscle, drives sex drive, competitive behavior. Both men and women have it.</div>
+                <div class="hormone-detail">
+                    <div class="detail-item"><span class="detail-label">Made in</span><span class="detail-value">Testes / Ovaries</span></div>
+                    <div class="detail-item"><span class="detail-label">Peaks at</span><span class="detail-value">Age 20, then declines</span></div>
+                    <div class="detail-item"><span class="detail-label">Boosted by</span><span class="detail-value">Exercise, sleep, competition</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hormone-card" onclick="this.classList.toggle('expanded')">
+            <div class="hormone-icon" style="background: rgba(20,184,166,0.2); color: #14B8A6">🌸</div>
+            <div class="hormone-info">
+                <div class="hormone-name">Estrogen</div>
+                <div class="hormone-aka">The female hormone</div>
+                <div class="hormone-desc">Regulates menstrual cycle, supports bone health, affects mood. Drops at menopause.</div>
+                <div class="hormone-detail">
+                    <div class="detail-item"><span class="detail-label">Made in</span><span class="detail-value">Ovaries (mainly)</span></div>
+                    <div class="detail-item"><span class="detail-label">Fluctuates</span><span class="detail-value">Throughout menstrual cycle</span></div>
+                    <div class="detail-item"><span class="detail-label">Drops at</span><span class="detail-value">Menopause (avg age 51)</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

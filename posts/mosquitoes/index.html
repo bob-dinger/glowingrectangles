@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Walk</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 { font-size: 32px; margin-bottom: 8px; }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .canvas-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        svg {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        svg:hover {
+            border-color: #3B82F6;
+        }
+
+        .start-dot {
+            fill: #22C55E;
+        }
+        .end-dot {
+            fill: #EF4444;
+        }
+
+        #walkPath {
+            fill: none;
+            stroke: #3B82F6;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.8;
+        }
+
+        .instruction {
+            color: #555;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 25px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 300;
+            color: #3B82F6;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #252525;
+            border-color: #3B82F6;
+        }
+        button.primary {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+
+        .explanation {
+            max-width: 400px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+        }
+        .explanation-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        .explanation-text {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <a href="../../home.html" class="back-link">← Back</a>
+
+    <h1>Random Walk</h1>
+    <p class="subtitle">Each step is a coin flip. Where do you end up?</p>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value" id="steps">0</div>
+            <div class="stat-label">Steps</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="distance">0</div>
+            <div class="stat-label">Distance from start</div>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <svg id="canvas" width="350" height="350" viewBox="0 0 350 350">
+            <circle cx="175" cy="175" r="3" class="start-dot"/>
+            <path id="walkPath" d=""/>
+            <circle id="endDot" cx="175" cy="175" r="4" class="end-dot" style="display: none;"/>
+        </svg>
+    </div>
+
+    <p class="instruction">Click the canvas or press the button</p>
+
+    <div class="controls">
+        <button class="primary" id="walkBtn">New Random Walk</button>
+        <button id="clearBtn">Clear</button>
+    </div>
+
+    <div class="explanation">
+        <div class="explanation-title">Why does this matter?</div>
+        <div class="explanation-text">
+            This is how molecules move in water, how animals forage for food, how stock prices fluctuate, and yes—how mosquitoes fly. Pure randomness creates surprisingly complex patterns. The distance from start grows with the square root of steps, not linearly.
+        </div>
+    </div>
+
+    <script>
+        const svg = document.getElementById('canvas');
+        const walkPath = document.getElementById('walkPath');
+        const endDot = document.getElementById('endDot');
+        const stepsEl = document.getElementById('steps');
+        const distanceEl = document.getElementById('distance');
+        const walkBtn = document.getElementById('walkBtn');
+        const clearBtn = document.getElementById('clearBtn');
+
+        const centerX = 175;
+        const centerY = 175;
+        const stepSize = 3;
+        const totalSteps = 1000;
+
+        let isAnimating = false;
+
+        function randomWalk() {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            // Clear previous
+            walkPath.setAttribute('d', '');
+            endDot.style.display = 'none';
+
+            let x = centerX;
+            let y = centerY;
+            let pathData = `M${x},${y}`;
+            const points = [{x, y}];
+
+            // Generate all steps
+            for (let i = 0; i < totalSteps; i++) {
+                // Random direction: up, down, left, or right
+                const direction = Math.floor(Math.random() * 4);
+                switch(direction) {
+                    case 0: y -= stepSize; break; // up
+                    case 1: y += stepSize; break; // down
+                    case 2: x -= stepSize; break; // left
+                    case 3: x += stepSize; break; // right
+                }
+                pathData += ` L${x},${y}`;
+                points.push({x, y});
+            }
+
+            // Animate the path
+            walkPath.setAttribute('d', pathData);
+            const pathLength = walkPath.getTotalLength();
+
+            walkPath.style.strokeDasharray = pathLength;
+            walkPath.style.strokeDashoffset = pathLength;
+
+            const duration = 3000; // 3 seconds
+            const startTime = performance.now();
+
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Ease out
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                walkPath.style.strokeDashoffset = pathLength * (1 - eased);
+
+                // Update stats
+                const currentStep = Math.floor(eased * totalSteps);
+                const currentPoint = points[currentStep] || points[points.length - 1];
+                const dist = Math.sqrt(
+                    Math.pow(currentPoint.x - centerX, 2) +
+                    Math.pow(currentPoint.y - centerY, 2)
+                );
+
+                stepsEl.textContent = currentStep;
+                distanceEl.textContent = Math.round(dist);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Show end dot
+                    endDot.setAttribute('cx', x);
+                    endDot.setAttribute('cy', y);
+                    endDot.style.display = 'block';
+                    isAnimating = false;
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function clear() {
+            walkPath.setAttribute('d', '');
+            walkPath.style.strokeDasharray = '';
+            walkPath.style.strokeDashoffset = '';
+            endDot.style.display = 'none';
+            stepsEl.textContent = '0';
+            distanceEl.textContent = '0';
+            isAnimating = false;
+        }
+
+        svg.addEventListener('click', randomWalk);
+        walkBtn.addEventListener('click', randomWalk);
+        clearBtn.addEventListener('click', clear);
+    </script>
+</body>
+</html>

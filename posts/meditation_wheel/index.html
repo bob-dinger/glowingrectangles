@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Scattered Mind</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.co/gsap@3/dist/gsap.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a12;
+            color: #fff;
+            font-family: 'Georgia', serif;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            padding-top: 40px;
+        }
+
+        .info-section {
+            width: 360px;
+            background: #0d0d18;
+            border-left: 1px solid #2a2a3a;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: #e8e0d0;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .controls {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        button {
+            background: linear-gradient(to bottom, #3a3a4a, #2a2a3a);
+            border: 1px solid #5a5a6a;
+            color: #d0d0e0;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(to bottom, #4a4a5a, #3a3a4a);
+            box-shadow: 0 0 15px rgba(100,100,150,0.3);
+        }
+
+        #wheelViz {
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+        }
+
+        .breath-slice {
+            fill: #4a9dff;
+        }
+
+        .thought-slice {
+            stroke: rgba(0,0,0,0.3);
+            stroke-width: 1;
+        }
+
+        .center-circle {
+            fill: #1a1a2a;
+        }
+
+        .center-text {
+            fill: #4a9dff;
+            font-size: 14px;
+            font-family: 'Georgia', serif;
+        }
+
+        .current-thought {
+            margin-top: 1.5rem;
+            text-align: center;
+            min-height: 60px;
+        }
+
+        .thought-label {
+            color: #666;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .thought-text {
+            color: #bbb;
+            font-size: 1.1rem;
+            font-style: italic;
+            transition: all 0.3s ease;
+        }
+
+        .thought-text.breathing {
+            color: #4a9dff;
+        }
+
+        .info-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #c0b8a8;
+        }
+
+        .info-text {
+            color: #888;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .info-text strong {
+            color: #bbb;
+        }
+
+        .highlight {
+            color: #4a9dff;
+        }
+
+        .divider {
+            height: 1px;
+            background: #2a2a3a;
+            margin: 20px 0;
+        }
+
+        .instruction-box {
+            background: rgba(74, 157, 255, 0.1);
+            border: 1px solid rgba(74, 157, 255, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .instruction-box h4 {
+            color: #4a9dff;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .instruction-box p {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .thought-list {
+            margin-top: 16px;
+        }
+
+        .thought-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #1a1a2a;
+            font-size: 0.9rem;
+        }
+
+        .thought-item:last-child {
+            border-bottom: none;
+        }
+
+        .thought-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .thought-name {
+            color: #888;
+        }
+
+        .footnote {
+            margin-top: auto;
+            padding-top: 20px;
+            color: #555;
+            font-size: 0.8rem;
+            font-style: italic;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="viz-section">
+            <h1>The Scattered Mind</h1>
+            <p class="subtitle">Why meditation is so hard</p>
+
+            <div class="controls">
+                <button id="startBtn">Start Meditating</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <svg id="wheelViz" width="500" height="500" viewBox="0 0 500 500"></svg>
+
+            <div class="current-thought">
+                <div class="thought-label">Current Focus</div>
+                <div class="thought-text" id="thoughtText">Click "Start Meditating" to begin</div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-title">The Wandering Mind</div>
+
+            <p class="info-text">
+                Try to focus on <span class="highlight">breathing</span>. That's all meditation asks. Simple, right?
+            </p>
+
+            <p class="info-text">
+                But watch what happens. Your mind <strong>refuses to stay still</strong>. It jumps to work, to that awkward thing you said, to dinner plans, to a song stuck in your head...
+            </p>
+
+            <div class="divider"></div>
+
+            <div class="instruction-box">
+                <h4>The Practice</h4>
+                <p>The goal isn't to stop thoughts. It's to <strong>notice</strong> when you've wandered and gently return to the breath. Again and again. That's the entire practice.</p>
+            </div>
+
+            <p class="info-text">
+                The wheel represents your attention. The <span class="highlight">blue slices</span> are your breath. Everything else is distraction. Watch how hard it is to stay centered.
+            </p>
+
+            <div class="thought-list">
+                <div class="thought-item">
+                    <div class="thought-dot" style="background: #4a9dff;"></div>
+                    <span class="thought-name">Breath - the anchor</span>
+                </div>
+                <div class="thought-item">
+                    <div class="thought-dot" style="background: #f87171;"></div>
+                    <span class="thought-name">Work stress</span>
+                </div>
+                <div class="thought-item">
+                    <div class="thought-dot" style="background: #fbbf24;"></div>
+                    <span class="thought-name">Random memories</span>
+                </div>
+                <div class="thought-item">
+                    <div class="thought-dot" style="background: #a78bfa;"></div>
+                    <span class="thought-name">Future worries</span>
+                </div>
+                <div class="thought-item">
+                    <div class="thought-dot" style="background: #34d399;"></div>
+                    <span class="thought-name">To-do lists</span>
+                </div>
+            </div>
+
+            <div class="footnote">
+                Studies show the average person's mind wanders 47% of the time. Meditation trains the muscle of attention - the more you practice returning to breath, the stronger it gets.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 500;
+        const height = 500;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = 200;
+        const sliceCount = 16;
+
+        const svg = d3.select("#wheelViz");
+
+        // Thought categories with colors
+        const thoughts = [
+            { name: "Breath", color: "#4a9dff", isBreath: true },
+            { name: "Breath", color: "#4a9dff", isBreath: true },
+            { name: "Work email", color: "#f87171", isBreath: false },
+            { name: "Dinner plans", color: "#34d399", isBreath: false },
+            { name: "That thing I said", color: "#fbbf24", isBreath: false },
+            { name: "Song stuck in head", color: "#a78bfa", isBreath: false },
+            { name: "Breath", color: "#4a9dff", isBreath: true },
+            { name: "Itch on nose", color: "#fb923c", isBreath: false },
+            { name: "Weekend plans", color: "#34d399", isBreath: false },
+            { name: "Am I doing this right?", color: "#fbbf24", isBreath: false },
+            { name: "Work deadline", color: "#f87171", isBreath: false },
+            { name: "Breath", color: "#4a9dff", isBreath: true },
+            { name: "Random memory", color: "#fbbf24", isBreath: false },
+            { name: "What's for lunch", color: "#34d399", isBreath: false },
+            { name: "Future worry", color: "#a78bfa", isBreath: false },
+            { name: "Phone notification?", color: "#f87171", isBreath: false }
+        ];
+
+        // Create wheel group
+        const wheelGroup = svg.append("g")
+            .attr("id", "wheel")
+            .attr("transform", `translate(${centerX}, ${centerY})`);
+
+        // Create pie layout
+        const pie = d3.pie()
+            .value(1)
+            .sort(null);
+
+        const arc = d3.arc()
+            .innerRadius(40)
+            .outerRadius(radius);
+
+        // Draw slices
+        const slices = wheelGroup.selectAll(".slice")
+            .data(pie(thoughts))
+            .enter()
+            .append("path")
+            .attr("class", d => d.data.isBreath ? "slice breath-slice" : "slice thought-slice")
+            .attr("d", arc)
+            .attr("fill", d => d.data.color)
+            .attr("opacity", 0.85);
+
+        // Center circle
+        wheelGroup.append("circle")
+            .attr("class", "center-circle")
+            .attr("r", 42)
+            .attr("cx", 0)
+            .attr("cy", 0);
+
+        wheelGroup.append("text")
+            .attr("class", "center-text")
+            .attr("text-anchor", "middle")
+            .attr("dy", 5)
+            .text("breathe");
+
+        // Pointer/indicator at top
+        svg.append("polygon")
+            .attr("points", `${centerX},${centerY - radius - 15} ${centerX - 10},${centerY - radius - 30} ${centerX + 10},${centerY - radius - 30}`)
+            .attr("fill", "#e8e0d0");
+
+        let isAnimating = false;
+        let timeline = null;
+
+        function getCurrentThought(rotation) {
+            // Normalize rotation to 0-360
+            let normalizedRotation = ((rotation % 360) + 360) % 360;
+            // Each slice is 22.5 degrees (360/16)
+            // The top is at 270 degrees in our coordinate system
+            let sliceAngle = 360 / sliceCount;
+            // Adjust for the pointer being at top
+            let adjustedRotation = (270 - normalizedRotation + 360) % 360;
+            let sliceIndex = Math.floor(adjustedRotation / sliceAngle) % sliceCount;
+            return thoughts[sliceIndex];
+        }
+
+        function updateThoughtDisplay(thought) {
+            const textEl = document.getElementById("thoughtText");
+            textEl.textContent = thought.name;
+            if (thought.isBreath) {
+                textEl.classList.add("breathing");
+            } else {
+                textEl.classList.remove("breathing");
+            }
+        }
+
+        function startMeditation() {
+            if (isAnimating) return;
+            isAnimating = true;
+            document.getElementById("startBtn").textContent = "Meditating...";
+
+            // Kill any existing animation
+            if (timeline) timeline.kill();
+
+            timeline = gsap.timeline({
+                onUpdate: function() {
+                    const rotation = gsap.getProperty("#wheel", "rotation");
+                    const thought = getCurrentThought(rotation);
+                    updateThoughtDisplay(thought);
+                }
+            });
+
+            // Simulate wandering mind - starts at breath, wanders, returns, wanders more...
+            // Set transform origin to center
+            gsap.set("#wheel", { transformOrigin: "center center" });
+
+            timeline
+                // Start centered on breath
+                .to("#wheel", { duration: 2, rotation: 0, ease: "power2.inOut" })
+                // Mind wanders to work
+                .to("#wheel", { duration: 1.5, rotation: -70, ease: "power1.out" })
+                .to("#wheel", { duration: 0.8, rotation: -70, ease: "none" })
+                // Try to return to breath
+                .to("#wheel", { duration: 1, rotation: -20, ease: "power2.inOut" })
+                // Wander again - random memory
+                .to("#wheel", { duration: 1.2, rotation: 100, ease: "power1.out" })
+                .to("#wheel", { duration: 0.5, rotation: 100, ease: "none" })
+                // Return to breath
+                .to("#wheel", { duration: 1.5, rotation: 45, ease: "power2.inOut" })
+                .to("#wheel", { duration: 1, rotation: 45, ease: "none" })
+                // Mind wanders to future worry
+                .to("#wheel", { duration: 1, rotation: -120, ease: "power1.out" })
+                .to("#wheel", { duration: 0.6, rotation: -120, ease: "none" })
+                // Back to breath
+                .to("#wheel", { duration: 1.2, rotation: 0, ease: "power2.inOut" })
+                // Another distraction
+                .to("#wheel", { duration: 0.8, rotation: 60, ease: "power1.out" })
+                // Quick return
+                .to("#wheel", { duration: 0.6, rotation: 22, ease: "power2.inOut" })
+                // Settle on breath
+                .to("#wheel", { duration: 1.5, rotation: 0, ease: "power2.inOut" })
+                .to("#wheel", { duration: 2, rotation: 0, ease: "none" });
+
+            timeline.eventCallback("onComplete", () => {
+                document.getElementById("startBtn").textContent = "That's Meditation";
+                isAnimating = false;
+            });
+        }
+
+        function reset() {
+            if (timeline) timeline.kill();
+            isAnimating = false;
+            gsap.set("#wheel", { rotation: 0, transformOrigin: "center center" });
+            document.getElementById("startBtn").textContent = "Start Meditating";
+            document.getElementById("thoughtText").textContent = "Click \"Start Meditating\" to begin";
+            document.getElementById("thoughtText").classList.remove("breathing");
+        }
+
+        document.getElementById("startBtn").addEventListener("click", startMeditation);
+        document.getElementById("resetBtn").addEventListener("click", reset);
+    </script>
+</body>
+</html>

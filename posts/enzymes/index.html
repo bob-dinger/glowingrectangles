@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enzymes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 { font-size: 32px; margin-bottom: 8px; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 20px; }
+
+        .intro {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        .intro p {
+            color: #888;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .enzyme-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 12px;
+            text-align: left;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .enzyme-visual {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            min-width: 80px;
+        }
+        .food-in {
+            font-size: 28px;
+        }
+        .arrow {
+            color: #444;
+            font-size: 16px;
+        }
+        .food-out {
+            font-size: 20px;
+            display: flex;
+            gap: 3px;
+        }
+
+        .enzyme-info { flex: 1; }
+        .enzyme-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .enzyme-suffix {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .enzyme-desc {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.5;
+        }
+        .enzyme-location {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <a href="../../home.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <h1>Enzymes</h1>
+        <p class="subtitle">Biological scissors that break down food</p>
+
+        <div class="intro">
+            <p>Enzymes are proteins that speed up chemical reactions. Most digestive enzymes end in <strong style="color:#3B82F6">-ase</strong> and are named after what they break down: lip<strong style="color:#3B82F6">ase</strong> breaks down lipids (fats), prote<strong style="color:#3B82F6">ase</strong> breaks down proteins.</p>
+        </div>
+
+        <div class="enzyme-card">
+            <div class="enzyme-visual">
+                <div class="food-in">🍞</div>
+                <div class="arrow">↓</div>
+                <div class="food-out">🔹🔹🔹</div>
+            </div>
+            <div class="enzyme-info">
+                <div class="enzyme-name">Amylase</div>
+                <div class="enzyme-suffix">amyl (starch) + ase</div>
+                <div class="enzyme-desc">Breaks down starches into sugars. Starts working in your mouth - that's why bread tastes sweet if you chew it long enough.</div>
+                <div class="enzyme-location">📍 Mouth (saliva) & Pancreas</div>
+            </div>
+        </div>
+
+        <div class="enzyme-card">
+            <div class="enzyme-visual">
+                <div class="food-in">🥩</div>
+                <div class="arrow">↓</div>
+                <div class="food-out">🔸🔸🔸</div>
+            </div>
+            <div class="enzyme-info">
+                <div class="enzyme-name">Protease</div>
+                <div class="enzyme-suffix">protein + ase</div>
+                <div class="enzyme-desc">Breaks down proteins into amino acids. Your body rebuilds these into muscles, skin, and other tissues.</div>
+                <div class="enzyme-location">📍 Stomach & Small intestine</div>
+            </div>
+        </div>
+
+        <div class="enzyme-card">
+            <div class="enzyme-visual">
+                <div class="food-in">🧈</div>
+                <div class="arrow">↓</div>
+                <div class="food-out">💧💧💧</div>
+            </div>
+            <div class="enzyme-info">
+                <div class="enzyme-name">Lipase</div>
+                <div class="enzyme-suffix">lipid (fat) + ase</div>
+                <div class="enzyme-desc">Breaks down fats into fatty acids. Without it, fat passes through undigested (not pleasant).</div>
+                <div class="enzyme-location">📍 Pancreas & Small intestine</div>
+            </div>
+        </div>
+
+        <div class="enzyme-card">
+            <div class="enzyme-visual">
+                <div class="food-in">🥛</div>
+                <div class="arrow">↓</div>
+                <div class="food-out">🔹🔹</div>
+            </div>
+            <div class="enzyme-info">
+                <div class="enzyme-name">Lactase</div>
+                <div class="enzyme-suffix">lactose + ase</div>
+                <div class="enzyme-desc">Breaks down lactose (milk sugar). If you don't make enough, you're lactose intolerant.</div>
+                <div class="enzyme-location">📍 Small intestine</div>
+            </div>
+        </div>
+
+        <div class="enzyme-card">
+            <div class="enzyme-visual">
+                <div class="food-in">🧬</div>
+                <div class="arrow">↓</div>
+                <div class="food-out">🧬🧬</div>
+            </div>
+            <div class="enzyme-info">
+                <div class="enzyme-name">Telomerase</div>
+                <div class="enzyme-suffix">telomere + ase</div>
+                <div class="enzyme-desc">Rebuilds the protective caps on your DNA. More active = cells can divide longer. Linked to aging research.</div>
+                <div class="enzyme-location">📍 Cells (especially stem cells)</div>
+            </div>
+        </div>
+
+        <div class="enzyme-card">
+            <div class="enzyme-visual">
+                <div class="food-in">🍺</div>
+                <div class="arrow">↓</div>
+                <div class="food-out">💨</div>
+            </div>
+            <div class="enzyme-info">
+                <div class="enzyme-name">Alcohol Dehydrogenase</div>
+                <div class="enzyme-suffix">dehydrogenase = removes hydrogen</div>
+                <div class="enzyme-desc">Breaks down alcohol in your liver. Some people have less of it (Asian flush). Determines how fast you sober up.</div>
+                <div class="enzyme-location">📍 Liver</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Law Sphere</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0f; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; display: flex; overflow: hidden; }
+        .back-link { position: fixed; top: 20px; left: 20px; color: #666; text-decoration: none; font-size: 13px; z-index: 10; }
+        .back-link:hover { color: #fff; }
+        .left { width: 40%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; border-right: 1px solid #222; }
+        .right { width: 60%; display: flex; justify-content: center; align-items: center; }
+        .curve-title { font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+        .curve-container { position: relative; width: 100%; max-width: 350px; }
+        #curveCanvas { width: 100%; border: 1px solid #222; border-radius: 8px; }
+        .legend { display: flex; flex-direction: column; gap: 12px; margin-top: 30px; width: 100%; max-width: 350px; }
+        .legend-item { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .legend-label { color: #888; }
+        .legend-pct { margin-left: auto; color: #555; font-family: monospace; }
+        .insight { margin-top: 25px; padding: 15px; background: #111; border: 1px solid #222; border-radius: 8px; max-width: 350px; font-size: 13px; color: #888; line-height: 1.5; }
+        .insight em { color: #EF4444; font-style: normal; }
+    </style>
+</head>
+<body>
+    <a href="home.html" class="back-link">← Back</a>
+    <div class="left">
+        <div class="curve-title">Power Law / Pareto</div>
+        <div class="curve-container">
+            <canvas id="curveCanvas" width="350" height="250"></canvas>
+        </div>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #EF4444;"></div>
+                <span class="legend-label">The Giants</span>
+                <span class="legend-pct">1%</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #F97316;"></div>
+                <span class="legend-label">The Large</span>
+                <span class="legend-pct">4%</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #EAB308;"></div>
+                <span class="legend-label">The Medium</span>
+                <span class="legend-pct">15%</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #666;"></div>
+                <span class="legend-label">The Long Tail</span>
+                <span class="legend-pct">80%</span>
+            </div>
+        </div>
+        <div class="insight">
+            <em>Winner takes most.</em> Wealth. City sizes. Website traffic. Book sales. Earthquake magnitudes. A few giants dominate while most remain tiny.
+        </div>
+    </div>
+    <div class="right">
+        <canvas id="sphereCanvas"></canvas>
+    </div>
+
+    <script>
+        const curveCanvas = document.getElementById('curveCanvas');
+        const curveCtx = curveCanvas.getContext('2d');
+        const sphereCanvas = document.getElementById('sphereCanvas');
+        const sphereCtx = sphereCanvas.getContext('2d');
+
+        // Power law: y = x^(-alpha)
+        function powerLaw(x, alpha = 1.5) {
+            return Math.pow(1 - x + 0.01, alpha);
+        }
+
+        function getColorAndSize(rank, total) {
+            const percentile = rank / total;
+            if (percentile <= 0.01) return { color: '#EF4444', size: 25 + Math.random() * 15 };  // Top 1%
+            if (percentile <= 0.05) return { color: '#F97316', size: 12 + Math.random() * 8 };   // Top 5%
+            if (percentile <= 0.20) return { color: '#EAB308', size: 5 + Math.random() * 4 };    // Top 20%
+            return { color: '#666', size: 1.5 + Math.random() * 2 };                              // Bottom 80%
+        }
+
+        let sphereWidth, sphereHeight, centerX, centerY, radius;
+
+        function resizeSphere() {
+            const container = document.querySelector('.right');
+            sphereWidth = container.clientWidth;
+            sphereHeight = container.clientHeight;
+            sphereCanvas.width = sphereWidth;
+            sphereCanvas.height = sphereHeight;
+            centerX = sphereWidth / 2;
+            centerY = sphereHeight / 2;
+            radius = Math.min(sphereWidth, sphereHeight) * 0.38;
+        }
+        resizeSphere();
+        window.addEventListener('resize', resizeSphere);
+
+        const numPoints = 200;
+        const points = [];
+
+        for (let i = 0; i < numPoints; i++) {
+            const phi = Math.acos(1 - 2 * (i + 0.5) / numPoints);
+            const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+            const rank = i + 1;
+            const { color, size } = getColorAndSize(rank, numPoints);
+
+            points.push({ phi, theta, rank, color, size });
+        }
+
+        let time = 0;
+
+        function drawCurve() {
+            const w = curveCanvas.width, h = curveCanvas.height;
+            const padding = 30, graphW = w - padding * 2, graphH = h - padding * 2;
+
+            curveCtx.fillStyle = '#0a0a0f';
+            curveCtx.fillRect(0, 0, w, h);
+
+            // Draw power law curve
+            curveCtx.lineWidth = 3;
+            curveCtx.beginPath();
+
+            for (let t = 0; t <= 1; t += 0.01) {
+                const x = padding + t * graphW;
+                const y = h - padding - powerLaw(t) * graphH * 0.9;
+
+                if (t === 0) curveCtx.moveTo(x, y);
+                else curveCtx.lineTo(x, y);
+            }
+
+            const gradient = curveCtx.createLinearGradient(padding, 0, w - padding, 0);
+            gradient.addColorStop(0, '#EF4444');
+            gradient.addColorStop(0.05, '#F97316');
+            gradient.addColorStop(0.2, '#EAB308');
+            gradient.addColorStop(0.4, '#666');
+            curveCtx.strokeStyle = gradient;
+            curveCtx.stroke();
+
+            // Fill under curve
+            curveCtx.lineTo(w - padding, h - padding);
+            curveCtx.lineTo(padding, h - padding);
+            curveCtx.closePath();
+            curveCtx.fillStyle = 'rgba(239, 68, 68, 0.1)';
+            curveCtx.fill();
+
+            // Axes
+            curveCtx.strokeStyle = '#333';
+            curveCtx.lineWidth = 1;
+            curveCtx.beginPath();
+            curveCtx.moveTo(padding, padding);
+            curveCtx.lineTo(padding, h - padding);
+            curveCtx.lineTo(w - padding, h - padding);
+            curveCtx.stroke();
+
+            curveCtx.fillStyle = '#555';
+            curveCtx.font = '10px -apple-system, sans-serif';
+            curveCtx.textAlign = 'center';
+            curveCtx.fillText('Rank →', w / 2, h - padding + 18);
+            curveCtx.save();
+            curveCtx.translate(15, h / 2);
+            curveCtx.rotate(-Math.PI / 2);
+            curveCtx.fillText('Size / Value', 0, 0);
+            curveCtx.restore();
+        }
+
+        function drawSphere() {
+            sphereCtx.fillStyle = '#0a0a0f';
+            sphereCtx.fillRect(0, 0, sphereWidth, sphereHeight);
+
+            const rotationY = time * 0.15;
+            const rotationX = 0.35;
+
+            const projected = points.map(p => {
+                let x = Math.sin(p.phi) * Math.cos(p.theta + rotationY);
+                let y = Math.cos(p.phi);
+                let z = Math.sin(p.phi) * Math.sin(p.theta + rotationY);
+
+                const y2 = y * Math.cos(rotationX) - z * Math.sin(rotationX);
+                const z2 = y * Math.sin(rotationX) + z * Math.cos(rotationX);
+                y = y2; z = z2;
+
+                return { x, y, z, color: p.color, size: p.size };
+            });
+
+            projected.sort((a, b) => a.z - b.z);
+
+            sphereCtx.beginPath();
+            sphereCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            sphereCtx.strokeStyle = 'rgba(255,255,255,0.05)';
+            sphereCtx.lineWidth = 1;
+            sphereCtx.stroke();
+
+            projected.forEach(p => {
+                const scale = (p.z + 1.5) / 2.5;
+                const screenX = centerX + p.x * radius;
+                const screenY = centerY + p.y * radius;
+                const size = p.size * scale;
+
+                sphereCtx.beginPath();
+                sphereCtx.arc(screenX, screenY, size, 0, Math.PI * 2);
+                sphereCtx.fillStyle = p.color;
+
+                if (p.z > 0.2 && p.size > 10) {
+                    sphereCtx.shadowColor = p.color;
+                    sphereCtx.shadowBlur = 15;
+                }
+
+                sphereCtx.fill();
+                sphereCtx.shadowBlur = 0;
+            });
+        }
+
+        function animate() {
+            drawCurve();
+            drawSphere();
+            time += 0.016;
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 { font-size: 32px; margin-bottom: 8px; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 40px; text-align: center; }
+
+        .letter-display {
+            font-size: 120px;
+            font-weight: 300;
+            color: #3B82F6;
+            margin-bottom: 10px;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ascii-display {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .lights {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .light {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #222;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .light.on {
+            background: #3B82F6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3);
+            color: #fff;
+        }
+
+        .values {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+        .value {
+            width: 40px;
+            text-align: center;
+            font-size: 11px;
+            color: #555;
+        }
+
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            max-width: 400px;
+        }
+        .key {
+            width: 36px;
+            height: 36px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .key:hover {
+            background: #252525;
+            border-color: #3B82F6;
+        }
+        .key.active {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+
+        .explanation {
+            margin-top: 40px;
+            max-width: 400px;
+            text-align: center;
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <a href="../../home.html" class="back-link">← Back</a>
+
+    <h1>Binary</h1>
+    <p class="subtitle">Computers only understand ON and OFF</p>
+
+    <div class="letter-display" id="letter">A</div>
+    <div class="ascii-display" id="ascii">= 65</div>
+
+    <div class="lights" id="lights">
+        <div class="light">0</div>
+        <div class="light on">1</div>
+        <div class="light">0</div>
+        <div class="light">0</div>
+        <div class="light">0</div>
+        <div class="light">0</div>
+        <div class="light">0</div>
+        <div class="light on">1</div>
+    </div>
+
+    <div class="values">
+        <div class="value">128</div>
+        <div class="value">64</div>
+        <div class="value">32</div>
+        <div class="value">16</div>
+        <div class="value">8</div>
+        <div class="value">4</div>
+        <div class="value">2</div>
+        <div class="value">1</div>
+    </div>
+
+    <div class="keyboard" id="keyboard"></div>
+
+    <div class="explanation">
+        Each light is a <strong>bit</strong>. 8 bits = 1 <strong>byte</strong> = 1 letter.<br>
+        Add up the values where lights are ON to get the number.
+    </div>
+
+    <script>
+        const letterDisplay = document.getElementById('letter');
+        const asciiDisplay = document.getElementById('ascii');
+        const lightsContainer = document.getElementById('lights');
+        const keyboard = document.getElementById('keyboard');
+
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let currentKey = null;
+
+        // Create keyboard
+        letters.split('').forEach(char => {
+            const key = document.createElement('div');
+            key.className = 'key';
+            key.textContent = char;
+            key.addEventListener('click', () => showLetter(char, key));
+            keyboard.appendChild(key);
+        });
+
+        function showLetter(char, keyEl) {
+            // Update active key
+            if (currentKey) currentKey.classList.remove('active');
+            keyEl.classList.add('active');
+            currentKey = keyEl;
+
+            // Get ASCII and binary
+            const ascii = char.charCodeAt(0);
+            const binary = ascii.toString(2).padStart(8, '0');
+
+            // Update display
+            letterDisplay.textContent = char;
+            asciiDisplay.textContent = `= ${ascii}`;
+
+            // Update lights
+            lightsContainer.innerHTML = binary.split('').map(bit =>
+                `<div class="light ${bit === '1' ? 'on' : ''}">${bit}</div>`
+            ).join('');
+        }
+
+        // Initialize with A
+        showLetter('A', keyboard.querySelector('.key'));
+    </script>
+</body>
+</html>

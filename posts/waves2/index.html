@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Waves Work</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 { font-size: 28px; margin-bottom: 8px; }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .canvas-wrap {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            display: block;
+            border-radius: 8px;
+        }
+
+        .insight {
+            max-width: 500px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .insight-title {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .insight-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+        .insight-text em {
+            color: #3B82F6;
+            font-style: normal;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            align-items: center;
+        }
+        .control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .control label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        input[type="range"] {
+            width: 100px;
+            accent-color: #3B82F6;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        button:hover {
+            border-color: #3B82F6;
+        }
+        button.active {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+    </style>
+</head>
+<body>
+    <a href="../../home.html" class="back-link">← Back</a>
+
+    <h1>How Waves Work</h1>
+    <p class="subtitle">The wave moves right. The water moves in circles.</p>
+
+    <div class="canvas-wrap">
+        <canvas id="canvas" width="600" height="300"></canvas>
+    </div>
+
+    <div class="controls">
+        <div class="control">
+            <label>Wavelength</label>
+            <input type="range" id="wavelength" min="50" max="200" value="120">
+        </div>
+        <div class="control">
+            <label>Amplitude</label>
+            <input type="range" id="amplitude" min="10" max="50" value="30">
+        </div>
+        <div class="control">
+            <label>Speed</label>
+            <input type="range" id="speed" min="1" max="10" value="4">
+        </div>
+        <button id="toggleParticles" class="active">Show Particles</button>
+    </div>
+
+    <div class="insight">
+        <div class="insight-title">The Key Insight</div>
+        <div class="insight-text">
+            Watch a single particle. It moves in a <em>circle</em>, not forward. The wave shape travels across the ocean, but the water stays in place. <em>Waves transfer energy, not matter.</em>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const wavelengthInput = document.getElementById('wavelength');
+        const amplitudeInput = document.getElementById('amplitude');
+        const speedInput = document.getElementById('speed');
+        const toggleBtn = document.getElementById('toggleParticles');
+
+        let wavelength = 120;
+        let amplitude = 30;
+        let speed = 4;
+        let showParticles = true;
+        let time = 0;
+
+        const width = canvas.width;
+        const height = canvas.height;
+        const centerY = height / 2;
+
+        // Particle grid
+        const particleCols = 20;
+        const particleRows = 6;
+        const particles = [];
+
+        for (let row = 0; row < particleRows; row++) {
+            for (let col = 0; col < particleCols; col++) {
+                particles.push({
+                    baseX: (col + 0.5) * (width / particleCols),
+                    baseY: centerY + (row - particleRows/2 + 0.5) * 25,
+                    depth: row // deeper = smaller circles
+                });
+            }
+        }
+
+        wavelengthInput.addEventListener('input', e => wavelength = +e.target.value);
+        amplitudeInput.addEventListener('input', e => amplitude = +e.target.value);
+        speedInput.addEventListener('input', e => speed = +e.target.value);
+        toggleBtn.addEventListener('click', () => {
+            showParticles = !showParticles;
+            toggleBtn.classList.toggle('active', showParticles);
+            toggleBtn.textContent = showParticles ? 'Show Particles' : 'Hide Particles';
+        });
+
+        function getWaveY(x, t) {
+            const k = (2 * Math.PI) / wavelength;  // wave number
+            const omega = speed * 0.5;              // angular frequency
+            return amplitude * Math.sin(k * x - omega * t);
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw particles (water molecules moving in circles)
+            if (showParticles) {
+                const k = (2 * Math.PI) / wavelength;
+                const omega = speed * 0.5;
+
+                particles.forEach(p => {
+                    // Circular motion - amplitude decreases with depth
+                    const depthFactor = Math.exp(-p.depth * 0.3);
+                    const radius = amplitude * depthFactor * 0.8;
+
+                    const phase = k * p.baseX - omega * time;
+                    const px = p.baseX + radius * Math.cos(phase + Math.PI/2);
+                    const py = p.baseY - radius * Math.sin(phase + Math.PI/2);
+
+                    // Draw orbit path (faint)
+                    ctx.beginPath();
+                    ctx.arc(p.baseX, p.baseY, radius, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    // Draw particle
+                    ctx.beginPath();
+                    ctx.arc(px, py, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(59, 130, 246, ${0.4 + depthFactor * 0.5})`;
+                    ctx.fill();
+                });
+            }
+
+            // Draw wave surface
+            ctx.beginPath();
+            ctx.moveTo(0, centerY + getWaveY(0, time));
+
+            for (let x = 0; x <= width; x += 2) {
+                const y = centerY + getWaveY(x, time);
+                ctx.lineTo(x, y);
+            }
+
+            ctx.strokeStyle = '#3B82F6';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Fill below wave
+            ctx.lineTo(width, height);
+            ctx.lineTo(0, height);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+            ctx.fill();
+
+            // Arrow showing wave direction
+            const arrowY = 30;
+            ctx.beginPath();
+            ctx.moveTo(width - 100, arrowY);
+            ctx.lineTo(width - 40, arrowY);
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(width - 40, arrowY);
+            ctx.lineTo(width - 50, arrowY - 6);
+            ctx.lineTo(width - 50, arrowY + 6);
+            ctx.closePath();
+            ctx.fillStyle = '#666';
+            ctx.fill();
+
+            ctx.font = '11px -apple-system, sans-serif';
+            ctx.fillStyle = '#666';
+            ctx.fillText('wave direction', width - 100, arrowY + 20);
+
+            time += 0.1;
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+</body>
+</html>

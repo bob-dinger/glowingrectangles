@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Football Conference Realignment (1990-2024)</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        #controls {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        #year-display {
+            color: #fff;
+            font-size: 32px;
+            font-weight: bold;
+            min-width: 80px;
+        }
+        #slider {
+            width: 500px;
+            cursor: pointer;
+        }
+        button {
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #2563EB;
+        }
+        #vis {
+            position: relative;
+        }
+        svg {
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .bubble {
+            cursor: pointer;
+        }
+        .bubble .logo-ring {
+            fill: none;
+            stroke-width: 3px;
+            opacity: 0.9;
+        }
+        .bubble:hover .logo-ring {
+            stroke-width: 4px;
+            opacity: 1;
+        }
+        .conference-label {
+            fill: #666;
+            font-size: 14px;
+            font-weight: bold;
+            text-anchor: middle;
+        }
+        #legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            max-width: 1000px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #aaa;
+            font-size: 12px;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        #event-text {
+            color: #10B981;
+            font-size: 14px;
+            margin-top: 10px;
+            min-height: 20px;
+            text-align: center;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <h1>College Football Conference Realignment</h1>
+    <p class="subtitle">Watch 35 years of conference chaos unfold</p>
+
+    <div id="controls">
+        <span id="year-display">1990</span>
+        <input type="range" id="slider" min="1990" max="2024" value="1990" step="1">
+        <button id="playBtn">▶ Play</button>
+    </div>
+
+    <div id="event-text"></div>
+    <div id="vis"></div>
+    <div id="legend"></div>
+
+    <script>
+        const width = 1000;
+        const height = 700;
+
+        // Conference colors
+        const conferenceColors = {
+            'Big 8': '#FF6B35',
+            'SWC': '#8B4513',
+            'SEC': '#FFD700',
+            'Big Ten': '#0033A0',
+            'Pac-10': '#2D5A27',
+            'Pac-12': '#2D5A27',
+            'ACC': '#00538C',
+            'Big East': '#E31837',
+            'Big 12': '#C8102E',
+            'Independent': '#666666',
+            'American': '#004C54',
+            'Pac-2': '#2D5A27'
+        };
+
+        // Conference cluster positions
+        const conferencePositions = {
+            'Big 8': { x: 200, y: 200 },
+            'SWC': { x: 350, y: 500 },
+            'SEC': { x: 700, y: 400 },
+            'Big Ten': { x: 500, y: 150 },
+            'Pac-10': { x: 100, y: 400 },
+            'Pac-12': { x: 100, y: 400 },
+            'Pac-2': { x: 100, y: 400 },
+            'ACC': { x: 850, y: 200 },
+            'Big East': { x: 850, y: 500 },
+            'Big 12': { x: 300, y: 350 },
+            'Independent': { x: 500, y: 600 },
+            'American': { x: 650, y: 600 }
+        };
+
+        // Schools data with conference history and ESPN IDs for logos
+        const schools = [
+            // Big 8 (1990)
+            { abbr: 'CU', name: 'Colorado', espnId: 38, history: { 1990: 'Big 8', 1996: 'Big 12', 2011: 'Pac-12', 2024: 'Big 12' }},
+            { abbr: 'ISU', name: 'Iowa State', espnId: 66, history: { 1990: 'Big 8', 1996: 'Big 12' }},
+            { abbr: 'KU', name: 'Kansas', espnId: 2305, history: { 1990: 'Big 8', 1996: 'Big 12' }},
+            { abbr: 'KSU', name: 'Kansas State', espnId: 2306, history: { 1990: 'Big 8', 1996: 'Big 12' }},
+            { abbr: 'MIZ', name: 'Missouri', espnId: 142, history: { 1990: 'Big 8', 1996: 'Big 12', 2012: 'SEC' }},
+            { abbr: 'NEB', name: 'Nebraska', espnId: 158, history: { 1990: 'Big 8', 1996: 'Big 12', 2011: 'Big Ten' }},
+            { abbr: 'OU', name: 'Oklahoma', espnId: 201, history: { 1990: 'Big 8', 1996: 'Big 12', 2024: 'SEC' }},
+            { abbr: 'OKST', name: 'Oklahoma State', espnId: 197, history: { 1990: 'Big 8', 1996: 'Big 12' }},
+
+            // SWC (1990)
+            { abbr: 'ARK', name: 'Arkansas', espnId: 8, history: { 1990: 'SWC', 1992: 'SEC' }},
+            { abbr: 'BAY', name: 'Baylor', espnId: 239, history: { 1990: 'SWC', 1996: 'Big 12' }},
+            { abbr: 'HOU', name: 'Houston', espnId: 248, history: { 1990: 'SWC', 1996: 'Independent', 1997: 'Big East', 2005: 'American', 2024: 'Big 12' }},
+            { abbr: 'RICE', name: 'Rice', espnId: 242, history: { 1990: 'SWC', 1996: 'Independent' }},
+            { abbr: 'SMU', name: 'SMU', espnId: 2567, history: { 1990: 'SWC', 1996: 'Independent', 2005: 'American', 2024: 'ACC' }},
+            { abbr: 'TCU', name: 'TCU', espnId: 2628, history: { 1990: 'SWC', 1996: 'Independent', 2005: 'Big East', 2012: 'Big 12' }},
+            { abbr: 'TEX', name: 'Texas', espnId: 251, history: { 1990: 'SWC', 1996: 'Big 12', 2024: 'SEC' }},
+            { abbr: 'A&M', name: 'Texas A&M', espnId: 245, history: { 1990: 'SWC', 1996: 'Big 12', 2012: 'SEC' }},
+            { abbr: 'TTU', name: 'Texas Tech', espnId: 2641, history: { 1990: 'SWC', 1996: 'Big 12' }},
+
+            // SEC (1990)
+            { abbr: 'BAMA', name: 'Alabama', espnId: 333, history: { 1990: 'SEC' }},
+            { abbr: 'AUB', name: 'Auburn', espnId: 2, history: { 1990: 'SEC' }},
+            { abbr: 'UF', name: 'Florida', espnId: 57, history: { 1990: 'SEC' }},
+            { abbr: 'UGA', name: 'Georgia', espnId: 61, history: { 1990: 'SEC' }},
+            { abbr: 'UK', name: 'Kentucky', espnId: 96, history: { 1990: 'SEC' }},
+            { abbr: 'LSU', name: 'LSU', espnId: 99, history: { 1990: 'SEC' }},
+            { abbr: 'MISS', name: 'Ole Miss', espnId: 145, history: { 1990: 'SEC' }},
+            { abbr: 'MSST', name: 'Mississippi State', espnId: 344, history: { 1990: 'SEC' }},
+            { abbr: 'TENN', name: 'Tennessee', espnId: 2633, history: { 1990: 'SEC' }},
+            { abbr: 'VAN', name: 'Vanderbilt', espnId: 238, history: { 1990: 'SEC' }},
+            { abbr: 'SCAR', name: 'South Carolina', espnId: 2579, history: { 1990: 'Independent', 1992: 'SEC' }},
+
+            // Big Ten (1990)
+            { abbr: 'ILL', name: 'Illinois', espnId: 356, history: { 1990: 'Big Ten' }},
+            { abbr: 'IND', name: 'Indiana', espnId: 84, history: { 1990: 'Big Ten' }},
+            { abbr: 'IOWA', name: 'Iowa', espnId: 2294, history: { 1990: 'Big Ten' }},
+            { abbr: 'MICH', name: 'Michigan', espnId: 130, history: { 1990: 'Big Ten' }},
+            { abbr: 'MSU', name: 'Michigan State', espnId: 127, history: { 1990: 'Big Ten' }},
+            { abbr: 'MINN', name: 'Minnesota', espnId: 135, history: { 1990: 'Big Ten' }},
+            { abbr: 'NW', name: 'Northwestern', espnId: 77, history: { 1990: 'Big Ten' }},
+            { abbr: 'OSU', name: 'Ohio State', espnId: 194, history: { 1990: 'Big Ten' }},
+            { abbr: 'PSU', name: 'Penn State', espnId: 213, history: { 1990: 'Big Ten' }},
+            { abbr: 'PUR', name: 'Purdue', espnId: 2509, history: { 1990: 'Big Ten' }},
+            { abbr: 'WIS', name: 'Wisconsin', espnId: 275, history: { 1990: 'Big Ten' }},
+            { abbr: 'MD', name: 'Maryland', espnId: 120, history: { 1990: 'ACC', 2014: 'Big Ten' }},
+            { abbr: 'RUT', name: 'Rutgers', espnId: 164, history: { 1990: 'Big East', 2014: 'Big Ten' }},
+            { abbr: 'UCLA', name: 'UCLA', espnId: 26, history: { 1990: 'Pac-10', 2012: 'Pac-12', 2024: 'Big Ten' }},
+            { abbr: 'USC', name: 'USC', espnId: 30, history: { 1990: 'Pac-10', 2012: 'Pac-12', 2024: 'Big Ten' }},
+            { abbr: 'ORE', name: 'Oregon', espnId: 2483, history: { 1990: 'Pac-10', 2012: 'Pac-12', 2024: 'Big Ten' }},
+            { abbr: 'WASH', name: 'Washington', espnId: 264, history: { 1990: 'Pac-10', 2012: 'Pac-12', 2024: 'Big Ten' }},
+
+            // Pac-10/12 (1990)
+            { abbr: 'ARIZ', name: 'Arizona', espnId: 12, history: { 1990: 'Pac-10', 2012: 'Pac-12', 2024: 'Big 12' }},
+            { abbr: 'ASU', name: 'Arizona State', espnId: 9, history: { 1990: 'Pac-10', 2012: 'Pac-12', 2024: 'Big 12' }},
+            { abbr: 'CAL', name: 'California', espnId: 25, history: { 1990: 'Pac-10', 2012: 'Pac-12', 2024: 'ACC' }},
+            { abbr: 'ORST', name: 'Oregon State', espnId: 204, history: { 1990: 'Pac-10', 2012: 'Pac-12', 2024: 'Pac-2' }},
+            { abbr: 'STAN', name: 'Stanford', espnId: 24, history: { 1990: 'Pac-10', 2012: 'Pac-12', 2024: 'ACC' }},
+            { abbr: 'UTAH', name: 'Utah', espnId: 254, history: { 1990: 'Independent', 2011: 'Pac-12', 2024: 'Big 12' }},
+            { abbr: 'WSU', name: 'Washington State', espnId: 265, history: { 1990: 'Pac-10', 2012: 'Pac-12', 2024: 'Pac-2' }},
+
+            // ACC (1990)
+            { abbr: 'CLEM', name: 'Clemson', espnId: 228, history: { 1990: 'ACC' }},
+            { abbr: 'DUKE', name: 'Duke', espnId: 150, history: { 1990: 'ACC' }},
+            { abbr: 'FSU', name: 'Florida State', espnId: 52, history: { 1990: 'Independent', 1992: 'ACC' }},
+            { abbr: 'GT', name: 'Georgia Tech', espnId: 59, history: { 1990: 'ACC' }},
+            { abbr: 'UNC', name: 'North Carolina', espnId: 153, history: { 1990: 'ACC' }},
+            { abbr: 'NCST', name: 'NC State', espnId: 152, history: { 1990: 'ACC' }},
+            { abbr: 'UVA', name: 'Virginia', espnId: 258, history: { 1990: 'ACC' }},
+            { abbr: 'WAKE', name: 'Wake Forest', espnId: 154, history: { 1990: 'ACC' }},
+            { abbr: 'BC', name: 'Boston College', espnId: 103, history: { 1990: 'Big East', 2005: 'ACC' }},
+            { abbr: 'MIA', name: 'Miami', espnId: 2390, history: { 1990: 'Big East', 2004: 'ACC' }},
+            { abbr: 'VT', name: 'Virginia Tech', espnId: 259, history: { 1990: 'Big East', 2004: 'ACC' }},
+            { abbr: 'LOU', name: 'Louisville', espnId: 97, history: { 1990: 'Independent', 2005: 'Big East', 2014: 'ACC' }},
+            { abbr: 'PITT', name: 'Pittsburgh', espnId: 221, history: { 1990: 'Big East', 2013: 'ACC' }},
+            { abbr: 'SYR', name: 'Syracuse', espnId: 183, history: { 1990: 'Big East', 2013: 'ACC' }},
+
+            // Big East / Others
+            { abbr: 'WVU', name: 'West Virginia', espnId: 277, history: { 1990: 'Big East', 2012: 'Big 12' }},
+            { abbr: 'CIN', name: 'Cincinnati', espnId: 2132, history: { 1990: 'Independent', 2005: 'Big East', 2023: 'Big 12' }},
+            { abbr: 'UCF', name: 'UCF', espnId: 2116, history: { 1990: 'Independent', 2005: 'American', 2023: 'Big 12' }},
+            { abbr: 'BYU', name: 'BYU', espnId: 252, history: { 1990: 'Independent', 2023: 'Big 12' }},
+            { abbr: 'ND', name: 'Notre Dame', espnId: 87, history: { 1990: 'Independent' }},
+        ];
+
+        // Events by year
+        const events = {
+            1990: "The landscape: Big 8, SWC, SEC, Big Ten, Pac-10, ACC, Big East",
+            1992: "Arkansas & South Carolina join SEC; Florida State joins ACC",
+            1996: "Big 8 absorbs 4 SWC schools → Big 12. Southwest Conference dissolves after 82 years.",
+            2004: "ACC raids Big East: Miami, Virginia Tech join",
+            2005: "Boston College to ACC. Big East adds Louisville, Cincinnati.",
+            2011: "Colorado to Pac-12, Nebraska to Big Ten. The dominoes start falling.",
+            2012: "Texas A&M & Missouri bolt for SEC. Pac-10 becomes Pac-12 with Utah & Colorado.",
+            2013: "Rutgers & Maryland to Big Ten. Syracuse & Pitt to ACC.",
+            2014: "Louisville to ACC. Big Ten and SEC now dominate.",
+            2023: "USC, UCLA to Big Ten announced. Colorado returns to Big 12.",
+            2024: "Texas & Oklahoma to SEC. Oregon, Washington to Big Ten. Pac-12 implodes to 2 teams."
+        };
+
+        // Get conference for a school in a given year
+        function getConference(school, year) {
+            let conf = null;
+            const sortedYears = Object.keys(school.history).map(Number).sort((a, b) => a - b);
+            for (const y of sortedYears) {
+                if (y <= year) {
+                    conf = school.history[y];
+                }
+            }
+            return conf;
+        }
+
+        // ESPN logo URL
+        function getLogoUrl(espnId) {
+            return `https://a.espncdn.com/i/teamlogos/ncaa/500/${espnId}.png`;
+        }
+
+        // Create unique IDs for schools
+        const nodes = schools.map((s, i) => ({
+            ...s,
+            id: i,
+            radius: 22,
+            x: width / 2 + (Math.random() - 0.5) * 100,
+            y: height / 2 + (Math.random() - 0.5) * 100
+        }));
+
+        // Create SVG
+        const svg = d3.select('#vis')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Define clip paths for circular logos
+        const defs = svg.append('defs');
+
+        nodes.forEach(node => {
+            defs.append('clipPath')
+                .attr('id', `clip-${node.id}`)
+                .append('circle')
+                .attr('r', node.radius - 2)
+                .attr('cx', 0)
+                .attr('cy', 0);
+        });
+
+        // Conference labels
+        const labelGroup = svg.append('g').attr('class', 'conference-labels');
+
+        // Bubbles
+        const bubbleGroup = svg.append('g').attr('class', 'bubbles');
+
+        const bubbles = bubbleGroup.selectAll('.bubble')
+            .data(nodes, d => d.id)
+            .enter()
+            .append('g')
+            .attr('class', 'bubble');
+
+        // Add colored ring around each logo
+        bubbles.append('circle')
+            .attr('class', 'logo-ring')
+            .attr('r', d => d.radius);
+
+        // Add logo images
+        bubbles.append('image')
+            .attr('xlink:href', d => getLogoUrl(d.espnId))
+            .attr('x', d => -(d.radius - 2))
+            .attr('y', d => -(d.radius - 2))
+            .attr('width', d => (d.radius - 2) * 2)
+            .attr('height', d => (d.radius - 2) * 2)
+            .attr('clip-path', d => `url(#clip-${d.id})`)
+            .attr('preserveAspectRatio', 'xMidYMid slice');
+
+        // Add tooltip on hover
+        bubbles.append('title')
+            .text(d => d.name);
+
+        // Force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(-5))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 2))
+            .force('x', d3.forceX().strength(0.1).x(d => d.targetX || width / 2))
+            .force('y', d3.forceY().strength(0.1).y(d => d.targetY || height / 2))
+            .on('tick', ticked);
+
+        function ticked() {
+            bubbles.attr('transform', d => `translate(${d.x}, ${d.y})`);
+        }
+
+        // Update visualization for a given year
+        function updateYear(year) {
+            document.getElementById('year-display').textContent = year;
+            document.getElementById('slider').value = year;
+
+            // Update event text
+            const eventText = events[year] || '';
+            document.getElementById('event-text').textContent = eventText;
+
+            // Get active conferences for this year
+            const activeConferences = new Set();
+
+            // Update each node's target position and color
+            nodes.forEach(node => {
+                const conf = getConference(node, year);
+                node.conference = conf;
+                activeConferences.add(conf);
+
+                if (conf && conferencePositions[conf]) {
+                    node.targetX = conferencePositions[conf].x + (Math.random() - 0.5) * 20;
+                    node.targetY = conferencePositions[conf].y + (Math.random() - 0.5) * 20;
+                }
+            });
+
+            // Update ring colors
+            bubbles.select('.logo-ring')
+                .transition()
+                .duration(300)
+                .attr('stroke', d => conferenceColors[d.conference] || '#666');
+
+            // Update conference labels
+            const labelData = Array.from(activeConferences)
+                .filter(c => c && conferencePositions[c])
+                .map(c => ({
+                    name: c,
+                    x: conferencePositions[c].x,
+                    y: conferencePositions[c].y + 120
+                }));
+
+            const labels = labelGroup.selectAll('.conference-label')
+                .data(labelData, d => d.name);
+
+            labels.enter()
+                .append('text')
+                .attr('class', 'conference-label')
+                .merge(labels)
+                .attr('x', d => d.x)
+                .attr('y', d => d.y)
+                .text(d => d.name);
+
+            labels.exit().remove();
+
+            // Restart simulation
+            simulation.force('x').x(d => d.targetX || width / 2);
+            simulation.force('y').y(d => d.targetY || height / 2);
+            simulation.alpha(0.5).restart();
+        }
+
+        // Build legend
+        function buildLegend() {
+            const legendDiv = document.getElementById('legend');
+            Object.entries(conferenceColors).forEach(([conf, color]) => {
+                if (conf !== 'Pac-2') { // Skip Pac-2 in legend
+                    const item = document.createElement('div');
+                    item.className = 'legend-item';
+                    item.innerHTML = `<div class="legend-dot" style="background-color: ${color}"></div>${conf}`;
+                    legendDiv.appendChild(item);
+                }
+            });
+        }
+
+        // Slider control
+        const slider = document.getElementById('slider');
+        slider.addEventListener('input', (e) => {
+            updateYear(parseInt(e.target.value));
+        });
+
+        // Play button
+        let isPlaying = false;
+        let playInterval;
+        const playBtn = document.getElementById('playBtn');
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                clearInterval(playInterval);
+                playBtn.textContent = '▶ Play';
+                isPlaying = false;
+            } else {
+                isPlaying = true;
+                playBtn.textContent = '⏸ Pause';
+
+                let currentYear = parseInt(slider.value);
+                if (currentYear >= 2024) currentYear = 1990;
+
+                playInterval = setInterval(() => {
+                    currentYear++;
+                    if (currentYear > 2024) {
+                        clearInterval(playInterval);
+                        playBtn.textContent = '▶ Play';
+                        isPlaying = false;
+                        return;
+                    }
+                    updateYear(currentYear);
+                }, 800);
+            }
+        });
+
+        // Initialize
+        buildLegend();
+        updateYear(1990);
+    </script>
+</body>
+</html>

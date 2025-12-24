@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrition</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 10;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 { font-size: 32px; margin-bottom: 8px; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 25px; }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .tab:hover { border-color: #555; color: #fff; }
+        .tab.active { background: #22C55E; border-color: #22C55E; color: #fff; }
+
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .food-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .food-card:hover {
+            border-color: #444;
+            transform: translateY(-2px);
+        }
+        .food-card.expanded {
+            grid-column: span 2;
+        }
+
+        .food-emoji {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+        .food-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .food-serving {
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .food-cals {
+            font-size: 18px;
+            font-weight: 600;
+            color: #22C55E;
+        }
+        .food-cals-label {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .macros {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #333;
+        }
+        .food-card.expanded .macros {
+            display: flex;
+            justify-content: space-around;
+        }
+        .macro {
+            text-align: center;
+        }
+        .macro-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .macro-label {
+            font-size: 10px;
+            color: #666;
+        }
+        .macro.protein .macro-value { color: #EF4444; }
+        .macro.carbs .macro-value { color: #3B82F6; }
+        .macro.fat .macro-value { color: #FBBF24; }
+    </style>
+</head>
+<body>
+    <a href="../../home.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <h1>Nutrition</h1>
+        <p class="subtitle">What's in your food? (tap for details)</p>
+
+        <div class="tabs">
+            <div class="tab active" data-cat="fruit">Fruit</div>
+            <div class="tab" data-cat="veg">Vegetables</div>
+            <div class="tab" data-cat="protein">Protein</div>
+            <div class="tab" data-cat="dairy">Dairy</div>
+            <div class="tab" data-cat="grains">Grains</div>
+        </div>
+
+        <div class="food-grid" id="grid"></div>
+    </div>
+
+    <script>
+        const foods = {
+            fruit: [
+                { emoji: '🍎', name: 'Apple', serving: '1 medium', cals: 95, protein: 0, carbs: 25, fat: 0 },
+                { emoji: '🍌', name: 'Banana', serving: '1 medium', cals: 105, protein: 1, carbs: 27, fat: 0 },
+                { emoji: '🍊', name: 'Orange', serving: '1 medium', cals: 62, protein: 1, carbs: 15, fat: 0 },
+                { emoji: '🍓', name: 'Strawberries', serving: '1 cup', cals: 49, protein: 1, carbs: 12, fat: 0 },
+                { emoji: '🍇', name: 'Grapes', serving: '1 cup', cals: 104, protein: 1, carbs: 27, fat: 0 },
+                { emoji: '🫐', name: 'Blueberries', serving: '1 cup', cals: 84, protein: 1, carbs: 21, fat: 0 },
+                { emoji: '🥭', name: 'Mango', serving: '1 cup', cals: 99, protein: 1, carbs: 25, fat: 1 },
+                { emoji: '🍑', name: 'Peach', serving: '1 medium', cals: 59, protein: 1, carbs: 14, fat: 0 },
+            ],
+            veg: [
+                { emoji: '🥦', name: 'Broccoli', serving: '1 cup', cals: 55, protein: 4, carbs: 11, fat: 0 },
+                { emoji: '🥕', name: 'Carrots', serving: '1 cup', cals: 52, protein: 1, carbs: 12, fat: 0 },
+                { emoji: '🥬', name: 'Spinach', serving: '1 cup raw', cals: 7, protein: 1, carbs: 1, fat: 0 },
+                { emoji: '🌽', name: 'Corn', serving: '1 ear', cals: 88, protein: 3, carbs: 19, fat: 1 },
+                { emoji: '🥔', name: 'Potato', serving: '1 medium', cals: 161, protein: 4, carbs: 37, fat: 0 },
+                { emoji: '🍠', name: 'Sweet Potato', serving: '1 medium', cals: 103, protein: 2, carbs: 24, fat: 0 },
+                { emoji: '🥒', name: 'Cucumber', serving: '1 cup', cals: 16, protein: 1, carbs: 4, fat: 0 },
+                { emoji: '🍅', name: 'Tomato', serving: '1 medium', cals: 22, protein: 1, carbs: 5, fat: 0 },
+            ],
+            protein: [
+                { emoji: '🍗', name: 'Chicken Breast', serving: '3 oz', cals: 140, protein: 26, carbs: 0, fat: 3 },
+                { emoji: '🥩', name: 'Beef Steak', serving: '3 oz', cals: 213, protein: 22, carbs: 0, fat: 13 },
+                { emoji: '🐟', name: 'Salmon', serving: '3 oz', cals: 177, protein: 17, carbs: 0, fat: 11 },
+                { emoji: '🍳', name: 'Egg', serving: '1 large', cals: 72, protein: 6, carbs: 0, fat: 5 },
+                { emoji: '🦐', name: 'Shrimp', serving: '3 oz', cals: 84, protein: 18, carbs: 0, fat: 1 },
+                { emoji: '🥜', name: 'Peanuts', serving: '1 oz', cals: 161, protein: 7, carbs: 5, fat: 14 },
+                { emoji: '🫘', name: 'Black Beans', serving: '1/2 cup', cals: 114, protein: 8, carbs: 20, fat: 0 },
+                { emoji: '🍖', name: 'Pork Chop', serving: '3 oz', cals: 171, protein: 23, carbs: 0, fat: 8 },
+            ],
+            dairy: [
+                { emoji: '🥛', name: 'Milk (Whole)', serving: '1 cup', cals: 149, protein: 8, carbs: 12, fat: 8 },
+                { emoji: '🧀', name: 'Cheddar', serving: '1 oz', cals: 113, protein: 7, carbs: 0, fat: 9 },
+                { emoji: '🍦', name: 'Ice Cream', serving: '1/2 cup', cals: 137, protein: 2, carbs: 16, fat: 7 },
+                { emoji: '🧈', name: 'Butter', serving: '1 tbsp', cals: 102, protein: 0, carbs: 0, fat: 12 },
+                { emoji: '🥣', name: 'Greek Yogurt', serving: '1 cup', cals: 100, protein: 17, carbs: 6, fat: 1 },
+                { emoji: '🧁', name: 'Cream Cheese', serving: '1 oz', cals: 99, protein: 2, carbs: 1, fat: 10 },
+            ],
+            grains: [
+                { emoji: '🍞', name: 'Bread', serving: '1 slice', cals: 79, protein: 3, carbs: 15, fat: 1 },
+                { emoji: '🍚', name: 'White Rice', serving: '1 cup', cals: 206, protein: 4, carbs: 45, fat: 0 },
+                { emoji: '🍝', name: 'Pasta', serving: '1 cup', cals: 221, protein: 8, carbs: 43, fat: 1 },
+                { emoji: '🥣', name: 'Oatmeal', serving: '1 cup', cals: 158, protein: 6, carbs: 27, fat: 3 },
+                { emoji: '🥯', name: 'Bagel', serving: '1 medium', cals: 277, protein: 11, carbs: 55, fat: 1 },
+                { emoji: '🌾', name: 'Quinoa', serving: '1 cup', cals: 222, protein: 8, carbs: 39, fat: 4 },
+            ]
+        };
+
+        const grid = document.getElementById('grid');
+        const tabs = document.querySelectorAll('.tab');
+        let currentCat = 'fruit';
+
+        function render() {
+            grid.innerHTML = '';
+            foods[currentCat].forEach(food => {
+                const card = document.createElement('div');
+                card.className = 'food-card';
+                card.innerHTML = `
+                    <div class="food-emoji">${food.emoji}</div>
+                    <div class="food-name">${food.name}</div>
+                    <div class="food-serving">${food.serving}</div>
+                    <div class="food-cals">${food.cals}</div>
+                    <div class="food-cals-label">calories</div>
+                    <div class="macros">
+                        <div class="macro protein">
+                            <div class="macro-value">${food.protein}g</div>
+                            <div class="macro-label">protein</div>
+                        </div>
+                        <div class="macro carbs">
+                            <div class="macro-value">${food.carbs}g</div>
+                            <div class="macro-label">carbs</div>
+                        </div>
+                        <div class="macro fat">
+                            <div class="macro-value">${food.fat}g</div>
+                            <div class="macro-label">fat</div>
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', () => card.classList.toggle('expanded'));
+                grid.appendChild(card);
+            });
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentCat = tab.dataset.cat;
+                render();
+            });
+        });
+
+        render();
+    </script>
+</body>
+</html>

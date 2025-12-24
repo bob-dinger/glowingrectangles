@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Bell Curve</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container { display: flex; height: 100vh; }
+        .graph-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+        }
+        .examples-section {
+            width: 320px;
+            background: #111118;
+            border-left: 1px solid #222;
+            padding: 40px 30px;
+            overflow-y: auto;
+        }
+        h1 { font-size: 28px; margin-bottom: 10px; color: #fff; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; }
+        h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 20px; }
+        .example-item {
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .example-item:hover { background: rgba(255,255,255,0.08); border-color: #333; }
+        .example-item.active { background: rgba(168, 85, 247, 0.15); border-color: #A855F7; }
+        .example-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+        .example-desc { font-size: 12px; color: #888; }
+        svg { overflow: visible; }
+        .curve-path { fill: none; stroke: #A855F7; stroke-width: 3; }
+        .curve-fill { fill: url(#gradient); opacity: 0.3; }
+        .axis-line { stroke: #333; stroke-width: 1; }
+        .axis-label { fill: #666; font-size: 12px; }
+        .phase-label { font-size: 16px; font-weight: 600; fill: #fff; opacity: 0; }
+        .phase-label.visible { opacity: 1; }
+        .marker-line { stroke: #A855F7; stroke-width: 2; stroke-dasharray: 5,5; opacity: 0; }
+        .marker-line.visible { opacity: 1; }
+        .instructions { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); color: #555; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="graph-section">
+            <h1>The Bell Curve</h1>
+            <p class="subtitle">Most things cluster around the average</p>
+            <div id="graph"></div>
+            <p class="instructions">Click an example to see the distribution</p>
+        </div>
+        <div class="examples-section">
+            <h2>Examples</h2>
+            <div class="example-item" data-example="height">
+                <div class="example-title">Human Height</div>
+                <div class="example-desc">Most people are average height</div>
+            </div>
+            <div class="example-item" data-example="iq">
+                <div class="example-title">IQ Scores</div>
+                <div class="example-desc">Designed to be normally distributed</div>
+            </div>
+            <div class="example-item" data-example="grades">
+                <div class="example-title">Test Scores</div>
+                <div class="example-desc">When graded on a curve</div>
+            </div>
+            <div class="example-item" data-example="manufacturing">
+                <div class="example-title">Manufacturing</div>
+                <div class="example-desc">Product variations from spec</div>
+            </div>
+            <div class="example-item" data-example="blood">
+                <div class="example-title">Blood Pressure</div>
+                <div class="example-desc">Population health metrics</div>
+            </div>
+            <div class="example-item" data-example="errors">
+                <div class="example-title">Measurement Error</div>
+                <div class="example-desc">Random errors in experiments</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 450;
+        const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        // Bell curve function
+        function bellCurve(x, mean = 0.5, std = 0.15) {
+            return Math.exp(-0.5 * Math.pow((x - mean) / std, 2)) / (std * Math.sqrt(2 * Math.PI));
+        }
+
+        // Generate curve data
+        const curveData = [];
+        for (let i = 0; i <= 100; i++) {
+            const x = i / 100;
+            curveData.push({ x, y: bellCurve(x) });
+        }
+
+        const maxY = Math.max(...curveData.map(d => d.y));
+
+        // Create SVG
+        const svg = d3.select('#graph')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Gradient
+        const defs = svg.append('defs');
+        const gradient = defs.append('linearGradient')
+            .attr('id', 'gradient')
+            .attr('x1', '0%').attr('y1', '0%')
+            .attr('x2', '0%').attr('y2', '100%');
+        gradient.append('stop').attr('offset', '0%').attr('stop-color', '#A855F7');
+        gradient.append('stop').attr('offset', '100%').attr('stop-color', '#A855F7').attr('stop-opacity', 0);
+
+        const g = svg.append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Scales
+        const xScale = d3.scaleLinear().domain([0, 1]).range([0, innerWidth]);
+        const yScale = d3.scaleLinear().domain([0, maxY * 1.1]).range([innerHeight, 0]);
+
+        // Axes
+        g.append('line').attr('class', 'axis-line')
+            .attr('x1', 0).attr('y1', innerHeight).attr('x2', innerWidth).attr('y2', innerHeight);
+        g.append('line').attr('class', 'axis-line')
+            .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', innerHeight);
+
+        // Area generator
+        const area = d3.area()
+            .x(d => xScale(d.x))
+            .y0(innerHeight)
+            .y1(d => yScale(d.y))
+            .curve(d3.curveMonotoneX);
+
+        // Line generator
+        const line = d3.line()
+            .x(d => xScale(d.x))
+            .y(d => yScale(d.y))
+            .curve(d3.curveMonotoneX);
+
+        // Draw fill
+        g.append('path').datum(curveData).attr('class', 'curve-fill').attr('d', area);
+
+        // Draw curve
+        g.append('path').datum(curveData).attr('class', 'curve-path').attr('d', line);
+
+        // Standard deviation markers
+        const markers = g.append('g');
+        [-2, -1, 0, 1, 2].forEach(sd => {
+            const x = 0.5 + sd * 0.15;
+            markers.append('line')
+                .attr('class', 'marker-line')
+                .attr('x1', xScale(x)).attr('y1', innerHeight)
+                .attr('x2', xScale(x)).attr('y2', yScale(bellCurve(x)));
+        });
+
+        // Labels
+        const labelGroup = g.append('g');
+        const phaseLabel = labelGroup.append('text').attr('class', 'phase-label').attr('text-anchor', 'middle');
+        const subLabel = labelGroup.append('text').attr('class', 'phase-label').attr('text-anchor', 'middle').attr('font-size', '12px').attr('fill', '#888');
+
+        // Example data
+        const exampleData = {
+            height: { labels: ['-2σ: 5\'2"', '-1σ: 5\'6"', 'Mean: 5\'10"', '+1σ: 6\'2"', '+2σ: 6\'6"'], unit: 'Height (US Males)' },
+            iq: { labels: ['-2σ: 70', '-1σ: 85', 'Mean: 100', '+1σ: 115', '+2σ: 130'], unit: 'IQ Score' },
+            grades: { labels: ['F: 2%', 'D: 14%', 'C: 68%', 'B: 14%', 'A: 2%'], unit: 'Grade Distribution' },
+            manufacturing: { labels: ['Defect', 'Below Spec', 'On Spec', 'Above Spec', 'Defect'], unit: 'Quality Control' },
+            blood: { labels: ['Low', 'Normal-Low', 'Normal: 120/80', 'Normal-High', 'High'], unit: 'Blood Pressure' },
+            errors: { labels: ['-2σ', '-1σ', '0 (True Value)', '+1σ', '+2σ'], unit: 'Measurement Error' }
+        };
+
+        let currentAnimation = null;
+
+        function animateExample(exampleKey) {
+            if (currentAnimation) { currentAnimation.stop(); }
+
+            const data = exampleData[exampleKey];
+            const positions = [0.2, 0.35, 0.5, 0.65, 0.8];
+            let currentIndex = 0;
+
+            d3.selectAll('.marker-line').classed('visible', true);
+
+            function showNext() {
+                if (currentIndex >= positions.length) {
+                    currentAnimation = null;
+                    return;
+                }
+
+                const x = positions[currentIndex];
+                const y = bellCurve(x);
+
+                phaseLabel
+                    .attr('x', xScale(x))
+                    .attr('y', yScale(y) - 25)
+                    .attr('class', 'phase-label visible')
+                    .text(data.labels[currentIndex]);
+
+                subLabel
+                    .attr('x', xScale(0.5))
+                    .attr('y', innerHeight + 45)
+                    .attr('class', 'phase-label visible')
+                    .text(data.unit);
+
+                currentIndex++;
+                currentAnimation.timeoutId = setTimeout(showNext, 1200);
+            }
+
+            currentAnimation = {
+                timeoutId: setTimeout(showNext, 300),
+                stop: function() { clearTimeout(this.timeoutId); }
+            };
+        }
+
+        document.querySelectorAll('.example-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.example-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                animateExample(item.dataset.example);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bimodal Distribution</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container { display: flex; height: 100vh; }
+        .graph-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        .examples-section {
+            width: 320px;
+            background: #111118;
+            border-left: 1px solid #222;
+            padding: 40px 30px;
+            overflow-y: auto;
+        }
+        h1 { font-size: 28px; margin-bottom: 10px; color: #fff; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; }
+        h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 20px; }
+        .example-item {
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .example-item:hover { background: rgba(255,255,255,0.08); border-color: #333; }
+        .example-item.active { background: rgba(59, 130, 246, 0.15); border-color: #3B82F6; }
+        .example-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+        .example-desc { font-size: 12px; color: #888; }
+        svg { overflow: visible; }
+        .bubble { stroke: #fff; stroke-width: 1; opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="graph-section">
+            <h1>Bimodal Distribution</h1>
+            <p class="subtitle">Two peaks, two groups</p>
+            <svg id="graph" width="500" height="500"></svg>
+        </div>
+        <div class="examples-section">
+            <h2>Examples</h2>
+            <div class="example-item active" data-example="height">
+                <div class="example-title">Human Height</div>
+                <div class="example-desc">Men and women form two peaks</div>
+            </div>
+            <div class="example-item" data-example="commute">
+                <div class="example-title">Commute Times</div>
+                <div class="example-desc">Drivers vs. transit riders</div>
+            </div>
+            <div class="example-item" data-example="exam">
+                <div class="example-title">Exam Scores</div>
+                <div class="example-desc">Prepared vs. unprepared students</div>
+            </div>
+            <div class="example-item" data-example="marriage">
+                <div class="example-title">Age at Marriage</div>
+                <div class="example-desc">Early 20s vs. late 20s peaks</div>
+            </div>
+            <div class="example-item" data-example="workout">
+                <div class="example-title">Gym Visits</div>
+                <div class="example-desc">Morning and evening crowds</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 500;
+        const height = 500;
+        const numPoints = 80;
+
+        const svg = d3.select('#graph');
+        let simulation = null;
+
+        function normalRandom(mean = 0, stdDev = 1) {
+            const u1 = Math.random();
+            const u2 = Math.random();
+            const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+            return z0 * stdDev + mean;
+        }
+
+        function drawBimodal() {
+            svg.selectAll('*').remove();
+
+            const nodes = [];
+            for (let i = 0; i < numPoints; i++) {
+                // Half in each group - two distinct sizes
+                if (i < numPoints / 2) {
+                    // Group 1: smaller circles (blue)
+                    nodes.push({
+                        id: i,
+                        radius: Math.max(8, normalRandom(12, 2)),
+                        color: '#3B82F6',
+                        x: width / 3 + (Math.random() - 0.5) * 100,
+                        y: height / 2 + (Math.random() - 0.5) * 200
+                    });
+                } else {
+                    // Group 2: larger circles (red)
+                    nodes.push({
+                        id: i,
+                        radius: Math.max(8, normalRandom(22, 2)),
+                        color: '#EF4444',
+                        x: (width * 2 / 3) + (Math.random() - 0.5) * 100,
+                        y: height / 2 + (Math.random() - 0.5) * 200
+                    });
+                }
+            }
+
+            const bubbles = svg.selectAll('circle')
+                .data(nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'bubble')
+                .attr('r', d => d.radius)
+                .attr('fill', d => d.color);
+
+            if (simulation) simulation.stop();
+
+            simulation = d3.forceSimulation(nodes)
+                .force('charge', d3.forceManyBody().strength(d => -Math.pow(d.radius, 2) * 0.03))
+                .force('x', d3.forceX(width / 2).strength(0.03))
+                .force('y', d3.forceY(height / 2).strength(0.05))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 2))
+                .on('tick', () => {
+                    bubbles.attr('cx', d => d.x).attr('cy', d => d.y);
+                });
+        }
+
+        document.querySelectorAll('.example-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.example-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                drawBimodal();
+            });
+        });
+
+        drawBimodal();
+    </script>
+</body>
+</html>

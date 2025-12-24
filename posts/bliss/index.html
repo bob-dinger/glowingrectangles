@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Bliss</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 10;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .lesson {
+            display: none;
+        }
+        .lesson.active {
+            display: block;
+        }
+
+        .lesson-number {
+            font-size: 12px;
+            color: #3B82F6;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .lesson-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .lesson-text {
+            color: #888;
+            font-size: 15px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .symbol-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 40px 0;
+        }
+
+        .symbol-svg {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 15px;
+        }
+        .symbol-svg svg {
+            width: 100%;
+            height: 100%;
+        }
+        .symbol-svg path, .symbol-svg line, .symbol-svg circle, .symbol-svg rect {
+            stroke: #3B82F6;
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .symbol-svg .filled {
+            fill: #3B82F6;
+        }
+
+        .symbol-name {
+            font-size: 20px;
+            font-weight: 500;
+        }
+        .symbol-meaning {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .symbol-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .symbol-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .symbol-card:hover {
+            border-color: #3B82F6;
+            transform: translateY(-2px);
+        }
+        .symbol-card.selected {
+            border-color: #22C55E;
+            background: rgba(34, 197, 94, 0.1);
+        }
+        .symbol-card.wrong {
+            border-color: #EF4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .symbol-card .symbol-svg {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+        }
+
+        .symbol-card .label {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .quiz-question {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 25px;
+        }
+
+        .combine-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+            padding: 30px;
+            background: #111;
+            border-radius: 12px;
+        }
+
+        .combine-plus {
+            font-size: 24px;
+            color: #444;
+        }
+
+        .combine-equals {
+            font-size: 24px;
+            color: #444;
+        }
+
+        .combine-result {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #252525;
+            border-color: #3B82F6;
+        }
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        button.primary {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+        button.primary:hover {
+            background: #2563EB;
+        }
+
+        .progress {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #333;
+            transition: all 0.3s;
+        }
+        .progress-dot.active {
+            background: #3B82F6;
+        }
+        .progress-dot.complete {
+            background: #22C55E;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.5s;
+        }
+        .reveal.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 16px;
+            margin-top: 20px;
+            min-height: 30px;
+        }
+        .feedback.correct { color: #22C55E; }
+        .feedback.incorrect { color: #EF4444; }
+
+        .intro-symbols {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .intro-symbol {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="../../home.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <h1>Learn Bliss</h1>
+        <p class="subtitle">A visual language anyone can understand</p>
+
+        <div class="progress" id="progress"></div>
+
+        <!-- Lesson 1: Introduction -->
+        <div class="lesson active" id="lesson1">
+            <div class="lesson-number">Lesson 1</div>
+            <div class="lesson-title">The Earth and Sky</div>
+            <div class="lesson-text">
+                Bliss Symbolics starts with the simplest ideas: the ground beneath us and the sky above. These two lines form the foundation of everything else.
+            </div>
+
+            <div class="intro-symbols">
+                <div class="intro-symbol">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <line x1="5" y1="50" x2="55" y2="50"/>
+                        </svg>
+                    </div>
+                    <div class="symbol-name">Earth</div>
+                    <div class="symbol-meaning">A line at the bottom</div>
+                </div>
+
+                <div class="intro-symbol">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <line x1="5" y1="10" x2="55" y2="10"/>
+                        </svg>
+                    </div>
+                    <div class="symbol-name">Sky</div>
+                    <div class="symbol-meaning">A line at the top</div>
+                </div>
+            </div>
+
+            <div class="lesson-text">
+                Everything in Bliss exists between these two reference lines. Things on earth stay low. Things in the sky reach high.
+            </div>
+
+            <div class="nav-buttons">
+                <button disabled>← Previous</button>
+                <button class="primary" onclick="nextLesson()">Next →</button>
+            </div>
+        </div>
+
+        <!-- Lesson 2: Person -->
+        <div class="lesson" id="lesson2">
+            <div class="lesson-number">Lesson 2</div>
+            <div class="lesson-title">The Person</div>
+            <div class="lesson-text">
+                Between earth and sky stands a person. In Bliss, a person is simply a figure standing upright.
+            </div>
+
+            <div class="symbol-display">
+                <div class="symbol-svg">
+                    <svg viewBox="0 0 60 60">
+                        <circle cx="30" cy="15" r="8"/>
+                        <line x1="30" y1="23" x2="30" y2="45"/>
+                        <line x1="30" y1="45" x2="20" y2="58"/>
+                        <line x1="30" y1="45" x2="40" y2="58"/>
+                    </svg>
+                </div>
+                <div class="symbol-name">Person</div>
+                <div class="symbol-meaning">A head and body</div>
+            </div>
+
+            <div class="lesson-text">
+                This symbol appears in many Bliss words. When you see it, you know we're talking about people.
+            </div>
+
+            <div class="nav-buttons">
+                <button onclick="prevLesson()">← Previous</button>
+                <button class="primary" onclick="nextLesson()">Next →</button>
+            </div>
+        </div>
+
+        <!-- Lesson 3: Enclosure -->
+        <div class="lesson" id="lesson3">
+            <div class="lesson-number">Lesson 3</div>
+            <div class="lesson-title">The Enclosure</div>
+            <div class="lesson-text">
+                A square represents protection, a boundary, something contained.
+            </div>
+
+            <div class="symbol-display">
+                <div class="symbol-svg">
+                    <svg viewBox="0 0 60 60">
+                        <rect x="10" y="15" width="40" height="35"/>
+                    </svg>
+                </div>
+                <div class="symbol-name">Enclosure</div>
+                <div class="symbol-meaning">Protection, building, container</div>
+            </div>
+
+            <div class="lesson-text">
+                Put a person inside an enclosure and you get... a house! Put food inside and you get... a refrigerator! The combinations are logical.
+            </div>
+
+            <div class="nav-buttons">
+                <button onclick="prevLesson()">← Previous</button>
+                <button class="primary" onclick="nextLesson()">Next →</button>
+            </div>
+        </div>
+
+        <!-- Lesson 4: Quiz 1 -->
+        <div class="lesson" id="lesson4">
+            <div class="lesson-number">Practice</div>
+            <div class="lesson-title">Which is which?</div>
+
+            <div class="quiz-question">Tap the symbol for <strong>SKY</strong></div>
+
+            <div class="symbol-grid" id="quiz1">
+                <div class="symbol-card" data-answer="earth" onclick="checkAnswer(this, 'sky')">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <line x1="5" y1="50" x2="55" y2="50"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="symbol-card" data-answer="sky" onclick="checkAnswer(this, 'sky')">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <line x1="5" y1="10" x2="55" y2="10"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="symbol-card" data-answer="person" onclick="checkAnswer(this, 'sky')">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <circle cx="30" cy="15" r="8"/>
+                            <line x1="30" y1="23" x2="30" y2="45"/>
+                            <line x1="30" y1="45" x2="20" y2="58"/>
+                            <line x1="30" y1="45" x2="40" y2="58"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="symbol-card" data-answer="enclosure" onclick="checkAnswer(this, 'sky')">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <rect x="10" y="15" width="40" height="35"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feedback" id="feedback1"></div>
+
+            <div class="nav-buttons">
+                <button onclick="prevLesson()">← Previous</button>
+                <button class="primary" onclick="nextLesson()">Next →</button>
+            </div>
+        </div>
+
+        <!-- Lesson 5: Combining symbols -->
+        <div class="lesson" id="lesson5">
+            <div class="lesson-number">Lesson 5</div>
+            <div class="lesson-title">Combining Symbols</div>
+            <div class="lesson-text">
+                The power of Bliss is combination. Put simple symbols together and they create new meanings.
+            </div>
+
+            <div class="combine-area">
+                <div class="intro-symbol">
+                    <div class="symbol-svg" style="width: 60px; height: 60px;">
+                        <svg viewBox="0 0 60 60">
+                            <circle cx="30" cy="15" r="8"/>
+                            <line x1="30" y1="23" x2="30" y2="45"/>
+                            <line x1="30" y1="45" x2="20" y2="58"/>
+                            <line x1="30" y1="45" x2="40" y2="58"/>
+                        </svg>
+                    </div>
+                    <div class="label">Person</div>
+                </div>
+                <div class="combine-plus">+</div>
+                <div class="intro-symbol">
+                    <div class="symbol-svg" style="width: 60px; height: 60px;">
+                        <svg viewBox="0 0 60 60">
+                            <rect x="10" y="15" width="40" height="35"/>
+                        </svg>
+                    </div>
+                    <div class="label">Enclosure</div>
+                </div>
+                <div class="combine-equals">=</div>
+                <div class="intro-symbol">
+                    <div class="symbol-svg" style="width: 60px; height: 60px;">
+                        <svg viewBox="0 0 60 60">
+                            <rect x="8" y="12" width="44" height="38"/>
+                            <circle cx="30" cy="22" r="6"/>
+                            <line x1="30" y1="28" x2="30" y2="40"/>
+                            <line x1="30" y1="40" x2="22" y2="48"/>
+                            <line x1="30" y1="40" x2="38" y2="48"/>
+                        </svg>
+                    </div>
+                    <div class="label">House</div>
+                </div>
+            </div>
+
+            <div class="lesson-text">
+                A person + an enclosure = a house. The logic is visual. You don't need to memorize—you can figure it out.
+            </div>
+
+            <div class="nav-buttons">
+                <button onclick="prevLesson()">← Previous</button>
+                <button class="primary" onclick="nextLesson()">Next →</button>
+            </div>
+        </div>
+
+        <!-- Lesson 6: More symbols -->
+        <div class="lesson" id="lesson6">
+            <div class="lesson-number">Lesson 6</div>
+            <div class="lesson-title">Water and Fire</div>
+            <div class="lesson-text">
+                Natural elements have simple shapes. Water flows in waves. Fire points upward.
+            </div>
+
+            <div class="intro-symbols">
+                <div class="intro-symbol">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <path d="M5 30 Q15 20, 25 30 T45 30 T55 30"/>
+                        </svg>
+                    </div>
+                    <div class="symbol-name">Water</div>
+                    <div class="symbol-meaning">Flowing waves</div>
+                </div>
+
+                <div class="intro-symbol">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <path d="M30 10 L15 50 L30 40 L45 50 Z"/>
+                        </svg>
+                    </div>
+                    <div class="symbol-name">Fire</div>
+                    <div class="symbol-meaning">Flames pointing up</div>
+                </div>
+            </div>
+
+            <div class="lesson-text">
+                Water under food? Boiling. Fire under food? Cooking. The combinations build meaning from simple parts.
+            </div>
+
+            <div class="nav-buttons">
+                <button onclick="prevLesson()">← Previous</button>
+                <button class="primary" onclick="nextLesson()">Next →</button>
+            </div>
+        </div>
+
+        <!-- Lesson 7: Heart and Mind -->
+        <div class="lesson" id="lesson7">
+            <div class="lesson-number">Lesson 7</div>
+            <div class="lesson-title">Heart and Mind</div>
+            <div class="lesson-text">
+                Abstract concepts also have symbols. The heart represents feelings. A shape at the top of the person represents the mind.
+            </div>
+
+            <div class="intro-symbols">
+                <div class="intro-symbol">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <path d="M30 50 L15 35 Q5 25, 15 15 Q25 5, 30 20 Q35 5, 45 15 Q55 25, 45 35 Z" class="filled"/>
+                        </svg>
+                    </div>
+                    <div class="symbol-name">Feeling</div>
+                    <div class="symbol-meaning">The heart</div>
+                </div>
+
+                <div class="intro-symbol">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <circle cx="30" cy="30" r="15"/>
+                            <line x1="30" y1="15" x2="30" y2="5"/>
+                        </svg>
+                    </div>
+                    <div class="symbol-name">Mind</div>
+                    <div class="symbol-meaning">Thoughts rise up</div>
+                </div>
+            </div>
+
+            <div class="lesson-text">
+                Heart + positive = happy. Mind + question = wondering. Abstract ideas become visual.
+            </div>
+
+            <div class="nav-buttons">
+                <button onclick="prevLesson()">← Previous</button>
+                <button class="primary" onclick="nextLesson()">Next →</button>
+            </div>
+        </div>
+
+        <!-- Lesson 8: Final -->
+        <div class="lesson" id="lesson8">
+            <div class="lesson-number">Congratulations</div>
+            <div class="lesson-title">You've Started!</div>
+            <div class="lesson-text">
+                You now know the basic building blocks of Bliss Symbolics:
+            </div>
+
+            <div class="symbol-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="symbol-card" style="cursor: default;">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <line x1="5" y1="50" x2="55" y2="50"/>
+                        </svg>
+                    </div>
+                    <div class="label">Earth</div>
+                </div>
+                <div class="symbol-card" style="cursor: default;">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <line x1="5" y1="10" x2="55" y2="10"/>
+                        </svg>
+                    </div>
+                    <div class="label">Sky</div>
+                </div>
+                <div class="symbol-card" style="cursor: default;">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <circle cx="30" cy="15" r="8"/>
+                            <line x1="30" y1="23" x2="30" y2="45"/>
+                            <line x1="30" y1="45" x2="20" y2="58"/>
+                            <line x1="30" y1="45" x2="40" y2="58"/>
+                        </svg>
+                    </div>
+                    <div class="label">Person</div>
+                </div>
+                <div class="symbol-card" style="cursor: default;">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <rect x="10" y="15" width="40" height="35"/>
+                        </svg>
+                    </div>
+                    <div class="label">Enclosure</div>
+                </div>
+                <div class="symbol-card" style="cursor: default;">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <path d="M5 30 Q15 20, 25 30 T45 30 T55 30"/>
+                        </svg>
+                    </div>
+                    <div class="label">Water</div>
+                </div>
+                <div class="symbol-card" style="cursor: default;">
+                    <div class="symbol-svg">
+                        <svg viewBox="0 0 60 60">
+                            <path d="M30 10 L15 50 L30 40 L45 50 Z"/>
+                        </svg>
+                    </div>
+                    <div class="label">Fire</div>
+                </div>
+            </div>
+
+            <div class="lesson-text" style="margin-top: 30px;">
+                Charles Bliss created this system so people who speak different languages could understand each other. The symbols are logical, not arbitrary. With these basics, you can start to read and build meaning.
+            </div>
+
+            <div class="nav-buttons">
+                <button onclick="prevLesson()">← Previous</button>
+                <button class="primary" onclick="location.href='../../bliss.html'">See Full Reference →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLesson = 1;
+        const totalLessons = 8;
+
+        function updateProgress() {
+            const progress = document.getElementById('progress');
+            progress.innerHTML = '';
+            for (let i = 1; i <= totalLessons; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'progress-dot';
+                if (i < currentLesson) dot.classList.add('complete');
+                if (i === currentLesson) dot.classList.add('active');
+                progress.appendChild(dot);
+            }
+        }
+
+        function showLesson(n) {
+            document.querySelectorAll('.lesson').forEach(l => l.classList.remove('active'));
+            document.getElementById(`lesson${n}`).classList.add('active');
+            currentLesson = n;
+            updateProgress();
+            window.scrollTo(0, 0);
+        }
+
+        function nextLesson() {
+            if (currentLesson < totalLessons) {
+                showLesson(currentLesson + 1);
+            }
+        }
+
+        function prevLesson() {
+            if (currentLesson > 1) {
+                showLesson(currentLesson - 1);
+            }
+        }
+
+        function checkAnswer(card, correctAnswer) {
+            const answer = card.dataset.answer;
+            const feedback = document.getElementById('feedback1');
+
+            document.querySelectorAll('#quiz1 .symbol-card').forEach(c => {
+                c.classList.remove('selected', 'wrong');
+            });
+
+            if (answer === correctAnswer) {
+                card.classList.add('selected');
+                feedback.textContent = 'Correct! The line at the top is the sky.';
+                feedback.className = 'feedback correct';
+            } else {
+                card.classList.add('wrong');
+                feedback.textContent = 'Not quite. Remember: sky is at the top.';
+                feedback.className = 'feedback incorrect';
+            }
+        }
+
+        updateProgress();
+    </script>
+</body>
+</html>

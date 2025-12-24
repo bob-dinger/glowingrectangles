@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Reflection Test</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.co/gsap@3/dist/gsap.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a12;
+            color: #fff;
+            font-family: 'Georgia', serif;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            padding-top: 40px;
+            overflow: hidden;
+        }
+
+        .info-section {
+            width: 380px;
+            background: #0d0d18;
+            border-left: 1px solid #2a2a3a;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: #e8e0d0;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            font-style: italic;
+            text-align: center;
+        }
+
+        #tweetViz {
+            background: #12121a;
+            border-radius: 12px;
+            border: 1px solid #2a2a3a;
+        }
+
+        .controls {
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        button {
+            background: linear-gradient(to bottom, #3a3a4a, #2a2a3a);
+            border: 1px solid #5a5a6a;
+            color: #d0d0e0;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(to bottom, #4a4a5a, #3a3a4a);
+            box-shadow: 0 0 15px rgba(100,100,150,0.3);
+        }
+
+        .info-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #c0b8a8;
+        }
+
+        .question-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-left: 3px solid #5a5a8a;
+        }
+
+        .question-card h4 {
+            color: #8a8aaa;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .question-card p {
+            color: #bbb;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        .answer-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-size: 0.85rem;
+        }
+
+        .intuitive {
+            color: #4a9dff;
+        }
+
+        .correct {
+            color: #4ade80;
+        }
+
+        .divider {
+            height: 1px;
+            background: #2a2a3a;
+            margin: 20px 0;
+        }
+
+        .explanation {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .explanation strong {
+            color: #bbb;
+        }
+
+        .system-box {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .system {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .system-1 {
+            background: rgba(74, 157, 255, 0.1);
+            border: 1px solid rgba(74, 157, 255, 0.3);
+        }
+
+        .system-1 h5 {
+            color: #4a9dff;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .system-2 {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .system-2 h5 {
+            color: #4ade80;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .system p {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .footnote {
+            margin-top: auto;
+            padding-top: 20px;
+            color: #555;
+            font-size: 0.8rem;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        .tweet-bird {
+            fill: #4a9dff;
+        }
+
+        .tweet-text {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 11px;
+            fill: #4a9dff;
+        }
+
+        .correct-tweet .tweet-bird {
+            fill: #4ade80;
+        }
+
+        .correct-tweet .tweet-text {
+            fill: #4ade80;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.blue { background: #4a9dff; }
+        .legend-dot.green { background: #4ade80; }
+
+        .legend-label {
+            color: #888;
+        }
+
+        .book-link {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .book-link a {
+            color: #8a8aff;
+            text-decoration: none;
+        }
+
+        .book-link a:hover {
+            text-decoration: underline;
+        }
+
+        .question-prompt {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #3a3a5a;
+            border-radius: 8px;
+            padding: 16px 24px;
+            margin-bottom: 16px;
+            color: #ccc;
+            font-size: 1.1rem;
+            font-style: italic;
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .conversation-tweet {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .conversation-tweet .tweet-text {
+            font-size: 12px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="viz-section">
+            <h1>10 Cent Tweets</h1>
+            <p class="subtitle">What happens when you ask the internet a trick question</p>
+
+            <div class="question-prompt">
+                "A bat and a ball cost $1.10. The bat costs $1.00 more than the ball. How much does the ball cost?"
+            </div>
+
+            <div class="controls">
+                <button id="startBtn">Ask the Internet</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <svg id="tweetViz" width="600" height="420"></svg>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot blue"></div>
+                    <span class="legend-label">System 1</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot green"></div>
+                    <span class="legend-label">System 2</span>
+                </div>
+            </div>
+            <div class="book-link">
+                From <a href="https://www.amazon.com/Thinking-Fast-Slow-Daniel-Kahneman/dp/0374533555" target="_blank">Thinking, Fast and Slow</a>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-title">Cognitive Reflection Test</div>
+
+            <p class="explanation">
+                Three simple questions designed to reveal the battle between <strong>intuition</strong> and <strong>reflection</strong> in your mind.
+            </p>
+
+            <div class="question-card">
+                <h4>Question 1: Bat & Ball</h4>
+                <p>A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much does the ball cost?</p>
+                <div class="answer-row">
+                    <span class="intuitive">Intuitive: 10 cents</span>
+                    <span class="correct">Correct: 5 cents</span>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <h4>Question 2: Widgets</h4>
+                <p>If it takes 5 machines 5 minutes to make 5 widgets, how long would it take 100 machines to make 100 widgets?</p>
+                <div class="answer-row">
+                    <span class="intuitive">Intuitive: 100 min</span>
+                    <span class="correct">Correct: 5 min</span>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <h4>Question 3: Lily Pads</h4>
+                <p>A patch of lily pads doubles every day. If it takes 48 days to cover the lake, how long to cover half?</p>
+                <div class="answer-row">
+                    <span class="intuitive">Intuitive: 24 days</span>
+                    <span class="correct">Correct: 47 days</span>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <p class="explanation">
+                The wrong answers <strong>feel</strong> right. That's the point. Your fast, intuitive mind jumps to a conclusion before your slow, analytical mind can intervene.
+            </p>
+
+            <div class="system-box">
+                <div class="system system-1">
+                    <h5>System 1</h5>
+                    <p>Fast, automatic, intuitive. "Obviously 10 cents!"</p>
+                </div>
+                <div class="system system-2">
+                    <h5>System 2</h5>
+                    <p>Slow, effortful, analytical. "Wait, let me check..."</p>
+                </div>
+            </div>
+
+            <div class="footnote">
+                Based on Shane Frederick's Cognitive Reflection Test (2005). Most people get 0-1 correct on first attempt. The visualization shows what happens when you post the bat & ball question on social media.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 420;
+
+        const svg = d3.select("#tweetViz");
+
+        // Twitter bird path
+        const birdPath = "M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z";
+
+        let isAnimating = false;
+        let tweets = [];
+        let animationTimeouts = [];
+        let greenBird = null;
+        let blueBird = null;
+
+        function createFloodTweet() {
+            const x = Math.random() * (width - 100) + 30;
+            const y = Math.random() * (height - 60) + 20;
+
+            const group = svg.append("g")
+                .attr("transform", `translate(${x}, ${y})`)
+                .attr("opacity", 0);
+
+            group.append("path")
+                .attr("d", birdPath)
+                .attr("transform", "scale(0.8)")
+                .attr("fill", "#4a9dff");
+
+            group.append("text")
+                .attr("x", 24)
+                .attr("y", 14)
+                .attr("fill", "#4a9dff")
+                .attr("font-family", "-apple-system, BlinkMacSystemFont, sans-serif")
+                .attr("font-size", "12px")
+                .text("10c");
+
+            tweets.push(group);
+
+            gsap.to(group.node(), { opacity: 1, duration: 0.3 });
+            gsap.to(group.node(), {
+                x: `+=${(Math.random() - 0.5) * 40}`,
+                y: `+=${(Math.random() - 0.5) * 40}`,
+                opacity: 0,
+                duration: 1.5 + Math.random() * 1.5,
+                delay: 0.3,
+                onComplete: () => group.remove()
+            });
+        }
+
+        function createConversationBird(color, x, y) {
+            const group = svg.append("g")
+                .attr("transform", `translate(${x}, ${y})`)
+                .attr("opacity", 0);
+
+            group.append("path")
+                .attr("d", birdPath)
+                .attr("transform", "scale(1)")
+                .attr("fill", color);
+
+            group.append("text")
+                .attr("class", "bird-text")
+                .attr("x", 28)
+                .attr("y", 16)
+                .attr("fill", color)
+                .attr("font-family", "-apple-system, BlinkMacSystemFont, sans-serif")
+                .attr("font-size", "14px")
+                .text("");
+
+            return group;
+        }
+
+        function updateBirdText(bird, text) {
+            bird.select(".bird-text").text(text);
+        }
+
+        function startAnimation() {
+            if (isAnimating) return;
+            isAnimating = true;
+            document.getElementById("startBtn").textContent = "Asking...";
+
+            // Clear previous
+            tweets.forEach(t => t.remove());
+            tweets = [];
+            if (greenBird) greenBird.remove();
+            if (blueBird) blueBird.remove();
+            greenBird = null;
+            blueBird = null;
+            animationTimeouts.forEach(t => clearTimeout(t));
+            animationTimeouts = [];
+
+            // Spawn 200 wrong answers over 2.5 seconds
+            for (let i = 0; i < 200; i++) {
+                const timeout = setTimeout(() => createFloodTweet(), i * 12);
+                animationTimeouts.push(timeout);
+            }
+
+            // Create the two conversation birds
+            const setupConvo = setTimeout(() => {
+                greenBird = createConversationBird("#4ade80", 40, 280);
+                blueBird = createConversationBird("#4a9dff", 40, 340);
+                tweets.push(greenBird, blueBird);
+            }, 4000);
+            animationTimeouts.push(setupConvo);
+
+            // Green appears with first message
+            const green1 = setTimeout(() => {
+                gsap.to(greenBird.node(), { opacity: 1, duration: 0.3 });
+                updateBirdText(greenBird, "hey guys, actually I think it's 5c?");
+            }, 4500);
+            animationTimeouts.push(green1);
+
+            // Blue appears confused
+            const blue1 = setTimeout(() => {
+                gsap.to(blueBird.node(), { opacity: 1, duration: 0.3 });
+                updateBirdText(blueBird, "what?!?");
+            }, 5500);
+            animationTimeouts.push(blue1);
+
+            // Green clarifies
+            const green2 = setTimeout(() => {
+                updateBirdText(greenBird, "the bat and the ball question...I think it's 5c");
+            }, 6500);
+            animationTimeouts.push(green2);
+
+            // Blue has moved on
+            const blue2 = setTimeout(() => {
+                updateBirdText(blueBird, "oh. we're talking about Nicki Minaj's cousin's balls now");
+            }, 7800);
+            animationTimeouts.push(blue2);
+
+            // Done
+            const doneTimeout = setTimeout(() => {
+                document.getElementById("startBtn").textContent = "That's Social Media";
+                isAnimating = false;
+            }, 9000);
+            animationTimeouts.push(doneTimeout);
+        }
+
+        function reset() {
+            isAnimating = false;
+            animationTimeouts.forEach(t => clearTimeout(t));
+            animationTimeouts = [];
+            tweets.forEach(t => t.remove());
+            tweets = [];
+            if (greenBird) greenBird.remove();
+            if (blueBird) blueBird.remove();
+            greenBird = null;
+            blueBird = null;
+            document.getElementById("startBtn").textContent = "Ask the Internet";
+        }
+
+        document.getElementById("startBtn").addEventListener("click", startAnimation);
+        document.getElementById("resetBtn").addEventListener("click", reset);
+    </script>
+</body>
+</html>

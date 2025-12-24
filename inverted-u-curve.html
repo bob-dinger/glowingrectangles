@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Inverted U-Curve</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container { display: flex; height: 100vh; }
+        .graph-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+        }
+        .examples-section {
+            width: 320px;
+            background: #111118;
+            border-left: 1px solid #222;
+            padding: 40px 30px;
+            overflow-y: auto;
+        }
+        h1 { font-size: 28px; margin-bottom: 10px; color: #fff; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; }
+        h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 20px; }
+        .example-item {
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .example-item:hover { background: rgba(255,255,255,0.08); border-color: #333; }
+        .example-item.active { background: rgba(249, 115, 22, 0.15); border-color: #F97316; }
+        .example-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+        .example-desc { font-size: 12px; color: #888; }
+        svg { overflow: visible; }
+        .curve-path { fill: none; stroke: #F97316; stroke-width: 3; }
+        .axis-line { stroke: #333; stroke-width: 1; }
+        .axis-label { fill: #666; font-size: 12px; }
+        .phase-label { font-size: 16px; font-weight: 600; fill: #fff; opacity: 0; }
+        .phase-label.visible { opacity: 1; }
+        .dot { fill: #F97316; stroke: #fff; stroke-width: 2; opacity: 0; }
+        .dot.visible { opacity: 1; }
+        .optimal-zone { fill: rgba(249, 115, 22, 0.1); }
+        .optimal-marker { stroke: #F97316; stroke-width: 2; stroke-dasharray: 5,5; opacity: 0.5; }
+        .zone-label { fill: #555; font-size: 11px; }
+        .instructions { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); color: #555; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="graph-section">
+            <h1>The Inverted U-Curve</h1>
+            <p class="subtitle">Too little or too much — find the sweet spot</p>
+            <div id="graph"></div>
+            <p class="instructions">Click an example to find the optimal zone</p>
+        </div>
+        <div class="examples-section">
+            <h2>Examples</h2>
+            <div class="example-item" data-example="stress">
+                <div class="example-title">Stress & Performance</div>
+                <div class="example-desc">Yerkes-Dodson Law</div>
+            </div>
+            <div class="example-item" data-example="tax">
+                <div class="example-title">Tax Rates & Revenue</div>
+                <div class="example-desc">The Laffer Curve</div>
+            </div>
+            <div class="example-item" data-example="caffeine">
+                <div class="example-title">Caffeine & Focus</div>
+                <div class="example-desc">One cup good, five cups bad</div>
+            </div>
+            <div class="example-item" data-example="choice">
+                <div class="example-title">Choice & Happiness</div>
+                <div class="example-desc">Paradox of choice</div>
+            </div>
+            <div class="example-item" data-example="team">
+                <div class="example-title">Team Size & Output</div>
+                <div class="example-desc">Too few or too many</div>
+            </div>
+            <div class="example-item" data-example="confidence">
+                <div class="example-title">Confidence & Success</div>
+                <div class="example-desc">Humble vs arrogant</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 450;
+        const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        // Inverted U-curve function
+        function invertedU(x) {
+            return 0.2 + 0.7 * Math.sin(x * Math.PI);
+        }
+
+        // Generate curve data
+        const curveData = [];
+        for (let i = 0; i <= 100; i++) {
+            const x = i / 100;
+            curveData.push({ x, y: invertedU(x) });
+        }
+
+        // Create SVG
+        const svg = d3.select('#graph')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const g = svg.append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Scales
+        const xScale = d3.scaleLinear().domain([0, 1]).range([0, innerWidth]);
+        const yScale = d3.scaleLinear().domain([0, 1]).range([innerHeight, 0]);
+
+        // Optimal zone highlight
+        g.append('rect')
+            .attr('class', 'optimal-zone')
+            .attr('x', xScale(0.35))
+            .attr('y', 0)
+            .attr('width', xScale(0.65) - xScale(0.35))
+            .attr('height', innerHeight);
+
+        // Axes
+        g.append('line').attr('class', 'axis-line')
+            .attr('x1', 0).attr('y1', innerHeight).attr('x2', innerWidth).attr('y2', innerHeight);
+        g.append('line').attr('class', 'axis-line')
+            .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', innerHeight);
+
+        g.append('text').attr('class', 'axis-label')
+            .attr('x', innerWidth / 2).attr('y', innerHeight + 45)
+            .attr('text-anchor', 'middle').text('Amount / Intensity');
+
+        g.append('text').attr('class', 'axis-label')
+            .attr('x', -innerHeight / 2).attr('y', -40)
+            .attr('text-anchor', 'middle').attr('transform', 'rotate(-90)').text('Outcome / Performance');
+
+        // Zone labels
+        g.append('text').attr('class', 'zone-label')
+            .attr('x', xScale(0.15)).attr('y', innerHeight - 10)
+            .attr('text-anchor', 'middle').text('Too Little');
+
+        g.append('text').attr('class', 'zone-label')
+            .attr('x', xScale(0.5)).attr('y', 20)
+            .attr('text-anchor', 'middle').text('Sweet Spot');
+
+        g.append('text').attr('class', 'zone-label')
+            .attr('x', xScale(0.85)).attr('y', innerHeight - 10)
+            .attr('text-anchor', 'middle').text('Too Much');
+
+        // Peak marker
+        g.append('line').attr('class', 'optimal-marker')
+            .attr('x1', xScale(0.5)).attr('y1', 0)
+            .attr('x2', xScale(0.5)).attr('y2', innerHeight);
+
+        // Line generator
+        const line = d3.line()
+            .x(d => xScale(d.x))
+            .y(d => yScale(d.y))
+            .curve(d3.curveMonotoneX);
+
+        // Draw curve
+        g.append('path').datum(curveData).attr('class', 'curve-path').attr('d', line);
+
+        // Moving dot
+        const dot = g.append('circle').attr('class', 'dot').attr('r', 8);
+
+        // Labels
+        const phaseLabel = g.append('text').attr('class', 'phase-label').attr('text-anchor', 'middle');
+        const valueLabel = g.append('text').attr('class', 'phase-label').attr('text-anchor', 'middle').attr('font-size', '13px').attr('fill', '#888');
+
+        // Example phases
+        const examplePhases = {
+            stress: [
+                { range: [0, 0.2], label: 'Bored', value: 'No motivation' },
+                { range: [0.2, 0.4], label: 'Engaged', value: 'Building focus' },
+                { range: [0.4, 0.6], label: 'Peak Performance', value: 'Optimal arousal' },
+                { range: [0.6, 0.8], label: 'Anxious', value: 'Declining quality' },
+                { range: [0.8, 1], label: 'Burnout', value: 'Paralysis' }
+            ],
+            tax: [
+                { range: [0, 0.2], label: '0-10% Rate', value: 'Low revenue' },
+                { range: [0.2, 0.4], label: '20-30% Rate', value: 'Growing revenue' },
+                { range: [0.4, 0.6], label: '40-50% Rate', value: 'Maximum revenue' },
+                { range: [0.6, 0.8], label: '60-70% Rate', value: 'Evasion begins' },
+                { range: [0.8, 1], label: '80%+ Rate', value: 'Economy collapses' }
+            ],
+            caffeine: [
+                { range: [0, 0.2], label: 'No Coffee', value: 'Baseline' },
+                { range: [0.2, 0.4], label: '1 Cup', value: 'Alert' },
+                { range: [0.4, 0.6], label: '2 Cups', value: 'Peak focus' },
+                { range: [0.6, 0.8], label: '4 Cups', value: 'Jittery' },
+                { range: [0.8, 1], label: '6+ Cups', value: 'Anxious mess' }
+            ],
+            choice: [
+                { range: [0, 0.2], label: 'No Options', value: 'Trapped' },
+                { range: [0.2, 0.4], label: 'Few Options', value: 'Empowered' },
+                { range: [0.4, 0.6], label: 'Good Selection', value: 'Satisfied' },
+                { range: [0.6, 0.8], label: 'Many Options', value: 'Decision fatigue' },
+                { range: [0.8, 1], label: 'Infinite Options', value: 'Paralyzed' }
+            ],
+            team: [
+                { range: [0, 0.2], label: '1-2 People', value: 'Under-resourced' },
+                { range: [0.2, 0.4], label: '3-5 People', value: 'Building momentum' },
+                { range: [0.4, 0.6], label: '5-8 People', value: 'Optimal team' },
+                { range: [0.6, 0.8], label: '10-15 People', value: 'Coordination cost' },
+                { range: [0.8, 1], label: '20+ People', value: 'Bureaucracy' }
+            ],
+            confidence: [
+                { range: [0, 0.2], label: 'Self-Doubt', value: 'Won\'t try' },
+                { range: [0.2, 0.4], label: 'Humble', value: 'Learning mindset' },
+                { range: [0.4, 0.6], label: 'Confident', value: 'Optimal performance' },
+                { range: [0.6, 0.8], label: 'Overconfident', value: 'Blind spots' },
+                { range: [0.8, 1], label: 'Arrogant', value: 'Downfall' }
+            ]
+        };
+
+        let currentAnimation = null;
+
+        function animateExample(exampleKey) {
+            if (currentAnimation) { currentAnimation.stop(); }
+
+            const phases = examplePhases[exampleKey];
+            const duration = 8000;
+            const startTime = Date.now();
+
+            dot.classed('visible', true);
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const x = progress;
+                const y = invertedU(x);
+
+                dot.attr('cx', xScale(x)).attr('cy', yScale(y));
+
+                const currentPhase = phases.find(p => x >= p.range[0] && x < p.range[1]) || phases[phases.length - 1];
+
+                phaseLabel
+                    .attr('x', xScale(x))
+                    .attr('y', yScale(y) - 25)
+                    .attr('class', 'phase-label visible')
+                    .text(currentPhase.label);
+
+                valueLabel
+                    .attr('x', xScale(x))
+                    .attr('y', yScale(y) + 35)
+                    .attr('class', 'phase-label visible')
+                    .text(currentPhase.value);
+
+                if (progress < 1) {
+                    currentAnimation.frameId = requestAnimationFrame(animate);
+                }
+            }
+
+            currentAnimation = {
+                frameId: requestAnimationFrame(animate),
+                stop: function() { cancelAnimationFrame(this.frameId); }
+            };
+        }
+
+        document.querySelectorAll('.example-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.example-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                animateExample(item.dataset.example);
+            });
+        });
+    </script>
+</body>
+</html>

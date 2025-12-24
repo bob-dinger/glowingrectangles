@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxonomy</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 { font-size: 32px; margin-bottom: 8px; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 40px; }
+
+        .path {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .level {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: #111;
+            border: 1px solid #222;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .level:first-child { border-radius: 12px 12px 0 0; }
+        .level:last-child { border-radius: 0 0 12px 12px; }
+        .level:hover { background: #1a1a1a; }
+
+        .level::after {
+            content: '';
+            position: absolute;
+            left: 35px;
+            bottom: -10px;
+            width: 2px;
+            height: 10px;
+            background: #333;
+        }
+        .level:last-child::after { display: none; }
+
+        .level-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .level-content { text-align: left; flex: 1; }
+        .level-rank {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+        }
+        .level-name {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .level-meaning {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .level-examples {
+            font-size: 12px;
+            color: #555;
+            text-align: right;
+        }
+
+        .mnemonic {
+            margin-top: 30px;
+            padding: 20px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+        }
+        .mnemonic-title {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .mnemonic-text {
+            font-size: 16px;
+            line-height: 1.8;
+        }
+        .mnemonic-text span {
+            color: #3B82F6;
+            font-weight: 600;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .tab {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .tab:hover { border-color: #555; color: #fff; }
+        .tab.active { background: #3B82F6; border-color: #3B82F6; color: #fff; }
+    </style>
+</head>
+<body>
+    <a href="../../home.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <h1>Taxonomy</h1>
+        <p class="subtitle">How we classify all life on Earth</p>
+
+        <div class="tabs">
+            <div class="tab active" data-creature="human">Human</div>
+            <div class="tab" data-creature="dog">Dog</div>
+            <div class="tab" data-creature="rose">Rose</div>
+        </div>
+
+        <div class="path" id="path"></div>
+
+        <div class="mnemonic">
+            <div class="mnemonic-title">Remember the order</div>
+            <div class="mnemonic-text">
+                <span>K</span>ing <span>P</span>hilip <span>C</span>ame <span>O</span>ver <span>F</span>or <span>G</span>ood <span>S</span>paghetti
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const creatures = {
+            human: [
+                { rank: 'Kingdom', name: 'Animalia', meaning: 'Animals', examples: 'vs Plants, Fungi', color: '#EF4444' },
+                { rank: 'Phylum', name: 'Chordata', meaning: 'Has a spine', examples: 'vs Insects, Jellyfish', color: '#F97316' },
+                { rank: 'Class', name: 'Mammalia', meaning: 'Warm-blooded, milk', examples: 'vs Birds, Reptiles', color: '#EAB308' },
+                { rank: 'Order', name: 'Primates', meaning: 'Big brains, hands', examples: 'vs Cats, Whales', color: '#22C55E' },
+                { rank: 'Family', name: 'Hominidae', meaning: 'Great apes', examples: 'vs Monkeys', color: '#14B8A6' },
+                { rank: 'Genus', name: 'Homo', meaning: 'Human-like', examples: 'vs Chimps, Gorillas', color: '#3B82F6' },
+                { rank: 'Species', name: 'sapiens', meaning: 'Wise', examples: 'That\'s us!', color: '#8B5CF6' },
+            ],
+            dog: [
+                { rank: 'Kingdom', name: 'Animalia', meaning: 'Animals', examples: 'vs Plants, Fungi', color: '#EF4444' },
+                { rank: 'Phylum', name: 'Chordata', meaning: 'Has a spine', examples: 'vs Insects, Jellyfish', color: '#F97316' },
+                { rank: 'Class', name: 'Mammalia', meaning: 'Warm-blooded, milk', examples: 'vs Birds, Reptiles', color: '#EAB308' },
+                { rank: 'Order', name: 'Carnivora', meaning: 'Meat-eater', examples: 'vs Primates, Rodents', color: '#22C55E' },
+                { rank: 'Family', name: 'Canidae', meaning: 'Dog family', examples: 'vs Cats, Bears', color: '#14B8A6' },
+                { rank: 'Genus', name: 'Canis', meaning: 'Dog/Wolf', examples: 'vs Foxes', color: '#3B82F6' },
+                { rank: 'Species', name: 'familiaris', meaning: 'Domestic', examples: 'Good boy!', color: '#8B5CF6' },
+            ],
+            rose: [
+                { rank: 'Kingdom', name: 'Plantae', meaning: 'Plants', examples: 'vs Animals, Fungi', color: '#EF4444' },
+                { rank: 'Phylum', name: 'Angiosperms', meaning: 'Flowering plants', examples: 'vs Ferns, Mosses', color: '#F97316' },
+                { rank: 'Class', name: 'Eudicots', meaning: 'True dicots', examples: 'vs Grasses, Lilies', color: '#EAB308' },
+                { rank: 'Order', name: 'Rosales', meaning: 'Rose-like', examples: 'vs Daisies, Mints', color: '#22C55E' },
+                { rank: 'Family', name: 'Rosaceae', meaning: 'Rose family', examples: 'Apples, Cherries too!', color: '#14B8A6' },
+                { rank: 'Genus', name: 'Rosa', meaning: 'Rose', examples: 'vs Strawberry', color: '#3B82F6' },
+                { rank: 'Species', name: 'gallica', meaning: 'French rose', examples: 'Many varieties', color: '#8B5CF6' },
+            ]
+        };
+
+        const pathEl = document.getElementById('path');
+        const tabs = document.querySelectorAll('.tab');
+
+        function render(creature) {
+            pathEl.innerHTML = creatures[creature].map(level => `
+                <div class="level">
+                    <div class="level-dot" style="background: ${level.color}"></div>
+                    <div class="level-content">
+                        <div class="level-rank">${level.rank}</div>
+                        <div class="level-name">${level.name}</div>
+                        <div class="level-meaning">${level.meaning}</div>
+                    </div>
+                    <div class="level-examples">${level.examples}</div>
+                </div>
+            `).join('');
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                render(tab.dataset.creature);
+            });
+        });
+
+        render('human');
+    </script>
+</body>
+</html>

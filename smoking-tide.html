@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Tide of Smoking - Rise and Fall</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #0a1628 0%, #1a2a4a 30%, #0a1628 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem 3rem;
+            font-family: 'Georgia', serif;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            color: #e8d5b7;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: #8fa5c4;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        #visualization {
+            position: relative;
+        }
+
+        .year-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffeedd;
+            text-shadow: 0 0 20px rgba(255,200,100,0.5);
+            font-family: 'Georgia', serif;
+        }
+
+        .stat-display {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.3rem;
+            color: #c4a882;
+            text-align: center;
+        }
+
+        .shore {
+            fill: #3a2a1a;
+        }
+
+        .sand {
+            fill: #5a4a3a;
+        }
+
+        .controls {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        button {
+            background: linear-gradient(to bottom, #4a6a9a, #3a5a8a);
+            border: 1px solid #6a8aba;
+            color: #e8f0ff;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(to bottom, #5a7aaa, #4a6a9a);
+            box-shadow: 0 0 15px rgba(100,150,200,0.4);
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(10,20,40,0.8);
+            padding: 1rem;
+            border-radius: 10px;
+            color: #8fa5c4;
+            font-size: 0.85rem;
+            border: 1px solid #3a5a8a;
+        }
+
+        .phase-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10,20,40,0.8);
+            padding: 1rem;
+            border-radius: 10px;
+            color: #e8d5b7;
+            font-size: 1rem;
+            border: 1px solid #3a5a8a;
+            max-width: 250px;
+        }
+
+        .phase-title {
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+            color: #ffa;
+        }
+
+        .examples-section {
+            margin-top: 3rem;
+            padding: 2rem;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        .examples-section h2 {
+            color: #e8d5b7;
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            letter-spacing: 1px;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .example-card {
+            background: rgba(20, 40, 70, 0.6);
+            border-radius: 12px;
+            padding: 1.2rem;
+            border: 1px solid #3a5a8a;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .example-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .example-card h3 {
+            color: #c4d4e8;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .example-card p {
+            color: #8a9ab0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .tide-status {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .example-card.past .tide-status {
+            color: #6a9a7a;
+        }
+
+        .example-card.past {
+            border-color: #4a7a6a;
+        }
+
+        .example-card.peak .tide-status {
+            color: #daa520;
+        }
+
+        .example-card.peak {
+            border-color: #8a7a3a;
+        }
+
+        .example-card.rising .tide-status {
+            color: #7a9ada;
+        }
+
+        .example-card.rising {
+            border-color: #5a7aaa;
+        }
+
+        .reflection {
+            text-align: center;
+            color: #8fa5c4;
+            font-style: italic;
+            margin-top: 2rem;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>THE TIDE OF SMOKING</h1>
+    <p class="subtitle">A Century of Rise and Retreat</p>
+
+    <div id="visualization"></div>
+
+    <div class="controls">
+        <button id="playBtn">Play Animation</button>
+        <button id="resetBtn">Reset</button>
+    </div>
+
+    <div class="examples-section">
+        <h2>Other Tides Rising and Falling</h2>
+
+        <div class="examples-grid">
+            <div class="example-card past">
+                <div class="tide-status">Tide Has Receded</div>
+                <h3>Landline Telephones</h3>
+                <p>1880s-2020s. Once in every home, now mostly elderly holdouts. The smartphone tsunami washed it away.</p>
+            </div>
+
+            <div class="example-card past">
+                <div class="tide-status">Tide Has Receded</div>
+                <h3>Cable Television</h3>
+                <p>1980s-2010s. Peak "500 channels" era gave way to cord-cutting. Streaming fragmented the ocean.</p>
+            </div>
+
+            <div class="example-card past">
+                <div class="tide-status">Tide Has Receded</div>
+                <h3>Mall Culture</h3>
+                <p>1970s-2000s. The suburban temple of commerce. Amazon and experiences pulled the tide back to shore.</p>
+            </div>
+
+            <div class="example-card past">
+                <div class="tide-status">Tide Has Receded</div>
+                <h3>Newspapers</h3>
+                <p>1850s-2000s. Once the morning ritual of millions. The internet didn't kill them—it drowned them.</p>
+            </div>
+
+            <div class="example-card peak">
+                <div class="tide-status">At Peak?</div>
+                <h3>Smartphone Addiction</h3>
+                <p>2007-??? Constant checking, doom scrolling, phantom vibrations. Are we at maximum tide, or still surging?</p>
+            </div>
+
+            <div class="example-card peak">
+                <div class="tide-status">At Peak?</div>
+                <h3>Social Media Obsession</h3>
+                <p>2008-??? The dopamine slot machine in your pocket. Gen Z is already showing signs of retreat.</p>
+            </div>
+
+            <div class="example-card peak">
+                <div class="tide-status">At Peak?</div>
+                <h3>Streaming Subscriptions</h3>
+                <p>2010s-??? Netflix, then Disney+, then... subscription fatigue. How many services before the tide turns?</p>
+            </div>
+
+            <div class="example-card peak">
+                <div class="tide-status">At Peak?</div>
+                <h3>Fast Fashion</h3>
+                <p>1990s-??? Shein hauls and disposable wardrobes. Sustainability awareness may be the turning tide.</p>
+            </div>
+
+            <div class="example-card rising">
+                <div class="tide-status">Tide Still Rising</div>
+                <h3>AI Tools</h3>
+                <p>2022-??? ChatGPT opened the floodgates. We're watching a tide surge out to sea in real-time.</p>
+            </div>
+
+            <div class="example-card rising">
+                <div class="tide-status">Tide Still Rising</div>
+                <h3>Remote Work</h3>
+                <p>2020-??? Pandemic pushed it far out. Return-to-office is fighting the current—who wins?</p>
+            </div>
+        </div>
+
+        <p class="reflection">Every phenomenon has its tide. The question is: where are we standing on the shore?</p>
+    </div>
+
+    <script>
+        // Historical smoking data (approximate US adult smoking rates)
+        const smokingData = [
+            { year: 1900, rate: 5, phase: "Dawn", desc: "Cigarettes are a novelty, hand-rolled" },
+            { year: 1910, rate: 8, phase: "Dawn", desc: "Machine-made cigarettes emerge" },
+            { year: 1920, rate: 15, phase: "Rising", desc: "WWI soldiers return with the habit" },
+            { year: 1930, rate: 25, phase: "Rising", desc: "Hollywood glamorizes smoking" },
+            { year: 1940, rate: 35, phase: "Surging", desc: "WWII - cigarettes in soldier rations" },
+            { year: 1945, rate: 42, phase: "Surging", desc: "Peak wartime smoking culture" },
+            { year: 1950, rate: 44, phase: "Cresting", desc: "Smoking is everywhere, normalized" },
+            { year: 1955, rate: 45, phase: "Cresting", desc: "First health concerns emerge" },
+            { year: 1960, rate: 44, phase: "Peak", desc: "42% of adults smoke regularly" },
+            { year: 1964, rate: 42, phase: "Peak", desc: "Surgeon General's landmark report" },
+            { year: 1970, rate: 37, phase: "Turning", desc: "TV/radio ads banned" },
+            { year: 1980, rate: 33, phase: "Retreating", desc: "Health campaigns intensify" },
+            { year: 1990, rate: 25, phase: "Retreating", desc: "Smoke-free workplaces emerge" },
+            { year: 2000, rate: 23, phase: "Retreating", desc: "Major lawsuits, public awareness" },
+            { year: 2010, rate: 19, phase: "Ebbing", desc: "Indoor smoking bans widespread" },
+            { year: 2015, rate: 15, phase: "Ebbing", desc: "E-cigarettes complicate the picture" },
+            { year: 2020, rate: 12, phase: "Low Tide", desc: "Pandemic, continued decline" },
+            { year: 2024, rate: 11, phase: "Low Tide", desc: "Historic lows, but still millions" }
+        ];
+
+        const width = 1000;
+        const height = 500;
+        const margin = { top: 100, right: 50, bottom: 80, left: 50 };
+
+        const svg = d3.select("#visualization")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Create gradient for water
+        const defs = svg.append("defs");
+
+        const waterGradient = defs.append("linearGradient")
+            .attr("id", "waterGradient")
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "0%")
+            .attr("y2", "100%");
+
+        waterGradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "#1a4a6a");
+
+        waterGradient.append("stop")
+            .attr("offset", "50%")
+            .attr("stop-color", "#0a3a5a");
+
+        waterGradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "#052a4a");
+
+        // Foam gradient
+        const foamGradient = defs.append("linearGradient")
+            .attr("id", "foamGradient")
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "100%")
+            .attr("y2", "0%");
+
+        foamGradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "rgba(255,255,255,0)");
+
+        foamGradient.append("stop")
+            .attr("offset", "50%")
+            .attr("stop-color", "rgba(255,255,255,0.6)");
+
+        foamGradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "rgba(255,255,255,0.2)");
+
+        // Shore (right side - where wave comes from/returns to)
+        svg.append("rect")
+            .attr("class", "shore")
+            .attr("x", width - 60)
+            .attr("y", 0)
+            .attr("width", 60)
+            .attr("height", height)
+            .attr("fill", "#2a1a0a");
+
+        // Sandy beach gradient
+        svg.append("rect")
+            .attr("x", width - 100)
+            .attr("y", 0)
+            .attr("width", 40)
+            .attr("height", height)
+            .attr("fill", "#4a3a2a")
+            .attr("opacity", 0.5);
+
+        // Scale for how far the wave reaches (left = further out to sea)
+        const xScale = d3.scaleLinear()
+            .domain([0, 50]) // 0-50% smoking rate
+            .range([width - 100, 50]); // Right (shore) to Left (sea)
+
+        // Year display
+        const yearDisplay = d3.select("#visualization")
+            .append("div")
+            .attr("class", "year-display")
+            .text("1900");
+
+        const statDisplay = d3.select("#visualization")
+            .append("div")
+            .attr("class", "stat-display")
+            .text("5% of adults smoke");
+
+        // Phase indicator
+        const phaseIndicator = d3.select("#visualization")
+            .append("div")
+            .attr("class", "phase-indicator")
+            .html("<div class='phase-title'>Dawn</div><div>Cigarettes are a novelty, hand-rolled</div>");
+
+        // Legend
+        d3.select("#visualization")
+            .append("div")
+            .attr("class", "legend")
+            .html(`
+                <div><strong>The Metaphor:</strong></div>
+                <div style="margin-top: 5px;">Shore = No smokers</div>
+                <div>Far out to sea = Peak adoption</div>
+                <div style="margin-top: 10px;">Wave distance shows</div>
+                <div>smoking prevalence</div>
+            `);
+
+        // Create the wave shape
+        const waveGroup = svg.append("g");
+
+        // Multiple wave layers for depth effect
+        function createWavePath(reach, amplitude, phase, yOffset) {
+            const points = [];
+            const waveHeight = height;
+
+            for (let y = 0; y <= waveHeight; y += 5) {
+                // Multiple sine waves for organic look
+                const wave1 = Math.sin((y / 30) + phase) * amplitude;
+                const wave2 = Math.sin((y / 50) + phase * 1.3) * (amplitude * 0.5);
+                const wave3 = Math.sin((y / 15) + phase * 0.7) * (amplitude * 0.3);
+
+                const x = reach + wave1 + wave2 + wave3;
+                points.push([x, y]);
+            }
+
+            return points;
+        }
+
+        // Wave layers
+        const backWave = waveGroup.append("path")
+            .attr("fill", "#0a2a4a")
+            .attr("opacity", 0.6);
+
+        const midWave = waveGroup.append("path")
+            .attr("fill", "url(#waterGradient)")
+            .attr("opacity", 0.8);
+
+        const frontWave = waveGroup.append("path")
+            .attr("fill", "#1a5a8a")
+            .attr("opacity", 0.5);
+
+        const foam = waveGroup.append("path")
+            .attr("fill", "none")
+            .attr("stroke", "rgba(255,255,255,0.4)")
+            .attr("stroke-width", 3);
+
+        let currentIndex = 0;
+        let animationPhase = 0;
+        let isPlaying = false;
+        let animationId = null;
+
+        function updateWave(rate, phase) {
+            const reach = xScale(rate);
+
+            // Create wave paths with different amplitudes
+            const backPoints = createWavePath(reach - 30, 15, phase, 0);
+            const midPoints = createWavePath(reach, 20, phase + 0.5, 0);
+            const frontPoints = createWavePath(reach + 20, 10, phase + 1, 0);
+
+            // Convert to path
+            const lineGen = d3.line().curve(d3.curveBasis);
+
+            // Add closing points to make filled shapes
+            const backPath = lineGen(backPoints) + ` L ${width - 60} ${height} L ${width - 60} 0 Z`;
+            const midPath = lineGen(midPoints) + ` L ${width - 60} ${height} L ${width - 60} 0 Z`;
+            const frontPath = lineGen(frontPoints) + ` L ${width - 60} ${height} L ${width - 60} 0 Z`;
+
+            backWave.attr("d", backPath);
+            midWave.attr("d", midPath);
+            frontWave.attr("d", frontPath);
+            foam.attr("d", lineGen(midPoints));
+        }
+
+        function updateDisplay(data) {
+            yearDisplay.text(data.year);
+            statDisplay.text(`${data.rate}% of adults smoke`);
+            phaseIndicator.html(`<div class='phase-title'>${data.phase}</div><div>${data.desc}</div>`);
+        }
+
+        // Smoothed wave rate for animation
+        let smoothedWaveRate = smokingData[0].rate;
+
+        // Continuous wave animation
+        function animateWaves() {
+            animationPhase += 0.03;
+
+            // Smoothly interpolate wave position
+            const targetWaveRate = isPlaying ? displayedRate : smokingData[currentIndex].rate;
+            smoothedWaveRate += (targetWaveRate - smoothedWaveRate) * 0.08;
+
+            updateWave(smoothedWaveRate, animationPhase);
+            animationId = requestAnimationFrame(animateWaves);
+        }
+
+        // Start wave animation
+        animateWaves();
+        updateDisplay(smokingData[0]);
+        updateWave(smokingData[0].rate, 0);
+
+        // Create a smooth spline through all data points for continuous interpolation
+        const yearExtent = [smokingData[0].year, smokingData[smokingData.length - 1].year];
+        const rateInterpolator = d3.scaleLinear()
+            .domain(smokingData.map(d => d.year))
+            .range(smokingData.map(d => d.rate))
+            .clamp(true);
+
+        // Use cubic spline interpolation for ultra-smooth rate values
+        function getSmoothedRate(year) {
+            // Find surrounding data points
+            let lower = smokingData[0];
+            let upper = smokingData[1];
+
+            for (let i = 0; i < smokingData.length - 1; i++) {
+                if (year >= smokingData[i].year && year <= smokingData[i + 1].year) {
+                    lower = smokingData[i];
+                    upper = smokingData[i + 1];
+                    break;
+                }
+            }
+
+            // Smooth easing between points
+            const t = (year - lower.year) / (upper.year - lower.year);
+            const easedT = t * t * (3 - 2 * t); // Smoothstep easing
+
+            return lower.rate + (upper.rate - lower.rate) * easedT;
+        }
+
+        function getPhaseForYear(year) {
+            for (let i = smokingData.length - 1; i >= 0; i--) {
+                if (year >= smokingData[i].year) {
+                    return smokingData[i];
+                }
+            }
+            return smokingData[0];
+        }
+
+        // Timeline animation
+        let timelineInterval = null;
+        let currentYear = 1900;
+        let targetRate = smokingData[0].rate;
+        let displayedRate = smokingData[0].rate;
+
+        function playTimeline() {
+            if (isPlaying) return;
+            isPlaying = true;
+            currentYear = 1900;
+            displayedRate = smokingData[0].rate;
+            document.getElementById("playBtn").textContent = "Playing...";
+
+            const startYear = 1900;
+            const endYear = 2024;
+            const totalDuration = 15000; // 15 seconds for full animation
+            const startTime = performance.now();
+
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / totalDuration, 1);
+
+                // Smooth easing for overall timeline
+                const easedProgress = progress < 0.5
+                    ? 2 * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+                currentYear = startYear + (endYear - startYear) * easedProgress;
+
+                // Get smoothly interpolated rate
+                targetRate = getSmoothedRate(currentYear);
+
+                // Extra smoothing: lerp toward target
+                displayedRate += (targetRate - displayedRate) * 0.15;
+
+                // Update wave position
+                currentIndex = smokingData.findIndex((d, i) =>
+                    i === smokingData.length - 1 ||
+                    (currentYear >= d.year && currentYear < smokingData[i + 1].year)
+                );
+
+                // Update displays with smooth values
+                yearDisplay.text(Math.round(currentYear));
+                statDisplay.text(`${displayedRate.toFixed(1)}% of adults smoke`);
+
+                // Update phase indicator less frequently to avoid flicker
+                const phaseData = getPhaseForYear(currentYear);
+                phaseIndicator.html(`<div class='phase-title'>${phaseData.phase}</div><div>${phaseData.desc}</div>`);
+
+                if (progress < 1) {
+                    timelineInterval = requestAnimationFrame(animate);
+                } else {
+                    isPlaying = false;
+                    document.getElementById("playBtn").textContent = "Play Again";
+                    currentIndex = smokingData.length - 1;
+                    displayedRate = smokingData[currentIndex].rate;
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function reset() {
+            isPlaying = false;
+            if (timelineInterval) cancelAnimationFrame(timelineInterval);
+            currentIndex = 0;
+            currentYear = 1900;
+            displayedRate = smokingData[0].rate;
+            smoothedWaveRate = smokingData[0].rate;
+            updateDisplay(smokingData[0]);
+            document.getElementById("playBtn").textContent = "Play Animation";
+        }
+
+        document.getElementById("playBtn").addEventListener("click", playTimeline);
+        document.getElementById("resetBtn").addEventListener("click", reset);
+
+        // Add timeline markers at bottom
+        const timelineY = height - 30;
+        const timelineGroup = svg.append("g").attr("class", "timeline");
+
+        const timeScale = d3.scaleLinear()
+            .domain([1900, 2024])
+            .range([50, width - 100]);
+
+        // Timeline line
+        timelineGroup.append("line")
+            .attr("x1", 50)
+            .attr("y1", timelineY)
+            .attr("x2", width - 100)
+            .attr("y2", timelineY)
+            .attr("stroke", "#4a6a8a")
+            .attr("stroke-width", 2);
+
+        // Year markers
+        [1900, 1920, 1940, 1960, 1980, 2000, 2024].forEach(year => {
+            const x = timeScale(year);
+            timelineGroup.append("line")
+                .attr("x1", x)
+                .attr("y1", timelineY - 5)
+                .attr("x2", x)
+                .attr("y2", timelineY + 5)
+                .attr("stroke", "#6a8aaa")
+                .attr("stroke-width", 2);
+
+            timelineGroup.append("text")
+                .attr("x", x)
+                .attr("y", timelineY + 20)
+                .attr("text-anchor", "middle")
+                .attr("fill", "#8aa0b8")
+                .attr("font-size", "12px")
+                .text(year);
+        });
+
+        // Add "SHORE" label
+        svg.append("text")
+            .attr("x", width - 30)
+            .attr("y", height / 2)
+            .attr("text-anchor", "middle")
+            .attr("fill", "#6a5a4a")
+            .attr("font-size", "14px")
+            .attr("transform", `rotate(-90, ${width - 30}, ${height / 2})`)
+            .text("SHORE");
+
+        // Add "SEA" label
+        svg.append("text")
+            .attr("x", 25)
+            .attr("y", height / 2)
+            .attr("text-anchor", "middle")
+            .attr("fill", "#4a6a8a")
+            .attr("font-size", "14px")
+            .attr("transform", `rotate(-90, 25, ${height / 2})`)
+            .text("OPEN SEA");
+    </script>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>524 Years of History</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #f5f0e8;
+            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container { display: flex; height: 100vh; }
+        .graph-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 40px;
+            padding-top: 50px;
+            position: relative;
+            background: #f5f0e8;
+        }
+        .events-section {
+            width: 360px;
+            background: #ebe6de;
+            border-left: 1px solid #d5d0c8;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        h1 { font-size: 28px; margin-bottom: 10px; color: #333; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 30px; }
+        h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 12px; margin-top: 20px; }
+        h2:first-child { margin-top: 0; }
+        .event-item {
+            padding: 10px 14px;
+            margin-bottom: 6px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .event-item:hover { background: rgba(255,255,255,0.8); border-color: #ccc; }
+        .event-item.active { background: #fef3c7; border-color: #FBBF24; }
+        .event-title { font-size: 14px; font-weight: 500; color: #333; }
+        .event-years { font-size: 11px; color: #888; margin-top: 2px; }
+        svg { overflow: visible; }
+        .cell { fill: #fff; stroke: #ccc; stroke-width: 1; transition: fill 0.3s ease; }
+        .cell.highlighted { fill: #FBBF24; }
+        .cell.faded { fill: #fef3c7; }
+        .decade-label { fill: #999; font-size: 9px; pointer-events: none; }
+        .century-label { fill: #666; font-size: 12px; font-weight: 600; }
+        .random-btn {
+            margin-bottom: 20px;
+            padding: 12px 28px;
+            font-size: 15px;
+            background: #FBBF24;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .random-btn:hover { background: #f59e0b; transform: translateY(-1px); }
+        .event-display {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+        .event-display-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #b45309;
+            margin-bottom: 5px;
+        }
+        .event-display-years {
+            font-size: 14px;
+            color: #666;
+        }
+        .wiki-link {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 13px;
+            color: #2563eb;
+            text-decoration: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .wiki-link.visible { opacity: 1; }
+        .wiki-link:hover { text-decoration: underline; }
+        .instructions { position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%); color: #999; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="graph-section">
+            <button class="random-btn" id="randomBtn">Random Event</button>
+            <h1>524 Years of History</h1>
+            <p class="subtitle">From 1500 to today — click an event to see its span</p>
+            <svg id="timeline" width="580" height="320"></svg>
+            <div class="event-display">
+                <div class="event-display-name" id="displayName"></div>
+                <div class="event-display-years" id="displayYears"></div>
+                <a class="wiki-link" id="wikiLink" href="#" target="_blank">Read on Wikipedia →</a>
+            </div>
+            <p class="instructions">Click random or select from the right</p>
+        </div>
+        <div class="events-section" id="eventsList">
+            <!-- Events will be populated by JS -->
+        </div>
+    </div>
+
+    <script>
+        const svg = document.getElementById('timeline');
+        const svgNS = "http://www.w3.org/2000/svg";
+
+        const cols = 10;
+        const rows = 6;
+        const cellSize = 54;
+        const cellGap = 3;
+        const rowGap = 6;
+
+        const cells = {};
+
+        // Draw grid with full year labels
+        for (let row = 0; row < rows; row++) {
+            const startYear = 1500 + (row * 100);
+            const maxCols = row === 5 ? 3 : 10;
+
+            for (let col = 0; col < maxCols; col++) {
+                const year = startYear + (col * 10);
+                const x = col * (cellSize + cellGap);
+                const y = row * (cellSize + rowGap);
+
+                const rect = document.createElementNS(svgNS, 'rect');
+                rect.setAttribute('class', 'cell');
+                rect.setAttribute('x', x);
+                rect.setAttribute('y', y);
+                rect.setAttribute('width', cellSize);
+                rect.setAttribute('height', cellSize);
+                rect.setAttribute('rx', 4);
+                svg.appendChild(rect);
+
+                const label = document.createElementNS(svgNS, 'text');
+                label.setAttribute('class', 'decade-label');
+                label.setAttribute('x', x + cellSize / 2);
+                label.setAttribute('y', y + cellSize / 2 + 3);
+                label.setAttribute('text-anchor', 'middle');
+                label.textContent = year;
+                svg.appendChild(label);
+
+                cells[year] = rect;
+            }
+        }
+
+        // Categorized events
+        const eventCategories = {
+            'Eras & Movements': [
+                { name: 'Renaissance', startYear: 1500, endYear: 1600 },
+                { name: 'Age of Exploration', startYear: 1500, endYear: 1600 },
+                { name: 'Protestant Reformation', startYear: 1517, endYear: 1648 },
+                { name: 'Scientific Revolution', startYear: 1543, endYear: 1687 },
+                { name: 'The Enlightenment', startYear: 1685, endYear: 1815 },
+                { name: 'Industrial Revolution', startYear: 1760, endYear: 1840 },
+                { name: 'Atlantic Slave Trade', startYear: 1500, endYear: 1860 },
+                { name: 'British Empire', startYear: 1700, endYear: 1950 },
+                { name: 'Cold War', startYear: 1947, endYear: 1991 }
+            ],
+            'Wars & Conflicts': [
+                { name: 'Italian Wars', startYear: 1494, endYear: 1559 },
+                { name: 'Thirty Years War', startYear: 1618, endYear: 1648 },
+                { name: 'English Civil War', startYear: 1642, endYear: 1651 },
+                { name: 'Seven Years War', startYear: 1756, endYear: 1763 },
+                { name: 'American Revolution', startYear: 1775, endYear: 1783 },
+                { name: 'French Revolution', startYear: 1789, endYear: 1799 },
+                { name: 'Napoleonic Wars', startYear: 1803, endYear: 1815 },
+                { name: 'American Civil War', startYear: 1861, endYear: 1865 },
+                { name: 'World War I', startYear: 1914, endYear: 1918 },
+                { name: 'World War II', startYear: 1939, endYear: 1945 },
+                { name: 'Korean War', startYear: 1950, endYear: 1953 },
+                { name: 'Vietnam War', startYear: 1955, endYear: 1975 },
+                { name: 'Yugoslav Wars', startYear: 1991, endYear: 2001 },
+                { name: 'War on Terror', startYear: 2001, endYear: 2021 },
+                { name: 'Russian invasion of Ukraine', startYear: 2022, endYear: 2024 }
+            ],
+            'Key Moments': [
+                { name: 'Columbus reaches Americas', startYear: 1492, endYear: 1492 },
+                { name: 'Magellan circumnavigates globe', startYear: 1519, endYear: 1522 },
+                { name: 'Jamestown founded', startYear: 1607, endYear: 1607 },
+                { name: 'Pilgrims land at Plymouth', startYear: 1620, endYear: 1620 },
+                { name: 'Newton publishes Principia', startYear: 1687, endYear: 1687 },
+                { name: 'Declaration of Independence', startYear: 1776, endYear: 1776 },
+                { name: 'Fall of the Bastille', startYear: 1789, endYear: 1789 },
+                { name: 'Lincoln assassinated', startYear: 1865, endYear: 1865 },
+                { name: 'Wright Brothers first flight', startYear: 1903, endYear: 1903 },
+                { name: 'Titanic sinks', startYear: 1912, endYear: 1912 },
+                { name: 'Stock Market Crash', startYear: 1929, endYear: 1929 },
+                { name: 'Pearl Harbor', startYear: 1941, endYear: 1941 },
+                { name: 'Hiroshima & Nagasaki', startYear: 1945, endYear: 1945 },
+                { name: 'Moon Landing', startYear: 1969, endYear: 1969 },
+                { name: 'Fall of Berlin Wall', startYear: 1989, endYear: 1989 },
+                { name: 'September 11 attacks', startYear: 2001, endYear: 2001 },
+                { name: 'iPhone launches', startYear: 2007, endYear: 2007 },
+                { name: 'COVID-19 pandemic', startYear: 2020, endYear: 2023 },
+                { name: 'ChatGPT released', startYear: 2022, endYear: 2022 }
+            ],
+            'Empires & Nations': [
+                { name: 'Ottoman Empire peak', startYear: 1520, endYear: 1566 },
+                { name: 'Spanish Empire', startYear: 1492, endYear: 1898 },
+                { name: 'Dutch Golden Age', startYear: 1588, endYear: 1672 },
+                { name: 'Qing Dynasty', startYear: 1644, endYear: 1912 },
+                { name: 'Kingdom of Prussia', startYear: 1701, endYear: 1871 },
+                { name: 'American expansion', startYear: 1803, endYear: 1898 },
+                { name: 'German Empire', startYear: 1871, endYear: 1918 },
+                { name: 'Soviet Union', startYear: 1922, endYear: 1991 },
+                { name: 'European Union formation', startYear: 1993, endYear: 1993 }
+            ],
+            'Monarchs & Leaders': [
+                { name: 'Henry VIII of England', startYear: 1509, endYear: 1547 },
+                { name: 'Elizabeth I of England', startYear: 1558, endYear: 1603 },
+                { name: 'Louis XIV of France', startYear: 1643, endYear: 1715 },
+                { name: 'Peter the Great of Russia', startYear: 1682, endYear: 1725 },
+                { name: 'Frederick the Great of Prussia', startYear: 1740, endYear: 1786 },
+                { name: 'Catherine the Great of Russia', startYear: 1762, endYear: 1796 },
+                { name: 'Napoleon Bonaparte', startYear: 1799, endYear: 1815 },
+                { name: 'Queen Victoria', startYear: 1837, endYear: 1901 },
+                { name: 'Emperor Meiji of Japan', startYear: 1868, endYear: 1912 },
+                { name: 'Kaiser Wilhelm II', startYear: 1888, endYear: 1918 },
+                { name: 'Nicholas II of Russia', startYear: 1894, endYear: 1917 },
+                { name: 'Winston Churchill (PM)', startYear: 1940, endYear: 1945 },
+                { name: 'Elizabeth II of England', startYear: 1952, endYear: 2022 },
+                { name: 'Mao Zedong', startYear: 1949, endYear: 1976 },
+                { name: 'Suleiman the Magnificent', startYear: 1520, endYear: 1566 },
+                { name: 'Philip II of Spain', startYear: 1556, endYear: 1598 },
+                { name: 'Charles V, Holy Roman Emperor', startYear: 1519, endYear: 1556 },
+                { name: 'Maria Theresa of Austria', startYear: 1740, endYear: 1780 },
+                { name: 'George III of Britain', startYear: 1760, endYear: 1820 },
+                { name: 'Otto von Bismarck (Chancellor)', startYear: 1871, endYear: 1890 }
+            ],
+            'Technical Innovations': [
+                { name: 'Printing press spreads', startYear: 1500, endYear: 1550 },
+                { name: 'Telescope invented', startYear: 1608, endYear: 1608 },
+                { name: 'Steam engine', startYear: 1712, endYear: 1712 },
+                { name: 'Spinning jenny', startYear: 1764, endYear: 1764 },
+                { name: 'Cotton gin', startYear: 1794, endYear: 1794 },
+                { name: 'Steam locomotive', startYear: 1804, endYear: 1804 },
+                { name: 'Photography invented', startYear: 1839, endYear: 1839 },
+                { name: 'Telegraph', startYear: 1844, endYear: 1844 },
+                { name: 'Telephone', startYear: 1876, endYear: 1876 },
+                { name: 'Light bulb', startYear: 1879, endYear: 1879 },
+                { name: 'Automobile', startYear: 1886, endYear: 1886 },
+                { name: 'Radio', startYear: 1895, endYear: 1895 },
+                { name: 'Airplane', startYear: 1903, endYear: 1903 },
+                { name: 'Assembly line', startYear: 1913, endYear: 1913 },
+                { name: 'Television', startYear: 1927, endYear: 1927 },
+                { name: 'Nuclear fission', startYear: 1938, endYear: 1938 },
+                { name: 'First computer (ENIAC)', startYear: 1945, endYear: 1945 },
+                { name: 'Transistor', startYear: 1947, endYear: 1947 },
+                { name: 'DNA structure discovered', startYear: 1953, endYear: 1953 },
+                { name: 'Integrated circuit', startYear: 1958, endYear: 1958 },
+                { name: 'ARPANET (internet precursor)', startYear: 1969, endYear: 1969 },
+                { name: 'Personal computer', startYear: 1975, endYear: 1975 },
+                { name: 'World Wide Web', startYear: 1991, endYear: 1991 },
+                { name: 'Human genome sequenced', startYear: 2003, endYear: 2003 },
+                { name: 'Smartphone era', startYear: 2007, endYear: 2007 },
+                { name: 'CRISPR gene editing', startYear: 2012, endYear: 2012 },
+                { name: 'Large language models', startYear: 2020, endYear: 2024 }
+            ]
+        };
+
+        // Build the events list
+        const eventsList = document.getElementById('eventsList');
+
+        Object.entries(eventCategories).forEach(([category, events]) => {
+            const h2 = document.createElement('h2');
+            h2.textContent = category;
+            eventsList.appendChild(h2);
+
+            events.forEach(event => {
+                const item = document.createElement('div');
+                item.className = 'event-item';
+                item.innerHTML = `<div class="event-title">${event.name}</div>`;
+                item.addEventListener('click', () => highlightEvent(event, item));
+                eventsList.appendChild(item);
+            });
+        });
+
+        function formatYearRange(start, end) {
+            if (start === end) return start.toString();
+            return `${start} – ${end}`;
+        }
+
+        function getDecade(year) {
+            return Math.floor(year / 10) * 10;
+        }
+
+        function highlightEvent(event, element) {
+            // Update active state
+            document.querySelectorAll('.event-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            // Reset all cells
+            Object.values(cells).forEach(cell => {
+                cell.classList.remove('highlighted', 'faded');
+            });
+
+            // Get decades in range
+            const startDecade = getDecade(event.startYear);
+            const endDecade = getDecade(event.endYear);
+
+            // Highlight decades with animation
+            const decades = [];
+            for (let d = startDecade; d <= endDecade; d += 10) {
+                if (cells[d]) decades.push(d);
+            }
+
+            decades.forEach((decade, index) => {
+                const cell = cells[decade];
+                if (cell) {
+                    setTimeout(() => {
+                        cell.classList.add('highlighted');
+                        gsap.fromTo(cell,
+                            { opacity: 0.5 },
+                            { opacity: 1, duration: 0.3 }
+                        );
+                    }, index * 30);
+
+                    // Fade to sustained color after flash
+                    setTimeout(() => {
+                        cell.classList.remove('highlighted');
+                        cell.classList.add('faded');
+                    }, 800 + index * 30);
+                }
+            });
+
+            // Update display
+            document.getElementById('displayName').textContent = event.name;
+            document.getElementById('displayYears').textContent = formatYearRange(event.startYear, event.endYear);
+
+            // Set Wikipedia link
+            const wikiLink = document.getElementById('wikiLink');
+            const searchTerm = event.name.replace(/[&]/g, 'and').replace(/[()]/g, '');
+            wikiLink.href = `https://en.wikipedia.org/wiki/${encodeURIComponent(searchTerm.replace(/ /g, '_'))}`;
+            wikiLink.classList.add('visible');
+
+            // Hide instructions
+            document.querySelector('.instructions').style.opacity = '0';
+        }
+
+        // Collect all events for random selection
+        const allEvents = Object.values(eventCategories).flat();
+
+        // Random button
+        document.getElementById('randomBtn').addEventListener('click', () => {
+            const randomIndex = Math.floor(Math.random() * allEvents.length);
+            const randomEvent = allEvents[randomIndex];
+
+            // Find and click the corresponding item in the list
+            const items = document.querySelectorAll('.event-item');
+            let itemIndex = 0;
+            for (const [category, events] of Object.entries(eventCategories)) {
+                for (const event of events) {
+                    if (event === randomEvent) {
+                        highlightEvent(randomEvent, items[itemIndex]);
+                        items[itemIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return;
+                    }
+                    itemIndex++;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

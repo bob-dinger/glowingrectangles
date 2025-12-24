@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moral Foundations Theory</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0f0f1a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container { display: flex; height: 100vh; }
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            padding-top: 40px;
+        }
+        .foundations-section {
+            width: 380px;
+            background: #141424;
+            border-left: 1px solid #252540;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        h1 { font-size: 28px; margin-bottom: 8px; color: #fff; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 10px; }
+        .source { color: #666; font-size: 12px; margin-bottom: 25px; }
+        .source a { color: #a78bfa; text-decoration: none; }
+        .source a:hover { text-decoration: underline; }
+        h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 16px; }
+
+        .foundation-item {
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .foundation-item:hover { background: rgba(255,255,255,0.06); }
+        .foundation-item.active { background: rgba(255,255,255,0.08); }
+        .foundation-spectrum {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .foundation-pole {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .spectrum-bar {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, var(--color-left), #333 50%, var(--color-right));
+        }
+        .foundations-columns {
+            display: flex;
+            gap: 20px;
+        }
+        .foundations-col {
+            flex: 1;
+        }
+        .col-header {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chart-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 10px 0;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+
+        .description-panel {
+            margin-top: 15px;
+            padding: 20px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            max-width: 600px;
+            min-height: 140px;
+        }
+        .description-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .description-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #bbb;
+        }
+
+        .bar-group { cursor: pointer; }
+        .bar-group:hover rect { opacity: 0.9; }
+
+        .axis text { fill: #888; font-size: 12px; }
+        .axis line, .axis path { stroke: #333; }
+
+        .insight-box {
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(167, 139, 250, 0.1);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 8px;
+        }
+        .insight-box h3 {
+            font-size: 13px;
+            color: #a78bfa;
+            margin-bottom: 8px;
+        }
+        .insight-box p {
+            font-size: 13px;
+            color: #999;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="viz-section">
+            <h1>Moral Foundations Theory</h1>
+            <p class="subtitle">Why do the left and right differ politically?</p>
+            <p class="source">From Jonathan Haidt's <a href="https://www.amazon.com/Righteous-Mind-Divided-Politics-Religion/dp/0307455777" target="_blank">The Righteous Mind</a></p>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #3b82f6;"></div>
+                    <span>Liberals</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #ef4444;"></div>
+                    <span>Conservatives</span>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <svg id="chart" width="600" height="340"></svg>
+            </div>
+
+            <div class="description-panel" id="descriptionPanel">
+                <div class="description-title" id="descTitle">The Six Foundations</div>
+                <div class="description-text" id="descText">Haidt proposes that humans have six innate moral foundations. While everyone has all six, liberals and conservatives weight them differently. Click a foundation to learn more.</div>
+            </div>
+        </div>
+
+        <div class="foundations-section">
+            <h2>The Six Foundations</h2>
+
+            <div class="foundation-item" data-foundation="care" style="--color-left: #ec4899; --color-right: #991b1b;">
+                <div class="foundation-spectrum">
+                    <span class="foundation-pole" style="color: #ec4899;">Care</span>
+                    <div class="spectrum-bar"></div>
+                    <span class="foundation-pole" style="color: #f87171;">Harm</span>
+                </div>
+            </div>
+
+            <div class="foundation-item" data-foundation="fairness" style="--color-left: #f97316; --color-right: #78350f;">
+                <div class="foundation-spectrum">
+                    <span class="foundation-pole" style="color: #f97316;">Fairness</span>
+                    <div class="spectrum-bar"></div>
+                    <span class="foundation-pole" style="color: #d97706;">Cheating</span>
+                </div>
+            </div>
+
+            <div class="foundation-item" data-foundation="liberty" style="--color-left: #eab308; --color-right: #713f12;">
+                <div class="foundation-spectrum">
+                    <span class="foundation-pole" style="color: #eab308;">Liberty</span>
+                    <div class="spectrum-bar"></div>
+                    <span class="foundation-pole" style="color: #fcd34d;">Oppression</span>
+                </div>
+            </div>
+
+            <div class="foundation-item" data-foundation="loyalty" style="--color-left: #14532d; --color-right: #22c55e;">
+                <div class="foundation-spectrum">
+                    <span class="foundation-pole" style="color: #86efac;">Betrayal</span>
+                    <div class="spectrum-bar"></div>
+                    <span class="foundation-pole" style="color: #22c55e;">Loyalty</span>
+                </div>
+            </div>
+
+            <div class="foundation-item" data-foundation="authority" style="--color-left: #1e3a8a; --color-right: #3b82f6;">
+                <div class="foundation-spectrum">
+                    <span class="foundation-pole" style="color: #93c5fd;">Subversion</span>
+                    <div class="spectrum-bar"></div>
+                    <span class="foundation-pole" style="color: #3b82f6;">Authority</span>
+                </div>
+            </div>
+
+            <div class="foundation-item" data-foundation="sanctity" style="--color-left: #4a044e; --color-right: #a855f7;">
+                <div class="foundation-spectrum">
+                    <span class="foundation-pole" style="color: #c084fc;">Degradation</span>
+                    <div class="spectrum-bar"></div>
+                    <span class="foundation-pole" style="color: #a855f7;">Sanctity</span>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h3>Key Insight</h3>
+                <p>Liberals rely primarily on Care, Fairness, and Liberty. Conservatives use all six foundations more equally. This explains why they often talk past each other - they're using different moral languages.</p>
+            </div>
+
+            <h2 style="margin-top: 24px;">Why It Matters</h2>
+            <p style="font-size: 13px; color: #888; line-height: 1.6;">
+                Neither side is irrational. Both perspectives are grounded in real moral values - they just prioritize different foundations.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const foundations = {
+            care: {
+                name: "Care / Harm",
+                color: "#3b82f6",
+                liberal: 4.0,
+                conservative: 3.1,
+                description: "Evolved to protect and care for children. Makes us sensitive to signs of suffering and need. Underlies virtues of kindness, gentleness, and nurturance.",
+                examples: "Compassion for the vulnerable, opposition to cruelty, concern for victims"
+            },
+            fairness: {
+                name: "Fairness / Cheating",
+                color: "#3b82f6",
+                liberal: 3.8,
+                conservative: 3.1,
+                description: "Evolved for cooperation and reciprocal altruism. Makes us sensitive to cheaters and free-riders. Underlies virtues of justice, rights, and autonomy.",
+                examples: "Equal treatment, proportional rewards, playing by the rules"
+            },
+            liberty: {
+                name: "Liberty / Oppression",
+                color: "#3b82f6",
+                liberal: 3.5,
+                conservative: 3.2,
+                description: "Evolved in response to living in small groups with would-be dominators. Makes us sensitive to attempts to control or dominate. Underlies virtues of freedom and rights.",
+                examples: "Resistance to bullies, opposition to tyranny, individual rights, don't tread on me"
+            },
+            loyalty: {
+                name: "Loyalty / Betrayal",
+                color: "#ef4444",
+                liberal: 2.1,
+                conservative: 3.1,
+                description: "Evolved for forming cohesive coalitions. Makes us sensitive to team players vs. traitors. Underlies virtues of patriotism and self-sacrifice for the group.",
+                examples: "National pride, sports team loyalty, 'us vs. them' thinking"
+            },
+            authority: {
+                name: "Authority / Subversion",
+                color: "#ef4444",
+                liberal: 2.0,
+                conservative: 3.3,
+                description: "Evolved for navigating social hierarchies. Makes us sensitive to rank, respect, and proper behavior. Underlies virtues of leadership, followership, and tradition.",
+                examples: "Respect for elders, deference to leaders, maintaining order"
+            },
+            sanctity: {
+                name: "Sanctity / Degradation",
+                color: "#ef4444",
+                liberal: 1.5,
+                conservative: 3.0,
+                description: "Evolved from the psychology of disgust and contamination. Makes us treat some things as sacred and others as disgusting. Underlies religious notions of striving to live in an elevated way.",
+                examples: "Purity of body and soul, sacredness of life, avoiding 'unnatural' acts"
+            }
+        };
+
+        const margin = { top: 30, right: 50, bottom: 50, left: 50 };
+        const width = 600 - margin.left - margin.right;
+        const height = 340 - margin.top - margin.bottom;
+
+        const svg = d3.select("#chart")
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const foundationKeys = Object.keys(foundations);
+        const data = foundationKeys.map(key => ({
+            key,
+            ...foundations[key]
+        }));
+
+        const y = d3.scaleBand()
+            .domain(foundationKeys)
+            .range([0, height])
+            .padding(0.25);
+
+        // Diverging scale: liberals go left (negative), conservatives go right (positive)
+        const maxScore = 4.5;
+        const x = d3.scaleLinear()
+            .domain([-maxScore, maxScore])
+            .range([0, width]);
+
+        const centerX = x(0);
+
+        // Add gridlines
+        svg.selectAll("line.grid")
+            .data([-4, -3, -2, -1, 1, 2, 3, 4])
+            .enter()
+            .append("line")
+            .attr("class", "grid")
+            .attr("x1", d => x(d))
+            .attr("x2", d => x(d))
+            .attr("y1", 0)
+            .attr("y2", height)
+            .attr("stroke", "#222")
+            .attr("stroke-dasharray", "2,2");
+
+        // Center line
+        svg.append("line")
+            .attr("x1", centerX)
+            .attr("x2", centerX)
+            .attr("y1", -10)
+            .attr("y2", height + 10)
+            .attr("stroke", "#555")
+            .attr("stroke-width", 2);
+
+        // Add bars
+        const barHeight = y.bandwidth();
+
+        data.forEach(d => {
+            const g = svg.append("g")
+                .attr("class", "bar-group")
+                .attr("data-foundation", d.key)
+                .on("click", () => selectFoundation(d.key));
+
+            // Liberal bar (extends left from center)
+            g.append("rect")
+                .attr("x", x(-d.liberal))
+                .attr("y", y(d.key))
+                .attr("width", centerX - x(-d.liberal))
+                .attr("height", barHeight)
+                .attr("fill", "#3b82f6")
+                .attr("rx", 3);
+
+            // Conservative bar (extends right from center)
+            g.append("rect")
+                .attr("x", centerX)
+                .attr("y", y(d.key))
+                .attr("width", x(d.conservative) - centerX)
+                .attr("height", barHeight)
+                .attr("fill", "#ef4444")
+                .attr("rx", 3);
+
+            // Foundation label in center
+            g.append("text")
+                .attr("x", centerX)
+                .attr("y", y(d.key) + barHeight / 2 + 4)
+                .attr("text-anchor", "middle")
+                .attr("fill", "#fff")
+                .attr("font-size", "11px")
+                .attr("font-weight", "600")
+                .text(foundations[d.key].name.split(" /")[0]);
+        });
+
+        // X axis labels
+        svg.append("text")
+            .attr("x", x(-3))
+            .attr("y", height + 30)
+            .attr("text-anchor", "middle")
+            .attr("fill", "#3b82f6")
+            .attr("font-size", "12px")
+            .text("← Liberals");
+
+        svg.append("text")
+            .attr("x", x(3))
+            .attr("y", height + 30)
+            .attr("text-anchor", "middle")
+            .attr("fill", "#ef4444")
+            .attr("font-size", "12px")
+            .text("Conservatives →");
+
+        function selectFoundation(key) {
+            const f = foundations[key];
+
+            document.querySelectorAll('.foundation-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[data-foundation="${key}"]`).classList.add('active');
+
+            document.getElementById('descTitle').textContent = f.name;
+            document.getElementById('descTitle').style.color = f.color;
+            document.getElementById('descText').innerHTML = `
+                <p>${f.description}</p>
+                <p style="margin-top: 10px;"><strong style="color: #666;">Examples:</strong> ${f.examples}</p>
+                <p style="margin-top: 10px; font-size: 13px; color: #888;">
+                    Liberal score: <span style="color: #3b82f6; font-weight: 600;">${f.liberal}</span> &nbsp;|&nbsp;
+                    Conservative score: <span style="color: #ef4444; font-weight: 600;">${f.conservative}</span>
+                </p>
+            `;
+
+            // Highlight bars
+            svg.selectAll(".bar-group rect")
+                .attr("opacity", 0.3);
+            svg.select(`[data-foundation="${key}"]`).selectAll("rect")
+                .attr("opacity", 1);
+        }
+
+        // Add click handlers to sidebar items
+        document.querySelectorAll('.foundation-item').forEach(el => {
+            el.addEventListener('click', () => selectFoundation(el.dataset.foundation));
+        });
+
+        // Reset opacity on outside click
+        document.querySelector('.viz-section').addEventListener('click', (e) => {
+            if (!e.target.closest('.bar-group') && !e.target.closest('.foundation-item')) {
+                svg.selectAll(".bar-group rect").attr("opacity", 1);
+                document.querySelectorAll('.foundation-item').forEach(el => el.classList.remove('active'));
+            }
+        });
+    </script>
+</body>
+</html>

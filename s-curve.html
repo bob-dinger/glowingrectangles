@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The S-Curve</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .graph-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+        }
+        .examples-section {
+            width: 320px;
+            background: #111118;
+            border-left: 1px solid #222;
+            padding: 40px 30px;
+            overflow-y: auto;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .example-item {
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .example-item:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: #333;
+        }
+        .example-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: #3B82F6;
+        }
+        .example-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .example-desc {
+            font-size: 12px;
+            color: #888;
+        }
+        svg {
+            overflow: visible;
+        }
+        .curve-path {
+            fill: none;
+            stroke: #3B82F6;
+            stroke-width: 3;
+        }
+        .axis-line {
+            stroke: #333;
+            stroke-width: 1;
+        }
+        .axis-label {
+            fill: #666;
+            font-size: 12px;
+        }
+        .phase-label {
+            font-size: 16px;
+            font-weight: 600;
+            fill: #fff;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .phase-label.visible {
+            opacity: 1;
+        }
+        .dot {
+            fill: #3B82F6;
+            stroke: #fff;
+            stroke-width: 2;
+        }
+        .phase-zone {
+            fill: rgba(59, 130, 246, 0.1);
+            opacity: 0;
+        }
+        .instructions {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #555;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="graph-section">
+            <h1>The S-Curve</h1>
+            <p class="subtitle">Growth follows a predictable pattern</p>
+            <div id="graph"></div>
+            <p class="instructions">Click an example to see the phases</p>
+        </div>
+        <div class="examples-section">
+            <h2>Examples</h2>
+            <div class="example-item" data-example="technology">
+                <div class="example-title">Technology Adoption</div>
+                <div class="example-desc">How new tech spreads through society</div>
+            </div>
+            <div class="example-item" data-example="startup">
+                <div class="example-title">Startup Growth</div>
+                <div class="example-desc">The classic hockey stick</div>
+            </div>
+            <div class="example-item" data-example="learning">
+                <div class="example-title">Learning a Skill</div>
+                <div class="example-desc">From beginner to mastery</div>
+            </div>
+            <div class="example-item" data-example="product">
+                <div class="example-title">Product Lifecycle</div>
+                <div class="example-desc">Introduction to maturity</div>
+            </div>
+            <div class="example-item" data-example="pandemic">
+                <div class="example-title">Pandemic Spread</div>
+                <div class="example-desc">Infection curve over time</div>
+            </div>
+            <div class="example-item" data-example="social">
+                <div class="example-title">Social Movements</div>
+                <div class="example-desc">Ideas catching fire</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 450;
+        const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        // S-curve function (logistic)
+        function sCurve(x) {
+            return 1 / (1 + Math.exp(-10 * (x - 0.5)));
+        }
+
+        // Generate curve data
+        const curveData = [];
+        for (let i = 0; i <= 100; i++) {
+            const x = i / 100;
+            curveData.push({ x, y: sCurve(x) });
+        }
+
+        // Create SVG
+        const svg = d3.select('#graph')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const g = svg.append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Scales
+        const xScale = d3.scaleLinear()
+            .domain([0, 1])
+            .range([0, innerWidth]);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, 1])
+            .range([innerHeight, 0]);
+
+        // Phase zones (background highlights)
+        const phases = [
+            { start: 0, end: 0.3, color: 'rgba(239, 68, 68, 0.08)' },
+            { start: 0.3, end: 0.7, color: 'rgba(59, 130, 246, 0.08)' },
+            { start: 0.7, end: 1, color: 'rgba(34, 197, 94, 0.08)' }
+        ];
+
+        const zoneGroup = g.append('g').attr('class', 'zones');
+        phases.forEach(phase => {
+            zoneGroup.append('rect')
+                .attr('class', 'phase-zone')
+                .attr('x', xScale(phase.start))
+                .attr('y', 0)
+                .attr('width', xScale(phase.end) - xScale(phase.start))
+                .attr('height', innerHeight)
+                .attr('fill', phase.color);
+        });
+
+        // Axes
+        g.append('line')
+            .attr('class', 'axis-line')
+            .attr('x1', 0)
+            .attr('y1', innerHeight)
+            .attr('x2', innerWidth)
+            .attr('y2', innerHeight);
+
+        g.append('line')
+            .attr('class', 'axis-line')
+            .attr('x1', 0)
+            .attr('y1', 0)
+            .attr('x2', 0)
+            .attr('y2', innerHeight);
+
+        // Axis labels
+        g.append('text')
+            .attr('class', 'axis-label')
+            .attr('x', innerWidth / 2)
+            .attr('y', innerHeight + 45)
+            .attr('text-anchor', 'middle')
+            .text('Time');
+
+        g.append('text')
+            .attr('class', 'axis-label')
+            .attr('x', -innerHeight / 2)
+            .attr('y', -40)
+            .attr('text-anchor', 'middle')
+            .attr('transform', 'rotate(-90)')
+            .text('Growth / Adoption');
+
+        // Line generator
+        const line = d3.line()
+            .x(d => xScale(d.x))
+            .y(d => yScale(d.y))
+            .curve(d3.curveMonotoneX);
+
+        // Draw the S-curve
+        const curvePath = g.append('path')
+            .datum(curveData)
+            .attr('class', 'curve-path')
+            .attr('d', line);
+
+        // Moving dot
+        const dot = g.append('circle')
+            .attr('class', 'dot')
+            .attr('r', 8)
+            .attr('cx', xScale(0))
+            .attr('cy', yScale(sCurve(0)))
+            .style('opacity', 0);
+
+        // Phase label
+        const phaseLabel = g.append('text')
+            .attr('class', 'phase-label')
+            .attr('text-anchor', 'middle');
+
+        // Example-specific phase labels
+        const examplePhases = {
+            technology: [
+                { range: [0, 0.25], label: 'Innovators', sublabel: '2.5%' },
+                { range: [0.25, 0.5], label: 'Early Adopters', sublabel: '13.5%' },
+                { range: [0.5, 0.75], label: 'Early Majority', sublabel: '34%' },
+                { range: [0.75, 0.9], label: 'Late Majority', sublabel: '34%' },
+                { range: [0.9, 1], label: 'Laggards', sublabel: '16%' }
+            ],
+            startup: [
+                { range: [0, 0.3], label: 'Struggling', sublabel: 'Finding product-market fit' },
+                { range: [0.3, 0.5], label: 'Traction', sublabel: 'Growth begins' },
+                { range: [0.5, 0.8], label: 'Hypergrowth', sublabel: 'Scaling fast' },
+                { range: [0.8, 1], label: 'Maturity', sublabel: 'Market saturation' }
+            ],
+            learning: [
+                { range: [0, 0.25], label: 'Beginner', sublabel: 'Everything is hard' },
+                { range: [0.25, 0.5], label: 'Intermediate', sublabel: 'Building foundations' },
+                { range: [0.5, 0.8], label: 'Advanced', sublabel: 'Rapid improvement' },
+                { range: [0.8, 1], label: 'Mastery', sublabel: 'Diminishing returns' }
+            ],
+            product: [
+                { range: [0, 0.2], label: 'Introduction', sublabel: 'Building awareness' },
+                { range: [0.2, 0.5], label: 'Growth', sublabel: 'Rapid sales increase' },
+                { range: [0.5, 0.8], label: 'Maturity', sublabel: 'Peak market share' },
+                { range: [0.8, 1], label: 'Decline', sublabel: 'Market saturation' }
+            ],
+            pandemic: [
+                { range: [0, 0.25], label: 'Initial Outbreak', sublabel: 'Few cases' },
+                { range: [0.25, 0.5], label: 'Exponential Growth', sublabel: 'Rapid spread' },
+                { range: [0.5, 0.75], label: 'Peak', sublabel: 'Maximum infections' },
+                { range: [0.75, 1], label: 'Decline', sublabel: 'Herd immunity' }
+            ],
+            social: [
+                { range: [0, 0.25], label: 'Fringe', sublabel: 'Small group of believers' },
+                { range: [0.25, 0.5], label: 'Tipping Point', sublabel: 'Gaining momentum' },
+                { range: [0.5, 0.8], label: 'Mainstream', sublabel: 'Widespread adoption' },
+                { range: [0.8, 1], label: 'New Normal', sublabel: 'Institutionalized' }
+            ]
+        };
+
+        let currentAnimation = null;
+
+        function animateExample(exampleKey) {
+            // Cancel any existing animation
+            if (currentAnimation) {
+                currentAnimation.stop();
+            }
+
+            const phases = examplePhases[exampleKey];
+            const duration = 8000; // 8 seconds total
+            const startTime = Date.now();
+
+            // Show elements
+            dot.style('opacity', 1);
+            d3.selectAll('.phase-zone').style('opacity', 1);
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Calculate position on curve
+                const x = progress;
+                const y = sCurve(x);
+
+                // Update dot position
+                dot.attr('cx', xScale(x))
+                   .attr('cy', yScale(y));
+
+                // Find current phase
+                const currentPhase = phases.find(p => x >= p.range[0] && x < p.range[1]) || phases[phases.length - 1];
+
+                // Update label
+                phaseLabel
+                    .attr('x', xScale(x))
+                    .attr('y', yScale(y) - 30)
+                    .attr('class', 'phase-label visible')
+                    .text(currentPhase.label);
+
+                if (progress < 1) {
+                    currentAnimation.frameId = requestAnimationFrame(animate);
+                } else {
+                    // Animation complete - keep final state visible
+                    setTimeout(() => {
+                        phaseLabel.attr('class', 'phase-label');
+                    }, 2000);
+                }
+            }
+
+            currentAnimation = {
+                frameId: requestAnimationFrame(animate),
+                stop: function() {
+                    cancelAnimationFrame(this.frameId);
+                }
+            };
+        }
+
+        // Example click handlers
+        document.querySelectorAll('.example-item').forEach(item => {
+            item.addEventListener('click', () => {
+                // Update active state
+                document.querySelectorAll('.example-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                // Animate
+                const example = item.dataset.example;
+                animateExample(example);
+            });
+        });
+    </script>
+</body>
+</html>

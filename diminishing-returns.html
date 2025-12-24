@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diminishing Returns</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container { display: flex; height: 100vh; }
+        .graph-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+        }
+        .examples-section {
+            width: 320px;
+            background: #111118;
+            border-left: 1px solid #222;
+            padding: 40px 30px;
+            overflow-y: auto;
+        }
+        h1 { font-size: 28px; margin-bottom: 10px; color: #fff; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; }
+        h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 20px; }
+        .example-item {
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .example-item:hover { background: rgba(255,255,255,0.08); border-color: #333; }
+        .example-item.active { background: rgba(6, 182, 212, 0.15); border-color: #06B6D4; }
+        .example-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+        .example-desc { font-size: 12px; color: #888; }
+        svg { overflow: visible; }
+        .curve-path { fill: none; stroke: #06B6D4; stroke-width: 3; }
+        .axis-line { stroke: #333; stroke-width: 1; }
+        .axis-label { fill: #666; font-size: 12px; }
+        .phase-label { font-size: 16px; font-weight: 600; fill: #fff; opacity: 0; }
+        .phase-label.visible { opacity: 1; }
+        .dot { fill: #06B6D4; stroke: #fff; stroke-width: 2; opacity: 0; }
+        .dot.visible { opacity: 1; }
+        .gain-bar { fill: #06B6D4; opacity: 0.5; }
+        .instructions { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); color: #555; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="graph-section">
+            <h1>Diminishing Returns</h1>
+            <p class="subtitle">Each additional unit adds less value</p>
+            <div id="graph"></div>
+            <p class="instructions">Click an example to see the effect</p>
+        </div>
+        <div class="examples-section">
+            <h2>Examples</h2>
+            <div class="example-item" data-example="practice">
+                <div class="example-title">Practice Hours</div>
+                <div class="example-desc">First hours matter most</div>
+            </div>
+            <div class="example-item" data-example="employees">
+                <div class="example-title">Hiring Workers</div>
+                <div class="example-desc">Too many cooks spoil the broth</div>
+            </div>
+            <div class="example-item" data-example="fertilizer">
+                <div class="example-title">Fertilizer Usage</div>
+                <div class="example-desc">More isn't always better</div>
+            </div>
+            <div class="example-item" data-example="sleep">
+                <div class="example-title">Hours of Sleep</div>
+                <div class="example-desc">8 hours good, 12 hours not 1.5x better</div>
+            </div>
+            <div class="example-item" data-example="features">
+                <div class="example-title">Product Features</div>
+                <div class="example-desc">Core features vs bloat</div>
+            </div>
+            <div class="example-item" data-example="food">
+                <div class="example-title">Eating Pizza</div>
+                <div class="example-desc">First slice vs fifth slice</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const width = 600;
+        const height = 450;
+        const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        // Logarithmic curve (diminishing returns)
+        function logCurve(x) {
+            return Math.log(1 + x * 9) / Math.log(10);
+        }
+
+        // Generate curve data
+        const curveData = [];
+        for (let i = 0; i <= 100; i++) {
+            const x = i / 100;
+            curveData.push({ x, y: logCurve(x) });
+        }
+
+        // Create SVG
+        const svg = d3.select('#graph')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const g = svg.append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Scales
+        const xScale = d3.scaleLinear().domain([0, 1]).range([0, innerWidth]);
+        const yScale = d3.scaleLinear().domain([0, 1]).range([innerHeight, 0]);
+
+        // Axes
+        g.append('line').attr('class', 'axis-line')
+            .attr('x1', 0).attr('y1', innerHeight).attr('x2', innerWidth).attr('y2', innerHeight);
+        g.append('line').attr('class', 'axis-line')
+            .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', innerHeight);
+
+        g.append('text').attr('class', 'axis-label')
+            .attr('x', innerWidth / 2).attr('y', innerHeight + 45)
+            .attr('text-anchor', 'middle').text('Input / Effort');
+
+        g.append('text').attr('class', 'axis-label')
+            .attr('x', -innerHeight / 2).attr('y', -40)
+            .attr('text-anchor', 'middle').attr('transform', 'rotate(-90)').text('Output / Benefit');
+
+        // Line generator
+        const line = d3.line()
+            .x(d => xScale(d.x))
+            .y(d => yScale(d.y))
+            .curve(d3.curveMonotoneX);
+
+        // Draw curve
+        g.append('path').datum(curveData).attr('class', 'curve-path').attr('d', line);
+
+        // Marginal gain bars
+        const barsGroup = g.append('g');
+
+        // Moving dot
+        const dot = g.append('circle').attr('class', 'dot').attr('r', 8);
+
+        // Labels
+        const phaseLabel = g.append('text').attr('class', 'phase-label').attr('text-anchor', 'middle');
+        const gainLabel = g.append('text').attr('class', 'phase-label').attr('text-anchor', 'start').attr('font-size', '14px');
+
+        // Example phases
+        const examplePhases = {
+            practice: [
+                { range: [0, 0.2], label: 'Rapid Improvement', gain: '+40%' },
+                { range: [0.2, 0.4], label: 'Good Progress', gain: '+25%' },
+                { range: [0.4, 0.6], label: 'Slowing Down', gain: '+15%' },
+                { range: [0.6, 0.8], label: 'Marginal Gains', gain: '+8%' },
+                { range: [0.8, 1], label: 'Plateau', gain: '+2%' }
+            ],
+            employees: [
+                { range: [0, 0.2], label: 'Critical Hire', gain: '10x output' },
+                { range: [0.2, 0.4], label: 'Team Building', gain: '3x output' },
+                { range: [0.4, 0.6], label: 'Coordination Cost', gain: '1.5x output' },
+                { range: [0.6, 0.8], label: 'Overhead', gain: '1.1x output' },
+                { range: [0.8, 1], label: 'Bureaucracy', gain: '0.9x output' }
+            ],
+            fertilizer: [
+                { range: [0, 0.2], label: 'Essential Nutrients', gain: '+50% yield' },
+                { range: [0.2, 0.4], label: 'Healthy Growth', gain: '+20% yield' },
+                { range: [0.4, 0.6], label: 'Optimal', gain: '+5% yield' },
+                { range: [0.6, 0.8], label: 'Waste', gain: '+1% yield' },
+                { range: [0.8, 1], label: 'Toxic', gain: 'Damage!' }
+            ],
+            sleep: [
+                { range: [0, 0.2], label: '4 hours', gain: 'Survival' },
+                { range: [0.2, 0.4], label: '6 hours', gain: 'Functional' },
+                { range: [0.4, 0.6], label: '8 hours', gain: 'Optimal' },
+                { range: [0.6, 0.8], label: '10 hours', gain: 'Slight benefit' },
+                { range: [0.8, 1], label: '12+ hours', gain: 'Groggy' }
+            ],
+            features: [
+                { range: [0, 0.2], label: 'Core Value', gain: '80% of value' },
+                { range: [0.2, 0.4], label: 'Key Features', gain: '+15% value' },
+                { range: [0.4, 0.6], label: 'Nice to Have', gain: '+4% value' },
+                { range: [0.6, 0.8], label: 'Edge Cases', gain: '+1% value' },
+                { range: [0.8, 1], label: 'Bloat', gain: 'Complexity cost' }
+            ],
+            food: [
+                { range: [0, 0.2], label: '1st Slice', gain: 'Amazing!' },
+                { range: [0.2, 0.4], label: '2nd Slice', gain: 'Great!' },
+                { range: [0.4, 0.6], label: '3rd Slice', gain: 'Good' },
+                { range: [0.6, 0.8], label: '4th Slice', gain: 'Meh' },
+                { range: [0.8, 1], label: '5th Slice', gain: 'Regret' }
+            ]
+        };
+
+        let currentAnimation = null;
+
+        function animateExample(exampleKey) {
+            if (currentAnimation) { currentAnimation.stop(); }
+
+            const phases = examplePhases[exampleKey];
+            const duration = 8000;
+            const startTime = Date.now();
+
+            dot.classed('visible', true);
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const x = progress;
+                const y = logCurve(x);
+
+                dot.attr('cx', xScale(x)).attr('cy', yScale(y));
+
+                const currentPhase = phases.find(p => x >= p.range[0] && x < p.range[1]) || phases[phases.length - 1];
+
+                phaseLabel
+                    .attr('x', xScale(x))
+                    .attr('y', yScale(y) - 25)
+                    .attr('class', 'phase-label visible')
+                    .text(currentPhase.label);
+
+                gainLabel
+                    .attr('x', 10)
+                    .attr('y', 30)
+                    .attr('class', 'phase-label visible')
+                    .text('Marginal gain: ' + currentPhase.gain);
+
+                if (progress < 1) {
+                    currentAnimation.frameId = requestAnimationFrame(animate);
+                }
+            }
+
+            currentAnimation = {
+                frameId: requestAnimationFrame(animate),
+                stop: function() { cancelAnimationFrame(this.frameId); }
+            };
+        }
+
+        document.querySelectorAll('.example-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.example-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                animateExample(item.dataset.example);
+            });
+        });
+    </script>
+</body>
+</html>

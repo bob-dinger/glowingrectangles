@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Perception Gap</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #f5f5f5;
+            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        h1 { font-size: 28px; margin-bottom: 8px; color: #333; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 8px; }
+        .source { color: #888; font-size: 12px; margin-bottom: 20px; }
+        .source a { color: #3b82f6; text-decoration: none; }
+        .source a:hover { text-decoration: underline; }
+        h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 16px; }
+        h3 { font-size: 16px; color: #333; margin-bottom: 12px; }
+
+        .toggle-container {
+            display: flex;
+            gap: 0;
+            margin-bottom: 25px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            padding: 4px;
+        }
+        .toggle-btn {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            color: #666;
+        }
+        .toggle-btn.active.dem { background: #3b82f6; color: white; }
+        .toggle-btn.active.rep { background: #ef4444; color: white; }
+        .toggle-btn:hover:not(.active) { background: #d1d5db; }
+
+        .chart-container {
+            width: 100%;
+            max-width: 1150px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .bar-row:hover .gap-bar { opacity: 0.8; }
+
+        .axis text { fill: #666; font-size: 11px; }
+        .y-axis text { font-size: 10px; }
+        .axis path, .axis line { stroke: #ddd; }
+        .grid line { stroke: #eee; }
+
+        .footer-link {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #888;
+        }
+        .footer-link a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .footer-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>The Perception Gap</h1>
+        <p class="subtitle">How Americans misunderstand each other</p>
+        <p class="source">Source: <a href="https://perceptiongap.us/" target="_blank">More in Common (2019)</a></p>
+
+        <div class="toggle-container">
+            <button class="toggle-btn dem active" data-view="dem">Democrats' Perception Gap</button>
+            <button class="toggle-btn rep" data-view="rep">Republicans' Perception Gap</button>
+        </div>
+
+        <div class="legend" id="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #ef4444;"></div>
+                <span>Republicans' Actual Views</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #3b82f6;"></div>
+                <span>Democrats' Estimates</span>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <svg id="chart" width="1150" height="500"></svg>
+        </div>
+
+        <p class="footer-link">Learn more at <a href="https://perceptiongap.us" target="_blank">perceptiongap.us</a></p>
+    </div>
+
+    <script>
+        // Democrats' Perception Gap: How Democrats misperceive Republican views
+        const demData = [
+            { question: "Properly controlled immigration can be good for America", actual: 85, estimate: 52, gap: 33, line1: "Democrats think 52% of Republicans believe this", line2: "Actually, 85% of Republicans believe this" },
+            { question: "Many Muslims are good Americans", actual: 70, estimate: 41, gap: 29, line1: "Democrats think 41% of Republicans believe this", line2: "Actually, 70% of Republicans believe this" },
+            { question: "Racism still exists in America", actual: 79, estimate: 51, gap: 28, line1: "Democrats think 51% of Republicans believe this", line2: "Actually, 79% of Republicans believe this" },
+            { question: "Sexism still exists in America", actual: 69, estimate: 50, gap: 19, line1: "Democrats think 50% of Republicans believe this", line2: "Actually, 69% of Republicans believe this" },
+            { question: "Government should stop guns reaching bad people", actual: 83, estimate: 65, gap: 18, line1: "Democrats think 65% of Republicans believe this", line2: "Actually, 83% of Republicans believe this" },
+            { question: "Donald Trump is a flawed person", actual: 49, estimate: 50, gap: -1, line1: "Democrats think 50% of Republicans believe this", line2: "Actually, 49% do — pretty close!" },
+            { question: "Climate change concern is valid", actual: 54, estimate: 56, gap: -2, line1: "Democrats think 56% of Republicans believe this", line2: "Actually, 54% do — pretty close!" }
+        ];
+
+        // Republicans' Perception Gap: How Republicans misperceive Democrat views
+        const repData = [
+            { question: "Most police are bad people", actual: 15, estimate: 52, gap: 37, line1: "Republicans think 52% of Democrats believe this", line2: "Actually, only 15% of Democrats believe this" },
+            { question: "The US should have completely open borders", actual: 29, estimate: 62, gap: 33, line1: "Republicans think 62% of Democrats believe this", line2: "Actually, only 29% of Democrats believe this" },
+            { question: "Men should be protected from false accusations", actual: 82, estimate: 53, gap: 29, line1: "Republicans think 53% of Democrats believe this", line2: "Actually, 82% of Democrats believe this" },
+            { question: "Proud to be American despite flaws", actual: 82, estimate: 54, gap: 28, line1: "Republicans think 54% of Democrats believe this", line2: "Actually, 82% of Democrats believe this" },
+            { question: "America should be a socialist country", actual: 29, estimate: 54, gap: 25, line1: "Republicans think 54% of Democrats believe this", line2: "Actually, only 29% of Democrats believe this" },
+            { question: "Law abiding citizens can bear firearms", actual: 65, estimate: 41, gap: 24, line1: "Republicans think 41% of Democrats believe this", line2: "Actually, 65% of Democrats believe this" },
+            { question: "The US should abolish ICE", actual: 41, estimate: 54, gap: 13, line1: "Republicans think 54% of Democrats believe this", line2: "Actually, only 41% of Democrats believe this" }
+        ];
+
+        let currentView = 'dem';
+
+        const margin = { top: 20, right: 360, bottom: 40, left: 340 };
+        const width = 1150 - margin.left - margin.right;
+        const height = 500 - margin.top - margin.bottom;
+
+        const svg = d3.select("#chart")
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const x = d3.scaleLinear().domain([0, 100]).range([0, width]);
+        const y = d3.scaleBand().range([0, height]).padding(0.3);
+
+        // Grid lines
+        svg.append("g")
+            .attr("class", "grid")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x).ticks(5).tickSize(-height).tickFormat(""));
+
+        // X axis
+        svg.append("g")
+            .attr("class", "axis x-axis")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + "%"));
+
+        // Y axis group
+        const yAxisGroup = svg.append("g").attr("class", "axis y-axis");
+
+        // Bars group
+        const barsGroup = svg.append("g").attr("class", "bars");
+
+        function updateChart(data, view) {
+            y.domain(data.map((d, i) => i));
+
+            // Update Y axis
+            yAxisGroup.transition().duration(300)
+                .call(d3.axisLeft(y).tickFormat(i => data[i].question));
+
+            // Data join for bar groups
+            const rows = barsGroup.selectAll(".bar-row")
+                .data(data, (d, i) => i);
+
+            rows.exit().remove();
+
+            const rowsEnter = rows.enter()
+                .append("g")
+                .attr("class", "bar-row");
+
+            // Gap bar (background)
+            rowsEnter.append("rect")
+                .attr("class", "gap-bar")
+                .attr("height", y.bandwidth())
+                .attr("rx", 3);
+
+            // Actual dot
+            rowsEnter.append("circle")
+                .attr("class", "actual-dot")
+                .attr("r", 14)
+                .attr("fill", view === 'dem' ? "#ef4444" : "#3b82f6");
+
+            // Estimate dot
+            rowsEnter.append("circle")
+                .attr("class", "estimate-dot")
+                .attr("r", 14)
+                .attr("fill", view === 'dem' ? "#3b82f6" : "#ef4444");
+
+            // Actual value label
+            rowsEnter.append("text")
+                .attr("class", "actual-label")
+                .attr("text-anchor", "middle")
+                .attr("font-size", "11px")
+                .attr("font-weight", "600")
+                .attr("fill", "#fff");
+
+            // Estimate value label
+            rowsEnter.append("text")
+                .attr("class", "estimate-label")
+                .attr("text-anchor", "middle")
+                .attr("font-size", "11px")
+                .attr("font-weight", "600")
+                .attr("fill", "#fff");
+
+            // Line 1 - what they think (estimate)
+            rowsEnter.append("text")
+                .attr("class", "line1-label")
+                .attr("text-anchor", "start")
+                .attr("font-size", "11px")
+                .attr("fill", "#666");
+
+            // Line 2 - the truth (actual)
+            rowsEnter.append("text")
+                .attr("class", "line2-label")
+                .attr("text-anchor", "start")
+                .attr("font-size", "11px")
+                .attr("font-weight", "600")
+                .attr("fill", "#333");
+
+            // Update all
+            const allRows = barsGroup.selectAll(".bar-row");
+
+            allRows.transition().duration(300)
+                .attr("transform", (d, i) => `translate(0,${y(i)})`);
+
+            allRows.select(".gap-bar")
+                .transition().duration(300)
+                .attr("x", d => x(Math.min(d.actual, d.estimate)))
+                .attr("width", d => Math.abs(x(d.actual) - x(d.estimate)))
+                .attr("y", 0)
+                .attr("height", y.bandwidth())
+                .attr("fill", "#ddd")
+                .attr("opacity", 0.6);
+
+            allRows.select(".actual-dot")
+                .transition().duration(300)
+                .attr("cx", d => x(d.actual))
+                .attr("cy", y.bandwidth() / 2)
+                .attr("fill", view === 'dem' ? "#ef4444" : "#3b82f6");
+
+            allRows.select(".estimate-dot")
+                .transition().duration(300)
+                .attr("cx", d => x(d.estimate))
+                .attr("cy", y.bandwidth() / 2)
+                .attr("fill", view === 'dem' ? "#3b82f6" : "#ef4444");
+
+            allRows.select(".actual-label")
+                .transition().duration(300)
+                .attr("x", d => x(d.actual))
+                .attr("y", y.bandwidth() / 2 + 4)
+                .text(d => d.actual);
+
+            allRows.select(".estimate-label")
+                .transition().duration(300)
+                .attr("x", d => x(d.estimate))
+                .attr("y", y.bandwidth() / 2 + 4)
+                .text(d => Math.abs(d.gap) < 8 ? '' : d.estimate);
+
+            allRows.select(".line1-label")
+                .transition().duration(300)
+                .attr("x", width + 20)
+                .attr("y", y.bandwidth() / 2 - 4)
+                .text(d => d.line1);
+
+            allRows.select(".line2-label")
+                .transition().duration(300)
+                .attr("x", width + 20)
+                .attr("y", y.bandwidth() / 2 + 12)
+                .text(d => d.line2);
+
+            // Update legend
+            const legendHtml = view === 'dem' ? `
+                <div class="legend-item"><div class="legend-dot" style="background: #ef4444;"></div><span>Republicans' Actual Views</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background: #3b82f6;"></div><span>Democrats' Estimates</span></div>
+            ` : `
+                <div class="legend-item"><div class="legend-dot" style="background: #3b82f6;"></div><span>Democrats' Actual Views</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background: #ef4444;"></div><span>Republicans' Estimates</span></div>
+            `;
+            document.getElementById('legend').innerHTML = legendHtml;
+
+            }
+
+        // Toggle buttons
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentView = btn.dataset.view;
+                updateChart(currentView === 'dem' ? demData : repData, currentView);
+            });
+        });
+
+        // Initial render
+        updateChart(demData, 'dem');
+    </script>
+</body>
+</html>

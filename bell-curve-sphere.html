@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bell Curve Sphere</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        .back-link {
+            position: fixed; top: 20px; left: 20px;
+            color: #666; text-decoration: none; font-size: 13px; z-index: 10;
+        }
+        .back-link:hover { color: #fff; }
+        .left {
+            width: 40%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 40px; border-right: 1px solid #222;
+        }
+        .right {
+            width: 60%;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .curve-title {
+            font-size: 14px; color: #666;
+            text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px;
+        }
+        .curve-container { position: relative; width: 100%; max-width: 350px; }
+        #curveCanvas { width: 100%; border: 1px solid #222; border-radius: 8px; }
+        .legend {
+            display: flex; flex-direction: column; gap: 12px;
+            margin-top: 30px; width: 100%; max-width: 350px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .legend-label { color: #888; }
+        .legend-pct { margin-left: auto; color: #555; font-family: monospace; }
+        .insight {
+            margin-top: 25px; padding: 15px; background: #111;
+            border: 1px solid #222; border-radius: 8px;
+            max-width: 350px; font-size: 13px; color: #888; line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <a href="home.html" class="back-link">← Back</a>
+    <div class="left">
+        <div class="curve-title">The Bell Curve</div>
+        <div class="curve-container">
+            <canvas id="curveCanvas" width="350" height="250"></canvas>
+        </div>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #EF4444;"></div>
+                <span class="legend-label">Rare (±2σ)</span>
+                <span class="legend-pct">4.6%</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #F97316;"></div>
+                <span class="legend-label">Uncommon (±1-2σ)</span>
+                <span class="legend-pct">27.2%</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #A855F7;"></div>
+                <span class="legend-label">Common (±1σ)</span>
+                <span class="legend-pct">68.2%</span>
+            </div>
+        </div>
+        <div class="insight">
+            Most things cluster around the average. The extremes are rare. This is the normal distribution.
+        </div>
+    </div>
+    <div class="right">
+        <canvas id="sphereCanvas"></canvas>
+    </div>
+
+    <script>
+        const curveCanvas = document.getElementById('curveCanvas');
+        const curveCtx = curveCanvas.getContext('2d');
+        const sphereCanvas = document.getElementById('sphereCanvas');
+        const sphereCtx = sphereCanvas.getContext('2d');
+
+        function bellCurve(x, mean = 0.5, std = 0.15) {
+            return Math.exp(-0.5 * Math.pow((x - mean) / std, 2));
+        }
+
+        function getColorByPosition(x) {
+            const distFromCenter = Math.abs(x - 0.5);
+            if (distFromCenter < 0.15) return '#A855F7';  // Within 1 std
+            if (distFromCenter < 0.30) return '#F97316';  // 1-2 std
+            return '#EF4444';  // Beyond 2 std
+        }
+
+        let sphereWidth, sphereHeight, centerX, centerY, radius;
+
+        function resizeSphere() {
+            const container = document.querySelector('.right');
+            sphereWidth = container.clientWidth;
+            sphereHeight = container.clientHeight;
+            sphereCanvas.width = sphereWidth;
+            sphereCanvas.height = sphereHeight;
+            centerX = sphereWidth / 2;
+            centerY = sphereHeight / 2;
+            radius = Math.min(sphereWidth, sphereHeight) * 0.38;
+        }
+        resizeSphere();
+        window.addEventListener('resize', resizeSphere);
+
+        const numPoints = 400;
+        const points = [];
+
+        for (let i = 0; i < numPoints; i++) {
+            const phi = Math.acos(1 - 2 * (i + 0.5) / numPoints);
+            const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+
+            // Map phi (0 to PI) to x (0 to 1) for bell curve position
+            const x = phi / Math.PI;
+            const density = bellCurve(x);
+
+            points.push({
+                phi, theta, x,
+                color: getColorByPosition(x),
+                size: 2 + density * 5,  // Size based on density
+                density
+            });
+        }
+
+        let time = 0;
+
+        function drawCurve() {
+            const w = curveCanvas.width, h = curveCanvas.height;
+            const padding = 30, graphW = w - padding * 2, graphH = h - padding * 2;
+
+            curveCtx.fillStyle = '#0a0a0f';
+            curveCtx.fillRect(0, 0, w, h);
+
+            // Draw filled bell curve with colors
+            for (let t = 0; t < 1; t += 0.01) {
+                const x = padding + t * graphW;
+                const nextX = padding + (t + 0.01) * graphW;
+                const y = h - padding - bellCurve(t) * graphH * 0.9;
+
+                curveCtx.fillStyle = getColorByPosition(t);
+                curveCtx.globalAlpha = 0.3;
+                curveCtx.fillRect(x, y, nextX - x + 1, h - padding - y);
+            }
+            curveCtx.globalAlpha = 1;
+
+            // Draw curve line
+            curveCtx.lineWidth = 3;
+            curveCtx.beginPath();
+            for (let t = 0; t <= 1; t += 0.01) {
+                const x = padding + t * graphW;
+                const y = h - padding - bellCurve(t) * graphH * 0.9;
+                if (t === 0) curveCtx.moveTo(x, y);
+                else curveCtx.lineTo(x, y);
+            }
+            curveCtx.strokeStyle = '#A855F7';
+            curveCtx.stroke();
+
+            // Axes
+            curveCtx.strokeStyle = '#333';
+            curveCtx.lineWidth = 1;
+            curveCtx.beginPath();
+            curveCtx.moveTo(padding, padding);
+            curveCtx.lineTo(padding, h - padding);
+            curveCtx.lineTo(w - padding, h - padding);
+            curveCtx.stroke();
+
+            // Standard deviation markers
+            curveCtx.setLineDash([3, 3]);
+            [-2, -1, 0, 1, 2].forEach(sd => {
+                const x = padding + (0.5 + sd * 0.15) * graphW;
+                curveCtx.beginPath();
+                curveCtx.moveTo(x, h - padding);
+                curveCtx.lineTo(x, h - padding - bellCurve(0.5 + sd * 0.15) * graphH * 0.9);
+                curveCtx.strokeStyle = '#444';
+                curveCtx.stroke();
+            });
+            curveCtx.setLineDash([]);
+
+            curveCtx.fillStyle = '#555';
+            curveCtx.font = '10px -apple-system, sans-serif';
+            curveCtx.textAlign = 'center';
+            curveCtx.fillText('-2σ', padding + 0.2 * graphW, h - padding + 15);
+            curveCtx.fillText('-1σ', padding + 0.35 * graphW, h - padding + 15);
+            curveCtx.fillText('μ', padding + 0.5 * graphW, h - padding + 15);
+            curveCtx.fillText('+1σ', padding + 0.65 * graphW, h - padding + 15);
+            curveCtx.fillText('+2σ', padding + 0.8 * graphW, h - padding + 15);
+        }
+
+        function drawSphere() {
+            sphereCtx.fillStyle = '#0a0a0f';
+            sphereCtx.fillRect(0, 0, sphereWidth, sphereHeight);
+
+            const rotationY = time * 0.15;
+            const rotationX = 0.4;
+
+            const projected = points.map(p => {
+                let x = Math.sin(p.phi) * Math.cos(p.theta + rotationY);
+                let y = Math.cos(p.phi);
+                let z = Math.sin(p.phi) * Math.sin(p.theta + rotationY);
+
+                const y2 = y * Math.cos(rotationX) - z * Math.sin(rotationX);
+                const z2 = y * Math.sin(rotationX) + z * Math.cos(rotationX);
+                y = y2; z = z2;
+
+                return { x, y, z, color: p.color, size: p.size, density: p.density };
+            });
+
+            projected.sort((a, b) => a.z - b.z);
+
+            sphereCtx.beginPath();
+            sphereCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            sphereCtx.strokeStyle = 'rgba(255,255,255,0.05)';
+            sphereCtx.lineWidth = 1;
+            sphereCtx.stroke();
+
+            projected.forEach(p => {
+                const scale = (p.z + 1.5) / 2.5;
+                const screenX = centerX + p.x * radius;
+                const screenY = centerY + p.y * radius;
+                const size = p.size * scale;
+
+                sphereCtx.beginPath();
+                sphereCtx.arc(screenX, screenY, size, 0, Math.PI * 2);
+                sphereCtx.fillStyle = p.color;
+
+                if (p.z > 0.3 && p.density > 0.5) {
+                    sphereCtx.shadowColor = p.color;
+                    sphereCtx.shadowBlur = 8;
+                }
+
+                sphereCtx.fill();
+                sphereCtx.shadowBlur = 0;
+            });
+        }
+
+        function animate() {
+            drawCurve();
+            drawSphere();
+            time += 0.016;
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
