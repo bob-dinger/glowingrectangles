@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Baltimore Stockbroker - People Grid</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 { font-size: 28px; margin-bottom: 8px; }
+        .subtitle {
+            color: #888;
+            font-size: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        .stats {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 20px;
+        }
+        .stat { text-align: center; }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 300;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+        .stat-value.round { color: #3B82F6; }
+        .stat-value.remaining { color: #22C55E; }
+        .stat-value.eliminated { color: #EF4444; }
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            gap: 4px;
+            padding: 20px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .person {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #3B82F6;
+            transition: all 0.5s ease;
+            position: relative;
+            cursor: default;
+        }
+        .person.winner {
+            background: #22C55E;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+        .person.loser {
+            background: #333;
+            transform: scale(0.6);
+            opacity: 0.3;
+        }
+        .person.final-winner {
+            background: #F59E0B;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.8);
+            transform: scale(1.3);
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.8); }
+            50% { box-shadow: 0 0 30px rgba(245, 158, 11, 1); }
+        }
+
+        .round-info {
+            text-align: center;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+        .round-title {
+            font-size: 18px;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+        .round-description {
+            font-size: 13px;
+            color: #888;
+            max-width: 400px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        button {
+            padding: 10px 24px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #252525;
+            border-color: #3B82F6;
+        }
+        button.primary {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .legend-dot.active { background: #22C55E; }
+        .legend-dot.eliminated { background: #333; }
+        .legend-dot.mark { background: #F59E0B; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <h1>The Baltimore Stockbroker</h1>
+    <p class="subtitle">
+        128 people receive stock predictions. Watch who survives each round of the con.
+    </p>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value round" id="roundNum">0</div>
+            <div class="stat-label">Week</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value remaining" id="remaining">128</div>
+            <div class="stat-label">Still Receiving Letters</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value eliminated" id="eliminated">0</div>
+            <div class="stat-label">Eliminated</div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-dot active"></div>
+            <span>Got correct prediction</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot eliminated"></div>
+            <span>Got wrong prediction</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot mark"></div>
+            <span>The "mark"</span>
+        </div>
+    </div>
+
+    <div class="round-info">
+        <div class="round-title" id="roundTitle">128 Potential Victims</div>
+        <div class="round-description" id="roundDesc">Each person will receive a stock prediction. Half will get "BUY", half will get "SELL".</div>
+    </div>
+
+    <div class="grid-container" id="grid"></div>
+
+    <div class="controls">
+        <button class="primary" id="nextBtn">Send Predictions</button>
+        <button id="resetBtn">Reset</button>
+    </div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const roundNumEl = document.getElementById('roundNum');
+        const remainingEl = document.getElementById('remaining');
+        const eliminatedEl = document.getElementById('eliminated');
+        const roundTitleEl = document.getElementById('roundTitle');
+        const roundDescEl = document.getElementById('roundDesc');
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        const totalPeople = 128;
+        let people = [];
+        let round = 0;
+        let isAnimating = false;
+
+        const messages = [
+            { title: "128 Potential Victims", desc: "Each person will receive a stock prediction. Half will get 'BUY', half will get 'SELL'." },
+            { title: "Week 1: Predictions Sent", desc: "The market moved. 64 people got the right prediction. They're intrigued..." },
+            { title: "Week 2: Trust Begins", desc: "32 people have now seen 2 correct predictions in a row. Coincidence?" },
+            { title: "Week 3: The Hook", desc: "16 people with 3 straight wins. 'This broker really knows something...'" },
+            { title: "Week 4: Believers", desc: "8 people, 4 perfect predictions. They're starting to believe." },
+            { title: "Week 5: True Believers", desc: "4 people left. 5 correct predictions. 'I need to invest with this genius!'" },
+            { title: "Week 6: The Marks", desc: "2 people with 6 perfect predictions. Ready to hand over their savings." },
+            { title: "Week 7: The Target", desc: "1 person. 7 straight correct predictions. They've found their 'once-in-a-lifetime' opportunity." }
+        ];
+
+        function init() {
+            grid.innerHTML = '';
+            people = [];
+            for (let i = 0; i < totalPeople; i++) {
+                const div = document.createElement('div');
+                div.className = 'person';
+                div.dataset.id = i;
+                grid.appendChild(div);
+                people.push({
+                    element: div,
+                    alive: true,
+                    correctCount: 0
+                });
+            }
+        }
+
+        function nextRound() {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            round++;
+            const alivePeople = people.filter(p => p.alive);
+
+            // Randomly eliminate half
+            const shuffled = [...alivePeople].sort(() => Math.random() - 0.5);
+            const halfPoint = Math.floor(shuffled.length / 2);
+
+            shuffled.forEach((person, i) => {
+                setTimeout(() => {
+                    if (i >= halfPoint) {
+                        person.alive = false;
+                        person.element.classList.remove('winner');
+                        person.element.classList.add('loser');
+                    } else {
+                        person.correctCount++;
+                        person.element.classList.add('winner');
+
+                        // Check if this is the final winner
+                        if (round === 7 && i < 1) {
+                            setTimeout(() => {
+                                person.element.classList.remove('winner');
+                                person.element.classList.add('final-winner');
+                            }, 500);
+                        }
+                    }
+                }, i * 20);
+            });
+
+            setTimeout(() => {
+                updateStats();
+                isAnimating = false;
+            }, shuffled.length * 20 + 300);
+        }
+
+        function updateStats() {
+            const alive = people.filter(p => p.alive).length;
+            roundNumEl.textContent = round;
+            remainingEl.textContent = alive;
+            eliminatedEl.textContent = totalPeople - alive;
+
+            if (round < messages.length) {
+                roundTitleEl.textContent = messages[round].title;
+                roundDescEl.textContent = messages[round].desc;
+            }
+
+            if (round === 0) {
+                nextBtn.textContent = 'Send Predictions';
+            } else if (round >= 7) {
+                nextBtn.disabled = true;
+                nextBtn.textContent = 'Con Complete';
+            } else {
+                nextBtn.textContent = 'Next Week';
+            }
+        }
+
+        function reset() {
+            round = 0;
+            nextBtn.disabled = false;
+            init();
+            updateStats();
+        }
+
+        nextBtn.addEventListener('click', nextRound);
+        resetBtn.addEventListener('click', reset);
+
+        init();
+        updateStats();
+    </script>
+</body>
+</html>

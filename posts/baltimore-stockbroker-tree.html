@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Baltimore Stockbroker - Tree Diagram</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 { font-size: 28px; margin-bottom: 8px; }
+        .subtitle {
+            color: #888;
+            font-size: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 550px;
+            line-height: 1.5;
+        }
+        .highlight { color: #F59E0B; }
+
+        .canvas-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        canvas {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        button {
+            padding: 10px 24px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #252525;
+            border-color: #3B82F6;
+        }
+        button.primary {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+
+        .info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .info-title {
+            font-size: 16px;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+        .info-text {
+            font-size: 13px;
+            color: #888;
+            max-width: 500px;
+        }
+
+        .explanation {
+            max-width: 500px;
+            margin-top: 10px;
+            padding: 20px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+        }
+        .explanation-text {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <h1>The Baltimore Stockbroker</h1>
+    <p class="subtitle">
+        Every possible outcome is covered. The <span class="highlight">golden path</span> shows what one "lucky" recipient sees—but the broker knew someone would walk it.
+    </p>
+
+    <div class="info">
+        <div class="info-title" id="infoTitle">All 128 Paths</div>
+        <div class="info-text" id="infoText">Each branch is a prediction. Right = correct, Left = wrong. One path will be all correct.</div>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="canvas" width="700" height="450"></canvas>
+    </div>
+
+    <div class="controls">
+        <button class="primary" id="animateBtn">Reveal the Winning Path</button>
+        <button id="resetBtn">Reset</button>
+    </div>
+
+    <div class="explanation">
+        <div class="explanation-text">
+            The tree shows all 128 possible outcomes after 7 predictions. The broker sends letters covering <em>every</em> branch. One recipient will experience the golden path—7 correct predictions. To them, it's a miracle. To the broker, it's a certainty.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const animateBtn = document.getElementById('animateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const infoTitle = document.getElementById('infoTitle');
+        const infoText = document.getElementById('infoText');
+
+        const levels = 7;
+        const startX = 350;
+        const startY = 40;
+        const levelHeight = 55;
+
+        let winningPath = [];
+        let revealedLevel = 0;
+        let isAnimating = false;
+
+        // Generate a random winning path (all rights for simplicity, but position varies)
+        function generateWinningPath() {
+            winningPath = [];
+            let path = [];
+            for (let i = 0; i < levels; i++) {
+                path.push(Math.random() < 0.5 ? 'L' : 'R');
+            }
+            return path;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw all branches
+            drawTree(startX, startY, 0, 280, []);
+        }
+
+        function drawTree(x, y, level, spread, path) {
+            if (level >= levels) {
+                // Draw end node
+                const isWinning = path.every((dir, i) => dir === winningPath[i]) && revealedLevel > level - 1;
+                const radius = isWinning ? 6 : 3;
+                ctx.fillStyle = isWinning ? '#F59E0B' : '#333';
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+                return;
+            }
+
+            const nextY = y + levelHeight;
+            const nextSpread = spread * 0.5;
+
+            const leftX = x - nextSpread;
+            const rightX = x + nextSpread;
+
+            // Check if this branch is on the winning path
+            const pathSoFar = [...path];
+            const isOnWinningPathLeft = pathSoFar.concat('L').every((dir, i) => dir === winningPath[i]);
+            const isOnWinningPathRight = pathSoFar.concat('R').every((dir, i) => dir === winningPath[i]);
+            const isRevealedLeft = isOnWinningPathLeft && revealedLevel > level;
+            const isRevealedRight = isOnWinningPathRight && revealedLevel > level;
+
+            // Draw left branch (wrong predictions)
+            ctx.strokeStyle = isRevealedLeft ? '#F59E0B' : '#2a2a2a';
+            ctx.lineWidth = isRevealedLeft ? 3 : 1;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(leftX, nextY);
+            ctx.stroke();
+
+            // Draw right branch (correct predictions)
+            ctx.strokeStyle = isRevealedRight ? '#F59E0B' : '#333';
+            ctx.lineWidth = isRevealedRight ? 3 : 1;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(rightX, nextY);
+            ctx.stroke();
+
+            // Draw current node
+            const isOnWinningPath = path.every((dir, i) => dir === winningPath[i]);
+            const isRevealed = isOnWinningPath && revealedLevel >= level;
+            ctx.fillStyle = isRevealed ? '#F59E0B' : '#444';
+            ctx.beginPath();
+            ctx.arc(x, y, isRevealed ? 5 : 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Week labels on the left
+            if (path.length === 0) {
+                ctx.fillStyle = '#555';
+                ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+                ctx.textAlign = 'right';
+                for (let i = 0; i <= levels; i++) {
+                    ctx.fillText(`Week ${i}`, 45, startY + i * levelHeight + 4);
+                }
+
+                // People count on the right
+                ctx.textAlign = 'left';
+                for (let i = 0; i <= levels; i++) {
+                    const count = Math.pow(2, levels - i);
+                    ctx.fillText(`${count} people`, canvas.width - 55, startY + i * levelHeight + 4);
+                }
+            }
+
+            // Recursively draw children
+            drawTree(leftX, nextY, level + 1, nextSpread, [...path, 'L']);
+            drawTree(rightX, nextY, level + 1, nextSpread, [...path, 'R']);
+        }
+
+        function animateReveal() {
+            if (isAnimating) return;
+            isAnimating = true;
+            revealedLevel = 0;
+
+            function revealNext() {
+                revealedLevel++;
+                draw();
+
+                // Update info
+                const remaining = Math.pow(2, levels - revealedLevel);
+                if (revealedLevel <= levels) {
+                    infoTitle.textContent = `Week ${revealedLevel}: ${remaining} Still Believe`;
+                    infoText.textContent = revealedLevel < levels
+                        ? `${remaining} people just got another correct prediction. The rest? Wrong prediction, never hear from the broker again.`
+                        : `The final recipient has seen 7 straight correct predictions. They're ready to invest everything.`;
+                }
+
+                if (revealedLevel < levels + 1) {
+                    setTimeout(revealNext, 600);
+                } else {
+                    isAnimating = false;
+                    animateBtn.textContent = 'Reveal Again';
+                }
+            }
+
+            // Generate new winning path
+            winningPath = generateWinningPath();
+            infoTitle.textContent = 'Week 0: 128 Recipients';
+            infoText.textContent = 'Broker sends 128 letters. Each gets a stock prediction...';
+            setTimeout(revealNext, 800);
+        }
+
+        function reset() {
+            revealedLevel = 0;
+            isAnimating = false;
+            winningPath = generateWinningPath();
+            animateBtn.textContent = 'Reveal the Winning Path';
+            infoTitle.textContent = 'All 128 Paths';
+            infoText.textContent = 'Each branch is a prediction. The golden path shows what one "lucky" recipient sees.';
+            draw();
+        }
+
+        animateBtn.addEventListener('click', animateReveal);
+        resetBtn.addEventListener('click', reset);
+
+        // Initialize
+        winningPath = generateWinningPath();
+        draw();
+    </script>
+</body>
+</html>

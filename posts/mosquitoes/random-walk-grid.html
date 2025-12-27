@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Walk on a Grid</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        .page-container { display: flex; min-height: 100vh; }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            padding-top: 30px;
+        }
+
+        .info-section {
+            width: 340px;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .info-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #22C55E;
+        }
+        .info-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #999;
+        }
+        .info-text p {
+            margin-bottom: 14px;
+        }
+        .info-text a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+        .info-text a:hover {
+            text-decoration: underline;
+        }
+        .info-divider {
+            height: 1px;
+            background: #222;
+            margin: 20px 0;
+        }
+        .info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .info-quote {
+            font-style: italic;
+            color: #888;
+            border-left: 2px solid #22C55E;
+            padding-left: 12px;
+            margin: 16px 0;
+        }
+        .info-links {
+            margin-top: 10px;
+        }
+        .info-link {
+            display: block;
+            padding: 10px 12px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            color: #ccc;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .info-link:hover {
+            background: #252525;
+            color: #fff;
+        }
+        .info-math {
+            font-family: 'SF Mono', 'Monaco', monospace;
+            background: #1a1a1a;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #F59E0B;
+            margin: 12px 0;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 10;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 { font-size: 26px; margin-bottom: 6px; }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 25px;
+            text-align: center;
+            max-width: 450px;
+            line-height: 1.5;
+        }
+
+        .stats {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 20px;
+        }
+        .stat { text-align: center; }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 300;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+        .stat-value.steps { color: #3B82F6; }
+        .stat-value.position { color: #F59E0B; }
+        .stat-value.distance { color: #22C55E; }
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .canvas-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 24px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #252525;
+            border-color: #3B82F6;
+        }
+        button.primary {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+    </style>
+</head>
+<body>
+    <a href="../../index.html" class="back-link">← Back</a>
+
+    <div class="page-container">
+        <div class="viz-section">
+            <h1>Random Walk</h1>
+            <p class="subtitle">
+                A mosquito starts at the center of a 100×100 grid. Each step it moves up, down, left, or right at random. Where does it end up after 100 steps?
+            </p>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value steps" id="stepCount">0</div>
+                    <div class="stat-label">Steps</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value position" id="position">(50, 50)</div>
+                    <div class="stat-label">Position</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value distance" id="distance">0</div>
+                    <div class="stat-label">Distance from start</div>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="canvas" width="500" height="500"></canvas>
+            </div>
+
+            <div class="controls">
+                <button class="primary" id="runBtn">Run Walk</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-title">Spatial Probability</div>
+            <div class="info-text">
+                <p>The <span style="color: #22C55E">green circles</span> show probability zones. After 100 random steps, 68% of walks end within 10 units of the start, 95% within 20 units.</p>
+                <p>The <span style="color: rgba(255,255,255,0.5)">grey zigzag</span> shows the "optimal" escape path—71 steps of pure up-right-up-right to reach the outer circle.</p>
+            </div>
+
+            <div class="info-math">
+                P(optimal path) = (1/4)^71 ≈ 10^-43
+            </div>
+
+            <div class="info-text">
+                <p>That's a 1 in 10,000,000,000,000,000,000,000,000,000,000,000,000,000,000 chance.</p>
+            </div>
+
+            <div class="info-divider"></div>
+
+            <div class="info-label">The Square Root Law</div>
+            <div class="info-text">
+                <p>After <em>n</em> random steps, the expected distance from start is <strong>√n</strong>, not <em>n</em>.</p>
+                <p>100 steps → ~10 units away<br>
+                10,000 steps → ~100 units away</p>
+                <p>Randomness cancels itself out. Steps in opposite directions undo each other.</p>
+            </div>
+
+            <div class="info-divider"></div>
+
+            <div class="info-label">From Jordan Ellenberg's "Shape"</div>
+            <div class="info-quote">
+                This is how mosquitoes fly, molecules diffuse, and stock prices fluctuate. The random walk is nature's favorite path.
+            </div>
+
+            <div class="info-divider"></div>
+
+            <div class="info-label">See Also</div>
+            <div class="info-links">
+                <a href="https://www.amazon.com/Shape-Geometry-Information-Jordan-Ellenberg/dp/1984879057" target="_blank" class="info-link">Shape by Jordan Ellenberg</a>
+                <a href="https://en.wikipedia.org/wiki/Random_walk" target="_blank" class="info-link">Wikipedia: Random Walk</a>
+                <a href="spatial-probability.html" class="info-link">Mosquito Swarm Simulation →</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const stepCountEl = document.getElementById('stepCount');
+        const positionEl = document.getElementById('position');
+        const distanceEl = document.getElementById('distance');
+        const runBtn = document.getElementById('runBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        const gridSize = 100;
+        const cellSize = canvas.width / gridSize;
+        const totalSteps = 100;
+        const startX = 50;
+        const startY = 50;
+
+        let x = startX;
+        let y = startY;
+        let step = 0;
+        let path = [{x, y}];
+        let animationId = null;
+        let isRunning = false;
+
+        const directions = [
+            {dx: 0, dy: -1},
+            {dx: 0, dy: 1},
+            {dx: -1, dy: 0},
+            {dx: 1, dy: 0}
+        ];
+
+        const outerRadius = 49;
+        const stepsToReachEdge = Math.ceil(outerRadius * 2 / Math.sqrt(2));
+
+        function getOptimalPath() {
+            const optPath = [{x: startX, y: startY}];
+            let ox = startX;
+            let oy = startY;
+            for (let i = 0; i < stepsToReachEdge; i++) {
+                if (i % 2 === 0) oy -= 1;
+                else ox += 1;
+                optPath.push({x: ox, y: oy});
+            }
+            return optPath;
+        }
+        const optimalPath = getOptimalPath();
+
+        const probabilityZones = [
+            { radius: 10, label: "68%" },
+            { radius: 20, label: "95%" },
+            { radius: 30, label: "99%" },
+            { radius: outerRadius, label: "~100%" }
+        ];
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#1a1a1a';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= gridSize; i += 10) {
+                ctx.beginPath();
+                ctx.moveTo(i * cellSize, 0);
+                ctx.lineTo(i * cellSize, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * cellSize);
+                ctx.lineTo(canvas.width, i * cellSize);
+                ctx.stroke();
+            }
+
+            const centerPx = startX * cellSize + cellSize/2;
+            const centerPy = startY * cellSize + cellSize/2;
+
+            probabilityZones.forEach((zone, i) => {
+                const radiusPx = zone.radius * cellSize;
+                const opacity = 0.15 + (i * 0.1);
+
+                ctx.fillStyle = `rgba(34, 197, 94, ${0.03 + i * 0.02})`;
+                ctx.beginPath();
+                ctx.arc(centerPx, centerPy, radiusPx, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = `rgba(34, 197, 94, ${opacity + 0.2})`;
+                ctx.lineWidth = zone.radius === outerRadius ? 2 : 1;
+                ctx.setLineDash(zone.radius === outerRadius ? [] : [4, 4]);
+                ctx.beginPath();
+                ctx.arc(centerPx, centerPy, radiusPx, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.fillStyle = `rgba(34, 197, 94, ${0.5 + i * 0.15})`;
+                ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(zone.label, centerPx + radiusPx + 4, centerPy + 4);
+            });
+            ctx.setLineDash([]);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(optimalPath[0].x * cellSize + cellSize/2, optimalPath[0].y * cellSize + cellSize/2);
+            for (let i = 1; i < optimalPath.length; i++) {
+                ctx.lineTo(optimalPath[i].x * cellSize + cellSize/2, optimalPath[i].y * cellSize + cellSize/2);
+            }
+            ctx.stroke();
+
+            const optEnd = optimalPath[optimalPath.length - 1];
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(optEnd.x * cellSize + cellSize/2, optEnd.y * cellSize + cellSize/2, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`${stepsToReachEdge} steps`, optEnd.x * cellSize + cellSize/2 + 8, optEnd.y * cellSize + cellSize/2 + 3);
+
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
+            ctx.beginPath();
+            ctx.arc(startX * cellSize + cellSize/2, startY * cellSize + cellSize/2, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (path.length > 1) {
+                ctx.strokeStyle = '#F59E0B';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(path[0].x * cellSize + cellSize/2, path[0].y * cellSize + cellSize/2);
+                for (let i = 1; i < path.length; i++) {
+                    ctx.lineTo(path[i].x * cellSize + cellSize/2, path[i].y * cellSize + cellSize/2);
+                }
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = '#F59E0B';
+            ctx.beginPath();
+            ctx.arc(x * cellSize + cellSize/2, y * cellSize + cellSize/2, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.3)';
+            ctx.beginPath();
+            ctx.arc(x * cellSize + cellSize/2, y * cellSize + cellSize/2, 10, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function updateStats() {
+            stepCountEl.textContent = step;
+            positionEl.textContent = `(${x}, ${y})`;
+            const dist = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+            distanceEl.textContent = dist.toFixed(1);
+        }
+
+        function doStep() {
+            if (step >= totalSteps) {
+                isRunning = false;
+                runBtn.textContent = 'Run Again';
+                return;
+            }
+
+            const dir = directions[Math.floor(Math.random() * 4)];
+            x += dir.dx;
+            y += dir.dy;
+            x = Math.max(0, Math.min(gridSize - 1, x));
+            y = Math.max(0, Math.min(gridSize - 1, y));
+
+            path.push({x, y});
+            step++;
+
+            draw();
+            updateStats();
+
+            if (step < totalSteps) {
+                animationId = setTimeout(doStep, 50);
+            } else {
+                isRunning = false;
+                runBtn.textContent = 'Run Again';
+            }
+        }
+
+        function run() {
+            if (isRunning) return;
+            if (step >= totalSteps) reset();
+            isRunning = true;
+            runBtn.textContent = 'Running...';
+            doStep();
+        }
+
+        function reset() {
+            clearTimeout(animationId);
+            isRunning = false;
+            x = startX;
+            y = startY;
+            step = 0;
+            path = [{x, y}];
+            runBtn.textContent = 'Run Walk';
+            draw();
+            updateStats();
+        }
+
+        runBtn.addEventListener('click', run);
+        resetBtn.addEventListener('click', reset);
+
+        draw();
+        updateStats();
+    </script>
+</body>
+</html>

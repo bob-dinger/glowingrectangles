@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        .page-container { display: flex; min-height: 100vh; }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .info-section {
+            width: 340px;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .info-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #3B82F6;
+        }
+        .info-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #999;
+        }
+        .info-text p {
+            margin-bottom: 14px;
+        }
+        .info-text a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+        .info-text a:hover {
+            text-decoration: underline;
+        }
+        .info-divider {
+            height: 1px;
+            background: #222;
+            margin: 20px 0;
+        }
+        .info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .info-quote {
+            font-style: italic;
+            color: #888;
+            border-left: 2px solid #3B82F6;
+            padding-left: 12px;
+            margin: 16px 0;
+        }
+        .info-links {
+            margin-top: 10px;
+        }
+        .info-link {
+            display: block;
+            padding: 10px 12px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            color: #ccc;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .info-link:hover {
+            background: #252525;
+            color: #fff;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 10;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 { font-size: 26px; margin-bottom: 6px; }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 25px;
+            text-align: center;
+            max-width: 450px;
+            line-height: 1.5;
+        }
+
+        .dna-container {
+            position: relative;
+            width: 600px;
+            height: 600px;
+        }
+
+        .dna-circle {
+            width: 600px;
+            height: 600px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .dna-text {
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 11px;
+            line-height: 1.4;
+            letter-spacing: 1px;
+            color: #444;
+            word-break: break-all;
+            text-align: justify;
+            padding: 40px;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .dna-text .g { color: #22C55E; }
+        .dna-text .c { color: #3B82F6; }
+        .dna-text .t { color: #F59E0B; }
+        .dna-text .a { color: #EF4444; }
+
+        .dna-text .highlight {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+            padding: 1px 0;
+        }
+        .dna-text .highlight-eye {
+            background: rgba(139, 69, 19, 0.4);
+            box-shadow: 0 0 4px rgba(139, 69, 19, 0.6);
+        }
+        .dna-text .highlight-height {
+            background: rgba(34, 197, 94, 0.3);
+            box-shadow: 0 0 4px rgba(34, 197, 94, 0.5);
+        }
+        .dna-text .highlight-hair {
+            background: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 4px rgba(245, 158, 11, 0.5);
+        }
+        .dna-text .highlight-skin {
+            background: rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 4px rgba(239, 68, 68, 0.5);
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 24px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #252525;
+            border-color: #3B82F6;
+        }
+        button.primary {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+        button.primary:hover {
+            background: #2563EB;
+        }
+        button.active {
+            background: #22C55E;
+            border-color: #22C55E;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back</a>
+
+    <div class="page-container">
+        <div class="viz-section">
+            <h1>DNA</h1>
+            <p class="subtitle">The code of life, written in four letters.</p>
+
+            <div class="dna-container">
+                <div class="dna-circle">
+                    <div class="dna-text" id="dnaText"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="primary" id="showPhenotypesBtn">Show Phenotypes</button>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-title">Genotype → Phenotype</div>
+            <div class="info-text">
+                <p>Your <strong>genotype</strong> is your DNA sequence—the code. Your <strong>phenotype</strong> is the observable result—what you look like.</p>
+                <p>The highlighted sequences represent genes that code for visible traits. Most of your DNA is "junk"—the dim letters between highlights.</p>
+            </div>
+
+            <div class="info-divider"></div>
+
+            <div class="info-label">Gene Legend</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 24px; height: 16px; background: rgba(139, 69, 19, 0.5); border-radius: 3px;"></div>
+                    <span style="color: #999; font-size: 13px;">Eye Color</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 24px; height: 16px; background: rgba(34, 197, 94, 0.4); border-radius: 3px;"></div>
+                    <span style="color: #999; font-size: 13px;">Height</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 24px; height: 16px; background: rgba(245, 158, 11, 0.4); border-radius: 3px;"></div>
+                    <span style="color: #999; font-size: 13px;">Hair Color</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 24px; height: 16px; background: rgba(239, 68, 68, 0.4); border-radius: 3px;"></div>
+                    <span style="color: #999; font-size: 13px;">Skin Tone</span>
+                </div>
+            </div>
+
+            <div class="info-divider"></div>
+
+            <div class="info-label">The Reality</div>
+            <div class="info-text">
+                <p>Only about <strong>1-2%</strong> of your DNA actually codes for proteins. The rest was once called "junk DNA" but likely serves regulatory functions.</p>
+                <p>A single trait like height is influenced by thousands of genes scattered across your chromosomes.</p>
+            </div>
+
+            <div class="info-divider"></div>
+
+            <div class="info-label">The Alphabet</div>
+            <div class="info-text">
+                <p><span style="color: #EF4444">A</span> Adenine · <span style="color: #F59E0B">T</span> Thymine</p>
+                <p><span style="color: #22C55E">G</span> Guanine · <span style="color: #3B82F6">C</span> Cytosine</p>
+            </div>
+
+            <div class="info-divider"></div>
+
+            <div class="info-label">See Also</div>
+            <div class="info-links">
+                <a href="https://en.wikipedia.org/wiki/Phenotype" target="_blank" class="info-link">Wikipedia: Phenotype</a>
+                <a href="https://en.wikipedia.org/wiki/Gene" target="_blank" class="info-link">Wikipedia: Gene</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dnaText = document.getElementById('dnaText');
+        const showPhenotypesBtn = document.getElementById('showPhenotypesBtn');
+        const bases = ['G', 'C', 'T', 'A'];
+        const baseClasses = { 'G': 'g', 'C': 'c', 'T': 't', 'A': 'a' };
+        const DNA_LENGTH = 8000;
+
+        // Phenotype highlight types
+        const phenotypes = [
+            { class: 'highlight-eye', name: 'Eye Color' },
+            { class: 'highlight-height', name: 'Height' },
+            { class: 'highlight-hair', name: 'Hair Color' },
+            { class: 'highlight-skin', name: 'Skin Tone' }
+        ];
+
+        // Store the base DNA sequence (without highlights)
+        let dnaSequence = [];
+        let animationInterval = null;
+        let isAnimating = false;
+
+        // Generate the base DNA sequence once
+        function initDNA(length) {
+            dnaSequence = [];
+            for (let i = 0; i < length; i++) {
+                dnaSequence.push(bases[Math.floor(Math.random() * 4)]);
+            }
+        }
+
+        // Generate random positions for gene highlights
+        function generateGenePositions(totalLength, numGenes, geneLength) {
+            const positions = [];
+            for (let i = 0; i < numGenes; i++) {
+                const start = Math.floor(Math.random() * (totalLength - geneLength));
+                const phenotype = phenotypes[Math.floor(Math.random() * phenotypes.length)];
+                const length = geneLength + Math.floor(Math.random() * 20) - 10;
+                positions.push({ start, length, phenotype });
+            }
+            return positions.sort((a, b) => a.start - b.start);
+        }
+
+        // Render DNA with current highlights
+        function renderDNA(genePositions) {
+            let html = '';
+            let geneIndex = 0;
+            let inGene = false;
+            let geneEnd = 0;
+            let currentGene = null;
+
+            for (let i = 0; i < dnaSequence.length; i++) {
+                // Check if starting a new gene
+                if (geneIndex < genePositions.length && i === genePositions[geneIndex].start && !inGene) {
+                    currentGene = genePositions[geneIndex];
+                    geneEnd = i + currentGene.length;
+                    inGene = true;
+                    geneIndex++;
+                }
+
+                const base = dnaSequence[i];
+
+                if (inGene) {
+                    html += `<span class="${baseClasses[base]} ${currentGene.phenotype.class}">${base}</span>`;
+                    if (i >= geneEnd - 1) {
+                        inGene = false;
+                    }
+                } else {
+                    html += `<span class="${baseClasses[base]}">${base}</span>`;
+                }
+            }
+            dnaText.innerHTML = html;
+        }
+
+        // Render without highlights
+        function renderPlainDNA() {
+            let html = '';
+            for (let i = 0; i < dnaSequence.length; i++) {
+                const base = dnaSequence[i];
+                html += `<span class="${baseClasses[base]}">${base}</span>`;
+            }
+            dnaText.innerHTML = html;
+        }
+
+        // Toggle animation
+        function toggleAnimation() {
+            if (isAnimating) {
+                // Stop
+                clearInterval(animationInterval);
+                animationInterval = null;
+                isAnimating = false;
+                showPhenotypesBtn.textContent = 'Show Phenotypes';
+                showPhenotypesBtn.classList.remove('active');
+                renderPlainDNA();
+            } else {
+                // Start
+                isAnimating = true;
+                showPhenotypesBtn.textContent = 'Stop';
+                showPhenotypesBtn.classList.add('active');
+
+                // Show first frame immediately
+                const positions = generateGenePositions(DNA_LENGTH, 25, 30);
+                renderDNA(positions);
+
+                // Animate every 1.5 seconds
+                animationInterval = setInterval(() => {
+                    const newPositions = generateGenePositions(DNA_LENGTH, 25, 30);
+                    renderDNA(newPositions);
+                }, 1500);
+            }
+        }
+
+        // Event listeners
+        showPhenotypesBtn.addEventListener('click', toggleAnimation);
+
+        // Initialize
+        initDNA(DNA_LENGTH);
+        renderPlainDNA();
+    </script>
+</body>
+</html>

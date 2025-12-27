@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Baltimore Stockbroker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        .stats {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 25px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 300;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+        .stat-value.round { color: #3B82F6; }
+        .stat-value.letters { color: #F59E0B; }
+        .stat-value.believers { color: #22C55E; }
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .canvas-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+        }
+
+        .round-info {
+            text-align: center;
+            margin-bottom: 20px;
+            min-height: 50px;
+        }
+        .round-title {
+            font-size: 16px;
+            color: #F59E0B;
+            margin-bottom: 5px;
+        }
+        .round-description {
+            font-size: 13px;
+            color: #666;
+            max-width: 450px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        button {
+            padding: 10px 24px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #252525;
+            border-color: #3B82F6;
+        }
+        button.primary {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+        button.primary:hover {
+            background: #2563EB;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .explanation {
+            max-width: 500px;
+            margin-top: 20px;
+            padding: 20px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+        }
+        .explanation-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: #EF4444;
+        }
+        .explanation-text {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+        .explanation-text:last-child {
+            margin-bottom: 0;
+        }
+
+        .perspective-toggle {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            background: #1a1a1a;
+            padding: 4px;
+            border-radius: 8px;
+        }
+        .perspective-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            color: #666;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .perspective-btn.active {
+            background: #3B82F6;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <h1>The Baltimore Stockbroker</h1>
+    <p class="subtitle">
+        A con artist sends 128 letters with stock predictions. Watch how survivorship bias creates the illusion of genius.
+    </p>
+
+    <div class="perspective-toggle">
+        <button class="perspective-btn active" data-perspective="broker">Broker's View</button>
+        <button class="perspective-btn" data-perspective="victim">Victim's View</button>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value round" id="roundNum">0</div>
+            <div class="stat-label">Week</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value letters" id="letterCount">128</div>
+            <div class="stat-label">Letters Sent</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value believers" id="believerCount">0</div>
+            <div class="stat-label">"Believers"</div>
+        </div>
+    </div>
+
+    <div class="round-info">
+        <div class="round-title" id="roundTitle">Ready to begin</div>
+        <div class="round-description" id="roundDesc">Click "Next Week" to start the con</div>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="canvas" width="600" height="400"></canvas>
+    </div>
+
+    <div class="controls">
+        <button class="primary" id="nextBtn">Next Week</button>
+        <button id="resetBtn">Reset</button>
+        <button id="autoBtn">Auto Play</button>
+    </div>
+
+    <div class="explanation">
+        <div class="explanation-title">The Scam Revealed</div>
+        <div class="explanation-text">
+            The broker has <em>no skill</em>. By sending opposite predictions to different groups, half will always be "right." After 7 weeks, 1 person has seen 7 correct predictions in a row—a 1 in 128 chance if real, but a certainty for the broker.
+        </div>
+        <div class="explanation-text">
+            The victim thinks: "What are the odds?" The answer: 100%. Someone was guaranteed to get all correct predictions. They just don't see the 127 others who were discarded along the way.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const roundNumEl = document.getElementById('roundNum');
+        const letterCountEl = document.getElementById('letterCount');
+        const believerCountEl = document.getElementById('believerCount');
+        const roundTitleEl = document.getElementById('roundTitle');
+        const roundDescEl = document.getElementById('roundDesc');
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const autoBtn = document.getElementById('autoBtn');
+        const perspectiveBtns = document.querySelectorAll('.perspective-btn');
+
+        const totalLetters = 128;
+        const totalRounds = 7;
+
+        let letters = [];
+        let round = 0;
+        let perspective = 'broker';
+        let isAnimating = false;
+        let autoPlayId = null;
+
+        const roundMessages = [
+            { title: "Week 1: The Opening Move", desc: "128 letters sent. Half predict 'STOCK UP', half predict 'STOCK DOWN'." },
+            { title: "Week 2: First Elimination", desc: "64 got it right! They receive another prediction. The other 64? Never hear from the broker again." },
+            { title: "Week 3: Building Trust", desc: "32 people have now seen 2 correct predictions. 'This guy might be legit...'" },
+            { title: "Week 4: Growing Confidence", desc: "16 people with 3 straight wins. 'How does he keep getting it right?'" },
+            { title: "Week 5: The Hook Sets", desc: "8 people, 4 correct predictions. 'I should really invest with this genius...'" },
+            { title: "Week 6: Almost There", desc: "4 people remain. 5 perfect predictions. 'This is my ticket to wealth!'" },
+            { title: "Week 7: The Payoff", desc: "2 people with 6 perfect predictions. They're ready to hand over their life savings." },
+            { title: "Final: The Mark", desc: "1 person has seen 7 straight correct predictions. Probability of this by chance? 1 in 128. But the broker guaranteed it." }
+        ];
+
+        function initLetters() {
+            letters = [];
+            const cols = 16;
+            const rows = 8;
+            const letterWidth = 30;
+            const letterHeight = 20;
+            const startX = (canvas.width - cols * (letterWidth + 6)) / 2;
+            const startY = 30;
+
+            for (let i = 0; i < totalLetters; i++) {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                letters.push({
+                    id: i,
+                    x: startX + col * (letterWidth + 6),
+                    y: startY + row * (letterHeight + 8),
+                    targetX: startX + col * (letterWidth + 6),
+                    targetY: startY + row * (letterHeight + 8),
+                    width: letterWidth,
+                    height: letterHeight,
+                    alive: true,
+                    prediction: null, // 'up' or 'down'
+                    correctCount: 0,
+                    opacity: 1
+                });
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw round indicator
+            ctx.fillStyle = '#333';
+            ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.textAlign = 'right';
+
+            // Count alive letters
+            const aliveLetters = letters.filter(l => l.alive);
+            const upCount = aliveLetters.filter(l => l.prediction === 'up').length;
+            const downCount = aliveLetters.filter(l => l.prediction === 'down').length;
+
+            if (round > 0 && round <= totalRounds) {
+                ctx.fillText(`↑ ${upCount}  ↓ ${downCount}`, canvas.width - 20, 20);
+            }
+
+            // Draw letters
+            letters.forEach(letter => {
+                if (letter.opacity <= 0) return;
+
+                ctx.globalAlpha = letter.opacity;
+
+                // Letter body
+                let color;
+                if (perspective === 'victim' && letter.alive) {
+                    // Victim only sees their letters (the "winning" ones)
+                    color = '#22C55E';
+                } else if (letter.alive) {
+                    color = letter.prediction === 'up' ? '#22C55E' : '#EF4444';
+                } else {
+                    color = '#333';
+                }
+
+                // Envelope shape
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(letter.x, letter.y + 5);
+                ctx.lineTo(letter.x + letter.width / 2, letter.y);
+                ctx.lineTo(letter.x + letter.width, letter.y + 5);
+                ctx.lineTo(letter.x + letter.width, letter.y + letter.height);
+                ctx.lineTo(letter.x, letter.y + letter.height);
+                ctx.closePath();
+                ctx.fill();
+
+                // Envelope flap
+                ctx.strokeStyle = letter.alive ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.1)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(letter.x, letter.y + 5);
+                ctx.lineTo(letter.x + letter.width / 2, letter.y + letter.height / 2);
+                ctx.lineTo(letter.x + letter.width, letter.y + 5);
+                ctx.stroke();
+
+                ctx.globalAlpha = 1;
+            });
+
+            // Draw funnel visualization on the right side
+            if (round > 0) {
+                drawFunnel();
+            }
+        }
+
+        function drawFunnel() {
+            const funnelX = canvas.width - 100;
+            const funnelTop = 50;
+            const funnelHeight = 300;
+            const stepHeight = funnelHeight / totalRounds;
+
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i <= round; i++) {
+                const remaining = Math.pow(2, totalRounds - i);
+                const width = (remaining / totalLetters) * 150;
+                const y = funnelTop + i * stepHeight;
+
+                // Draw level
+                ctx.fillStyle = i === round ? 'rgba(245, 158, 11, 0.3)' : 'rgba(255,255,255,0.05)';
+                ctx.fillRect(funnelX - width/2, y, width, stepHeight - 5);
+
+                // Label
+                ctx.fillStyle = i === round ? '#F59E0B' : '#555';
+                ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(remaining.toString(), funnelX, y + stepHeight/2 + 4);
+            }
+        }
+
+        function animateLetters(callback) {
+            isAnimating = true;
+            const duration = 500;
+            const startTime = performance.now();
+
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                letters.forEach(letter => {
+                    if (!letter.alive && letter.opacity > 0) {
+                        letter.opacity = 1 - eased;
+                    }
+                    letter.x = letter.x + (letter.targetX - letter.x) * 0.1;
+                    letter.y = letter.y + (letter.targetY - letter.y) * 0.1;
+                });
+
+                draw();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    isAnimating = false;
+                    if (callback) callback();
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function nextRound() {
+            if (isAnimating || round > totalRounds) return;
+
+            round++;
+
+            const aliveLetters = letters.filter(l => l.alive);
+
+            if (round === 1) {
+                // First round: assign predictions
+                aliveLetters.forEach((letter, i) => {
+                    letter.prediction = i < aliveLetters.length / 2 ? 'up' : 'down';
+                });
+            } else {
+                // Subsequent rounds: eliminate wrong predictions, reassign
+                const marketWentUp = Math.random() < 0.5;
+                const winningPrediction = marketWentUp ? 'up' : 'down';
+
+                aliveLetters.forEach(letter => {
+                    if (letter.prediction !== winningPrediction) {
+                        letter.alive = false;
+                    } else {
+                        letter.correctCount++;
+                    }
+                });
+
+                // Reassign predictions for survivors
+                const survivors = letters.filter(l => l.alive);
+                survivors.forEach((letter, i) => {
+                    letter.prediction = i < survivors.length / 2 ? 'up' : 'down';
+                });
+
+                // Reposition survivors
+                repositionLetters();
+            }
+
+            updateStats();
+            animateLetters();
+        }
+
+        function repositionLetters() {
+            const survivors = letters.filter(l => l.alive);
+            const count = survivors.length;
+
+            if (count === 0) return;
+
+            // Calculate grid dimensions
+            let cols = Math.ceil(Math.sqrt(count * 2));
+            let rows = Math.ceil(count / cols);
+
+            const letterWidth = 30;
+            const letterHeight = 20;
+            const padding = 8;
+
+            const totalWidth = cols * (letterWidth + padding);
+            const startX = (canvas.width - 150 - totalWidth) / 2; // Account for funnel on right
+            const startY = 150 - (rows * (letterHeight + padding)) / 2;
+
+            survivors.forEach((letter, i) => {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                letter.targetX = startX + col * (letterWidth + padding);
+                letter.targetY = startY + row * (letterHeight + padding);
+            });
+        }
+
+        function updateStats() {
+            const aliveCount = letters.filter(l => l.alive).length;
+            const believers = round >= 4 ? aliveCount : 0;
+
+            roundNumEl.textContent = round;
+            letterCountEl.textContent = aliveCount;
+            believerCountEl.textContent = believers;
+
+            if (round <= totalRounds) {
+                roundTitleEl.textContent = roundMessages[round].title;
+                roundDescEl.textContent = roundMessages[round].desc;
+            }
+
+            if (round >= totalRounds) {
+                nextBtn.disabled = true;
+                nextBtn.textContent = 'Complete';
+            }
+        }
+
+        function reset() {
+            clearInterval(autoPlayId);
+            autoPlayId = null;
+            autoBtn.textContent = 'Auto Play';
+            round = 0;
+            initLetters();
+            nextBtn.disabled = false;
+            nextBtn.textContent = 'Next Week';
+            roundNumEl.textContent = '0';
+            letterCountEl.textContent = '128';
+            believerCountEl.textContent = '0';
+            roundTitleEl.textContent = 'Ready to begin';
+            roundDescEl.textContent = 'Click "Next Week" to start the con';
+            draw();
+        }
+
+        function toggleAutoPlay() {
+            if (autoPlayId) {
+                clearInterval(autoPlayId);
+                autoPlayId = null;
+                autoBtn.textContent = 'Auto Play';
+            } else {
+                autoBtn.textContent = 'Stop';
+                autoPlayId = setInterval(() => {
+                    if (round >= totalRounds || isAnimating) {
+                        clearInterval(autoPlayId);
+                        autoPlayId = null;
+                        autoBtn.textContent = 'Auto Play';
+                        return;
+                    }
+                    nextRound();
+                }, 1500);
+            }
+        }
+
+        function setPerspective(p) {
+            perspective = p;
+            perspectiveBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.perspective === p);
+            });
+            draw();
+        }
+
+        // Event listeners
+        nextBtn.addEventListener('click', nextRound);
+        resetBtn.addEventListener('click', reset);
+        autoBtn.addEventListener('click', toggleAutoPlay);
+        perspectiveBtns.forEach(btn => {
+            btn.addEventListener('click', () => setPerspective(btn.dataset.perspective));
+        });
+
+        // Initialize
+        initLetters();
+        draw();
+    </script>
+</body>
+</html>

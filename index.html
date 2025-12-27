@@ -3,96 +3,338 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glowing Rectangles</title>
+    <title>Glowing Gardens</title>
+    <link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            background: #fff;
-            color: #111;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-        nav {
-            text-align: center;
-            padding: 20px;
-            border-bottom: 1px solid #eee;
-        }
-        nav a {
-            font-size: 14px;
-            font-weight: 500;
+            font-family: 'Carlito', sans-serif;
+            background-color: #fafafa;
             color: #333;
-            text-decoration: none;
-            letter-spacing: 0.02em;
         }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 40px 20px;
+
+        /* App Bar */
+        .app-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            gap: 12px;
         }
+
+        .app-bar .title {
+            background: #111827;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        /* Main Container */
+        .main-container {
+            margin-top: 80px;
+            padding: 16px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Grid */
         .grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 16px;
         }
-        .card {
-            height: 100px;
-            border: 1px solid #e0e0e0;
-            text-decoration: none;
-            color: #333;
-            display: flex;
-            overflow: hidden;
-            transition: border-color 0.15s;
+
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
-        .card:hover {
-            border-color: #999;
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
-        .card-image {
-            width: 100px;
-            height: 100%;
-            background: #f5f5f5;
-            flex-shrink: 0;
+
+        @media (max-width: 500px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
         }
-        .card-title {
-            padding: 12px;
-            font-size: 13px;
+
+        /* Post Card */
+        .post-card {
             display: flex;
             align-items: center;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            text-decoration: none;
+            transition: all 0.2s ease;
         }
-        @media (max-width: 900px) {
-            .grid { grid-template-columns: repeat(3, 1fr); }
+
+        .post-card:hover {
+            background: #f5f5f5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
         }
-        @media (max-width: 600px) {
-            .grid { grid-template-columns: repeat(2, 1fr); }
+
+        .post-card img {
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
+            border-radius: 4px;
         }
+
+        .post-card .content {
+            margin-left: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .post-card .post-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: teal;
+            margin-bottom: 4px;
+        }
+
+        .post-card .post-subtitle {
+            font-size: 14px;
+            color: #888;
+        }
+
     </style>
 </head>
 <body>
-    <nav>
-        <a href="/">glowingrectangles.io</a>
-    </nav>
+    <div class="app-bar">
+        <span class="title">glowing rectangles</span>
+    </div>
 
-    <div class="container">
+    <div class="main-container">
         <div class="grid">
-            <a href="spanish/index.html" class="card">
-                <div class="card-image"></div>
-                <div class="card-title">Spanish</div>
+            <a href="smoking-tide.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/waves2_xr3xbs.png" alt="">
+                <div class="content">
+                    <div class="post-title">The Tide of Smoking</div>
+                    <div class="post-subtitle">a century of rise and retreat</div>
+                </div>
             </a>
-            <a href="nfl/index.html" class="card">
-                <div class="card-image"></div>
-                <div class="card-title">NFL</div>
+            <a href="circle-boundary.html" class="post-card">
+                <img src="images/loudest.png" alt="" style="object-fit: cover;">
+                <div class="content">
+                    <div class="post-title">The Loudest 10%</div>
+                    <div class="post-subtitle">how a minority dominates social media</div>
+                </div>
             </a>
-            <a href="math/index.html" class="card">
-                <div class="card-image"></div>
-                <div class="card-title">Math</div>
+            <a href="524-years.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/500years_ehubh9.png" alt="">
+                <div class="content">
+                    <div class="post-title">524 Years</div>
+                    <div class="post-subtitle">history visualized</div>
+                </div>
             </a>
-            <a href="attention/index.html" class="card">
-                <div class="card-image"></div>
-                <div class="card-title">Attention</div>
+            <a href="perception-gap.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/perceptiongap_zknpy9.png" alt="">
+                <div class="content">
+                    <div class="post-title">Perception Gap</div>
+                    <div class="post-subtitle">how we misunderstand each other</div>
+                </div>
+            </a>
+            <a href="posts/moral_tribes/index.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/moral_square_qicvjt.png" alt="">
+                <div class="content">
+                    <div class="post-title">Moral Tribes</div>
+                    <div class="post-subtitle">why do our values differ?</div>
+                </div>
+            </a>
+            <a href="posts/moral_foundations/index.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/values_square_toh54b.png" alt="">
+                <div class="content">
+                    <div class="post-title">Moral Foundations</div>
+                    <div class="post-subtitle">why Americans don't get along</div>
+                </div>
+            </a>
+            <a href="posts/elephant_rider/index.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/elephant6_ybznaw.png" alt="">
+                <div class="content">
+                    <div class="post-title">Elephant & Rider</div>
+                    <div class="post-subtitle">the divided mind</div>
+                </div>
+            </a>
+            <a href="d3-antifragile.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/cracked2_eu5rmc.png" alt="">
+                <div class="content">
+                    <div class="post-title">Antifragility</div>
+                    <div class="post-subtitle">what doesn't kill you...</div>
+                </div>
+            </a>
+            <a href="posts/cognitive_reflection/index.html" class="post-card">
+                <img src="images/crt.png" alt="" style="object-fit: cover;">
+                <div class="content">
+                    <div class="post-title">Cognitive Reflection</div>
+                    <div class="post-subtitle">test your intuition</div>
+                </div>
+            </a>
+            <a href="d3-cfb-realignment.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/cfb_nrs1np.png" alt="">
+                <div class="content">
+                    <div class="post-title">CFB Realignment</div>
+                    <div class="post-subtitle">35 years of conference chaos</div>
+                </div>
+            </a>
+            <a href="football.html" class="post-card">
+                <img src="images/football.png" alt="" style="object-fit: cover;">
+                <div class="content">
+                    <div class="post-title">Football</div>
+                    <div class="post-subtitle">NFL & college visualizations</div>
+                </div>
+            </a>
+            <a href="voronoi.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/voroni_eby3hf.png" alt="">
+                <div class="content">
+                    <div class="post-title">Voronoi</div>
+                    <div class="post-subtitle">a visual algorithm</div>
+                </div>
+            </a>
+            <a href="posts/hormones/index.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/hormones_400_lgnxkq.png" alt="">
+                <div class="content">
+                    <div class="post-title">Hormones</div>
+                    <div class="post-subtitle">what do they do?</div>
+                </div>
+            </a>
+            <a href="posts/enzymes/index.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/enzyme_400_lvgqmc.png" alt="">
+                <div class="content">
+                    <div class="post-title">Enzymes</div>
+                    <div class="post-subtitle">biological catalysts</div>
+                </div>
+            </a>
+            <a href="nutrition.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/nutrition1_pdm44p.png" alt="">
+                <div class="content">
+                    <div class="post-title">Nutrition</div>
+                    <div class="post-subtitle">what's in food?</div>
+                </div>
+            </a>
+            <a href="posts/cooking_times/index.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/cooking-time1_ukpcvg.png" alt="">
+                <div class="content">
+                    <div class="post-title">Cooking Times</div>
+                    <div class="post-subtitle">how long to cook things</div>
+                </div>
+            </a>
+            <a href="posts/box_breathing/index.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/box_breathing_pgmyce.png" alt="">
+                <div class="content">
+                    <div class="post-title">Box Breathing</div>
+                    <div class="post-subtitle">calm your mind</div>
+                </div>
+            </a>
+            <a href="posts/meditation_wheel/index.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/meditation_wheel_biiywn.png" alt="">
+                <div class="content">
+                    <div class="post-title">Meditation Wheel</div>
+                    <div class="post-subtitle">the scattered mind</div>
+                </div>
+            </a>
+            <a href="posts/books/index.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/books2_k2boy9.png" alt="">
+                <div class="content">
+                    <div class="post-title">Books</div>
+                    <div class="post-subtitle">recommended reading</div>
+                </div>
+            </a>
+            <a href="bliss.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/bliss4_slfsbb.png" alt="">
+                <div class="content">
+                    <div class="post-title">Bliss Symbolics</div>
+                    <div class="post-subtitle">a visual language</div>
+                </div>
+            </a>
+            <a href="posts/random/index.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/waves2_xr3xbs.png" alt="">
+                <div class="content">
+                    <div class="post-title">Random Visuals</div>
+                    <div class="post-subtitle">just for fun</div>
+                </div>
+            </a>
+            <a href="spanish.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/spanish_vzeh57.jpg" alt="">
+                <div class="content">
+                    <div class="post-title">Spanish</div>
+                    <div class="post-subtitle">learning tools</div>
+                </div>
+            </a>
+            <a href="curves.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/s-curve_r2dyjf.png" alt="">
+                <div class="content">
+                    <div class="post-title">Curves</div>
+                    <div class="post-subtitle">patterns of change over time</div>
+                </div>
+            </a>
+            <a href="distributions.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/power_k7ysbh.png" alt="">
+                <div class="content">
+                    <div class="post-title">Distributions</div>
+                    <div class="post-subtitle">how things are spread out</div>
+                </div>
+            </a>
+            <a href="posts/baltimore-stockbroker-combined.html" class="post-card">
+                <img src="images/stockbroker.png" alt="" style="object-fit: cover; background: #111;">
+                <div class="content">
+                    <div class="post-title">Baltimore Stockbroker</div>
+                    <div class="post-subtitle">survivorship bias revealed</div>
+                </div>
+            </a>
+            <a href="posts/mosquitoes/random-walk-grid.html" class="post-card">
+                <img src="images/mosquitos.png" alt="" style="object-fit: cover;">
+                <div class="content">
+                    <div class="post-title">Random Walk</div>
+                    <div class="post-subtitle">spatial probability</div>
+                </div>
+            </a>
+            <a href="posts/dna.html" class="post-card">
+                <img src="images/dna.png" alt="" style="object-fit: cover; background: #0a0a0f;">
+                <div class="content">
+                    <div class="post-title">DNA</div>
+                    <div class="post-subtitle">genotype to phenotype</div>
+                </div>
             </a>
         </div>
     </div>
+
+    <script>
+        // Shuffle cards on page load
+        const grid = document.querySelector('.grid');
+        const cards = Array.from(grid.children);
+
+        // Fisher-Yates shuffle
+        for (let i = cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cards[i], cards[j]] = [cards[j], cards[i]];
+        }
+
+        // Re-append in shuffled order
+        cards.forEach(card => grid.appendChild(card));
+    </script>
 </body>
 </html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spatial Probability: Why Mosquitoes Always Find You</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+        .highlight {
+            color: #F59E0B;
+            font-weight: 500;
+        }
+
+        .stats {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 25px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 300;
+        }
+        .stat-value.bites { color: #EF4444; }
+        .stat-value.time { color: #3B82F6; }
+        .stat-value.mosquitoes { color: #F59E0B; }
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .canvas-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        svg {
+            background: linear-gradient(180deg, #0a0f0a 0%, #0a0a0f 100%);
+            border: 1px solid #1a2a1a;
+            border-radius: 12px;
+        }
+
+        .person {
+            fill: #3B82F6;
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+        }
+        .person-glow {
+            fill: rgba(59, 130, 246, 0.1);
+        }
+        .bite-zone {
+            fill: none;
+            stroke: rgba(239, 68, 68, 0.3);
+            stroke-width: 1;
+            stroke-dasharray: 4 4;
+        }
+
+        .mosquito {
+            fill: #F59E0B;
+            transition: fill 0.1s;
+        }
+        .mosquito.biting {
+            fill: #EF4444;
+        }
+
+        .trail {
+            fill: none;
+            stroke-width: 0.5;
+            opacity: 0.3;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #252525;
+            border-color: #F59E0B;
+        }
+        button.primary {
+            background: #F59E0B;
+            border-color: #F59E0B;
+            color: #000;
+        }
+        button.primary:hover {
+            background: #D97706;
+        }
+        button.danger {
+            border-color: #EF4444;
+        }
+        button.danger:hover {
+            background: #7F1D1D;
+        }
+
+        .explanation {
+            max-width: 500px;
+            margin-top: 20px;
+            padding: 24px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+        }
+        .explanation-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: #F59E0B;
+        }
+        .explanation-text {
+            font-size: 14px;
+            color: #999;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+        .explanation-text:last-child {
+            margin-bottom: 0;
+        }
+        .math {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            color: #F59E0B;
+        }
+
+        .bite-flash {
+            position: absolute;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(circle at center, rgba(239, 68, 68, 0.3) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.1s;
+            border-radius: 12px;
+        }
+        .bite-flash.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <a href="../../index.html" class="back-link">← Back</a>
+
+    <h1>Why Mosquitoes Always Find You</h1>
+    <p class="subtitle">
+        In 2D, a random walker <span class="highlight">always returns</span> to its starting point.
+        Stand still in a field of mosquitoes flying randomly—they will find you. It's mathematically inevitable.
+    </p>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value bites" id="biteCount">0</div>
+            <div class="stat-label">Bites</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value time" id="timeElapsed">0</div>
+            <div class="stat-label">Seconds</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value mosquitoes" id="mosquitoCount">30</div>
+            <div class="stat-label">Mosquitoes</div>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <svg id="canvas" width="500" height="500" viewBox="0 0 500 500">
+            <defs>
+                <linearGradient id="trailGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:0" />
+                    <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:0.4" />
+                </linearGradient>
+            </defs>
+            <!-- Trails group (rendered behind everything) -->
+            <g id="trails"></g>
+            <!-- Bite zone indicator -->
+            <circle cx="250" cy="250" r="25" class="bite-zone"/>
+            <!-- Person glow -->
+            <circle cx="250" cy="250" r="40" class="person-glow"/>
+            <!-- Person -->
+            <circle cx="250" cy="250" r="8" class="person"/>
+            <!-- Mosquitoes group -->
+            <g id="mosquitoes"></g>
+        </svg>
+        <div class="bite-flash" id="biteFlash"></div>
+    </div>
+
+    <div class="controls">
+        <button class="primary" id="startBtn">Start</button>
+        <button id="resetBtn">Reset</button>
+        <button id="addBtn">+ Mosquitoes</button>
+        <button class="danger" id="clearTrailsBtn">Clear Trails</button>
+    </div>
+
+    <div class="explanation">
+        <div class="explanation-title">Pólya's Theorem (1921)</div>
+        <div class="explanation-text">
+            George Pólya proved that a random walker on a 2D grid will <em>always</em> return to the origin—given enough time. The probability is exactly <span class="math">1</span>.
+        </div>
+        <div class="explanation-text">
+            In 3D, this breaks down. A random walker has only a ~34% chance of ever returning. This is why mosquitoes in a flat field are inescapable, but a fly in a room might never land on you again.
+        </div>
+        <div class="explanation-text">
+            Jordan Ellenberg uses this in <em>Shape</em> to explain malaria transmission: if mosquitoes move randomly, infected ones will inevitably return to bite again. Spatial probability governs disease spread.
+        </div>
+    </div>
+
+    <script>
+        const svg = document.getElementById('canvas');
+        const trailsGroup = document.getElementById('trails');
+        const mosquitoesGroup = document.getElementById('mosquitoes');
+        const biteFlash = document.getElementById('biteFlash');
+        const biteCountEl = document.getElementById('biteCount');
+        const timeElapsedEl = document.getElementById('timeElapsed');
+        const mosquitoCountEl = document.getElementById('mosquitoCount');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const addBtn = document.getElementById('addBtn');
+        const clearTrailsBtn = document.getElementById('clearTrailsBtn');
+
+        const centerX = 250;
+        const centerY = 250;
+        const biteRadius = 25;
+        const stepSize = 4;
+        const colors = ['#F59E0B', '#FBBF24', '#FCD34D', '#D97706', '#B45309'];
+
+        let mosquitoes = [];
+        let biteCount = 0;
+        let startTime = null;
+        let animationId = null;
+        let isRunning = false;
+
+        function createMosquito(id) {
+            // Start at random position on the edge
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 180 + Math.random() * 50;
+            const x = centerX + Math.cos(angle) * distance;
+            const y = centerY + Math.sin(angle) * distance;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+
+            // Create SVG elements
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', x);
+            circle.setAttribute('cy', y);
+            circle.setAttribute('r', 3);
+            circle.setAttribute('class', 'mosquito');
+            circle.style.fill = color;
+            mosquitoesGroup.appendChild(circle);
+
+            const trail = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            trail.setAttribute('class', 'trail');
+            trail.setAttribute('stroke', color);
+            trail.setAttribute('d', `M${x},${y}`);
+            trailsGroup.appendChild(trail);
+
+            return {
+                id,
+                x,
+                y,
+                color,
+                element: circle,
+                trail,
+                pathData: `M${x},${y}`,
+                stepCount: 0,
+                biteCooldown: 0
+            };
+        }
+
+        function initMosquitoes(count) {
+            // Clear existing
+            mosquitoesGroup.innerHTML = '';
+            trailsGroup.innerHTML = '';
+            mosquitoes = [];
+
+            for (let i = 0; i < count; i++) {
+                mosquitoes.push(createMosquito(i));
+            }
+            mosquitoCountEl.textContent = count;
+        }
+
+        function updateMosquito(m) {
+            // Random walk: pick a direction
+            const angle = Math.random() * Math.PI * 2;
+            m.x += Math.cos(angle) * stepSize;
+            m.y += Math.sin(angle) * stepSize;
+
+            // Wrap around edges (torus topology)
+            if (m.x < 0) m.x = 500;
+            if (m.x > 500) m.x = 0;
+            if (m.y < 0) m.y = 500;
+            if (m.y > 500) m.y = 0;
+
+            // Update position
+            m.element.setAttribute('cx', m.x);
+            m.element.setAttribute('cy', m.y);
+
+            // Update trail (keep last 100 points for performance)
+            m.stepCount++;
+            if (m.stepCount % 2 === 0) { // Only add every other step for performance
+                m.pathData += ` L${m.x.toFixed(1)},${m.y.toFixed(1)}`;
+
+                // Limit trail length
+                const segments = m.pathData.split(' L');
+                if (segments.length > 150) {
+                    m.pathData = 'M' + segments.slice(-150).join(' L');
+                }
+                m.trail.setAttribute('d', m.pathData);
+            }
+
+            // Check for bite
+            if (m.biteCooldown > 0) {
+                m.biteCooldown--;
+                return;
+            }
+
+            const dist = Math.sqrt(
+                Math.pow(m.x - centerX, 2) +
+                Math.pow(m.y - centerY, 2)
+            );
+
+            if (dist < biteRadius) {
+                // Bite!
+                biteCount++;
+                biteCountEl.textContent = biteCount;
+                m.biteCooldown = 60; // Cooldown frames before can bite again
+                m.element.classList.add('biting');
+
+                // Flash effect
+                biteFlash.classList.add('active');
+                setTimeout(() => {
+                    biteFlash.classList.remove('active');
+                    m.element.classList.remove('biting');
+                }, 150);
+            }
+        }
+
+        function animate() {
+            if (!isRunning) return;
+
+            mosquitoes.forEach(updateMosquito);
+
+            // Update time
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            timeElapsedEl.textContent = elapsed;
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function start() {
+            if (isRunning) {
+                // Pause
+                isRunning = false;
+                startBtn.textContent = 'Resume';
+                cancelAnimationFrame(animationId);
+            } else {
+                // Start/Resume
+                isRunning = true;
+                startBtn.textContent = 'Pause';
+                if (!startTime) startTime = Date.now();
+                animate();
+            }
+        }
+
+        function reset() {
+            isRunning = false;
+            cancelAnimationFrame(animationId);
+            startBtn.textContent = 'Start';
+            biteCount = 0;
+            startTime = null;
+            biteCountEl.textContent = '0';
+            timeElapsedEl.textContent = '0';
+            initMosquitoes(30);
+        }
+
+        function addMosquitoes() {
+            const count = 10;
+            for (let i = 0; i < count; i++) {
+                mosquitoes.push(createMosquito(mosquitoes.length));
+            }
+            mosquitoCountEl.textContent = mosquitoes.length;
+        }
+
+        function clearTrails() {
+            mosquitoes.forEach(m => {
+                m.pathData = `M${m.x},${m.y}`;
+                m.trail.setAttribute('d', m.pathData);
+            });
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', start);
+        resetBtn.addEventListener('click', reset);
+        addBtn.addEventListener('click', addMosquitoes);
+        clearTrailsBtn.addEventListener('click', clearTrails);
+
+        // Initialize
+        initMosquitoes(30);
+    </script>
+</body>
+</html>

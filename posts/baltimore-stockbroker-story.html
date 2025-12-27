@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Baltimore Stockbroker - Two Perspectives</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 { font-size: 28px; margin-bottom: 8px; }
+        .subtitle {
+            color: #888;
+            font-size: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        .week-indicator {
+            font-size: 14px;
+            color: #3B82F6;
+            margin-bottom: 20px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        .perspectives {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            max-width: 800px;
+        }
+
+        .perspective {
+            flex: 1;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 24px;
+            min-height: 300px;
+        }
+        .perspective.broker {
+            border-color: #7F1D1D;
+        }
+        .perspective.victim {
+            border-color: #14532D;
+        }
+
+        .perspective-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #222;
+        }
+        .perspective-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .broker .perspective-icon {
+            background: #7F1D1D;
+        }
+        .victim .perspective-icon {
+            background: #14532D;
+        }
+        .perspective-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .broker .perspective-title { color: #EF4444; }
+        .victim .perspective-title { color: #22C55E; }
+        .perspective-role {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .thought-bubble {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #ccc;
+            position: relative;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s ease;
+        }
+        .thought-bubble.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .thought-bubble .quote {
+            font-style: italic;
+            color: #888;
+        }
+        .thought-bubble .action {
+            color: #F59E0B;
+            font-weight: 500;
+        }
+        .thought-bubble .stat {
+            font-family: 'SF Mono', 'Monaco', monospace;
+            color: #3B82F6;
+        }
+
+        .letter-display {
+            background: #0a0a0f;
+            border: 1px dashed #333;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #666;
+        }
+        .letter-display.correct {
+            border-color: #22C55E;
+            color: #22C55E;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 12px 28px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #252525;
+            border-color: #3B82F6;
+        }
+        button.primary {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #333;
+            transition: all 0.3s;
+        }
+        .progress-dot.active {
+            background: #3B82F6;
+        }
+        .progress-dot.complete {
+            background: #22C55E;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <h1>The Baltimore Stockbroker</h1>
+    <p class="subtitle">
+        The same events. Two very different stories.
+    </p>
+
+    <div class="progress" id="progress"></div>
+
+    <div class="week-indicator" id="weekIndicator">Week 0</div>
+
+    <div class="perspectives">
+        <div class="perspective broker">
+            <div class="perspective-header">
+                <div class="perspective-icon">🎭</div>
+                <div>
+                    <div class="perspective-title">The Broker</div>
+                    <div class="perspective-role">The con artist</div>
+                </div>
+            </div>
+            <div id="brokerThoughts"></div>
+        </div>
+
+        <div class="perspective victim">
+            <div class="perspective-header">
+                <div class="perspective-icon">👤</div>
+                <div>
+                    <div class="perspective-title">Margaret</div>
+                    <div class="perspective-role">One of 128 recipients</div>
+                </div>
+            </div>
+            <div id="victimThoughts"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="primary" id="nextBtn">Begin</button>
+        <button id="resetBtn">Start Over</button>
+    </div>
+
+    <script>
+        const brokerThoughts = document.getElementById('brokerThoughts');
+        const victimThoughts = document.getElementById('victimThoughts');
+        const weekIndicator = document.getElementById('weekIndicator');
+        const progress = document.getElementById('progress');
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let week = -1;
+        const totalWeeks = 8;
+
+        const story = [
+            {
+                week: 0,
+                broker: [
+                    { text: "<span class='action'>Bought a mailing list.</span> 128 names of people with disposable income.", delay: 0 },
+                    { text: "Sending <span class='stat'>64 letters</span> predicting ACME stock goes UP.", delay: 300 },
+                    { text: "Sending <span class='stat'>64 letters</span> predicting ACME stock goes DOWN.", delay: 600 },
+                    { text: "<span class='quote'>\"Doesn't matter which way it goes. Half will think I'm a genius.\"</span>", delay: 900 }
+                ],
+                victim: [
+                    { text: "Interesting... got a letter from a stock analyst.", delay: 200 },
+                    { text: "<div class='letter-display'>Dear Margaret,<br>My proprietary analysis indicates ACME Corp will RISE next week.<br>— Baltimore Securities</div>", delay: 500 },
+                    { text: "<span class='quote'>\"Probably junk mail. I'll keep an eye on it though.\"</span>", delay: 800 }
+                ]
+            },
+            {
+                week: 1,
+                broker: [
+                    { text: "ACME went UP. <span class='stat'>64 people</span> got the right prediction.", delay: 0 },
+                    { text: "<span class='action'>Discarding</span> the 64 who got it wrong. They'll never hear from me again.", delay: 300 },
+                    { text: "Sending new letters to the 64 winners. Half say UP, half say DOWN.", delay: 600 }
+                ],
+                victim: [
+                    { text: "Wait... <span class='action'>ACME actually went up!</span>", delay: 200 },
+                    { text: "<div class='letter-display correct'>✓ Prediction: UP<br>✓ Result: UP</div>", delay: 400 },
+                    { text: "Got another letter. This time predicting BETA Corp...", delay: 700 },
+                    { text: "<span class='quote'>\"Okay, that was lucky. Let's see if he's right again.\"</span>", delay: 1000 }
+                ]
+            },
+            {
+                week: 2,
+                broker: [
+                    { text: "Another week, another 50/50 outcome. <span class='stat'>32 people</span> now have 2 correct predictions.", delay: 0 },
+                    { text: "The 32 losers are forgotten. Sending fresh predictions to the 32 winners.", delay: 400 },
+                    { text: "<span class='quote'>\"They're starting to pay attention now...\"</span>", delay: 700 }
+                ],
+                victim: [
+                    { text: "<span class='action'>Right again!</span> Two for two.", delay: 200 },
+                    { text: "<div class='letter-display correct'>✓ Prediction: DOWN<br>✓ Result: DOWN</div>", delay: 400 },
+                    { text: "<span class='quote'>\"Hmm. Maybe this guy actually knows something...\"</span>", delay: 700 }
+                ]
+            },
+            {
+                week: 3,
+                broker: [
+                    { text: "<span class='stat'>16 people</span> with 3 straight wins.", delay: 0 },
+                    { text: "At this point, they're <em>looking forward</em> to my letters.", delay: 400 },
+                    { text: "<span class='quote'>\"The hook is set. Just need a few more weeks.\"</span>", delay: 700 }
+                ],
+                victim: [
+                    { text: "<span class='action'>Three in a row!</span>", delay: 200 },
+                    { text: "I told my husband about this broker. He's skeptical but curious.", delay: 500 },
+                    { text: "<span class='quote'>\"The odds of guessing 3 in a row are only 1 in 8. This feels real.\"</span>", delay: 800 }
+                ]
+            },
+            {
+                week: 4,
+                broker: [
+                    { text: "<span class='stat'>8 believers</span> now. Four correct predictions each.", delay: 0 },
+                    { text: "Time to start mentioning my <em>exclusive investment opportunity</em>.", delay: 400 },
+                    { text: "<span class='quote'>\"They're ready to hear about my fund...\"</span>", delay: 700 }
+                ],
+                victim: [
+                    { text: "<span class='action'>Four straight correct predictions.</span>", delay: 200 },
+                    { text: "His letter mentions an investment fund. Minimum $10,000.", delay: 500 },
+                    { text: "<span class='quote'>\"1 in 16 odds of being right four times. This guy is the real deal.\"</span>", delay: 800 }
+                ]
+            },
+            {
+                week: 5,
+                broker: [
+                    { text: "<span class='stat'>4 people</span> left. Five perfect predictions.", delay: 0 },
+                    { text: "These are my marks. They're true believers now.", delay: 400 },
+                    { text: "<span class='quote'>\"Almost time to collect...\"</span>", delay: 700 }
+                ],
+                victim: [
+                    { text: "<span class='action'>FIVE. STRAIGHT. CORRECT.</span>", delay: 200 },
+                    { text: "I called the number in the letter. His voice was so confident.", delay: 500 },
+                    { text: "<span class='quote'>\"1 in 32 odds. I'd be a fool not to invest.\"</span>", delay: 800 }
+                ]
+            },
+            {
+                week: 6,
+                broker: [
+                    { text: "<span class='stat'>2 people</span> with six perfect predictions.", delay: 0 },
+                    { text: "<span class='action'>Final letter.</span> Invitation to invest. Promise of guaranteed returns.", delay: 400 },
+                    { text: "<span class='quote'>\"The beautiful thing? I never made a single real prediction.\"</span>", delay: 700 }
+                ],
+                victim: [
+                    { text: "<span class='action'>SIX!</span> I've never seen anything like this.", delay: 200 },
+                    { text: "Got the investment paperwork. $50,000 minimum for his 'premium tier.'", delay: 500 },
+                    { text: "<span class='quote'>\"Only 1 in 64 chance this is luck. I'm taking out a home equity loan.\"</span>", delay: 800 }
+                ]
+            },
+            {
+                week: 7,
+                broker: [
+                    { text: "<span class='action'>$50,000 received.</span> Maybe more from the other mark.", delay: 0 },
+                    { text: "Time to disappear.", delay: 400 },
+                    { text: "<span class='quote'>\"128 letters. Zero skill. 100% certainty that someone would believe.\"</span>", delay: 700 }
+                ],
+                victim: [
+                    { text: "Sent the money. Feeling great about this investment.", delay: 200 },
+                    { text: "...", delay: 600 },
+                    { text: "He's not returning my calls.", delay: 900 },
+                    { text: "<span class='quote'>\"The odds were 1 in 128. How could I have been so unlucky?\"</span>", delay: 1200 }
+                ]
+            }
+        ];
+
+        function initProgress() {
+            progress.innerHTML = '';
+            for (let i = 0; i < totalWeeks; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'progress-dot';
+                progress.appendChild(dot);
+            }
+        }
+
+        function updateProgress() {
+            const dots = progress.querySelectorAll('.progress-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active', 'complete');
+                if (i < week) dot.classList.add('complete');
+                if (i === week) dot.classList.add('active');
+            });
+        }
+
+        function showThoughts(container, thoughts) {
+            container.innerHTML = '';
+            thoughts.forEach((thought, i) => {
+                const bubble = document.createElement('div');
+                bubble.className = 'thought-bubble';
+                bubble.innerHTML = thought.text;
+                container.appendChild(bubble);
+
+                setTimeout(() => {
+                    bubble.classList.add('visible');
+                }, thought.delay);
+            });
+        }
+
+        function nextWeek() {
+            week++;
+
+            if (week >= story.length) {
+                nextBtn.disabled = true;
+                nextBtn.textContent = 'The End';
+                return;
+            }
+
+            const chapter = story[week];
+            weekIndicator.textContent = `Week ${chapter.week}`;
+            updateProgress();
+
+            showThoughts(brokerThoughts, chapter.broker);
+            showThoughts(victimThoughts, chapter.victim);
+
+            nextBtn.textContent = week < story.length - 1 ? 'Next Week' : 'Conclusion';
+        }
+
+        function reset() {
+            week = -1;
+            brokerThoughts.innerHTML = '<div class="thought-bubble visible"><span class="quote">"Time to find some marks..."</span></div>';
+            victimThoughts.innerHTML = '<div class="thought-bubble visible"><span class="quote">"Just another day checking the mail..."</span></div>';
+            weekIndicator.textContent = 'The Setup';
+            nextBtn.disabled = false;
+            nextBtn.textContent = 'Begin';
+            initProgress();
+        }
+
+        nextBtn.addEventListener('click', nextWeek);
+        resetBtn.addEventListener('click', reset);
+
+        initProgress();
+        reset();
+    </script>
+</body>
+</html>
