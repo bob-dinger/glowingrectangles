@@ -1,0 +1,29 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="#0a0a0f"/>
+  <!-- Plane 1 - green/alive -->
+  <g transform="translate(15, 15) scale(0.35)">
+    <path d="M 50 3 L 55 10 L 55 28 L 85 33 L 85 39 L 55 42 L 55 57 L 65 61 L 65 64 L 55 62 L 52 69 L 50 71 L 48 69 L 45 62 L 35 64 L 35 61 L 45 57 L 45 42 L 15 39 L 15 33 L 45 28 L 45 10 Z" fill="#1a1a1a" stroke="#22C55E" stroke-width="2"/>
+    <circle cx="25" cy="36" r="3" fill="#EF4444"/>
+    <circle cx="75" cy="36" r="3" fill="#EF4444"/>
+  </g>
+  <!-- Plane 2 - green/alive -->
+  <g transform="translate(55, 15) scale(0.35)">
+    <path d="M 50 3 L 55 10 L 55 28 L 85 33 L 85 39 L 55 42 L 55 57 L 65 61 L 65 64 L 55 62 L 52 69 L 50 71 L 48 69 L 45 62 L 35 64 L 35 61 L 45 57 L 45 42 L 15 39 L 15 33 L 45 28 L 45 10 Z" fill="#1a1a1a" stroke="#22C55E" stroke-width="2"/>
+    <circle cx="30" cy="35" r="3" fill="#EF4444"/>
+  </g>
+  <!-- Plane 3 - blue/dead -->
+  <g transform="translate(15, 55) scale(0.35)">
+    <path d="M 50 3 L 55 10 L 55 28 L 85 33 L 85 39 L 55 42 L 55 57 L 65 61 L 65 64 L 55 62 L 52 69 L 50 71 L 48 69 L 45 62 L 35 64 L 35 61 L 45 57 L 45 42 L 15 39 L 15 33 L 45 28 L 45 10 Z" fill="#1a1a1a" stroke="#1e3a5f" stroke-width="2"/>
+    <circle cx="50" cy="60" r="3" fill="#3b6a8a"/>
+    <circle cx="48" cy="65" r="3" fill="#3b6a8a"/>
+    <circle cx="52" cy="62" r="3" fill="#3b6a8a"/>
+  </g>
+  <!-- Plane 4 - blue/dead -->
+  <g transform="translate(55, 55) scale(0.35)">
+    <path d="M 50 3 L 55 10 L 55 28 L 85 33 L 85 39 L 55 42 L 55 57 L 65 61 L 65 64 L 55 62 L 52 69 L 50 71 L 48 69 L 45 62 L 35 64 L 35 61 L 45 57 L 45 42 L 15 39 L 15 33 L 45 28 L 45 10 Z" fill="#1a1a1a" stroke="#1e3a5f" stroke-width="2"/>
+    <circle cx="50" cy="58" r="3" fill="#3b6a8a"/>
+    <circle cx="46" cy="62" r="3" fill="#3b6a8a"/>
+    <circle cx="54" cy="64" r="3" fill="#3b6a8a"/>
+    <circle cx="50" cy="67" r="3" fill="#3b6a8a"/>
+  </g>
+</svg>

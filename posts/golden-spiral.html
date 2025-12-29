@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Spiral</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            border-radius: 50%;
+        }
+
+        .drawer {
+            width: 340px;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drawer-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+
+        .drawer-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .control-value {
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #222;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #F59E0B;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            background: #22C55E;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 15px;
+        }
+
+        .btn:hover {
+            background: #16A34A;
+        }
+
+        .btn.secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn.secondary:hover {
+            background: #444;
+        }
+
+        .presets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .preset-btn {
+            padding: 8px 14px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            border-color: #F59E0B;
+            color: #F59E0B;
+        }
+
+        .insight-box {
+            background: #1a1a1a;
+            border-left: 3px solid #F59E0B;
+            padding: 15px;
+            margin-top: auto;
+        }
+
+        .insight-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .insight-text {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat {
+            flex: 1;
+            background: #1a1a1a;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 900px) {
+            .drawer {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back</a>
+
+    <div class="main-content">
+        <canvas id="canvas" width="600" height="600"></canvas>
+    </div>
+
+    <div class="drawer">
+        <div class="drawer-title">The Golden Angle</div>
+        <div class="drawer-subtitle">How flowers build themselves</div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="seedCount">0</div>
+                <div class="stat-label">Seeds</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="angleDisplay">137.5°</div>
+                <div class="stat-label">Angle</div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">
+                <span>Rotation Angle</span>
+                <span class="control-value" id="angleValue">137.5°</span>
+            </div>
+            <input type="range" id="angleSlider" min="0" max="360" step="0.1" value="137.5">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">
+                <span>Speed</span>
+                <span class="control-value" id="speedValue">Medium</span>
+            </div>
+            <input type="range" id="speedSlider" min="1" max="5" step="1" value="3">
+        </div>
+
+        <div class="presets">
+            <button class="preset-btn" data-angle="137.5">Golden (137.5°)</button>
+            <button class="preset-btn" data-angle="90">90°</button>
+            <button class="preset-btn" data-angle="120">120°</button>
+            <button class="preset-btn" data-angle="144">144°</button>
+            <button class="preset-btn" data-angle="137.3">137.3°</button>
+            <button class="preset-btn" data-angle="137.6">137.6°</button>
+        </div>
+
+        <button class="btn" id="playBtn">Grow Flower</button>
+        <button class="btn secondary" id="resetBtn">Reset</button>
+
+        <div class="insight-box">
+            <div class="insight-title">Why 137.5°?</div>
+            <div class="insight-text">
+                It's 360° ÷ φ² (where φ is the golden ratio). This angle ensures no seed ever lands directly above another, creating optimal packing. Nature figured this out.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        const angleSlider = document.getElementById('angleSlider');
+        const angleValue = document.getElementById('angleValue');
+        const angleDisplay = document.getElementById('angleDisplay');
+        const seedCount = document.getElementById('seedCount');
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let angle = 137.5;
+        let seeds = [];
+        let animating = false;
+        let animationId = null;
+
+        const GOLDEN_ANGLE = 137.5077640500378;
+        const MAX_SEEDS = 500;
+        const SEED_SIZE = 4;
+        const SCALE = 8;
+
+        function drawSeed(n, angle, highlight = false) {
+            const theta = n * angle * (Math.PI / 180);
+            const r = SCALE * Math.sqrt(n);
+            const x = centerX + r * Math.cos(theta);
+            const y = centerY + r * Math.sin(theta);
+
+            // Color based on position in sequence
+            const hue = (n * 2) % 360;
+            ctx.beginPath();
+            ctx.arc(x, y, highlight ? SEED_SIZE + 2 : SEED_SIZE, 0, Math.PI * 2);
+            ctx.fillStyle = highlight ? '#fff' : `hsl(${hue}, 70%, 50%)`;
+            ctx.fill();
+
+            return { x, y, theta };
+        }
+
+        function drawAngleIndicator(n, angle) {
+            if (n < 1) return;
+
+            const prevTheta = (n - 1) * angle * (Math.PI / 180);
+            const currTheta = n * angle * (Math.PI / 180);
+
+            // Draw arc showing the angle
+            const arcRadius = 60;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, arcRadius, prevTheta, currTheta);
+            ctx.strokeStyle = '#F59E0B';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Draw line to current seed
+            const r = SCALE * Math.sqrt(n);
+            const x = centerX + r * Math.cos(currTheta);
+            const y = centerY + r * Math.sin(currTheta);
+
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw angle text
+            const midTheta = (prevTheta + currTheta) / 2;
+            const textR = arcRadius + 25;
+            const textX = centerX + textR * Math.cos(midTheta);
+            const textY = centerY + textR * Math.sin(midTheta);
+
+            ctx.font = '14px -apple-system, sans-serif';
+            ctx.fillStyle = '#F59E0B';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(angle.toFixed(1) + '°', textX, textY);
+        }
+
+        function drawAllSeeds(showIndicator = false, currentN = 0) {
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < seeds.length; i++) {
+                drawSeed(i, angle, showIndicator && i === currentN);
+            }
+
+            if (showIndicator && currentN > 0) {
+                drawAngleIndicator(currentN, angle);
+            }
+
+            seedCount.textContent = seeds.length;
+        }
+
+        let animationDelay = 150; // ms between seeds
+
+        function animate() {
+            if (seeds.length < MAX_SEEDS) {
+                seeds.push(seeds.length);
+                const currentN = seeds.length - 1;
+                drawAllSeeds(true, currentN);
+
+                setTimeout(() => {
+                    if (animating) {
+                        animate();
+                    }
+                }, animationDelay);
+            } else {
+                animating = false;
+                playBtn.textContent = 'Grow Flower';
+                drawAllSeeds(false);
+            }
+        }
+
+        function startAnimation() {
+            if (animating) {
+                cancelAnimationFrame(animationId);
+                animating = false;
+                playBtn.textContent = 'Continue';
+                return;
+            }
+
+            animating = true;
+            playBtn.textContent = 'Pause';
+            animate();
+        }
+
+        function reset() {
+            cancelAnimationFrame(animationId);
+            animating = false;
+            seeds = [];
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            seedCount.textContent = '0';
+            playBtn.textContent = 'Grow Flower';
+        }
+
+        angleSlider.addEventListener('input', (e) => {
+            angle = parseFloat(e.target.value);
+            angleValue.textContent = angle.toFixed(1) + '°';
+            angleDisplay.textContent = angle.toFixed(1) + '°';
+            if (seeds.length > 0) {
+                drawAllSeeds();
+            }
+        });
+
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                angle = parseFloat(btn.dataset.angle);
+                angleSlider.value = angle;
+                angleValue.textContent = angle.toFixed(1) + '°';
+                angleDisplay.textContent = angle.toFixed(1) + '°';
+                if (seeds.length > 0) {
+                    drawAllSeeds();
+                }
+            });
+        });
+
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        const speedLabels = ['Very Slow', 'Slow', 'Medium', 'Fast', 'Very Fast'];
+        const speedDelays = [500, 300, 150, 50, 10];
+
+        speedSlider.addEventListener('input', (e) => {
+            const level = parseInt(e.target.value);
+            speedValue.textContent = speedLabels[level - 1];
+            animationDelay = speedDelays[level - 1];
+        });
+
+        playBtn.addEventListener('click', startAnimation);
+        resetBtn.addEventListener('click', reset);
+
+        // Initial clear
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    </script>
+</body>
+</html>

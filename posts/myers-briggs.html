@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myers-Briggs Types</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .page-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 60px 30px 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .type-card {
+            background: #111;
+            border: 2px solid #222;
+            border-radius: 10px;
+            padding: 18px 12px;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .type-card:hover {
+            border-color: #444;
+            transform: translateY(-2px);
+        }
+
+        .type-card.selected {
+            background: #1a1a1a;
+        }
+
+        .type-code {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .type-name {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Color coding by temperament */
+        .analyst .type-code { color: #A78BFA; }
+        .diplomat .type-code { color: #34D399; }
+        .sentinel .type-code { color: #60A5FA; }
+        .explorer .type-code { color: #FBBF24; }
+
+        .type-card.analyst.selected { border-color: #A78BFA; }
+        .type-card.diplomat.selected { border-color: #34D399; }
+        .type-card.sentinel.selected { border-color: #60A5FA; }
+        .type-card.explorer.selected { border-color: #FBBF24; }
+
+        /* Right drawer */
+        .drawer {
+            width: 380px;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drawer-empty {
+            color: #444;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        .drawer-content {
+            display: none;
+        }
+
+        .drawer-content.visible {
+            display: block;
+        }
+
+        .drawer-code {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+        }
+
+        .drawer-code.analyst { color: #A78BFA; }
+        .drawer-code.diplomat { color: #34D399; }
+        .drawer-code.sentinel { color: #60A5FA; }
+        .drawer-code.explorer { color: #FBBF24; }
+
+        .drawer-name {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .drawer-tagline {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        .drawer-section {
+            margin-bottom: 25px;
+        }
+
+        .drawer-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .drawer-section-text {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        .function-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .function-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #ccc;
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border-radius: 6px;
+        }
+
+        .function-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            width: 70px;
+        }
+
+        .trait-list {
+            list-style: none;
+        }
+
+        .trait-list li {
+            font-size: 14px;
+            color: #ccc;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .trait-list li:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 900px) {
+            .drawer {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back</a>
+
+    <div class="page-container">
+        <div class="main-content">
+            <h1>Myers-Briggs Types</h1>
+            <p class="subtitle">16 Personality Types</p>
+
+            <div class="grid">
+                <!-- Analysts -->
+                <div class="type-card analyst" data-type="INTJ">
+                    <div class="type-code">INTJ</div>
+                    <div class="type-name">Architect</div>
+                </div>
+                <div class="type-card analyst" data-type="INTP">
+                    <div class="type-code">INTP</div>
+                    <div class="type-name">Logician</div>
+                </div>
+                <div class="type-card analyst" data-type="ENTJ">
+                    <div class="type-code">ENTJ</div>
+                    <div class="type-name">Commander</div>
+                </div>
+                <div class="type-card analyst" data-type="ENTP">
+                    <div class="type-code">ENTP</div>
+                    <div class="type-name">Debater</div>
+                </div>
+
+                <!-- Diplomats -->
+                <div class="type-card diplomat" data-type="INFJ">
+                    <div class="type-code">INFJ</div>
+                    <div class="type-name">Advocate</div>
+                </div>
+                <div class="type-card diplomat" data-type="INFP">
+                    <div class="type-code">INFP</div>
+                    <div class="type-name">Mediator</div>
+                </div>
+                <div class="type-card diplomat" data-type="ENFJ">
+                    <div class="type-code">ENFJ</div>
+                    <div class="type-name">Protagonist</div>
+                </div>
+                <div class="type-card diplomat" data-type="ENFP">
+                    <div class="type-code">ENFP</div>
+                    <div class="type-name">Campaigner</div>
+                </div>
+
+                <!-- Sentinels -->
+                <div class="type-card sentinel" data-type="ISTJ">
+                    <div class="type-code">ISTJ</div>
+                    <div class="type-name">Logistician</div>
+                </div>
+                <div class="type-card sentinel" data-type="ISFJ">
+                    <div class="type-code">ISFJ</div>
+                    <div class="type-name">Defender</div>
+                </div>
+                <div class="type-card sentinel" data-type="ESTJ">
+                    <div class="type-code">ESTJ</div>
+                    <div class="type-name">Executive</div>
+                </div>
+                <div class="type-card sentinel" data-type="ESFJ">
+                    <div class="type-code">ESFJ</div>
+                    <div class="type-name">Consul</div>
+                </div>
+
+                <!-- Explorers -->
+                <div class="type-card explorer" data-type="ISTP">
+                    <div class="type-code">ISTP</div>
+                    <div class="type-name">Virtuoso</div>
+                </div>
+                <div class="type-card explorer" data-type="ISFP">
+                    <div class="type-code">ISFP</div>
+                    <div class="type-name">Adventurer</div>
+                </div>
+                <div class="type-card explorer" data-type="ESTP">
+                    <div class="type-code">ESTP</div>
+                    <div class="type-name">Entrepreneur</div>
+                </div>
+                <div class="type-card explorer" data-type="ESFP">
+                    <div class="type-code">ESFP</div>
+                    <div class="type-name">Entertainer</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="drawer">
+            <div class="drawer-empty" id="drawerEmpty">← Select a type to learn more</div>
+            <div class="drawer-content" id="drawerContent">
+                <div class="drawer-code" id="drawerCode">INTJ</div>
+                <div class="drawer-name" id="drawerName">Architect</div>
+                <div class="drawer-tagline" id="drawerTagline">"Everything can be improved"</div>
+
+                <div class="drawer-section">
+                    <div class="drawer-section-title">Description</div>
+                    <div class="drawer-section-text" id="drawerDesc">Strategic thinkers with a plan for everything.</div>
+                </div>
+
+                <div class="drawer-section">
+                    <div class="drawer-section-title">Cognitive Functions</div>
+                    <div class="function-stack" id="drawerFunctions">
+                        <div class="function-item"><span class="function-label">Dominant</span> Ni - Introverted Intuition</div>
+                        <div class="function-item"><span class="function-label">Auxiliary</span> Te - Extraverted Thinking</div>
+                        <div class="function-item"><span class="function-label">Tertiary</span> Fi - Introverted Feeling</div>
+                        <div class="function-item"><span class="function-label">Inferior</span> Se - Extraverted Sensing</div>
+                    </div>
+                </div>
+
+                <div class="drawer-section">
+                    <div class="drawer-section-title">Strengths</div>
+                    <ul class="trait-list" id="drawerStrengths">
+                        <li>Strategic</li>
+                        <li>Independent</li>
+                        <li>Determined</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const typeData = {
+            INTJ: {
+                name: "Architect",
+                temperament: "analyst",
+                tagline: '"Everything can be improved"',
+                desc: "Strategic thinkers with a plan for everything. They value knowledge and competence above all else.",
+                functions: ["Ni - Introverted Intuition", "Te - Extraverted Thinking", "Fi - Introverted Feeling", "Se - Extraverted Sensing"],
+                strengths: ["Strategic", "Independent", "Determined", "Innovative"]
+            },
+            INTP: {
+                name: "Logician",
+                temperament: "analyst",
+                tagline: '"Truth is the ultimate goal"',
+                desc: "Innovative inventors with an unquenchable thirst for knowledge. They love patterns and seeing the big picture.",
+                functions: ["Ti - Introverted Thinking", "Ne - Extraverted Intuition", "Si - Introverted Sensing", "Fe - Extraverted Feeling"],
+                strengths: ["Analytical", "Objective", "Open-minded", "Curious"]
+            },
+            ENTJ: {
+                name: "Commander",
+                temperament: "analyst",
+                tagline: '"I will find a way, or make one"',
+                desc: "Bold, imaginative leaders who always find a way—or make one. They live for challenge and achievement.",
+                functions: ["Te - Extraverted Thinking", "Ni - Introverted Intuition", "Se - Extraverted Sensing", "Fi - Introverted Feeling"],
+                strengths: ["Decisive", "Ambitious", "Strategic", "Confident"]
+            },
+            ENTP: {
+                name: "Debater",
+                temperament: "analyst",
+                tagline: '"There is always another way"',
+                desc: "Smart and curious thinkers who cannot resist an intellectual challenge. They love to argue for fun.",
+                functions: ["Ne - Extraverted Intuition", "Ti - Introverted Thinking", "Fe - Extraverted Feeling", "Si - Introverted Sensing"],
+                strengths: ["Quick-witted", "Innovative", "Energetic", "Adaptable"]
+            },
+            INFJ: {
+                name: "Advocate",
+                temperament: "diplomat",
+                tagline: '"Help others realize their potential"',
+                desc: "Quiet and mystical, yet inspiring and tireless idealists. They seek meaning and connection in all things.",
+                functions: ["Ni - Introverted Intuition", "Fe - Extraverted Feeling", "Ti - Introverted Thinking", "Se - Extraverted Sensing"],
+                strengths: ["Insightful", "Principled", "Compassionate", "Creative"]
+            },
+            INFP: {
+                name: "Mediator",
+                temperament: "diplomat",
+                tagline: '"Stay true to yourself"',
+                desc: "Poetic, kind, and altruistic, always eager to help a good cause. They value authenticity above all.",
+                functions: ["Fi - Introverted Feeling", "Ne - Extraverted Intuition", "Si - Introverted Sensing", "Te - Extraverted Thinking"],
+                strengths: ["Idealistic", "Empathetic", "Creative", "Passionate"]
+            },
+            ENFJ: {
+                name: "Protagonist",
+                temperament: "diplomat",
+                tagline: '"Inspire and lead others"',
+                desc: "Charismatic and inspiring leaders, able to mesmerize their listeners. They are natural-born teachers.",
+                functions: ["Fe - Extraverted Feeling", "Ni - Introverted Intuition", "Se - Extraverted Sensing", "Ti - Introverted Thinking"],
+                strengths: ["Charismatic", "Empathetic", "Organized", "Natural leader"]
+            },
+            ENFP: {
+                name: "Campaigner",
+                temperament: "diplomat",
+                tagline: '"Embrace possibilities"',
+                desc: "Enthusiastic, creative, and sociable free spirits who can always find a reason to smile.",
+                functions: ["Ne - Extraverted Intuition", "Fi - Introverted Feeling", "Te - Extraverted Thinking", "Si - Introverted Sensing"],
+                strengths: ["Enthusiastic", "Creative", "Sociable", "Optimistic"]
+            },
+            ISTJ: {
+                name: "Logistician",
+                temperament: "sentinel",
+                tagline: '"Duty above all"',
+                desc: "Practical and fact-minded individuals whose reliability cannot be doubted. They honor their commitments.",
+                functions: ["Si - Introverted Sensing", "Te - Extraverted Thinking", "Fi - Introverted Feeling", "Ne - Extraverted Intuition"],
+                strengths: ["Reliable", "Practical", "Organized", "Responsible"]
+            },
+            ISFJ: {
+                name: "Defender",
+                temperament: "sentinel",
+                tagline: '"Protect those I care about"',
+                desc: "Dedicated and warm protectors, always ready to defend their loved ones. They are truly loyal.",
+                functions: ["Si - Introverted Sensing", "Fe - Extraverted Feeling", "Ti - Introverted Thinking", "Ne - Extraverted Intuition"],
+                strengths: ["Supportive", "Reliable", "Patient", "Loyal"]
+            },
+            ESTJ: {
+                name: "Executive",
+                temperament: "sentinel",
+                tagline: '"Order and structure"',
+                desc: "Excellent administrators, unsurpassed at managing things—or people. They bring order to chaos.",
+                functions: ["Te - Extraverted Thinking", "Si - Introverted Sensing", "Ne - Extraverted Intuition", "Fi - Introverted Feeling"],
+                strengths: ["Organized", "Logical", "Assertive", "Dedicated"]
+            },
+            ESFJ: {
+                name: "Consul",
+                temperament: "sentinel",
+                tagline: '"Caring for others"',
+                desc: "Extraordinarily caring, social, and popular. They are always eager to help and bring people together.",
+                functions: ["Fe - Extraverted Feeling", "Si - Introverted Sensing", "Ne - Extraverted Intuition", "Ti - Introverted Thinking"],
+                strengths: ["Caring", "Sociable", "Loyal", "Traditional"]
+            },
+            ISTP: {
+                name: "Virtuoso",
+                temperament: "explorer",
+                tagline: '"Master of tools"',
+                desc: "Bold and practical experimenters, masters of all kinds of tools. They love to take things apart.",
+                functions: ["Ti - Introverted Thinking", "Se - Extraverted Sensing", "Ni - Introverted Intuition", "Fe - Extraverted Feeling"],
+                strengths: ["Practical", "Observant", "Analytical", "Adaptable"]
+            },
+            ISFP: {
+                name: "Adventurer",
+                temperament: "explorer",
+                tagline: '"Live in the moment"',
+                desc: "Flexible and charming artists, always ready to explore and experience something new.",
+                functions: ["Fi - Introverted Feeling", "Se - Extraverted Sensing", "Ni - Introverted Intuition", "Te - Extraverted Thinking"],
+                strengths: ["Artistic", "Sensitive", "Curious", "Passionate"]
+            },
+            ESTP: {
+                name: "Entrepreneur",
+                temperament: "explorer",
+                tagline: '"Action speaks louder"',
+                desc: "Smart, energetic, and very perceptive. They live on the edge and love taking risks.",
+                functions: ["Se - Extraverted Sensing", "Ti - Introverted Thinking", "Fe - Extraverted Feeling", "Ni - Introverted Intuition"],
+                strengths: ["Energetic", "Pragmatic", "Observant", "Bold"]
+            },
+            ESFP: {
+                name: "Entertainer",
+                temperament: "explorer",
+                tagline: '"Life is a party"',
+                desc: "Spontaneous, energetic, and enthusiastic. They love being the center of attention.",
+                functions: ["Se - Extraverted Sensing", "Fi - Introverted Feeling", "Te - Extraverted Thinking", "Ni - Introverted Intuition"],
+                strengths: ["Spontaneous", "Energetic", "Friendly", "Fun-loving"]
+            }
+        };
+
+        const functionLabels = ["Dominant", "Auxiliary", "Tertiary", "Inferior"];
+
+        const cards = document.querySelectorAll('.type-card');
+        const drawerEmpty = document.getElementById('drawerEmpty');
+        const drawerContent = document.getElementById('drawerContent');
+        const drawerCode = document.getElementById('drawerCode');
+        const drawerName = document.getElementById('drawerName');
+        const drawerTagline = document.getElementById('drawerTagline');
+        const drawerDesc = document.getElementById('drawerDesc');
+        const drawerFunctions = document.getElementById('drawerFunctions');
+        const drawerStrengths = document.getElementById('drawerStrengths');
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                cards.forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+
+                const typeCode = card.dataset.type;
+                const data = typeData[typeCode];
+
+                drawerEmpty.style.display = 'none';
+                drawerContent.classList.add('visible');
+
+                drawerCode.textContent = typeCode;
+                drawerCode.className = 'drawer-code ' + data.temperament;
+                drawerName.textContent = data.name;
+                drawerTagline.textContent = data.tagline;
+                drawerDesc.textContent = data.desc;
+                drawerFunctions.innerHTML = data.functions.map((f, i) =>
+                    `<div class="function-item"><span class="function-label">${functionLabels[i]}</span> ${f}</div>`
+                ).join('');
+                drawerStrengths.innerHTML = data.strengths.map(s => `<li>${s}</li>`).join('');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survivorship Bias</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .page-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .section {
+            padding: 20px;
+        }
+
+        .section-header {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #222;
+        }
+
+        .aftermath-section {
+            display: none;
+            border-top: 1px solid #333;
+            padding-top: 30px;
+        }
+
+        .aftermath-section.visible {
+            display: block;
+        }
+
+        #battleSection.aftermath .plane-card:not(.dead) {
+            opacity: 0.15;
+            filter: grayscale(100%);
+            transition: all 0.5s ease;
+        }
+
+        #battleSection.aftermath .plane-card.dead {
+            opacity: 1;
+        }
+
+        .survivor-card {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .survivor-card.visible {
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.3s ease;
+        }
+
+        .planes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            width: 100%;
+        }
+
+        .plane-card {
+            aspect-ratio: 1;
+            border: 2px solid #22C55E;
+            border-radius: 8px;
+            padding: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .plane-card.dead {
+            border-color: #1e3a5f;
+        }
+
+        .plane-card.dying {
+            border-color: #EF4444;
+            animation: fadeToOcean 5s ease-out forwards;
+        }
+
+        @keyframes fadeToOcean {
+            0% { border-color: #EF4444; }
+            100% { border-color: #1e3a5f; }
+        }
+
+        .plane-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .plane-path {
+            fill: #1a1a1a;
+            stroke: #22C55E;
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+
+        .plane-card.dead .plane-path {
+            stroke: #1e3a5f;
+        }
+
+        .plane-card.dying .plane-path {
+            stroke: #EF4444;
+            animation: fadeToOceanStroke 5s ease-out forwards;
+        }
+
+        @keyframes fadeToOceanStroke {
+            0% { stroke: #EF4444; }
+            100% { stroke: #1e3a5f; }
+        }
+
+        .bullet-hole {
+            fill: #EF4444;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .bullet-hole.visible {
+            opacity: 1;
+        }
+
+        .plane-card.dead .bullet-hole {
+            fill: #3b6a8a;
+        }
+
+        .plane-card.dying .bullet-hole.visible {
+            animation: fadeToOceanHole 5s ease-out forwards;
+        }
+
+        @keyframes fadeToOceanHole {
+            0% { fill: #EF4444; }
+            100% { fill: #3b6a8a; }
+        }
+
+        /* Right drawer */
+        .info-section {
+            width: 340px;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 15px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #F59E0B;
+        }
+
+        .hit-log {
+            margin-bottom: 10px;
+        }
+
+        .hit-log-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .hit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hit-entry {
+            font-size: 12px;
+            font-family: monospace;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #1a1a1a;
+            opacity: 0;
+            transform: translateX(-10px);
+            animation: slideIn 0.2s ease forwards;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .hit-entry.wing {
+            color: #22C55E;
+            border-left: 3px solid #22C55E;
+        }
+
+        .hit-entry.tail {
+            color: #EF4444;
+            border-left: 3px solid #EF4444;
+        }
+
+        .hit-entry.fatal {
+            color: #EF4444;
+            background: rgba(239, 68, 68, 0.15);
+            font-weight: bold;
+        }
+
+        .conversation {
+            flex: 1;
+        }
+
+        .runway-scene {
+            margin-bottom: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .runway-scene.visible {
+            opacity: 1;
+        }
+
+        .runway-cartoon {
+            width: 100%;
+            height: auto;
+        }
+
+        .chat-bubble {
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: all 0.5s ease;
+        }
+
+        .chat-bubble.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .speaker {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .speaker.general { color: #F59E0B; }
+        .speaker.engineer { color: #3B82F6; }
+
+        .message-text {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .info-divider {
+            height: 1px;
+            background: #222;
+            margin: 20px 0;
+        }
+
+        .legend {
+            margin-top: auto;
+            padding-top: 20px;
+        }
+
+        .legend-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            border: 2px solid;
+        }
+
+        .legend-dot.flying { border-color: #22C55E; background: transparent; }
+        .legend-dot.down { border-color: #1e3a5f; background: transparent; }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back</a>
+
+    <div class="page-container">
+        <div class="main-content">
+            <div class="section" id="battleSection">
+                <div class="section-header">The Battle</div>
+                <div class="planes-grid" id="planesGrid"></div>
+            </div>
+
+            <div class="section aftermath-section" id="aftermathSection">
+                <div class="section-header">Post Battle Runway</div>
+                <div class="planes-grid" id="survivorsGrid"></div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-title" id="infoTitle">Incoming Reports</div>
+
+            <div class="hit-log" id="hitLog">
+                <div class="hit-log-title">Recent Hits</div>
+                <div class="hit-list" id="hitList"></div>
+            </div>
+
+            <div class="conversation" id="conversation">
+                <div class="runway-scene" id="runwayScene">
+                    <svg viewBox="0 0 200 80" class="runway-cartoon">
+                        <!-- Runway -->
+                        <rect x="0" y="60" width="200" height="20" fill="#333"/>
+                        <line x1="20" y1="70" x2="40" y2="70" stroke="#F59E0B" stroke-width="2"/>
+                        <line x1="60" y1="70" x2="80" y2="70" stroke="#F59E0B" stroke-width="2"/>
+                        <line x1="100" y1="70" x2="120" y2="70" stroke="#F59E0B" stroke-width="2"/>
+                        <line x1="140" y1="70" x2="160" y2="70" stroke="#F59E0B" stroke-width="2"/>
+                        <!-- General (left) -->
+                        <circle cx="70" cy="35" r="8" fill="#F59E0B"/>
+                        <rect x="64" y="43" width="12" height="18" fill="#F59E0B" rx="2"/>
+                        <line x1="70" y1="61" x2="66" y2="75" stroke="#F59E0B" stroke-width="3"/>
+                        <line x1="70" y1="61" x2="74" y2="75" stroke="#F59E0B" stroke-width="3"/>
+                        <!-- Engineer (right) -->
+                        <circle cx="130" cy="35" r="8" fill="#3B82F6"/>
+                        <rect x="124" y="43" width="12" height="18" fill="#3B82F6" rx="2"/>
+                        <line x1="130" y1="61" x2="126" y2="75" stroke="#3B82F6" stroke-width="3"/>
+                        <line x1="130" y1="61" x2="134" y2="75" stroke="#3B82F6" stroke-width="3"/>
+                        <!-- Speech lines -->
+                        <path d="M82 32 Q90 28 95 32" stroke="#666" stroke-width="1" fill="none"/>
+                        <path d="M100 30 Q105 26 110 30" stroke="#666" stroke-width="1" fill="none"/>
+                    </svg>
+                </div>
+                <div class="chat-bubble" id="msg1">
+                    <div class="speaker general">General</div>
+                    <div class="message-text">Look at these planes. Every single one has damage to the wings.</div>
+                </div>
+                <div class="chat-bubble" id="msg2">
+                    <div class="speaker engineer">Engineer</div>
+                    <div class="message-text">You're right. The enemy is clearly targeting the wings.</div>
+                </div>
+                <div class="chat-bubble" id="msg3">
+                    <div class="speaker general">General</div>
+                    <div class="message-text">Then it's obvious—we need to add armor to the wings!</div>
+                </div>
+            </div>
+
+            <div class="legend" id="legend">
+                <div class="legend-title">Status</div>
+                <div class="legend-item">
+                    <div class="legend-dot flying"></div>
+                    <span>Returned safely</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot down"></div>
+                    <span>Shot down</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const planePath = `M 50 3
+                           L 55 10 L 55 28
+                           L 85 33 L 85 39 L 55 42
+                           L 55 57
+                           L 65 61 L 65 64 L 55 62
+                           L 52 69 L 50 71 L 48 69
+                           L 45 62 L 35 64 L 35 61 L 45 57
+                           L 45 42
+                           L 15 39 L 15 33 L 45 28
+                           L 45 10
+                           Z`;
+
+        const wingPositions = [
+            {cx: 22, cy: 36}, {cx: 28, cy: 35}, {cx: 34, cy: 34},
+            {cx: 66, cy: 34}, {cx: 72, cy: 35}, {cx: 78, cy: 36},
+            {cx: 25, cy: 37}, {cx: 75, cy: 37}
+        ];
+
+        const tailPositions = [
+            {cx: 50, cy: 58}, {cx: 48, cy: 62}, {cx: 52, cy: 65},
+            {cx: 46, cy: 60}, {cx: 54, cy: 60}, {cx: 50, cy: 68}
+        ];
+
+        const NUM_PLANES = 24;
+        const FATAL_HITS = 4;
+        const MAX_LOG_ENTRIES = 10;
+        const LOG_SAMPLE_RATE = 8;  // Only queue every Nth hit
+        let planes = [];
+        let planeCounter = 0;
+        let hitCounter = 0;
+        let pendingLogEntries = [];  // Queue of hits to show
+
+        function createPlanes() {
+            const grid = document.getElementById('planesGrid');
+            grid.innerHTML = '';
+            planes = [];
+
+            for (let i = 0; i < NUM_PLANES; i++) {
+                const card = document.createElement('div');
+                card.className = 'plane-card';
+
+                const wingHoles = wingPositions.map((pos, j) =>
+                    `<circle class="bullet-hole wing-hole" cx="${pos.cx + (Math.random()-0.5)*3}" cy="${pos.cy + (Math.random()-0.5)*2}" r="${2 + Math.random()}"/>`
+                ).join('');
+
+                const tailHoles = tailPositions.map((pos, j) =>
+                    `<circle class="bullet-hole tail-hole" cx="${pos.cx + (Math.random()-0.5)*3}" cy="${pos.cy + (Math.random()-0.5)*2}" r="${2 + Math.random()}"/>`
+                ).join('');
+
+                card.innerHTML = `
+                    <svg class="plane-svg" viewBox="0 0 100 75">
+                        <path class="plane-path" d="${planePath}"/>
+                        ${wingHoles}
+                        ${tailHoles}
+                    </svg>
+                `;
+
+                grid.appendChild(card);
+
+                planeCounter++;
+                planes.push({
+                    element: card,
+                    id: planeCounter,
+                    tailHits: 0,
+                    wingHits: 0,
+                    alive: true,
+                    wingHoleIndex: 0,
+                    tailHoleIndex: 0
+                });
+            }
+        }
+
+        function addLogEntry(hit) {
+            const hitList = document.getElementById('hitList');
+
+            // Remove oldest if at max
+            while (hitList.children.length >= MAX_LOG_ENTRIES) {
+                hitList.removeChild(hitList.firstChild);
+            }
+
+            const entry = document.createElement('div');
+            entry.className = `hit-entry ${hit.type}${hit.fatal ? ' fatal' : ''}`;
+            entry.textContent = hit.text;
+            hitList.appendChild(entry);
+        }
+
+        function startLogDisplay() {
+            // Show a new log entry every 2 seconds from the queue
+            setInterval(() => {
+                if (pendingLogEntries.length > 0) {
+                    const hit = pendingLogEntries.shift();
+                    addLogEntry(hit);
+                }
+            }, 400);
+        }
+
+        function addHit() {
+            const alivePlanes = planes.filter(p => p.alive);
+            if (alivePlanes.length === 0) return false;
+
+            const plane = alivePlanes[Math.floor(Math.random() * alivePlanes.length)];
+            const isWingHit = Math.random() > 0.5;
+            hitCounter++;
+            const shouldQueue = (hitCounter % LOG_SAMPLE_RATE === 0);
+
+            if (isWingHit) {
+                if (plane.wingHoleIndex < wingPositions.length) {
+                    const hole = plane.element.querySelectorAll('.wing-hole')[plane.wingHoleIndex];
+                    if (hole) hole.classList.add('visible');
+                    plane.wingHoleIndex++;
+                    plane.wingHits++;
+
+                    if (shouldQueue) {
+                        pendingLogEntries.push({
+                            type: 'wing',
+                            text: `Plane #${plane.id}: Wing hit`,
+                            fatal: false
+                        });
+                    }
+                }
+            } else {
+                if (plane.tailHoleIndex < tailPositions.length) {
+                    const hole = plane.element.querySelectorAll('.tail-hole')[plane.tailHoleIndex];
+                    if (hole) hole.classList.add('visible');
+                    plane.tailHoleIndex++;
+                    plane.tailHits++;
+
+                    const isFatal = plane.tailHits >= FATAL_HITS;
+
+                    // Always queue fatal hits
+                    if (shouldQueue || isFatal) {
+                        pendingLogEntries.push({
+                            type: 'tail',
+                            text: isFatal ? `Plane #${plane.id}: TAIL HIT - DOWN!` : `Plane #${plane.id}: Tail hit`,
+                            fatal: isFatal
+                        });
+                    }
+
+                    if (isFatal) {
+                        plane.alive = false;
+                        plane.element.classList.add('dying');
+                        setTimeout(() => {
+                            plane.element.classList.remove('dying');
+                            plane.element.classList.add('dead');
+                        }, 5000);
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        function createSurvivorPlane(plane) {
+            const card = document.createElement('div');
+            card.className = 'plane-card';
+
+            // Create wing holes with visible class for hits the plane took
+            const wingHoles = wingPositions.map((pos, j) => {
+                const isVisible = j < plane.wingHoleIndex ? 'visible' : '';
+                return `<circle class="bullet-hole wing-hole ${isVisible}" cx="${pos.cx + (Math.random()-0.5)*3}" cy="${pos.cy + (Math.random()-0.5)*2}" r="${2 + Math.random()}"/>`;
+            }).join('');
+
+            card.innerHTML = `
+                <svg class="plane-svg" viewBox="0 0 100 75">
+                    <path class="plane-path" d="${planePath}"/>
+                    ${wingHoles}
+                </svg>
+            `;
+
+            return card;
+        }
+
+        function showAftermath() {
+            const survivors = planes.filter(p => p.alive);
+            const survivorsGrid = document.getElementById('survivorsGrid');
+            survivorsGrid.innerHTML = '';
+
+            // Fade out survivors in battle section, keep dead planes visible
+            document.getElementById('battleSection').classList.add('aftermath');
+
+            // Show the aftermath section
+            document.getElementById('aftermathSection').classList.add('visible');
+
+            // Scroll to aftermath
+            setTimeout(() => {
+                document.getElementById('aftermathSection').scrollIntoView({ behavior: 'smooth' });
+            }, 300);
+
+            // Add survivor planes one at a time
+            survivors.forEach((plane, index) => {
+                setTimeout(() => {
+                    const survivorCard = createSurvivorPlane(plane);
+                    survivorCard.classList.add('survivor-card');
+                    survivorsGrid.appendChild(survivorCard);
+                    // Trigger animation
+                    requestAnimationFrame(() => {
+                        survivorCard.classList.add('visible');
+                    });
+                }, index * 150);  // 150ms between each plane
+            });
+
+            // Then show conversation after all planes appear
+            const totalTime = survivors.length * 150 + 500;
+            setTimeout(showConversation, totalTime);
+        }
+
+        function showConversation() {
+            // Hide the hit log and legend
+            document.getElementById('hitLog').style.display = 'none';
+            document.getElementById('legend').style.display = 'none';
+            // Change title
+            document.getElementById('infoTitle').textContent = 'On the Landing Strip';
+
+            // Show runway scene first
+            document.getElementById('runwayScene').classList.add('visible');
+
+            setTimeout(() => document.getElementById('msg1').classList.add('visible'), 800);
+            setTimeout(() => document.getElementById('msg2').classList.add('visible'), 2800);
+            setTimeout(() => document.getElementById('msg3').classList.add('visible'), 4800);
+        }
+
+        function runSimulation() {
+            let hitCount = 0;
+            const maxHits = 150;
+
+            const interval = setInterval(() => {
+                const alivePlanes = planes.filter(p => p.alive);
+
+                if (alivePlanes.length === 0 || hitCount >= maxHits) {
+                    clearInterval(interval);
+                    // Wait for dying animations to complete, then show aftermath
+                    setTimeout(showAftermath, 6000);
+                    return;
+                }
+
+                addHit();
+                hitCount++;
+            }, 60);
+        }
+
+        // Initialize and start
+        createPlanes();
+        startLogDisplay();
+        setTimeout(runSimulation, 500);
+    </script>
+</body>
+</html>

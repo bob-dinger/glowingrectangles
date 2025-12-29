@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base Rates</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .section {
+            margin-bottom: 60px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-header {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        /* Family Card */
+        .family-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .family-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .family-icon {
+            width: 80px;
+            height: 80px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+
+        .family-name {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .family-location {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
+
+        .detail-icon {
+            font-size: 20px;
+        }
+
+        .detail-text {
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        /* Question */
+        .question-box {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .question-sub {
+            color: #888;
+            font-size: 14px;
+        }
+
+        /* Approaches */
+        .approaches {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .approach {
+            background: #111;
+            border: 2px solid #222;
+            border-radius: 12px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .approach:hover {
+            border-color: #444;
+        }
+
+        .approach.wrong {
+            border-color: #EF4444;
+        }
+
+        .approach.right {
+            border-color: #22C55E;
+        }
+
+        .approach-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .approach.wrong .approach-label { color: #EF4444; }
+        .approach.right .approach-label { color: #22C55E; }
+
+        .approach-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .approach-desc {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        /* Thinking Process */
+        .thinking-box {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .thinking-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .thought {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #1a1a1a;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.4s ease;
+        }
+
+        .thought.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .thought:last-child {
+            border-bottom: none;
+        }
+
+        .thought-icon {
+            font-size: 18px;
+        }
+
+        .thought-text {
+            flex: 1;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .thought-adjust {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .adjust-up {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22C55E;
+        }
+
+        .adjust-down {
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+        }
+
+        .adjust-neutral {
+            background: rgba(156, 163, 175, 0.2);
+            color: #9CA3AF;
+        }
+
+        /* Probability Bar */
+        .prob-container {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+
+        .prob-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .prob-value {
+            font-size: 36px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .prob-value.base { color: #3B82F6; }
+        .prob-value.adjusted { color: #22C55E; }
+
+        .prob-bar {
+            height: 12px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .prob-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .prob-fill.base { background: #3B82F6; }
+        .prob-fill.adjusted { background: #22C55E; }
+
+        .prob-marker {
+            position: absolute;
+            top: -25px;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* Base Rate Reveal */
+        .base-rate-box {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            border: 2px solid #3B82F6;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .base-rate-number {
+            font-size: 72px;
+            font-weight: 700;
+            color: #3B82F6;
+            line-height: 1;
+        }
+
+        .base-rate-label {
+            font-size: 16px;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .base-rate-source {
+            font-size: 12px;
+            color: #555;
+            margin-top: 15px;
+        }
+
+        /* Continue Button */
+        .continue-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 20px;
+        }
+
+        .continue-btn:hover {
+            background: #2563EB;
+            transform: translateY(-2px);
+        }
+
+        /* Insight Box */
+        .insight-box {
+            background: #111;
+            border-left: 4px solid #F59E0B;
+            padding: 20px 25px;
+            margin-top: 30px;
+        }
+
+        .insight-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+
+        .insight-text {
+            font-size: 15px;
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <!-- Section 1: The Question -->
+        <div class="section" id="section1">
+            <div class="section-header">The Question</div>
+
+            <div class="family-card">
+                <div class="family-header">
+                    <div class="family-icon">👨‍👩‍👧‍👦</div>
+                    <div>
+                        <div class="family-name">The Johnson Family</div>
+                        <div class="family-location">Suburban Ohio</div>
+                    </div>
+                </div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-icon">🏠</span>
+                        <span class="detail-text">Own a house with a backyard</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">👧</span>
+                        <span class="detail-text">Two kids, ages 8 and 11</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">🌳</span>
+                        <span class="detail-text">Live near parks and trails</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">🚗</span>
+                        <span class="detail-text">Have an SUV</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <div class="question-text">Does this family own a dog?</div>
+                <div class="question-sub">What probability would you assign?</div>
+            </div>
+
+            <button class="continue-btn" onclick="showSection(2)">See Two Approaches →</button>
+        </div>
+
+        <!-- Section 2: Two Approaches -->
+        <div class="section hidden" id="section2">
+            <div class="section-header">Two Ways to Think</div>
+
+            <div class="approaches">
+                <div class="approach wrong" id="approachWrong">
+                    <div class="approach-label">Common Approach</div>
+                    <div class="approach-title">Start with Details</div>
+                    <div class="approach-desc">"They have kids, a yard, live in the suburbs... probably 80% chance they have a dog!"</div>
+                </div>
+                <div class="approach right" id="approachRight">
+                    <div class="approach-label">Better Approach</div>
+                    <div class="approach-title">Start with Base Rate</div>
+                    <div class="approach-desc">"First, what % of Americans own dogs? Then I'll adjust based on these details."</div>
+                </div>
+            </div>
+
+            <button class="continue-btn" onclick="showSection(3)">See the Base Rate →</button>
+        </div>
+
+        <!-- Section 3: The Base Rate -->
+        <div class="section hidden" id="section3">
+            <div class="section-header">The Base Rate</div>
+
+            <div class="base-rate-box">
+                <div class="base-rate-number" id="baseRateNum">0%</div>
+                <div class="base-rate-label">of U.S. households own a dog</div>
+                <div class="base-rate-source">Source: American Pet Products Association, 2023</div>
+            </div>
+
+            <div class="insight-box">
+                <div class="insight-title">This is your starting point</div>
+                <div class="insight-text">Before looking at any details about the Johnsons, you already know there's roughly a 45% chance any random American family owns a dog. This is your anchor.</div>
+            </div>
+
+            <button class="continue-btn" onclick="showSection(4)">Now Adjust →</button>
+        </div>
+
+        <!-- Section 4: The Adjustment -->
+        <div class="section hidden" id="section4">
+            <div class="section-header">Adjust from Base Rate</div>
+
+            <div class="thinking-box">
+                <div class="thinking-title">🧠 Calibrated Thinking</div>
+
+                <div class="thought" id="thought0">
+                    <span class="thought-icon">📊</span>
+                    <span class="thought-text">Start with U.S. base rate</span>
+                    <span class="thought-adjust adjust-neutral">45%</span>
+                </div>
+                <div class="thought" id="thought1">
+                    <span class="thought-icon">🏠</span>
+                    <span class="thought-text">Homeowners more likely to have dogs</span>
+                    <span class="thought-adjust adjust-up">+8%</span>
+                </div>
+                <div class="thought" id="thought2">
+                    <span class="thought-icon">👧</span>
+                    <span class="thought-text">Families with kids slightly more likely</span>
+                    <span class="thought-adjust adjust-up">+5%</span>
+                </div>
+                <div class="thought" id="thought3">
+                    <span class="thought-icon">🌳</span>
+                    <span class="thought-text">Suburban location is average</span>
+                    <span class="thought-adjust adjust-neutral">+0%</span>
+                </div>
+                <div class="thought" id="thought4">
+                    <span class="thought-icon">🚗</span>
+                    <span class="thought-text">SUV is weak signal</span>
+                    <span class="thought-adjust adjust-neutral">+2%</span>
+                </div>
+
+                <div class="prob-container">
+                    <div class="prob-value adjusted" id="finalProb">45%</div>
+                    <div class="prob-bar">
+                        <div class="prob-fill adjusted" id="probFill" style="width: 45%"></div>
+                    </div>
+                    <div class="prob-label">
+                        <span>0%</span>
+                        <span>Calibrated estimate</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="continue-btn" onclick="showSection(5)">See the Lesson →</button>
+        </div>
+
+        <!-- Section 5: The Lesson -->
+        <div class="section hidden" id="section5">
+            <div class="section-header">The Lesson</div>
+
+            <h1>Base Rates First</h1>
+            <p class="subtitle">From "Superforecasters" by Philip Tetlock</p>
+
+            <div class="approaches" style="margin-top: 30px;">
+                <div class="approach wrong">
+                    <div class="approach-label">❌ Inside View</div>
+                    <div class="approach-title">"80% chance"</div>
+                    <div class="approach-desc">Jumped straight to details. Overconfident. Ignored that most families don't have dogs.</div>
+                </div>
+                <div class="approach right">
+                    <div class="approach-label">✓ Outside View</div>
+                    <div class="approach-title">"60% chance"</div>
+                    <div class="approach-desc">Started with 45% base rate. Made modest adjustments. More calibrated.</div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <div class="insight-title">Superforecaster's Rule</div>
+                <div class="insight-text">Before asking "what's special about this case?", always ask "what usually happens in cases like this?" The base rate is your anchor. Details are adjustments—usually smaller than you think.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSection = 1;
+
+        function showSection(num) {
+            const section = document.getElementById(`section${num}`);
+            section.classList.remove('hidden');
+
+            setTimeout(() => {
+                section.classList.add('visible');
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+
+            // Special animations for each section
+            if (num === 3) {
+                animateBaseRate();
+            }
+            if (num === 4) {
+                animateThoughts();
+            }
+        }
+
+        function animateBaseRate() {
+            const numEl = document.getElementById('baseRateNum');
+            let current = 0;
+            const target = 45;
+            const duration = 1500;
+            const steps = 60;
+            const increment = target / steps;
+            const stepTime = duration / steps;
+
+            const interval = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(interval);
+                }
+                numEl.textContent = Math.round(current) + '%';
+            }, stepTime);
+        }
+
+        function animateThoughts() {
+            const thoughts = document.querySelectorAll('.thought');
+            const probEl = document.getElementById('finalProb');
+            const fillEl = document.getElementById('probFill');
+
+            const adjustments = [45, 53, 58, 58, 60];
+
+            thoughts.forEach((thought, i) => {
+                setTimeout(() => {
+                    thought.classList.add('visible');
+                    probEl.textContent = adjustments[i] + '%';
+                    fillEl.style.width = adjustments[i] + '%';
+                }, i * 600);
+            });
+        }
+
+        // Show first section on load
+        document.getElementById('section1').classList.add('visible');
+    </script>
+</body>
+</html>

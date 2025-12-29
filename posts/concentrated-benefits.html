@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concentrated Benefits</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .page-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .visualization {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .group-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .container {
+            width: 350px;
+            height: 350px;
+            background: #0f0f14;
+            border-radius: 50%;
+            border: 1px solid #222;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .person {
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .person.taxpayer {
+            background: #EF4444;
+        }
+
+        .person.farmer {
+            background: #22C55E;
+        }
+
+        .person {
+            transition: all 1.5s ease;
+        }
+
+        .vs {
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* Right drawer */
+        .drawer {
+            width: 340px;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drawer-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 20px;
+        }
+
+        .play-btn {
+            width: 100%;
+            padding: 14px 20px;
+            background: #22C55E;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 25px;
+        }
+
+        .play-btn:hover {
+            background: #16A34A;
+        }
+
+        .play-btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+        }
+
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .stat-value.green { color: #22C55E; }
+        .stat-value.red { color: #EF4444; }
+        .stat-value.neutral { color: #fff; }
+
+        .insight-box {
+            background: #1a1a1a;
+            border-left: 3px solid #F59E0B;
+            padding: 15px;
+            margin-bottom: 15px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s ease;
+        }
+
+        .insight-box.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .insight-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .insight-text {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .insight-box.blue {
+            border-color: #3B82F6;
+        }
+
+        .insight-box.blue .insight-title {
+            color: #3B82F6;
+        }
+
+        @media (max-width: 900px) {
+            .drawer {
+                display: none;
+            }
+            .container {
+                width: 280px;
+                height: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back</a>
+
+    <div class="page-container">
+        <div class="main-content">
+            <div class="visualization">
+                <div class="group">
+                    <div class="group-label">300 Million Taxpayers</div>
+                    <div class="container" id="taxpayerContainer"></div>
+                </div>
+
+                <div class="vs">vs</div>
+
+                <div class="group">
+                    <div class="group-label">10,000 Farmers</div>
+                    <div class="container" id="farmerContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="drawer">
+            <div class="drawer-title">Concentrated Benefits</div>
+
+            <button class="play-btn" id="playBtn">Show Influence →</button>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <span class="stat-label">Taxpayers</span>
+                    <span class="stat-value red" id="taxpayerCount">3,000</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Farmers</span>
+                    <span class="stat-value green" id="farmerCount">12</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Ratio</span>
+                    <span class="stat-value neutral">250 : 1</span>
+                </div>
+            </div>
+
+            <div class="insight-box visible" id="insight1">
+                <div class="insight-title">The Numbers</div>
+                <div class="insight-text">For every 1 farmer receiving subsidies, there are 30,000 taxpayers funding it. We're showing 250:1 here.</div>
+            </div>
+
+            <div class="insight-box" id="insight2">
+                <div class="insight-title">The Stakes</div>
+                <div class="insight-text">Each taxpayer loses <strong>$0.33</strong>. Each farmer gains <strong>$10,000</strong>. Who's going to show up and fight?</div>
+            </div>
+
+            <div class="insight-box blue" id="insight3">
+                <div class="insight-title">The Result</div>
+                <div class="insight-text">The tiny group's influence circle dwarfs the majority. <strong>Concentrated interests beat diffuse majorities.</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const NUM_TAXPAYERS = 3000;
+        const CONTAINER_SIZE = 350;
+        const CENTER = CONTAINER_SIZE / 2;
+
+        const taxpayerContainer = document.getElementById('taxpayerContainer');
+        const farmerContainer = document.getElementById('farmerContainer');
+
+        // Taxpayers: 3000 tiny dots packed into the circle
+        const taxpayerRadius = 2;
+        const taxpayerDots = [];
+        for (let i = 0; i < NUM_TAXPAYERS; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const maxR = (CONTAINER_SIZE / 2) - taxpayerRadius - 5;
+            const r = Math.sqrt(Math.random()) * maxR;
+            const x = CENTER + Math.cos(angle) * r - taxpayerRadius;
+            const y = CENTER + Math.sin(angle) * r - taxpayerRadius;
+
+            const dot = document.createElement('div');
+            dot.className = 'person taxpayer';
+            dot.style.width = dot.style.height = (taxpayerRadius * 2) + 'px';
+            dot.style.left = x + 'px';
+            dot.style.top = y + 'px';
+            dot.style.opacity = '0.5';
+            dot.dataset.origX = x;
+            dot.dataset.origY = y;
+            taxpayerContainer.appendChild(dot);
+            taxpayerDots.push(dot);
+        }
+
+        // Farmers: small group of dots - randomly clustered like taxpayers
+        const NUM_FARMERS = 12;
+        const farmerRadius = 6;
+        const farmerDots = [];
+        const farmerClusterRadius = 40;
+
+        for (let i = 0; i < NUM_FARMERS; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const r = Math.sqrt(Math.random()) * farmerClusterRadius;
+            const x = CENTER + Math.cos(angle) * r - farmerRadius;
+            const y = CENTER + Math.sin(angle) * r - farmerRadius;
+
+            const dot = document.createElement('div');
+            dot.className = 'person farmer';
+            dot.style.width = dot.style.height = (farmerRadius * 2) + 'px';
+            dot.style.left = x + 'px';
+            dot.style.top = y + 'px';
+            dot.style.opacity = '0.6';
+            dot.dataset.origX = x;
+            dot.dataset.origY = y;
+            dot.dataset.angle = angle;
+            farmerContainer.appendChild(dot);
+            farmerDots.push(dot);
+        }
+
+        let animating = false;
+
+        function startAnimation() {
+            if (animating) return;
+            animating = true;
+
+            const btn = document.getElementById('playBtn');
+            btn.disabled = true;
+            btn.textContent = 'Showing...';
+
+            // Show stakes insight
+            setTimeout(() => {
+                document.getElementById('insight2').classList.add('visible');
+            }, 500);
+
+            // Transform: taxpayers shrink and fade, farmer grows and brightens
+            setTimeout(() => {
+                // Shrink and fade taxpayers (but keep them visible)
+                taxpayerDots.forEach(dot => {
+                    dot.style.opacity = '0.25';
+                    dot.style.transform = 'scale(0.5)';
+                });
+
+                // Grow farmer dots to fill the container
+                const newRadius = 45;
+                const expandedClusterRadius = 110;
+                farmerDots.forEach((dot) => {
+                    const angle = parseFloat(dot.dataset.angle);
+                    const r = Math.sqrt(Math.random()) * expandedClusterRadius;
+                    const x = CENTER + Math.cos(angle) * r - newRadius;
+                    const y = CENTER + Math.sin(angle) * r - newRadius;
+
+                    dot.style.width = dot.style.height = (newRadius * 2) + 'px';
+                    dot.style.left = x + 'px';
+                    dot.style.top = y + 'px';
+                    dot.style.opacity = '1';
+                });
+            }, 1500);
+
+            // Final insight
+            setTimeout(() => {
+                document.getElementById('insight3').classList.add('visible');
+                btn.textContent = 'Reset';
+                btn.disabled = false;
+                animating = false;
+            }, 3000);
+        }
+
+        function resetAnimation() {
+            // Reset taxpayer dots
+            taxpayerDots.forEach(dot => {
+                dot.style.opacity = '0.5';
+                dot.style.transform = 'scale(1)';
+            });
+
+            // Reset farmer dots
+            farmerDots.forEach((dot) => {
+                dot.style.width = dot.style.height = (farmerRadius * 2) + 'px';
+                dot.style.left = dot.dataset.origX + 'px';
+                dot.style.top = dot.dataset.origY + 'px';
+                dot.style.opacity = '0.6';
+            });
+
+            // Reset insights
+            document.getElementById('insight2').classList.remove('visible');
+            document.getElementById('insight3').classList.remove('visible');
+
+            // Reset button
+            document.getElementById('playBtn').textContent = 'Show Influence →';
+        }
+
+        document.getElementById('playBtn').addEventListener('click', function() {
+            if (this.textContent === 'Reset') {
+                resetAnimation();
+            } else {
+                startAnimation();
+            }
+        });
+    </script>
+</body>
+</html>

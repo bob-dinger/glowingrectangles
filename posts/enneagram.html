@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enneagram Types</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .page-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 60px 30px 30px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .type-card {
+            background: #111;
+            border: 2px solid #222;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .type-card:hover {
+            border-color: #444;
+            transform: translateY(-2px);
+        }
+
+        .type-card.selected {
+            border-color: #666;
+            background: #1a1a1a;
+        }
+
+        .type-number {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .type-name {
+            font-size: 16px;
+            color: #ccc;
+            margin-bottom: 8px;
+        }
+
+        .type-brief {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* Color coding by center */
+        .gut .type-number { color: #EF4444; }
+        .heart .type-number { color: #F59E0B; }
+        .head .type-number { color: #3B82F6; }
+
+        .type-card.gut.selected { border-color: #EF4444; }
+        .type-card.heart.selected { border-color: #F59E0B; }
+        .type-card.head.selected { border-color: #3B82F6; }
+
+        /* Right drawer */
+        .drawer {
+            width: 380px;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drawer-empty {
+            color: #444;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        .drawer-content {
+            display: none;
+        }
+
+        .drawer-content.visible {
+            display: block;
+        }
+
+        .drawer-number {
+            font-size: 64px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .drawer-number.gut { color: #EF4444; }
+        .drawer-number.heart { color: #F59E0B; }
+        .drawer-number.head { color: #3B82F6; }
+
+        .drawer-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .drawer-tagline {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        .drawer-section {
+            margin-bottom: 25px;
+        }
+
+        .drawer-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .drawer-section-text {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        .trait-list {
+            list-style: none;
+        }
+
+        .trait-list li {
+            font-size: 14px;
+            color: #ccc;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .trait-list li:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 900px) {
+            .drawer {
+                display: none;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back</a>
+
+    <div class="page-container">
+        <div class="main-content">
+            <h1>Enneagram Types</h1>
+            <p class="subtitle">9 Personality Types</p>
+
+            <div class="grid">
+                <div class="type-card gut" data-type="1">
+                    <div class="type-number">1</div>
+                    <div class="type-name">The Reformer</div>
+                    <div class="type-brief">Principled, purposeful</div>
+                </div>
+                <div class="type-card heart" data-type="2">
+                    <div class="type-number">2</div>
+                    <div class="type-name">The Helper</div>
+                    <div class="type-brief">Generous, demonstrative</div>
+                </div>
+                <div class="type-card heart" data-type="3">
+                    <div class="type-number">3</div>
+                    <div class="type-name">The Achiever</div>
+                    <div class="type-brief">Adaptable, driven</div>
+                </div>
+                <div class="type-card heart" data-type="4">
+                    <div class="type-number">4</div>
+                    <div class="type-name">The Individualist</div>
+                    <div class="type-brief">Expressive, dramatic</div>
+                </div>
+                <div class="type-card head" data-type="5">
+                    <div class="type-number">5</div>
+                    <div class="type-name">The Investigator</div>
+                    <div class="type-brief">Perceptive, innovative</div>
+                </div>
+                <div class="type-card head" data-type="6">
+                    <div class="type-number">6</div>
+                    <div class="type-name">The Loyalist</div>
+                    <div class="type-brief">Engaging, responsible</div>
+                </div>
+                <div class="type-card head" data-type="7">
+                    <div class="type-number">7</div>
+                    <div class="type-name">The Enthusiast</div>
+                    <div class="type-brief">Spontaneous, versatile</div>
+                </div>
+                <div class="type-card gut" data-type="8">
+                    <div class="type-number">8</div>
+                    <div class="type-name">The Challenger</div>
+                    <div class="type-brief">Self-confident, decisive</div>
+                </div>
+                <div class="type-card gut" data-type="9">
+                    <div class="type-number">9</div>
+                    <div class="type-name">The Peacemaker</div>
+                    <div class="type-brief">Receptive, reassuring</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="drawer">
+            <div class="drawer-empty" id="drawerEmpty">← Select a type to learn more</div>
+            <div class="drawer-content" id="drawerContent">
+                <div class="drawer-number" id="drawerNumber">1</div>
+                <div class="drawer-name" id="drawerName">The Reformer</div>
+                <div class="drawer-tagline" id="drawerTagline">"I must be perfect"</div>
+
+                <div class="drawer-section">
+                    <div class="drawer-section-title">Core Motivation</div>
+                    <div class="drawer-section-text" id="drawerMotivation">To be good, to have integrity, to be balanced.</div>
+                </div>
+
+                <div class="drawer-section">
+                    <div class="drawer-section-title">Basic Fear</div>
+                    <div class="drawer-section-text" id="drawerFear">Being corrupt, evil, or defective.</div>
+                </div>
+
+                <div class="drawer-section">
+                    <div class="drawer-section-title">Key Traits</div>
+                    <ul class="trait-list" id="drawerTraits">
+                        <li>Principled</li>
+                        <li>Purposeful</li>
+                        <li>Self-controlled</li>
+                        <li>Perfectionistic</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const typeData = {
+            1: {
+                name: "The Reformer",
+                center: "gut",
+                tagline: '"I must be perfect"',
+                motivation: "To be good, to have integrity, to be balanced. They strive to live up to their high ideals.",
+                fear: "Being corrupt, evil, or defective.",
+                traits: ["Principled", "Purposeful", "Self-controlled", "Perfectionistic"]
+            },
+            2: {
+                name: "The Helper",
+                center: "heart",
+                tagline: '"I must be needed"',
+                motivation: "To feel loved, to express feelings, to be needed and appreciated.",
+                fear: "Being unwanted or unworthy of love.",
+                traits: ["Generous", "Demonstrative", "People-pleasing", "Possessive"]
+            },
+            3: {
+                name: "The Achiever",
+                center: "heart",
+                tagline: '"I must succeed"',
+                motivation: "To feel valuable and worthwhile, to be affirmed, to distinguish themselves.",
+                fear: "Being worthless or without inherent value.",
+                traits: ["Adaptable", "Excelling", "Driven", "Image-conscious"]
+            },
+            4: {
+                name: "The Individualist",
+                center: "heart",
+                tagline: '"I must be unique"',
+                motivation: "To express their individuality, to create and surround themselves with beauty.",
+                fear: "Having no identity or personal significance.",
+                traits: ["Expressive", "Dramatic", "Self-absorbed", "Temperamental"]
+            },
+            5: {
+                name: "The Investigator",
+                center: "head",
+                tagline: '"I must understand"',
+                motivation: "To possess knowledge, to understand the environment, to have everything figured out.",
+                fear: "Being useless, helpless, or incapable.",
+                traits: ["Perceptive", "Innovative", "Secretive", "Isolated"]
+            },
+            6: {
+                name: "The Loyalist",
+                center: "head",
+                tagline: '"I must be secure"',
+                motivation: "To have security and support, to feel safe and prepared.",
+                fear: "Being without support or guidance.",
+                traits: ["Engaging", "Responsible", "Anxious", "Suspicious"]
+            },
+            7: {
+                name: "The Enthusiast",
+                center: "head",
+                tagline: '"I must be happy"',
+                motivation: "To maintain freedom and happiness, to avoid missing out on worthwhile experiences.",
+                fear: "Being deprived or trapped in pain.",
+                traits: ["Spontaneous", "Versatile", "Scattered", "Acquisitive"]
+            },
+            8: {
+                name: "The Challenger",
+                center: "gut",
+                tagline: '"I must be strong"',
+                motivation: "To be self-reliant, to prove their strength, to resist weakness.",
+                fear: "Being harmed or controlled by others.",
+                traits: ["Self-confident", "Decisive", "Willful", "Confrontational"]
+            },
+            9: {
+                name: "The Peacemaker",
+                center: "gut",
+                tagline: '"I must keep peace"',
+                motivation: "To have inner stability and peace of mind, to create harmony around them.",
+                fear: "Loss and separation, of annihilation.",
+                traits: ["Receptive", "Reassuring", "Complacent", "Resigned"]
+            }
+        };
+
+        const cards = document.querySelectorAll('.type-card');
+        const drawerEmpty = document.getElementById('drawerEmpty');
+        const drawerContent = document.getElementById('drawerContent');
+        const drawerNumber = document.getElementById('drawerNumber');
+        const drawerName = document.getElementById('drawerName');
+        const drawerTagline = document.getElementById('drawerTagline');
+        const drawerMotivation = document.getElementById('drawerMotivation');
+        const drawerFear = document.getElementById('drawerFear');
+        const drawerTraits = document.getElementById('drawerTraits');
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove selected from all
+                cards.forEach(c => c.classList.remove('selected'));
+                // Add selected to clicked
+                card.classList.add('selected');
+
+                const typeNum = card.dataset.type;
+                const data = typeData[typeNum];
+
+                // Update drawer
+                drawerEmpty.style.display = 'none';
+                drawerContent.classList.add('visible');
+
+                drawerNumber.textContent = typeNum;
+                drawerNumber.className = 'drawer-number ' + data.center;
+                drawerName.textContent = data.name;
+                drawerTagline.textContent = data.tagline;
+                drawerMotivation.textContent = data.motivation;
+                drawerFear.textContent = data.fear;
+                drawerTraits.innerHTML = data.traits.map(t => `<li>${t}</li>`).join('');
+            });
+        });
+    </script>
+</body>
+</html>
