@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ant Trails</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        canvas {
+            border-radius: 8px;
+            background: #1a1a1a;
+        }
+
+        .drawer {
+            width: 340px;
+            height: 100vh;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .drawer-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+
+        .drawer-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .stat {
+            background: #1a1a1a;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            background: #22C55E;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover { background: #16A34A; }
+
+        .btn.secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn.secondary:hover { background: #444; }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .control-value {
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #222;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #F59E0B;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .steps {
+            margin-bottom: 25px;
+        }
+
+        .step {
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .step:last-child { border-bottom: none; }
+
+        .step-num {
+            width: 20px;
+            height: 20px;
+            background: #F59E0B;
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .insight-box {
+            background: #1a1a1a;
+            border-left: 3px solid #F59E0B;
+            padding: 15px;
+            margin-top: auto;
+        }
+
+        .insight-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .insight-text {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #888;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.colony { background: #8B4513; }
+        .legend-dot.food { background: #22C55E; }
+        .legend-dot.ant { background: #fff; }
+
+        @media (max-width: 900px) {
+            .drawer { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back</a>
+
+    <div class="main-content">
+        <canvas id="canvas" width="600" height="600"></canvas>
+    </div>
+
+    <div class="drawer">
+        <div class="drawer-title">Ant Trails</div>
+        <div class="drawer-subtitle">Emergence from simple rules</div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot colony"></div> Colony</div>
+            <div class="legend-item"><div class="legend-dot food"></div> Food</div>
+            <div class="legend-item"><div class="legend-dot ant"></div> Ants</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="foodCollected">0</div>
+                <div class="stat-label">Food Collected</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="antCount">50</div>
+                <div class="stat-label">Ants</div>
+            </div>
+        </div>
+
+        <button class="btn" id="playBtn">Start</button>
+        <button class="btn secondary" id="resetBtn">Reset</button>
+
+        <div class="control-group">
+            <div class="control-label">
+                <span>Number of Ants</span>
+                <span class="control-value" id="antValue">50</span>
+            </div>
+            <input type="range" id="antSlider" min="10" max="150" value="50">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">
+                <span>Evaporation Rate</span>
+                <span class="control-value" id="evapValue">Medium</span>
+            </div>
+            <input type="range" id="evapSlider" min="1" max="5" value="3">
+        </div>
+
+        <div class="steps">
+            <div class="step"><span class="step-num">1</span> Ants wander randomly from colony</div>
+            <div class="step"><span class="step-num">2</span> Finding food, they head home leaving scent</div>
+            <div class="step"><span class="step-num">3</span> Other ants detect and follow trails</div>
+            <div class="step"><span class="step-num">4</span> Trails fade over time if not reinforced</div>
+            <div class="step"><span class="step-num">5</span> Optimal paths emerge naturally</div>
+        </div>
+
+        <div class="insight-box">
+            <div class="insight-title"><a href="https://en.wikipedia.org/wiki/Emergence" target="_blank" style="color: #F59E0B; text-decoration: none;">Emergence</a></div>
+            <div class="insight-text">
+                No ant knows the big picture. Each follows simple rules. Yet the colony solves complex optimization problems. Intelligence emerges from simplicity.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+
+        // Pheromone grid
+        const GRID_SIZE = 5;
+        const GRID_W = W / GRID_SIZE;
+        const GRID_H = H / GRID_SIZE;
+        let pheromones = [];
+
+        // Colony and food positions
+        const colony = { x: 80, y: H / 2, radius: 30 };
+        const food = { x: W - 80, y: H / 2, radius: 25 };
+
+        let ants = [];
+        let numAnts = 50;
+        let evaporationRate = 0.995;
+        let foodCollected = 0;
+        let animating = false;
+        let animationId = null;
+
+        class Ant {
+            constructor() {
+                this.x = colony.x;
+                this.y = colony.y;
+                this.angle = Math.random() * Math.PI * 2;
+                this.hasFood = false;
+                this.speed = 2;
+            }
+
+            update() {
+                if (this.hasFood) {
+                    // Head toward colony
+                    const dx = colony.x - this.x;
+                    const dy = colony.y - this.y;
+                    const targetAngle = Math.atan2(dy, dx);
+                    this.angle = this.lerpAngle(this.angle, targetAngle, 0.1);
+
+                    // Leave pheromone trail
+                    this.depositPheromone();
+
+                    // Check if reached colony
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < colony.radius) {
+                        this.hasFood = false;
+                        foodCollected++;
+                        document.getElementById('foodCollected').textContent = foodCollected;
+                    }
+                } else {
+                    // Look for pheromones or wander
+                    const pheromoneDir = this.sensePheromones();
+                    if (pheromoneDir !== null) {
+                        this.angle = this.lerpAngle(this.angle, pheromoneDir, 0.15);
+                    } else {
+                        // Random wandering
+                        this.angle += (Math.random() - 0.5) * 0.5;
+                    }
+
+                    // Check if found food
+                    const dx = food.x - this.x;
+                    const dy = food.y - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < food.radius) {
+                        this.hasFood = true;
+                    }
+                }
+
+                // Move
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+
+                // Bounce off walls
+                if (this.x < 10) { this.x = 10; this.angle = Math.PI - this.angle; }
+                if (this.x > W - 10) { this.x = W - 10; this.angle = Math.PI - this.angle; }
+                if (this.y < 10) { this.y = 10; this.angle = -this.angle; }
+                if (this.y > H - 10) { this.y = H - 10; this.angle = -this.angle; }
+            }
+
+            lerpAngle(a, b, t) {
+                const diff = b - a;
+                const adjusted = ((diff + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+                return a + adjusted * t;
+            }
+
+            depositPheromone() {
+                const gx = Math.floor(this.x / GRID_SIZE);
+                const gy = Math.floor(this.y / GRID_SIZE);
+                if (gx >= 0 && gx < GRID_W && gy >= 0 && gy < GRID_H) {
+                    pheromones[gy * GRID_W + gx] = Math.min(pheromones[gy * GRID_W + gx] + 0.3, 1);
+                }
+            }
+
+            sensePheromones() {
+                let bestAngle = null;
+                let bestStrength = 0.05; // Threshold
+
+                // Check in a fan ahead
+                for (let da = -Math.PI / 3; da <= Math.PI / 3; da += Math.PI / 12) {
+                    const checkAngle = this.angle + da;
+                    const checkDist = 20;
+                    const cx = this.x + Math.cos(checkAngle) * checkDist;
+                    const cy = this.y + Math.sin(checkAngle) * checkDist;
+
+                    const gx = Math.floor(cx / GRID_SIZE);
+                    const gy = Math.floor(cy / GRID_SIZE);
+
+                    if (gx >= 0 && gx < GRID_W && gy >= 0 && gy < GRID_H) {
+                        const strength = pheromones[gy * GRID_W + gx];
+                        if (strength > bestStrength) {
+                            bestStrength = strength;
+                            bestAngle = checkAngle;
+                        }
+                    }
+                }
+
+                return bestAngle;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = this.hasFood ? '#22C55E' : '#fff';
+                ctx.fill();
+            }
+        }
+
+        function initPheromones() {
+            pheromones = new Array(GRID_W * GRID_H).fill(0);
+        }
+
+        function initAnts() {
+            ants = [];
+            for (let i = 0; i < numAnts; i++) {
+                ants.push(new Ant());
+            }
+        }
+
+        function evaporatePheromones() {
+            for (let i = 0; i < pheromones.length; i++) {
+                pheromones[i] *= evaporationRate;
+            }
+        }
+
+        function drawPheromones() {
+            for (let gy = 0; gy < GRID_H; gy++) {
+                for (let gx = 0; gx < GRID_W; gx++) {
+                    const strength = pheromones[gy * GRID_W + gx];
+                    if (strength > 0.01) {
+                        ctx.fillStyle = `rgba(34, 197, 94, ${strength * 0.6})`;
+                        ctx.fillRect(gx * GRID_SIZE, gy * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            // Clear
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, W, H);
+
+            // Draw pheromones
+            drawPheromones();
+
+            // Draw colony
+            ctx.beginPath();
+            ctx.arc(colony.x, colony.y, colony.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#8B4513';
+            ctx.fill();
+            ctx.fillStyle = '#A0522D';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('COLONY', colony.x, colony.y);
+
+            // Draw food
+            ctx.beginPath();
+            ctx.arc(food.x, food.y, food.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#22C55E';
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.fillText('FOOD', food.x, food.y);
+
+            // Draw ants
+            ants.forEach(ant => ant.draw());
+        }
+
+        function animate() {
+            evaporatePheromones();
+            ants.forEach(ant => ant.update());
+            draw();
+
+            if (animating) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        function start() {
+            if (animating) {
+                animating = false;
+                cancelAnimationFrame(animationId);
+                document.getElementById('playBtn').textContent = 'Continue';
+                return;
+            }
+            animating = true;
+            document.getElementById('playBtn').textContent = 'Pause';
+            animate();
+        }
+
+        function reset() {
+            animating = false;
+            cancelAnimationFrame(animationId);
+            foodCollected = 0;
+            document.getElementById('foodCollected').textContent = '0';
+            document.getElementById('playBtn').textContent = 'Start';
+            initPheromones();
+            initAnts();
+            draw();
+        }
+
+        document.getElementById('playBtn').addEventListener('click', start);
+        document.getElementById('resetBtn').addEventListener('click', reset);
+
+        document.getElementById('antSlider').addEventListener('input', (e) => {
+            numAnts = parseInt(e.target.value);
+            document.getElementById('antValue').textContent = numAnts;
+            document.getElementById('antCount').textContent = numAnts;
+        });
+
+        const evapLabels = ['Very Slow', 'Slow', 'Medium', 'Fast', 'Very Fast'];
+        const evapRates = [0.999, 0.997, 0.995, 0.99, 0.98];
+        document.getElementById('evapSlider').addEventListener('input', (e) => {
+            const level = parseInt(e.target.value);
+            document.getElementById('evapValue').textContent = evapLabels[level - 1];
+            evaporationRate = evapRates[level - 1];
+        });
+
+        // Initialize
+        initPheromones();
+        initAnts();
+        draw();
+    </script>
+</body>
+</html>

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Braess's Paradox</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .subtitle a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+
+        .subtitle a:hover {
+            text-decoration: underline;
+        }
+
+        .network-container {
+            position: relative;
+            width: 500px;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .node {
+            fill: #1a1a2e;
+            stroke: #3B82F6;
+            stroke-width: 2;
+        }
+
+        .node-label {
+            fill: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        .road {
+            stroke: #333;
+            stroke-width: 8;
+            stroke-linecap: round;
+            fill: none;
+        }
+
+        .road.active {
+            stroke: #444;
+        }
+
+        .road.congested {
+            stroke: #7f1d1d;
+        }
+
+        .road.new-road {
+            stroke: #166534;
+            stroke-dasharray: 8 4;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .road.new-road.visible {
+            opacity: 1;
+        }
+
+        .road-label {
+            fill: #888;
+            font-size: 11px;
+            text-anchor: middle;
+        }
+
+        .road-label.slow {
+            fill: #F97316;
+        }
+
+        .road-label.fast {
+            fill: #22C55E;
+        }
+
+        .car {
+            fill: #3B82F6;
+            opacity: 0;
+        }
+
+        .scenario-label {
+            text-align: center;
+            font-size: 16px;
+            color: #ccc;
+            margin-bottom: 20px;
+            min-height: 24px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 20px 30px;
+            background: #111;
+            border-radius: 8px;
+            border: 1px solid #333;
+            min-width: 140px;
+        }
+
+        .stat-title {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            transition: color 0.3s;
+        }
+
+        .stat-value.worse {
+            color: #EF4444;
+        }
+
+        .stat-value.better {
+            color: #22C55E;
+        }
+
+        .stat-sub {
+            font-size: 11px;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #22C55E;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #16A34A;
+        }
+
+        .btn-primary:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #444;
+        }
+
+        .step-indicator {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #333;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .step-dot.active {
+            background: #22C55E;
+        }
+
+        .info-panel {
+            width: 350px;
+            height: 100vh;
+            background: #111;
+            border-left: 1px solid #333;
+            padding: 30px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #3B82F6;
+            margin-bottom: 16px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #999;
+        }
+
+        .info-text p {
+            margin-bottom: 14px;
+        }
+
+        .info-text strong {
+            color: #ccc;
+        }
+
+        .formula {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 12px 0;
+            font-family: monospace;
+            font-size: 12px;
+            color: #93c5fd;
+        }
+
+        .examples {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+
+        .examples-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        .example-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            font-size: 12px;
+            color: #777;
+        }
+
+        .example-icon {
+            font-size: 16px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-line {
+            width: 20px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .legend-line.constant {
+            background: #F97316;
+        }
+
+        .legend-line.variable {
+            background: #22C55E;
+        }
+
+        .legend-label {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Braess's Paradox</h1>
+        <p class="subtitle">When adding a road makes traffic worse · <a href="https://en.wikipedia.org/wiki/Braess%27s_paradox" target="_blank">Wikipedia</a></p>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-line variable"></div>
+                <span class="legend-label">Highway (fast, but slows with traffic)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-line constant"></div>
+                <span class="legend-label">Local road with lights (always 45 min)</span>
+            </div>
+        </div>
+
+        <div class="network-container">
+            <svg viewBox="0 0 500 300" id="network">
+                <!-- Roads -->
+                <!-- Top route: Start -> Top -> End -->
+                <path class="road" id="roadStartTop" d="M 80 150 Q 150 50 250 50"/>
+                <path class="road" id="roadTopEnd" d="M 250 50 Q 350 50 420 150"/>
+
+                <!-- Bottom route: Start -> Bottom -> End -->
+                <path class="road" id="roadStartBottom" d="M 80 150 Q 150 250 250 250"/>
+                <path class="road" id="roadBottomEnd" d="M 250 250 Q 350 250 420 150"/>
+
+                <!-- New road (hidden initially) - two way but only T→B is useful -->
+                <path class="road new-road" id="roadShortcut" d="M 250 70 L 250 230"/>
+
+                <!-- Road labels -->
+                <text class="road-label fast" x="140" y="80" id="labelStartTop">Highway</text>
+                <text class="road-label slow" x="360" y="80" id="labelTopEnd">Local</text>
+                <text class="road-label slow" x="140" y="230" id="labelStartBottom">Local</text>
+                <text class="road-label fast" x="360" y="230" id="labelBottomEnd">Highway</text>
+                <text class="road-label" x="270" y="150" id="labelShortcut" style="opacity: 0; fill: #22C55E;">≈0 min</text>
+
+                <!-- Nodes -->
+                <circle class="node" cx="60" cy="150" r="25"/>
+                <text class="node-label" x="60" y="150">Start</text>
+
+                <circle class="node" cx="250" cy="50" r="20"/>
+                <text class="node-label" x="250" y="50">T</text>
+
+                <circle class="node" cx="250" cy="250" r="20"/>
+                <text class="node-label" x="250" y="250">B</text>
+
+                <circle class="node" cx="440" cy="150" r="25"/>
+                <text class="node-label" x="440" y="150">End</text>
+
+                <!-- Cars (animated) -->
+                <g id="cars"></g>
+            </svg>
+        </div>
+
+        <div class="scenario-label" id="scenarioLabel">4,000 drivers need to get from Start to End</div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-title">Top Route Drivers</div>
+                <div class="stat-value" id="topDrivers">2,000</div>
+                <div class="stat-sub" id="topTime">Time: 65 min</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">Average Travel Time</div>
+                <div class="stat-value" id="avgTime">65</div>
+                <div class="stat-sub">minutes per driver</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">Bottom Route Drivers</div>
+                <div class="stat-value" id="bottomDrivers">2,000</div>
+                <div class="stat-sub" id="bottomTime">Time: 65 min</div>
+            </div>
+        </div>
+
+        <div class="step-indicator">
+            <div class="step-dot active" data-step="0"></div>
+            <div class="step-dot" data-step="1"></div>
+            <div class="step-dot" data-step="2"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-primary" id="nextBtn">Add New Road</button>
+            <button class="btn-secondary" id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <div class="info-title">The Setup</div>
+        <div class="info-text">
+            <p><strong>4,000 drivers</strong> commute from Start to End daily. Two routes exist:</p>
+            <p><strong>Top route:</strong> Highway → Local road with lights</p>
+            <p><strong>Bottom route:</strong> Local road with lights → Highway</p>
+
+            <div class="formula">
+                <strong>Highway:</strong> Fast when empty, slow when packed<br>
+                2,000 cars → 20 min | 4,000 cars → 40 min<br><br>
+                <strong>Local road:</strong> Always 45 min (limited by lights)
+            </div>
+
+            <p><strong>Without shortcut:</strong> Drivers split evenly. Each route takes 20 + 45 = <strong>65 minutes</strong>.</p>
+
+            <p><strong>The "improvement":</strong> City builds a shortcut between T and B (nearly instant).</p>
+
+            <p><strong>Why not B → T?</strong> That route uses both local roads: 45 + 0 + 45 = 90 min. Worse!</p>
+
+            <p style="color: #EF4444;"><strong>The paradox:</strong> Everyone takes Start→T→B→End to use both highways. But now those highways get <em>all</em> 4,000 drivers: 40 + 0 + 40 = <strong>80 minutes!</strong></p>
+        </div>
+
+        <div class="examples">
+            <div class="examples-title">Real Examples</div>
+            <div class="example-item">
+                <span class="example-icon">🗽</span>
+                <span>42nd Street closure improved NYC traffic (1990)</span>
+            </div>
+            <div class="example-item">
+                <span class="example-icon">🇩🇪</span>
+                <span>Stuttgart removed a road, traffic improved</span>
+            </div>
+            <div class="example-item">
+                <span class="example-icon">🇰🇷</span>
+                <span>Seoul demolished highway, commutes shortened</span>
+            </div>
+            <div class="example-item">
+                <span class="example-icon">⚡</span>
+                <span>Power grids can fail when lines are added</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TOTAL_DRIVERS = 4000;
+
+        const scenarios = [
+            {
+                label: "Without shortcut: drivers split evenly between routes",
+                topDrivers: 2000,
+                bottomDrivers: 2000,
+                shortcutDrivers: 0,
+                showShortcut: false,
+                topTime: 65, // 20 + 45
+                bottomTime: 65, // 45 + 20
+            },
+            {
+                label: "City adds a 'helpful' shortcut between T and B...",
+                topDrivers: 2000,
+                bottomDrivers: 2000,
+                shortcutDrivers: 0,
+                showShortcut: true,
+                topTime: 65,
+                bottomTime: 65,
+            },
+            {
+                label: "Everyone uses shortcut → All roads congested → 80 min!",
+                topDrivers: 4000, // All on Start→T
+                bottomDrivers: 4000, // All on B→End
+                shortcutDrivers: 4000,
+                showShortcut: true,
+                topTime: 80, // 40 + 0 + 40
+                bottomTime: 80,
+            }
+        ];
+
+        let currentStep = 0;
+        const shortcutRoad = document.getElementById('roadShortcut');
+        const shortcutLabel = document.getElementById('labelShortcut');
+        const scenarioLabel = document.getElementById('scenarioLabel');
+        const topDriversEl = document.getElementById('topDrivers');
+        const bottomDriversEl = document.getElementById('bottomDrivers');
+        const avgTimeEl = document.getElementById('avgTime');
+        const topTimeEl = document.getElementById('topTime');
+        const bottomTimeEl = document.getElementById('bottomTime');
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const stepDots = document.querySelectorAll('.step-dot');
+
+        // Road elements for coloring
+        const roadStartTop = document.getElementById('roadStartTop');
+        const roadTopEnd = document.getElementById('roadTopEnd');
+        const roadStartBottom = document.getElementById('roadStartBottom');
+        const roadBottomEnd = document.getElementById('roadBottomEnd');
+
+        function updateVisualization(step) {
+            const scenario = scenarios[step];
+
+            // Update labels
+            scenarioLabel.textContent = scenario.label;
+
+            // Show/hide shortcut
+            if (scenario.showShortcut) {
+                shortcutRoad.classList.add('visible');
+                shortcutLabel.style.opacity = '1';
+            } else {
+                shortcutRoad.classList.remove('visible');
+                shortcutLabel.style.opacity = '0';
+            }
+
+            // Update road colors based on congestion
+            if (step === 2) {
+                // All variable roads congested
+                roadStartTop.classList.add('congested');
+                roadBottomEnd.classList.add('congested');
+            } else {
+                roadStartTop.classList.remove('congested');
+                roadBottomEnd.classList.remove('congested');
+            }
+
+            // Update stats
+            if (step === 2) {
+                topDriversEl.textContent = '4,000';
+                bottomDriversEl.textContent = '4,000';
+                topTimeEl.textContent = 'via shortcut';
+                bottomTimeEl.textContent = 'via shortcut';
+            } else {
+                topDriversEl.textContent = scenario.topDrivers.toLocaleString();
+                bottomDriversEl.textContent = scenario.bottomDrivers.toLocaleString();
+                topTimeEl.textContent = `Time: ${scenario.topTime} min`;
+                bottomTimeEl.textContent = `Time: ${scenario.bottomTime} min`;
+            }
+
+            const avgTime = scenario.topTime;
+            avgTimeEl.textContent = avgTime;
+
+            // Color the average time
+            if (step === 2) {
+                avgTimeEl.classList.add('worse');
+                avgTimeEl.classList.remove('better');
+            } else {
+                avgTimeEl.classList.remove('worse');
+                avgTimeEl.classList.remove('better');
+            }
+
+            // Update step dots
+            stepDots.forEach((dot, i) => {
+                dot.classList.toggle('active', i <= step);
+            });
+
+            // Update button
+            if (step === 0) {
+                nextBtn.textContent = 'Add New Road';
+                nextBtn.disabled = false;
+            } else if (step === 1) {
+                nextBtn.textContent = 'See What Happens';
+                nextBtn.disabled = false;
+            } else {
+                nextBtn.textContent = 'Everyone is slower!';
+                nextBtn.disabled = true;
+            }
+        }
+
+        function goToStep(step) {
+            currentStep = step;
+            updateVisualization(step);
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < scenarios.length - 1) {
+                goToStep(currentStep + 1);
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            goToStep(0);
+        });
+
+        stepDots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                goToStep(parseInt(dot.dataset.step));
+            });
+        });
+
+        // Initialize
+        goToStep(0);
+    </script>
+</body>
+</html>

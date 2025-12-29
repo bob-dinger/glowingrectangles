@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotelling's Law</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 40px;
+        }
+
+        .subtitle a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+
+        .subtitle a:hover {
+            text-decoration: underline;
+        }
+
+        .beach-container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .beach {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
+            border-radius: 8px;
+            border: 1px solid #333;
+            overflow: visible;
+        }
+
+        .sand {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to bottom, #c2a366, #a08050);
+            border-radius: 0 0 7px 7px;
+        }
+
+        .customer {
+            position: absolute;
+            bottom: 45px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            transition: background 0.3s;
+        }
+
+        .customer.team-a {
+            background: #F97316;
+            box-shadow: 0 0 6px #F97316;
+        }
+
+        .customer.team-b {
+            background: #3B82F6;
+            box-shadow: 0 0 6px #3B82F6;
+        }
+
+        .stand {
+            position: absolute;
+            bottom: 42px;
+            width: 24px;
+            height: 32px;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: left 0.5s ease-out;
+        }
+
+        .stand-icon {
+            font-size: 24px;
+        }
+
+        .stand-label {
+            font-size: 10px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .stand-a .stand-label { color: #F97316; }
+        .stand-b .stand-label { color: #3B82F6; }
+
+        .divider {
+            position: absolute;
+            bottom: 40px;
+            width: 2px;
+            height: 80px;
+            background: rgba(255,255,255,0.3);
+            transform: translateX(-50%);
+            transition: left 0.5s ease-out;
+        }
+
+        .divider::after {
+            content: 'midpoint';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #666;
+            white-space: nowrap;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 20px 30px;
+            background: #111;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .stat-box.team-a { border-color: #F97316; }
+        .stat-box.team-b { border-color: #3B82F6; }
+
+        .stat-title {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .stat-box.team-a .stat-value { color: #F97316; }
+        .stat-box.team-b .stat-value { color: #3B82F6; }
+
+        .stat-sub {
+            font-size: 11px;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        .walk-stat {
+            border-color: #666 !important;
+        }
+
+        .walk-stat .stat-value {
+            color: #888 !important;
+        }
+
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #22C55E;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #16A34A;
+        }
+
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #444;
+        }
+
+        .info-panel {
+            width: 350px;
+            height: 100vh;
+            background: #111;
+            border-left: 1px solid #333;
+            padding: 30px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #3B82F6;
+            margin-bottom: 16px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #999;
+        }
+
+        .info-text p {
+            margin-bottom: 14px;
+        }
+
+        .step-indicator {
+            display: flex;
+            gap: 8px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #333;
+            transition: background 0.3s;
+        }
+
+        .step-dot.active {
+            background: #22C55E;
+        }
+
+        .scenario-label {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+            min-height: 24px;
+        }
+
+        .examples {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+
+        .examples-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        .example-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            font-size: 12px;
+            color: #777;
+        }
+
+        .example-icon {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hotelling's Law</h1>
+        <p class="subtitle">Why competitors cluster together · <a href="https://en.wikipedia.org/wiki/Hotelling%27s_law" target="_blank">Wikipedia</a></p>
+
+        <div class="beach-container">
+            <div class="labels">
+                <span>0%</span>
+                <span>25%</span>
+                <span>50%</span>
+                <span>75%</span>
+                <span>100%</span>
+            </div>
+            <div class="beach" id="beach">
+                <div class="sand"></div>
+                <div class="divider" id="divider"></div>
+                <div class="stand stand-a" id="standA">
+                    <span class="stand-icon">🌭</span>
+                    <span class="stand-label">A</span>
+                </div>
+                <div class="stand stand-b" id="standB">
+                    <span class="stand-icon">🌭</span>
+                    <span class="stand-label">B</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="scenario-label" id="scenarioLabel"></div>
+
+        <div class="stats">
+            <div class="stat-box team-a">
+                <div class="stat-title">Stand A Customers</div>
+                <div class="stat-value" id="customersA">0</div>
+                <div class="stat-sub" id="posA">Position: 25%</div>
+            </div>
+            <div class="stat-box walk-stat">
+                <div class="stat-title">Avg. Walk Distance</div>
+                <div class="stat-value" id="avgWalk">0%</div>
+                <div class="stat-sub">Customer inconvenience</div>
+            </div>
+            <div class="stat-box team-b">
+                <div class="stat-title">Stand B Customers</div>
+                <div class="stat-value" id="customersB">0</div>
+                <div class="stat-sub" id="posB">Position: 75%</div>
+            </div>
+        </div>
+
+        <div class="step-indicator">
+            <div class="step-dot active" data-step="0"></div>
+            <div class="step-dot" data-step="1"></div>
+            <div class="step-dot" data-step="2"></div>
+            <div class="step-dot" data-step="3"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-primary" id="nextBtn">Next Step</button>
+            <button class="btn-secondary" id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <div class="info-title">The Paradox</div>
+        <div class="info-text">
+            <p>Imagine a beach with customers spread evenly along it. Two hot dog vendors need to choose where to set up.</p>
+            <p><strong>The "optimal" layout</strong> would be at 25% and 75% — each vendor gets half the customers, and nobody walks far.</p>
+            <p><strong>But that's unstable.</strong> If you're at 25%, I can move to 26% and steal customers from the middle. You respond by jumping past me. We leapfrog until...</p>
+            <p><strong>Nash Equilibrium:</strong> Both vendors end up in the center, back-to-back. Neither can improve by moving alone.</p>
+            <p style="color: #F97316;">The result is <em>worse for customers</em> — people at the ends must walk further. But competition drove us here.</p>
+        </div>
+
+        <div class="examples">
+            <div class="examples-title">Real-World Examples</div>
+            <div class="example-item">
+                <span class="example-icon">⛽</span>
+                <span>Gas stations at the same intersection</span>
+            </div>
+            <div class="example-item">
+                <span class="example-icon">🗳️</span>
+                <span>Political parties drifting to center</span>
+            </div>
+            <div class="example-item">
+                <span class="example-icon">🍔</span>
+                <span>Fast food restaurants clustering</span>
+            </div>
+            <div class="example-item">
+                <span class="example-icon">📺</span>
+                <span>TV channels with similar programming</span>
+            </div>
+            <div class="example-item">
+                <span class="example-icon">📻</span>
+                <span>Radio stations playing the same hits</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const beach = document.getElementById('beach');
+        const standA = document.getElementById('standA');
+        const standB = document.getElementById('standB');
+        const divider = document.getElementById('divider');
+        const customersAEl = document.getElementById('customersA');
+        const customersBEl = document.getElementById('customersB');
+        const avgWalkEl = document.getElementById('avgWalk');
+        const posAEl = document.getElementById('posA');
+        const posBEl = document.getElementById('posB');
+        const scenarioLabel = document.getElementById('scenarioLabel');
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const stepDots = document.querySelectorAll('.step-dot');
+
+        const NUM_CUSTOMERS = 20;
+        let customers = [];
+        let currentStep = 0;
+
+        const scenarios = [
+            {
+                posA: 25,
+                posB: 75,
+                label: "Optimal for customers: Stands at 25% and 75%",
+                description: "Each serves half, minimal walking"
+            },
+            {
+                posA: 35,
+                posB: 75,
+                label: "A moves toward center to steal customers",
+                description: "A gains customers from the middle"
+            },
+            {
+                posA: 45,
+                posB: 55,
+                label: "Both race toward the middle...",
+                description: "Leapfrogging continues"
+            },
+            {
+                posA: 49,
+                posB: 51,
+                label: "Nash Equilibrium: Both stuck in the center",
+                description: "Neither can improve alone, but customers walk farther"
+            }
+        ];
+
+        function createCustomers() {
+            // Clear existing
+            customers.forEach(c => c.el.remove());
+            customers = [];
+
+            // Create evenly distributed customers
+            for (let i = 0; i < NUM_CUSTOMERS; i++) {
+                const pos = (i + 0.5) / NUM_CUSTOMERS * 100;
+                const el = document.createElement('div');
+                el.className = 'customer';
+                el.style.left = pos + '%';
+                beach.appendChild(el);
+                customers.push({ pos, el });
+            }
+        }
+
+        function updateVisualization(posA, posB) {
+            // Position stands
+            standA.style.left = posA + '%';
+            standB.style.left = posB + '%';
+
+            // Position divider at midpoint
+            const midpoint = (posA + posB) / 2;
+            divider.style.left = midpoint + '%';
+
+            // Assign customers to nearest stand
+            let countA = 0, countB = 0;
+            let totalWalk = 0;
+
+            customers.forEach(c => {
+                const distA = Math.abs(c.pos - posA);
+                const distB = Math.abs(c.pos - posB);
+
+                if (distA <= distB) {
+                    c.el.className = 'customer team-a';
+                    countA++;
+                    totalWalk += distA;
+                } else {
+                    c.el.className = 'customer team-b';
+                    countB++;
+                    totalWalk += distB;
+                }
+            });
+
+            // Update stats
+            customersAEl.textContent = countA;
+            customersBEl.textContent = countB;
+            posAEl.textContent = `Position: ${posA}%`;
+            posBEl.textContent = `Position: ${posB}%`;
+            avgWalkEl.textContent = (totalWalk / NUM_CUSTOMERS).toFixed(1) + '%';
+        }
+
+        function goToStep(step) {
+            currentStep = step;
+            const scenario = scenarios[step];
+
+            updateVisualization(scenario.posA, scenario.posB);
+            scenarioLabel.textContent = scenario.label;
+
+            // Update step dots
+            stepDots.forEach((dot, i) => {
+                dot.classList.toggle('active', i <= step);
+            });
+
+            // Update button text
+            if (step === scenarios.length - 1) {
+                nextBtn.textContent = 'Done!';
+                nextBtn.disabled = true;
+            } else {
+                nextBtn.textContent = 'Next Step';
+                nextBtn.disabled = false;
+            }
+        }
+
+        function reset() {
+            goToStep(0);
+        }
+
+        // Event listeners
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < scenarios.length - 1) {
+                goToStep(currentStep + 1);
+            }
+        });
+
+        resetBtn.addEventListener('click', reset);
+
+        stepDots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const step = parseInt(dot.dataset.step);
+                goToStep(step);
+            });
+        });
+
+        // Initialize
+        createCustomers();
+        goToStep(0);
+    </script>
+</body>
+</html>

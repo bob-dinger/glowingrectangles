@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#0a0a0f"/>
+  <!-- Evidence bar (short) -->
+  <rect x="20" y="70" width="20" height="15" rx="2" fill="#3B82F6"/>
+  <!-- Arrow -->
+  <text x="50" y="60" fill="#F59E0B" font-size="20" text-anchor="middle">→</text>
+  <!-- Belief bar (tall) -->
+  <rect x="60" y="25" width="20" height="60" rx="2" fill="#F59E0B"/>
+  <!-- Labels -->
+  <text x="30" y="95" fill="#666" font-size="6" text-anchor="middle" font-family="sans-serif">evidence</text>
+  <text x="70" y="95" fill="#666" font-size="6" text-anchor="middle" font-family="sans-serif">belief</text>
+</svg>

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inductive Reasoning</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .subtitle2 {
+            color: #F59E0B;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+
+        .scene {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 120px;
+            flex-shrink: 0;
+        }
+
+        /* Realistic Rocker Switch */
+        .switch-plate {
+            width: 70px;
+            height: 115px;
+            background: linear-gradient(145deg, #f5f5f0, #e8e8e0);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            cursor: pointer;
+        }
+
+        .switch-rocker {
+            width: 34px;
+            height: 54px;
+            background: linear-gradient(145deg, #f0f0e8, #d8d8d0);
+            border-radius: 4px;
+            position: relative;
+            transition: transform 0.15s ease;
+            transform-origin: center center;
+            transform: perspective(200px) rotateX(15deg);
+            box-shadow:
+                0 4px 6px rgba(0,0,0,0.2),
+                inset 0 -2px 4px rgba(0,0,0,0.1),
+                inset 0 2px 4px rgba(255,255,255,0.8);
+        }
+
+        .switch-rocker.on {
+            transform: perspective(200px) rotateX(-15deg);
+            box-shadow:
+                0 -2px 6px rgba(0,0,0,0.2),
+                inset 0 2px 4px rgba(0,0,0,0.1),
+                inset 0 -2px 4px rgba(255,255,255,0.8);
+        }
+
+        .rocker-top, .rocker-bottom {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .rocker-top {
+            top: 8px;
+            background: #666;
+        }
+
+        .rocker-bottom {
+            bottom: 8px;
+            background: #888;
+        }
+
+        /* Light Bulb */
+        .bulb-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bulb {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bulb-glass {
+            width: 80px;
+            height: 100px;
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border-radius: 50% 50% 45% 45%;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .bulb.on .bulb-glass {
+            background: linear-gradient(145deg, #FEF3C7, #FCD34D);
+            box-shadow:
+                0 0 60px rgba(252, 211, 77, 0.8),
+                0 0 120px rgba(252, 211, 77, 0.4),
+                inset 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        .bulb-filament {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 30px;
+            border: 2px solid #555;
+            border-radius: 30%;
+            opacity: 0.5;
+        }
+
+        .bulb.on .bulb-filament {
+            border-color: #fff;
+            opacity: 1;
+            box-shadow: 0 0 10px #fff;
+        }
+
+        .bulb-base {
+            width: 35px;
+            height: 25px;
+            background: linear-gradient(to bottom, #888, #666, #888, #666, #888);
+            border-radius: 0 0 8px 8px;
+            margin-top: -5px;
+        }
+
+        .hint {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #666;
+            transition: opacity 0.3s;
+            flex-shrink: 0;
+        }
+
+        .hint.hidden {
+            opacity: 0;
+        }
+
+        /* Generalization Gallery - in main area */
+        .generalization-section {
+            margin-top: 30px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            pointer-events: none;
+        }
+
+        .generalization-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .generalization-header {
+            text-align: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .generalization-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #F59E0B;
+            margin-bottom: 4px;
+        }
+
+        .generalization-subtitle {
+            font-size: 13px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .switch-gallery {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .switch-thumb {
+            width: 90px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #333;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+
+        .switch-thumb.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .switch-thumb:hover {
+            border-color: #F59E0B;
+            transform: scale(1.03);
+        }
+
+        /* Bar Graph */
+        .bar-graph {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 30px;
+        }
+
+        .bar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+        }
+
+        .bar-area {
+            height: 120px;
+            width: 100%;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .bar {
+            width: 100%;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.8s ease;
+        }
+
+        .evidence-bar {
+            height: 15px;
+            background: linear-gradient(to top, #3B82F6, #60A5FA);
+        }
+
+        .belief-bar {
+            height: 120px;
+            background: linear-gradient(to top, #F59E0B, #FBBF24);
+        }
+
+        .bar-label {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .arrow {
+            font-size: 32px;
+            color: #F59E0B;
+            align-self: center;
+            margin-bottom: 20px;
+        }
+
+        /* Right Drawer */
+        .drawer {
+            width: 340px;
+            height: 100vh;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 25px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .drawer-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+
+        .drawer-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #999;
+        }
+
+        .info-text p {
+            margin-bottom: 14px;
+        }
+
+        .info-text strong {
+            color: #ccc;
+        }
+
+        .key-insight {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #FDBA74;
+            line-height: 1.6;
+        }
+
+        .examples-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+
+        .examples-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        .example-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #1a1a1a;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .example-row-icon {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Inductive Reasoning</h1>
+        <p class="subtitle">How a caveman brain can still adapt to the modern world</p>
+        <p class="subtitle2">A human sees ONE switch turn on lights...</p>
+
+        <div class="scene">
+            <!-- Light Switch -->
+            <div class="switch-plate" id="switchPlate">
+                <div class="switch-rocker" id="switchRocker">
+                    <div class="rocker-top"></div>
+                    <div class="rocker-bottom"></div>
+                </div>
+            </div>
+
+            <!-- Light Bulb -->
+            <div class="bulb-container">
+                <div class="bulb" id="bulb">
+                    <div class="bulb-glass"></div>
+                    <div class="bulb-filament"></div>
+                    <div class="bulb-base"></div>
+                </div>
+            </div>
+        </div>
+
+        <p class="hint" id="hint">Click the switch</p>
+
+        <div class="generalization-section" id="generalization">
+            <div class="generalization-header">
+                <div class="generalization-title">Instant Generalization</div>
+                <div class="generalization-subtitle">Now any switch turns something on...</div>
+            </div>
+            <div class="switch-gallery">
+                <img src="https://images.unsplash.com/photo-1520601212700-3a8ae628fab0?w=300&h=300&fit=crop" alt="Light switch" class="switch-thumb">
+                <img src="https://images.unsplash.com/photo-1556217994-22de7face210?w=300&h=300&fit=crop" alt="Wall switch" class="switch-thumb">
+                <img src="https://images.unsplash.com/photo-1520254695104-2765bc239df7?w=300&h=300&fit=crop" alt="Blue wall switch" class="switch-thumb">
+                <img src="https://images.unsplash.com/photo-1623707430101-9e74cefe05e2?w=300&h=300&fit=crop" alt="White switch" class="switch-thumb">
+                <img src="https://images.unsplash.com/photo-1713332854655-5add6fe8b9aa?w=300&h=300&fit=crop" alt="Red switch" class="switch-thumb">
+                <img src="https://images.unsplash.com/photo-1677256796269-3c1a9d3fb14d?w=300&h=300&fit=crop" alt="Blue switch" class="switch-thumb">
+                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop" alt="Industrial switch" class="switch-thumb">
+                <img src="https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=300&h=300&fit=crop" alt="Panel switches" class="switch-thumb">
+                <img src="https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?w=300&h=300&fit=crop" alt="Vintage switch" class="switch-thumb">
+            </div>
+
+            <div class="bar-graph">
+                <div class="bar-container">
+                    <div class="bar-area">
+                        <div class="bar evidence-bar"></div>
+                    </div>
+                    <div class="bar-label">Small Evidence</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="bar-container">
+                    <div class="bar-area">
+                        <div class="bar belief-bar"></div>
+                    </div>
+                    <div class="bar-label">Large Belief</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="drawer">
+        <div class="drawer-title">One-Shot Learning</div>
+        <div class="drawer-subtitle">The ancient algorithm that still works</div>
+
+        <div class="info-text">
+            <p>Your brain is running 200,000-year-old software. Yet it navigates smartphones, elevators, and light switches effortlessly.</p>
+            <p><strong>How?</strong> Inductive reasoning — the ability to see ONE example and form a general rule.</p>
+            <p>A caveman sees someone flip a switch, lights come on. That's enough. The brain immediately forms: <em>"switches control lights."</em></p>
+            <p>This same pattern-matching let our ancestors learn from single experiences:</p>
+        </div>
+
+        <div class="examples-section">
+            <div class="examples-title">One Example Was Enough</div>
+            <div class="example-row">
+                <span class="example-row-icon">🫐</span>
+                <span>Red berry → sick → avoid red berries</span>
+            </div>
+            <div class="example-row">
+                <span class="example-row-icon">🌿</span>
+                <span>Rustling grass → predator → run next time</span>
+            </div>
+            <div class="example-row">
+                <span class="example-row-icon">🔥</span>
+                <span>Touch fire → pain → fire is dangerous</span>
+            </div>
+            <div class="example-row">
+                <span class="example-row-icon">💧</span>
+                <span>River here yesterday → river here today</span>
+            </div>
+        </div>
+
+        <div class="key-insight">
+            <strong>The superpower:</strong> We don't need 1,000 examples. We generalize from minimal data. This is why humans adapt to new technology instantly — we extract the pattern and apply it everywhere.
+        </div>
+    </div>
+
+    <script>
+        const switchPlate = document.getElementById('switchPlate');
+        const switchRocker = document.getElementById('switchRocker');
+        const bulb = document.getElementById('bulb');
+        const hint = document.getElementById('hint');
+        const generalization = document.getElementById('generalization');
+        const switchThumbs = document.querySelectorAll('.switch-thumb');
+
+        let lightOn = false;
+        let hasFlipped = false;
+
+        function toggleLight() {
+            lightOn = !lightOn;
+            switchRocker.classList.toggle('on', lightOn);
+            bulb.classList.toggle('on', lightOn);
+            hint.classList.add('hidden');
+
+            // Show generalization gallery after first flip
+            if (!hasFlipped && lightOn) {
+                hasFlipped = true;
+                setTimeout(() => {
+                    generalization.classList.add('visible');
+                    // Animate each image in sequence
+                    switchThumbs.forEach((thumb, i) => {
+                        setTimeout(() => {
+                            thumb.classList.add('visible');
+                        }, i * 100);
+                    });
+                }, 500);
+            }
+        }
+
+        switchPlate.addEventListener('click', toggleLight);
+    </script>
+</body>
+</html>

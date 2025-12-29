@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Explained</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .demo-area {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 30px;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .svg-container {
+            width: 300px;
+            height: 300px;
+            background: #0f0f14;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .svg-container svg {
+            background: #fff;
+            border-radius: 4px;
+        }
+
+        .code-container {
+            width: 350px;
+        }
+
+        .code-block {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .code-tag { color: #EF4444; }
+        .code-attr { color: #F59E0B; }
+        .code-value { color: #22C55E; }
+        .code-comment { color: #666; }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .shape-btn {
+            padding: 10px 18px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .shape-btn:hover {
+            border-color: #F59E0B;
+            color: #F59E0B;
+        }
+
+        .shape-btn.active {
+            background: #F59E0B;
+            border-color: #F59E0B;
+            color: #000;
+        }
+
+        .drawer {
+            width: 340px;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .drawer-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+
+        .drawer-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .info-section {
+            margin-bottom: 25px;
+        }
+
+        .info-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            font-size: 13px;
+            color: #ccc;
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .insight-box {
+            background: #1a1a1a;
+            border-left: 3px solid #F59E0B;
+            padding: 15px;
+            margin-top: auto;
+        }
+
+        .insight-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .insight-text {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .slider-group {
+            margin-bottom: 15px;
+        }
+
+        .slider-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .slider-value {
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #222;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #F59E0B;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        @media (max-width: 1100px) {
+            .drawer { display: none; }
+            .demo-area { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back</a>
+
+    <div class="main-content">
+        <div class="demo-area">
+            <div class="svg-container" id="svgContainer">
+                <!-- SVG renders here -->
+            </div>
+            <div class="code-container">
+                <div class="code-block" id="codeBlock">
+                    <!-- Code displays here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="shape-btn active" data-shape="rect">Rectangle</button>
+            <button class="shape-btn" data-shape="circle">Circle</button>
+            <button class="shape-btn" data-shape="ellipse">Ellipse</button>
+            <button class="shape-btn" data-shape="line">Line</button>
+            <button class="shape-btn" data-shape="polygon">Polygon</button>
+            <button class="shape-btn" data-shape="path">Path</button>
+            <button class="shape-btn" data-shape="text">Text</button>
+        </div>
+    </div>
+
+    <div class="drawer">
+        <div class="drawer-title">SVG</div>
+        <div class="drawer-subtitle">Scalable Vector Graphics</div>
+
+        <div class="info-section">
+            <div class="info-title">What It Is</div>
+            <div class="info-text">
+                XML-based markup for 2D graphics. Unlike JPG/PNG, SVG describes shapes mathematically, not as pixels.
+            </div>
+        </div>
+
+        <div class="info-section" id="shapeInfo">
+            <div class="info-title">Current Shape</div>
+            <div class="info-text" id="shapeDescription">
+                The rectangle is defined by x, y position and width, height dimensions.
+            </div>
+        </div>
+
+        <div class="info-section" id="sliders">
+            <!-- Dynamic sliders appear here -->
+        </div>
+
+        <div class="info-section">
+            <div class="info-title">Why SVG?</div>
+            <ul class="feature-list">
+                <li><span class="feature-icon">∞</span> Infinite zoom, no blur</li>
+                <li><span class="feature-icon">kb</span> Tiny file sizes</li>
+                <li><span class="feature-icon">{ }</span> Styleable with CSS</li>
+                <li><span class="feature-icon">JS</span> Scriptable with JavaScript</li>
+                <li><span class="feature-icon">A</span> Accessible (text-based)</li>
+            </ul>
+        </div>
+
+        <div class="insight-box">
+            <div class="insight-title">The Key Insight</div>
+            <div class="insight-text">
+                SVG stores instructions, not pixels. "Draw a circle at (50,50) with radius 40" instead of millions of colored dots.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const svgContainer = document.getElementById('svgContainer');
+        const codeBlock = document.getElementById('codeBlock');
+        const slidersContainer = document.getElementById('sliders');
+        const shapeDescription = document.getElementById('shapeDescription');
+
+        const shapes = {
+            rect: {
+                description: "The rectangle is defined by x, y position and width, height dimensions. rx/ry add rounded corners.",
+                params: {
+                    x: { min: 10, max: 150, value: 50, label: 'X Position' },
+                    y: { min: 10, max: 150, value: 50, label: 'Y Position' },
+                    width: { min: 20, max: 180, value: 100, label: 'Width' },
+                    height: { min: 20, max: 180, value: 80, label: 'Height' },
+                    rx: { min: 0, max: 40, value: 0, label: 'Corner Radius' }
+                },
+                render: (p) => `<rect x="${p.x}" y="${p.y}" width="${p.width}" height="${p.height}" rx="${p.rx}" fill="#3B82F6"/>`,
+                code: (p) => `<span class="code-tag">&lt;rect</span>
+  <span class="code-attr">x</span>=<span class="code-value">"${p.x}"</span>
+  <span class="code-attr">y</span>=<span class="code-value">"${p.y}"</span>
+  <span class="code-attr">width</span>=<span class="code-value">"${p.width}"</span>
+  <span class="code-attr">height</span>=<span class="code-value">"${p.height}"</span>
+  <span class="code-attr">rx</span>=<span class="code-value">"${p.rx}"</span>
+  <span class="code-attr">fill</span>=<span class="code-value">"#3B82F6"</span>
+<span class="code-tag">/&gt;</span>`
+            },
+
+            circle: {
+                description: "The circle is defined by center point (cx, cy) and radius (r). Simple and elegant.",
+                params: {
+                    cx: { min: 30, max: 220, value: 125, label: 'Center X' },
+                    cy: { min: 30, max: 220, value: 125, label: 'Center Y' },
+                    r: { min: 10, max: 100, value: 60, label: 'Radius' }
+                },
+                render: (p) => `<circle cx="${p.cx}" cy="${p.cy}" r="${p.r}" fill="#22C55E"/>`,
+                code: (p) => `<span class="code-tag">&lt;circle</span>
+  <span class="code-attr">cx</span>=<span class="code-value">"${p.cx}"</span>
+  <span class="code-attr">cy</span>=<span class="code-value">"${p.cy}"</span>
+  <span class="code-attr">r</span>=<span class="code-value">"${p.r}"</span>
+  <span class="code-attr">fill</span>=<span class="code-value">"#22C55E"</span>
+<span class="code-tag">/&gt;</span>`
+            },
+
+            ellipse: {
+                description: "Like a circle, but with separate x-radius (rx) and y-radius (ry) for oval shapes.",
+                params: {
+                    cx: { min: 30, max: 220, value: 125, label: 'Center X' },
+                    cy: { min: 30, max: 220, value: 125, label: 'Center Y' },
+                    rx: { min: 10, max: 110, value: 80, label: 'Radius X' },
+                    ry: { min: 10, max: 110, value: 50, label: 'Radius Y' }
+                },
+                render: (p) => `<ellipse cx="${p.cx}" cy="${p.cy}" rx="${p.rx}" ry="${p.ry}" fill="#A855F7"/>`,
+                code: (p) => `<span class="code-tag">&lt;ellipse</span>
+  <span class="code-attr">cx</span>=<span class="code-value">"${p.cx}"</span>
+  <span class="code-attr">cy</span>=<span class="code-value">"${p.cy}"</span>
+  <span class="code-attr">rx</span>=<span class="code-value">"${p.rx}"</span>
+  <span class="code-attr">ry</span>=<span class="code-value">"${p.ry}"</span>
+  <span class="code-attr">fill</span>=<span class="code-value">"#A855F7"</span>
+<span class="code-tag">/&gt;</span>`
+            },
+
+            line: {
+                description: "A line from point (x1, y1) to point (x2, y2). Uses stroke instead of fill.",
+                params: {
+                    x1: { min: 10, max: 240, value: 30, label: 'Start X' },
+                    y1: { min: 10, max: 240, value: 30, label: 'Start Y' },
+                    x2: { min: 10, max: 240, value: 220, label: 'End X' },
+                    y2: { min: 10, max: 240, value: 220, label: 'End Y' },
+                    strokeWidth: { min: 1, max: 20, value: 4, label: 'Stroke Width' }
+                },
+                render: (p) => `<line x1="${p.x1}" y1="${p.y1}" x2="${p.x2}" y2="${p.y2}" stroke="#F59E0B" stroke-width="${p.strokeWidth}" stroke-linecap="round"/>`,
+                code: (p) => `<span class="code-tag">&lt;line</span>
+  <span class="code-attr">x1</span>=<span class="code-value">"${p.x1}"</span> <span class="code-attr">y1</span>=<span class="code-value">"${p.y1}"</span>
+  <span class="code-attr">x2</span>=<span class="code-value">"${p.x2}"</span> <span class="code-attr">y2</span>=<span class="code-value">"${p.y2}"</span>
+  <span class="code-attr">stroke</span>=<span class="code-value">"#F59E0B"</span>
+  <span class="code-attr">stroke-width</span>=<span class="code-value">"${p.strokeWidth}"</span>
+<span class="code-tag">/&gt;</span>`
+            },
+
+            polygon: {
+                description: "A closed shape defined by a list of points. The points attribute contains x,y pairs.",
+                params: {
+                    sides: { min: 3, max: 12, value: 6, label: 'Number of Sides' },
+                    radius: { min: 30, max: 100, value: 80, label: 'Size' },
+                    rotation: { min: 0, max: 360, value: 0, label: 'Rotation' }
+                },
+                render: (p) => {
+                    const points = [];
+                    for (let i = 0; i < p.sides; i++) {
+                        const angle = (i / p.sides) * Math.PI * 2 - Math.PI/2 + (p.rotation * Math.PI / 180);
+                        points.push(`${125 + p.radius * Math.cos(angle)},${125 + p.radius * Math.sin(angle)}`);
+                    }
+                    return `<polygon points="${points.join(' ')}" fill="#EF4444"/>`;
+                },
+                code: (p) => {
+                    const points = [];
+                    for (let i = 0; i < p.sides; i++) {
+                        const angle = (i / p.sides) * Math.PI * 2 - Math.PI/2 + (p.rotation * Math.PI / 180);
+                        points.push(`${Math.round(125 + p.radius * Math.cos(angle))},${Math.round(125 + p.radius * Math.sin(angle))}`);
+                    }
+                    return `<span class="code-tag">&lt;polygon</span>
+  <span class="code-attr">points</span>=<span class="code-value">"${points.join(' ')}"</span>
+  <span class="code-attr">fill</span>=<span class="code-value">"#EF4444"</span>
+<span class="code-tag">/&gt;</span>`;
+                }
+            },
+
+            path: {
+                description: "The most powerful element. The 'd' attribute contains commands: M (move), L (line), C (curve), Z (close).",
+                params: {
+                    curve: { min: 0, max: 100, value: 50, label: 'Curve Amount' },
+                    height: { min: 50, max: 150, value: 100, label: 'Height' }
+                },
+                render: (p) => `<path d="M 50 200 Q 125 ${200 - p.height - p.curve} 200 200 Q 125 ${200 - p.height + p.curve} 50 200 Z" fill="#EC4899"/>`,
+                code: (p) => `<span class="code-tag">&lt;path</span>
+  <span class="code-attr">d</span>=<span class="code-value">"M 50 200
+     Q 125 ${200 - p.height - p.curve} 200 200
+     Q 125 ${200 - p.height + p.curve} 50 200
+     Z"</span>
+  <span class="code-attr">fill</span>=<span class="code-value">"#EC4899"</span>
+<span class="code-tag">/&gt;</span>
+
+<span class="code-comment">// M = Move to
+// Q = Quadratic curve
+// Z = Close path</span>`
+            },
+
+            text: {
+                description: "Render actual text that remains crisp at any size. Can be styled, animated, and searched.",
+                params: {
+                    x: { min: 20, max: 150, value: 50, label: 'X Position' },
+                    y: { min: 50, max: 200, value: 140, label: 'Y Position' },
+                    fontSize: { min: 16, max: 72, value: 48, label: 'Font Size' }
+                },
+                render: (p) => `<text x="${p.x}" y="${p.y}" font-size="${p.fontSize}" font-weight="bold" fill="#14B8A6">SVG</text>`,
+                code: (p) => `<span class="code-tag">&lt;text</span>
+  <span class="code-attr">x</span>=<span class="code-value">"${p.x}"</span>
+  <span class="code-attr">y</span>=<span class="code-value">"${p.y}"</span>
+  <span class="code-attr">font-size</span>=<span class="code-value">"${p.fontSize}"</span>
+  <span class="code-attr">font-weight</span>=<span class="code-value">"bold"</span>
+  <span class="code-attr">fill</span>=<span class="code-value">"#14B8A6"</span>
+<span class="code-tag">&gt;</span>SVG<span class="code-tag">&lt;/text&gt;</span>`
+            }
+        };
+
+        let currentShape = 'rect';
+        let params = {};
+
+        function initParams(shape) {
+            params = {};
+            const shapeData = shapes[shape];
+            for (const [key, config] of Object.entries(shapeData.params)) {
+                params[key] = config.value;
+            }
+        }
+
+        function renderSliders(shape) {
+            const shapeData = shapes[shape];
+            slidersContainer.innerHTML = '';
+
+            for (const [key, config] of Object.entries(shapeData.params)) {
+                const group = document.createElement('div');
+                group.className = 'slider-group';
+                group.innerHTML = `
+                    <div class="slider-label">
+                        <span>${config.label}</span>
+                        <span class="slider-value" id="val-${key}">${params[key]}</span>
+                    </div>
+                    <input type="range" id="slider-${key}" min="${config.min}" max="${config.max}" value="${params[key]}">
+                `;
+                slidersContainer.appendChild(group);
+
+                const slider = group.querySelector('input');
+                slider.addEventListener('input', (e) => {
+                    params[key] = parseInt(e.target.value);
+                    document.getElementById(`val-${key}`).textContent = params[key];
+                    render();
+                });
+            }
+        }
+
+        function render() {
+            const shapeData = shapes[currentShape];
+
+            svgContainer.innerHTML = `
+                <svg width="250" height="250" viewBox="0 0 250 250">
+                    ${shapeData.render(params)}
+                </svg>
+            `;
+
+            codeBlock.innerHTML = shapeData.code(params);
+            shapeDescription.textContent = shapeData.description;
+        }
+
+        document.querySelectorAll('.shape-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentShape = btn.dataset.shape;
+                initParams(currentShape);
+                renderSliders(currentShape);
+                render();
+            });
+        });
+
+        // Initialize
+        initParams('rect');
+        renderSliders('rect');
+        render();
+    </script>
+</body>
+</html>

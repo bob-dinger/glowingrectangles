@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winner Takes All</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 40px;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .subtitle a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+
+        .subtitle a:hover {
+            text-decoration: underline;
+        }
+
+        .race-section {
+            margin-bottom: 15px;
+        }
+
+        .race-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #22C55E;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .race-container {
+            position: relative;
+            width: 600px;
+            height: 200px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .finish-line {
+            position: absolute;
+            right: 40px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: repeating-linear-gradient(
+                to bottom,
+                #fff 0px,
+                #fff 8px,
+                #000 8px,
+                #000 16px
+            );
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #22C55E;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #16A34A;
+        }
+
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #444;
+        }
+
+        .info-panel {
+            width: 320px;
+            height: 100vh;
+            background: #111;
+            border-left: 1px solid #333;
+            padding: 30px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #22C55E;
+            margin-bottom: 16px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #999;
+        }
+
+        .info-text p {
+            margin-bottom: 14px;
+        }
+
+        .info-text strong {
+            color: #ccc;
+        }
+
+        .examples {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+
+        .examples-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        .example-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .example-winner {
+            color: #22C55E;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .example-losers {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .key-insight {
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #86efac;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Winner Takes All</h1>
+        <p class="subtitle">When small advantages become total dominance</p>
+
+        <div class="race-section">
+            <div class="race-title">Winner Takes All</div>
+            <div class="race-container">
+                <canvas id="canvas1"></canvas>
+                <div class="finish-line"></div>
+            </div>
+        </div>
+
+        <div class="race-section">
+            <div class="race-title" style="color: #3B82F6;">Proportional Rewards</div>
+            <div class="race-container">
+                <canvas id="canvas2"></canvas>
+                <div class="finish-line"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-primary" id="startBtn">Start Both Races</button>
+            <button class="btn-secondary" id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <div class="info-title" style="color: #22C55E;">Winner Takes All</div>
+        <div class="info-text">
+            <p><strong>One winner, many losers.</strong> Small early advantages compound until one player dominates.</p>
+            <p>This happens when:</p>
+            <p>• <strong>Network effects</strong> — more users = better product</p>
+            <p>• <strong>Switching costs</strong> — leaving is painful</p>
+            <p>• <strong>Standards</strong> — compatibility matters</p>
+        </div>
+
+        <div class="examples">
+            <div class="examples-title">Winner Takes All Examples</div>
+            <div class="example-item">
+                <div class="example-winner">Google</div>
+                <div class="example-losers">vs AltaVista, Yahoo, Ask Jeeves</div>
+            </div>
+            <div class="example-item">
+                <div class="example-winner">Facebook</div>
+                <div class="example-losers">vs MySpace, Friendster, Google+</div>
+            </div>
+            <div class="example-item">
+                <div class="example-winner">VHS</div>
+                <div class="example-losers">vs Betamax</div>
+            </div>
+            <div class="example-item">
+                <div class="example-winner">Amazon</div>
+                <div class="example-losers">vs Borders, Barnes & Noble</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #333;">
+            <div class="info-title" style="color: #3B82F6;">Proportional Rewards</div>
+            <div class="info-text">
+                <p><strong>Everyone gets a share.</strong> Better performance = bigger slice, but room for many players.</p>
+                <p>This happens when:</p>
+                <p>• <strong>Local markets</strong> — geography limits competition</p>
+                <p>• <strong>Diverse preferences</strong> — people want variety</p>
+                <p>• <strong>No lock-in</strong> — easy to switch</p>
+            </div>
+
+            <div class="examples">
+                <div class="examples-title">Proportional Examples</div>
+                <div class="example-item">
+                    <div class="example-winner" style="color: #3B82F6;">Restaurants</div>
+                    <div class="example-losers">many cuisines, many price points</div>
+                </div>
+                <div class="example-item">
+                    <div class="example-winner" style="color: #3B82F6;">Coffee shops</div>
+                    <div class="example-losers">Starbucks, local cafes, diners coexist</div>
+                </div>
+                <div class="example-item">
+                    <div class="example-winner" style="color: #3B82F6;">Law firms</div>
+                    <div class="example-losers">many specialties, many sizes</div>
+                </div>
+                <div class="example-item">
+                    <div class="example-winner" style="color: #3B82F6;">Authors</div>
+                    <div class="example-losers">many genres, many bestsellers</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="key-insight">
+            The market structure determines outcomes. Same effort, different rewards.
+        </div>
+    </div>
+
+    <script>
+        const canvas1 = document.getElementById('canvas1');
+        const ctx1 = canvas1.getContext('2d');
+        const canvas2 = document.getElementById('canvas2');
+        const ctx2 = canvas2.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        const NUM_RACERS = 25;
+        const FINISH_X = 0.9;
+
+        let race1 = { racers: [], finished: false, winner: null };
+        let race2 = { racers: [], finished: false, allFinished: false };
+        let animationId = null;
+
+        function resizeCanvases() {
+            [canvas1, canvas2].forEach(canvas => {
+                const container = canvas.parentElement;
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+            });
+        }
+
+        function initRace(race, canvas) {
+            race.racers = [];
+            race.finished = false;
+            race.winner = null;
+            race.allFinished = false;
+            race.finishOrder = [];
+
+            const spacing = canvas.height / (NUM_RACERS + 1);
+
+            for (let i = 0; i < NUM_RACERS; i++) {
+                race.racers.push({
+                    id: i + 1,
+                    x: 20,
+                    y: spacing * (i + 1),
+                    speed: 0.8 + Math.random() * 0.4,
+                    radius: 6,
+                    color: '#3B82F6',
+                    opacity: 1,
+                    isWinner: false,
+                    finishPosition: null
+                });
+            }
+        }
+
+        function draw(race, ctx, canvas) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const sortedRacers = [...race.racers].sort((a, b) => {
+                if (a.isWinner) return 1;
+                return a.radius - b.radius;
+            });
+
+            for (const racer of sortedRacers) {
+                ctx.beginPath();
+                ctx.arc(racer.x, racer.y, racer.radius, 0, Math.PI * 2);
+                ctx.fillStyle = racer.color;
+                ctx.globalAlpha = racer.opacity;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                if (racer.isWinner) {
+                    ctx.beginPath();
+                    ctx.arc(racer.x, racer.y, racer.radius + 4, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#22C55E';
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = 0.5;
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                }
+            }
+        }
+
+        // Winner Takes All update
+        function updateRace1() {
+            const finishX = canvas1.width * FINISH_X;
+
+            let leader = race1.racers[0];
+            for (const racer of race1.racers) {
+                if (racer.x > leader.x) leader = racer;
+            }
+
+            for (const racer of race1.racers) {
+                if (!race1.finished) {
+                    let boost = (Math.random() - 0.5) * 1.5;
+                    if (racer === leader) boost += 0.4;
+                    racer.x += racer.speed + boost;
+
+                    if (racer.x >= finishX && !race1.winner) {
+                        race1.winner = racer;
+                        racer.isWinner = true;
+                        race1.finished = true;
+                    }
+                }
+
+                if (race1.finished) {
+                    if (racer.isWinner) {
+                        racer.radius = Math.min(racer.radius + 0.4, 18);
+                        racer.color = '#22C55E';
+                    } else {
+                        racer.opacity = Math.max(racer.opacity - 0.015, 0.25);
+                        racer.radius = Math.max(racer.radius - 0.08, 3);
+                        racer.color = '#444';
+                    }
+                }
+            }
+        }
+
+        // Proportional Rewards update
+        function updateRace2() {
+            const finishX = canvas2.width * FINISH_X;
+
+            // Race until someone crosses the finish line
+            if (!race2.finished) {
+                for (const racer of race2.racers) {
+                    let boost = (Math.random() - 0.5) * 1.5;
+                    racer.x += racer.speed + boost;
+
+                    // Check if anyone crossed finish
+                    if (racer.x >= finishX) {
+                        race2.finished = true;
+                        // Rank everyone by their current position
+                        const sorted = [...race2.racers].sort((a, b) => b.x - a.x);
+                        sorted.forEach((r, i) => {
+                            r.finishPosition = i + 1;
+                        });
+                        break;
+                    }
+                }
+            }
+
+            // Animate to final state once race is frozen
+            if (race2.finished) {
+                for (const racer of race2.racers) {
+                    // Gradient of green based on position
+                    // 1st place = bright green, last place = dim green
+                    const t = 1 - (racer.finishPosition - 1) / (NUM_RACERS - 1);
+
+                    // Interpolate from dim green to bright green
+                    const r = Math.round(34 + t * (34 - 34));
+                    const g = Math.round(120 + t * (197 - 120));
+                    const b = Math.round(60 + t * (94 - 60));
+
+                    racer.color = `rgb(${r}, ${g}, ${b})`;
+
+                    // Size based on position
+                    const targetRadius = 4 + t * 10;
+                    racer.radius += (targetRadius - racer.radius) * 0.1;
+
+                    // All stay visible
+                    racer.opacity = 0.5 + t * 0.5;
+                }
+            }
+        }
+
+        function animate() {
+            updateRace1();
+            updateRace2();
+            draw(race1, ctx1, canvas1);
+            draw(race2, ctx2, canvas2);
+
+            const race1Done = race1.finished && race1.winner && race1.winner.radius >= 17;
+            const race2Done = race2.finished && race2.racers.every(r => {
+                const t = 1 - (r.finishPosition - 1) / (NUM_RACERS - 1);
+                const targetRadius = 4 + t * 10;
+                return Math.abs(r.radius - targetRadius) < 0.5;
+            });
+
+            if (!race1Done || !race2Done) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        function startRace() {
+            if (animationId) cancelAnimationFrame(animationId);
+            initRace(race1, canvas1);
+            initRace(race2, canvas2);
+            draw(race1, ctx1, canvas1);
+            draw(race2, ctx2, canvas2);
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function reset() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            initRace(race1, canvas1);
+            initRace(race2, canvas2);
+            draw(race1, ctx1, canvas1);
+            draw(race2, ctx2, canvas2);
+        }
+
+        startBtn.addEventListener('click', startRace);
+        resetBtn.addEventListener('click', reset);
+
+        resizeCanvases();
+        initRace(race1, canvas1);
+        initRace(race2, canvas2);
+        draw(race1, ctx1, canvas1);
+        draw(race2, ctx2, canvas2);
+
+        window.addEventListener('resize', () => {
+            resizeCanvases();
+            reset();
+        });
+    </script>
+</body>
+</html>

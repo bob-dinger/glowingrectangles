@@ -10,8 +10,9 @@
             background: #0a0a0f;
             color: #fff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
+            overflow: hidden;
         }
 
         .back-link {
@@ -30,19 +31,51 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 40px;
         }
 
         canvas {
             border-radius: 50%;
         }
 
+        .sunflower-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sunflower-img {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #222;
+        }
+
+        .sunflower-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 1100px) {
+            .sunflower-container {
+                display: none;
+            }
+        }
+
         .drawer {
             width: 340px;
+            height: 100vh;
             background: #111;
             border-left: 1px solid #222;
             padding: 25px;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
         }
 
         .drawer-title {
@@ -204,6 +237,10 @@
 
     <div class="main-content">
         <canvas id="canvas" width="600" height="600"></canvas>
+        <div class="sunflower-container">
+            <img src="../images/sunflower.jpeg" alt="Sunflower seed head" class="sunflower-img">
+            <div class="sunflower-label">Same pattern in nature</div>
+        </div>
     </div>
 
     <div class="drawer">
@@ -431,6 +468,12 @@
         // Initial clear
         ctx.fillStyle = '#0a0a0f';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Auto-start at very fast speed
+        speedSlider.value = 5;
+        speedValue.textContent = 'Very Fast';
+        animationDelay = 10;
+        startAnimation();
     </script>
 </body>
 </html>

@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Adjectives</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        svg {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .word {
+            cursor: pointer;
+            transition: fill 0.2s;
+        }
+
+        .word:hover {
+            fill: #F59E0B;
+        }
+
+        .word.active {
+            fill: #22C55E;
+        }
+
+        .translation-box {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px 40px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .translation-box.visible {
+            opacity: 1;
+        }
+
+        .spanish-word {
+            font-size: 28px;
+            font-weight: 600;
+            color: #22C55E;
+            margin-bottom: 8px;
+        }
+
+        .english-word {
+            font-size: 20px;
+            color: #888;
+        }
+
+        .instructions {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 12px;
+            color: #444;
+        }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-gradient {
+            width: 100px;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(to right, #F97316, #555);
+        }
+        .legend-label {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back</a>
+    <div class="instructions">Click any word</div>
+    <button id="refreshBtn">Refresh</button>
+    <style>
+        #refreshBtn {
+            position: fixed;
+            top: 20px;
+            right: 120px;
+            background: #22C55E;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #refreshBtn:hover {
+            background: #16A34A;
+        }
+    </style>
+
+    <svg id="wordCloud"></svg>
+
+    <div class="translation-box" id="translationBox">
+        <div class="spanish-word" id="spanishWord"></div>
+        <div class="english-word" id="englishWord"></div>
+    </div>
+
+    <div class="legend">
+        <span class="legend-label">Harder</span>
+        <div class="legend-gradient"></div>
+        <span class="legend-label">Easier</span>
+    </div>
+
+    <script>
+        const allAdjectives = [
+            // Size & Shape
+            { es: "grande", en: "big, large" },
+            { es: "pequeño", en: "small" },
+            { es: "alto", en: "tall, high" },
+            { es: "bajo", en: "short, low" },
+            { es: "largo", en: "long" },
+            { es: "corto", en: "short" },
+            { es: "ancho", en: "wide" },
+            { es: "estrecho", en: "narrow" },
+            { es: "gordo", en: "fat" },
+            { es: "delgado", en: "thin" },
+            { es: "pesado", en: "heavy" },
+            { es: "ligero", en: "light (weight)" },
+            { es: "enorme", en: "enormous" },
+            { es: "diminuto", en: "tiny" },
+            { es: "gigante", en: "giant" },
+            { es: "minúsculo", en: "minuscule" },
+            { es: "mediano", en: "medium" },
+            { es: "grueso", en: "thick" },
+            { es: "fino", en: "fine, thin" },
+            { es: "redondo", en: "round" },
+            { es: "cuadrado", en: "square" },
+            { es: "triangular", en: "triangular" },
+            { es: "ovalado", en: "oval" },
+            { es: "plano", en: "flat" },
+            { es: "profundo", en: "deep" },
+            { es: "superficial", en: "shallow" },
+            { es: "hueco", en: "hollow" },
+            { es: "sólido", en: "solid" },
+
+            // Colors
+            { es: "rojo", en: "red" },
+            { es: "azul", en: "blue" },
+            { es: "verde", en: "green" },
+            { es: "amarillo", en: "yellow" },
+            { es: "negro", en: "black" },
+            { es: "blanco", en: "white" },
+            { es: "gris", en: "gray" },
+            { es: "marrón", en: "brown" },
+            { es: "rosa", en: "pink" },
+            { es: "morado", en: "purple" },
+            { es: "naranja", en: "orange" },
+            { es: "dorado", en: "golden" },
+            { es: "plateado", en: "silver" },
+            { es: "oscuro", en: "dark" },
+            { es: "claro", en: "light, clear" },
+            { es: "brillante", en: "bright, shiny" },
+            { es: "opaco", en: "opaque" },
+            { es: "transparente", en: "transparent" },
+            { es: "colorido", en: "colorful" },
+            { es: "pálido", en: "pale" },
+            { es: "vivo", en: "vivid" },
+            { es: "celeste", en: "sky blue" },
+            { es: "turquesa", en: "turquoise" },
+            { es: "violeta", en: "violet" },
+            { es: "beige", en: "beige" },
+            { es: "crema", en: "cream" },
+
+            // Personality & Character
+            { es: "feliz", en: "happy" },
+            { es: "triste", en: "sad" },
+            { es: "enojado", en: "angry" },
+            { es: "tranquilo", en: "calm" },
+            { es: "nervioso", en: "nervous" },
+            { es: "amable", en: "kind" },
+            { es: "simpático", en: "nice, friendly" },
+            { es: "antipático", en: "unpleasant" },
+            { es: "tímido", en: "shy" },
+            { es: "valiente", en: "brave" },
+            { es: "cobarde", en: "cowardly" },
+            { es: "generoso", en: "generous" },
+            { es: "tacaño", en: "stingy" },
+            { es: "honesto", en: "honest" },
+            { es: "mentiroso", en: "lying, liar" },
+            { es: "inteligente", en: "intelligent" },
+            { es: "tonto", en: "silly, dumb" },
+            { es: "listo", en: "clever, ready" },
+            { es: "perezoso", en: "lazy" },
+            { es: "trabajador", en: "hardworking" },
+            { es: "serio", en: "serious" },
+            { es: "gracioso", en: "funny" },
+            { es: "aburrido", en: "boring, bored" },
+            { es: "interesante", en: "interesting" },
+            { es: "curioso", en: "curious" },
+            { es: "orgulloso", en: "proud" },
+            { es: "humilde", en: "humble" },
+            { es: "loco", en: "crazy" },
+            { es: "cuerdo", en: "sane" },
+            { es: "sabio", en: "wise" },
+            { es: "ingenuo", en: "naive" },
+            { es: "astuto", en: "cunning" },
+            { es: "torpe", en: "clumsy" },
+            { es: "ágil", en: "agile" },
+            { es: "terco", en: "stubborn" },
+            { es: "flexible", en: "flexible" },
+            { es: "educado", en: "polite" },
+            { es: "maleducado", en: "rude" },
+            { es: "respetuoso", en: "respectful" },
+            { es: "grosero", en: "rude, coarse" },
+            { es: "sociable", en: "sociable" },
+            { es: "reservado", en: "reserved" },
+            { es: "extrovertido", en: "extroverted" },
+            { es: "introvertido", en: "introverted" },
+            { es: "optimista", en: "optimistic" },
+            { es: "pesimista", en: "pessimistic" },
+            { es: "realista", en: "realistic" },
+            { es: "idealista", en: "idealistic" },
+            { es: "paciente", en: "patient" },
+            { es: "impaciente", en: "impatient" },
+            { es: "tolerante", en: "tolerant" },
+            { es: "intolerante", en: "intolerant" },
+            { es: "maduro", en: "mature" },
+            { es: "inmaduro", en: "immature" },
+            { es: "responsable", en: "responsible" },
+            { es: "irresponsable", en: "irresponsible" },
+            { es: "confiable", en: "reliable" },
+            { es: "desconfiado", en: "distrustful" },
+            { es: "sincero", en: "sincere" },
+            { es: "hipócrita", en: "hypocritical" },
+            { es: "modesto", en: "modest" },
+            { es: "arrogante", en: "arrogant" },
+            { es: "vanidoso", en: "vain" },
+            { es: "egoísta", en: "selfish" },
+            { es: "altruista", en: "altruistic" },
+            { es: "ambicioso", en: "ambitious" },
+            { es: "conformista", en: "conformist" },
+            { es: "rebelde", en: "rebellious" },
+            { es: "obediente", en: "obedient" },
+            { es: "desobediente", en: "disobedient" },
+            { es: "atrevido", en: "daring" },
+            { es: "prudente", en: "prudent" },
+            { es: "imprudente", en: "reckless" },
+            { es: "sensato", en: "sensible" },
+            { es: "insensato", en: "foolish" },
+            { es: "cariñoso", en: "affectionate" },
+            { es: "frío", en: "cold (personality)" },
+            { es: "apasionado", en: "passionate" },
+            { es: "indiferente", en: "indifferent" },
+
+            // Physical states
+            { es: "cansado", en: "tired" },
+            { es: "enfermo", en: "sick" },
+            { es: "sano", en: "healthy" },
+            { es: "fuerte", en: "strong" },
+            { es: "débil", en: "weak" },
+            { es: "joven", en: "young" },
+            { es: "viejo", en: "old" },
+            { es: "nuevo", en: "new" },
+            { es: "antiguo", en: "ancient, old" },
+            { es: "vivo", en: "alive" },
+            { es: "muerto", en: "dead" },
+            { es: "lleno", en: "full" },
+            { es: "vacío", en: "empty" },
+            { es: "limpio", en: "clean" },
+            { es: "sucio", en: "dirty" },
+            { es: "mojado", en: "wet" },
+            { es: "seco", en: "dry" },
+            { es: "caliente", en: "hot" },
+            { es: "frío", en: "cold" },
+            { es: "tibio", en: "warm, lukewarm" },
+            { es: "helado", en: "frozen, icy" },
+            { es: "agotado", en: "exhausted" },
+            { es: "descansado", en: "rested" },
+            { es: "dormido", en: "asleep" },
+            { es: "despierto", en: "awake" },
+            { es: "hambriento", en: "hungry" },
+            { es: "sediento", en: "thirsty" },
+            { es: "satisfecho", en: "satisfied" },
+            { es: "mareado", en: "dizzy" },
+            { es: "borracho", en: "drunk" },
+            { es: "sobrio", en: "sober" },
+            { es: "embarazada", en: "pregnant" },
+            { es: "herido", en: "injured" },
+            { es: "curado", en: "healed" },
+            { es: "congelado", en: "frozen" },
+            { es: "quemado", en: "burned" },
+            { es: "roto", en: "broken" },
+            { es: "intacto", en: "intact" },
+            { es: "desnudo", en: "naked" },
+            { es: "vestido", en: "dressed" },
+            { es: "descalzo", en: "barefoot" },
+
+            // Quality & Value
+            { es: "bueno", en: "good" },
+            { es: "malo", en: "bad" },
+            { es: "mejor", en: "better" },
+            { es: "peor", en: "worse" },
+            { es: "perfecto", en: "perfect" },
+            { es: "hermoso", en: "beautiful" },
+            { es: "feo", en: "ugly" },
+            { es: "bonito", en: "pretty" },
+            { es: "lindo", en: "cute" },
+            { es: "guapo", en: "handsome" },
+            { es: "rico", en: "rich, delicious" },
+            { es: "pobre", en: "poor" },
+            { es: "barato", en: "cheap" },
+            { es: "caro", en: "expensive" },
+            { es: "gratis", en: "free" },
+            { es: "fácil", en: "easy" },
+            { es: "difícil", en: "difficult" },
+            { es: "simple", en: "simple" },
+            { es: "complicado", en: "complicated" },
+            { es: "posible", en: "possible" },
+            { es: "imposible", en: "impossible" },
+            { es: "necesario", en: "necessary" },
+            { es: "importante", en: "important" },
+            { es: "útil", en: "useful" },
+            { es: "inútil", en: "useless" },
+            { es: "valioso", en: "valuable" },
+            { es: "económico", en: "economical" },
+            { es: "lujoso", en: "luxurious" },
+            { es: "ordinario", en: "ordinary" },
+            { es: "extraordinario", en: "extraordinary" },
+            { es: "excelente", en: "excellent" },
+            { es: "terrible", en: "terrible" },
+            { es: "horrible", en: "horrible" },
+            { es: "maravilloso", en: "wonderful" },
+            { es: "fantástico", en: "fantastic" },
+            { es: "increíble", en: "incredible" },
+            { es: "mediocre", en: "mediocre" },
+            { es: "aceptable", en: "acceptable" },
+            { es: "inaceptable", en: "unacceptable" },
+            { es: "adecuado", en: "adequate" },
+            { es: "inadecuado", en: "inadequate" },
+            { es: "apropiado", en: "appropriate" },
+            { es: "inapropiado", en: "inappropriate" },
+            { es: "elegante", en: "elegant" },
+            { es: "vulgar", en: "vulgar" },
+            { es: "refinado", en: "refined" },
+            { es: "tosco", en: "coarse" },
+            { es: "sofisticado", en: "sophisticated" },
+            { es: "primitivo", en: "primitive" },
+
+            // Time & Speed
+            { es: "rápido", en: "fast" },
+            { es: "lento", en: "slow" },
+            { es: "temprano", en: "early" },
+            { es: "tarde", en: "late" },
+            { es: "próximo", en: "next" },
+            { es: "último", en: "last" },
+            { es: "primero", en: "first" },
+            { es: "segundo", en: "second" },
+            { es: "frecuente", en: "frequent" },
+            { es: "raro", en: "rare, strange" },
+            { es: "inmediato", en: "immediate" },
+            { es: "gradual", en: "gradual" },
+            { es: "repentino", en: "sudden" },
+            { es: "constante", en: "constant" },
+            { es: "intermitente", en: "intermittent" },
+            { es: "permanente", en: "permanent" },
+            { es: "temporal", en: "temporary" },
+            { es: "eterno", en: "eternal" },
+            { es: "breve", en: "brief" },
+            { es: "prolongado", en: "prolonged" },
+            { es: "puntual", en: "punctual" },
+            { es: "retrasado", en: "delayed" },
+            { es: "anticipado", en: "anticipated" },
+            { es: "actual", en: "current" },
+            { es: "pasado", en: "past" },
+            { es: "futuro", en: "future" },
+            { es: "reciente", en: "recent" },
+            { es: "antiguo", en: "old, ancient" },
+            { es: "moderno", en: "modern" },
+            { es: "contemporáneo", en: "contemporary" },
+            { es: "diario", en: "daily" },
+            { es: "semanal", en: "weekly" },
+            { es: "mensual", en: "monthly" },
+            { es: "anual", en: "annual" },
+
+            // Taste & Sensation
+            { es: "dulce", en: "sweet" },
+            { es: "salado", en: "salty" },
+            { es: "amargo", en: "bitter" },
+            { es: "ácido", en: "sour" },
+            { es: "picante", en: "spicy" },
+            { es: "sabroso", en: "tasty" },
+            { es: "delicioso", en: "delicious" },
+            { es: "asqueroso", en: "disgusting" },
+            { es: "suave", en: "soft, smooth" },
+            { es: "duro", en: "hard" },
+            { es: "áspero", en: "rough" },
+            { es: "blando", en: "soft" },
+            { es: "ruidoso", en: "noisy" },
+            { es: "silencioso", en: "silent" },
+            { es: "agrio", en: "sour" },
+            { es: "insípido", en: "bland" },
+            { es: "aromático", en: "aromatic" },
+            { es: "apestoso", en: "stinky" },
+            { es: "fragante", en: "fragrant" },
+            { es: "crujiente", en: "crunchy" },
+            { es: "cremoso", en: "creamy" },
+            { es: "jugoso", en: "juicy" },
+            { es: "seco", en: "dry" },
+            { es: "húmedo", en: "humid, moist" },
+            { es: "pegajoso", en: "sticky" },
+            { es: "resbaladizo", en: "slippery" },
+            { es: "esponjoso", en: "spongy" },
+            { es: "elástico", en: "elastic" },
+            { es: "rígido", en: "rigid" },
+            { es: "flexible", en: "flexible" },
+
+            // Quantity & Amount
+            { es: "mucho", en: "much, a lot" },
+            { es: "poco", en: "little, few" },
+            { es: "bastante", en: "enough, quite" },
+            { es: "demasiado", en: "too much" },
+            { es: "suficiente", en: "sufficient" },
+            { es: "varios", en: "several" },
+            { es: "todo", en: "all, every" },
+            { es: "ninguno", en: "none" },
+            { es: "alguno", en: "some" },
+            { es: "otro", en: "other, another" },
+            { es: "mismo", en: "same" },
+            { es: "diferente", en: "different" },
+            { es: "igual", en: "equal, same" },
+            { es: "solo", en: "alone, only" },
+            { es: "único", en: "unique, only" },
+            { es: "doble", en: "double" },
+            { es: "triple", en: "triple" },
+            { es: "múltiple", en: "multiple" },
+            { es: "escaso", en: "scarce" },
+            { es: "abundante", en: "abundant" },
+            { es: "numeroso", en: "numerous" },
+            { es: "innumerable", en: "countless" },
+            { es: "completo", en: "complete" },
+            { es: "incompleto", en: "incomplete" },
+            { es: "parcial", en: "partial" },
+            { es: "total", en: "total" },
+            { es: "entero", en: "whole" },
+            { es: "medio", en: "half" },
+            { es: "máximo", en: "maximum" },
+            { es: "mínimo", en: "minimum" },
+            { es: "adicional", en: "additional" },
+            { es: "extra", en: "extra" },
+
+            // Emotions & Mental States
+            { es: "emocionado", en: "excited" },
+            { es: "asustado", en: "scared" },
+            { es: "preocupado", en: "worried" },
+            { es: "sorprendido", en: "surprised" },
+            { es: "confundido", en: "confused" },
+            { es: "seguro", en: "sure, safe" },
+            { es: "celoso", en: "jealous" },
+            { es: "enamorado", en: "in love" },
+            { es: "contento", en: "content, happy" },
+            { es: "alegre", en: "cheerful" },
+            { es: "deprimido", en: "depressed" },
+            { es: "ansioso", en: "anxious" },
+            { es: "relajado", en: "relaxed" },
+            { es: "estresado", en: "stressed" },
+            { es: "frustrado", en: "frustrated" },
+            { es: "decepcionado", en: "disappointed" },
+            { es: "satisfecho", en: "satisfied" },
+            { es: "insatisfecho", en: "unsatisfied" },
+            { es: "entusiasmado", en: "enthusiastic" },
+            { es: "abatido", en: "dejected" },
+            { es: "esperanzado", en: "hopeful" },
+            { es: "desesperado", en: "desperate" },
+            { es: "agradecido", en: "grateful" },
+            { es: "resentido", en: "resentful" },
+            { es: "avergonzado", en: "embarrassed" },
+            { es: "orgulloso", en: "proud" },
+            { es: "culpable", en: "guilty" },
+            { es: "inocente", en: "innocent" },
+            { es: "inspirado", en: "inspired" },
+            { es: "motivado", en: "motivated" },
+            { es: "desanimado", en: "discouraged" },
+            { es: "nostálgico", en: "nostalgic" },
+            { es: "melancólico", en: "melancholic" },
+            { es: "eufórico", en: "euphoric" },
+            { es: "sereno", en: "serene" },
+            { es: "agitado", en: "agitated" },
+            { es: "perturbado", en: "disturbed" },
+            { es: "aliviado", en: "relieved" },
+            { es: "tenso", en: "tense" },
+            { es: "histérico", en: "hysterical" },
+            { es: "furioso", en: "furious" },
+            { es: "irritado", en: "irritated" },
+            { es: "molesto", en: "annoyed" },
+            { es: "ofendido", en: "offended" },
+            { es: "herido", en: "hurt" },
+            { es: "conmovido", en: "moved" },
+            { es: "impresionado", en: "impressed" },
+            { es: "horrorizado", en: "horrified" },
+            { es: "aterrorizado", en: "terrified" },
+            { es: "encantado", en: "delighted" },
+            { es: "fascinado", en: "fascinated" },
+
+            // General & Abstract
+            { es: "cierto", en: "certain, true" },
+            { es: "falso", en: "false" },
+            { es: "verdadero", en: "true" },
+            { es: "real", en: "real" },
+            { es: "normal", en: "normal" },
+            { es: "extraño", en: "strange" },
+            { es: "especial", en: "special" },
+            { es: "común", en: "common" },
+            { es: "popular", en: "popular" },
+            { es: "famoso", en: "famous" },
+            { es: "secreto", en: "secret" },
+            { es: "público", en: "public" },
+            { es: "privado", en: "private" },
+            { es: "abierto", en: "open" },
+            { es: "cerrado", en: "closed" },
+            { es: "libre", en: "free" },
+            { es: "ocupado", en: "busy, occupied" },
+            { es: "disponible", en: "available" },
+            { es: "preparado", en: "prepared" },
+            { es: "correcto", en: "correct" },
+            { es: "incorrecto", en: "incorrect" },
+            { es: "justo", en: "fair, just" },
+            { es: "injusto", en: "unfair" },
+            { es: "típico", en: "typical" },
+            { es: "obvio", en: "obvious" },
+            { es: "confuso", en: "confusing" },
+            { es: "peligroso", en: "dangerous" },
+            { es: "salvaje", en: "wild" },
+            { es: "doméstico", en: "domestic" },
+            { es: "favorito", en: "favorite" },
+            { es: "preferido", en: "preferred" },
+            { es: "principal", en: "main" },
+            { es: "secundario", en: "secondary" },
+            { es: "fundamental", en: "fundamental" },
+            { es: "esencial", en: "essential" },
+            { es: "opcional", en: "optional" },
+            { es: "obligatorio", en: "mandatory" },
+            { es: "voluntario", en: "voluntary" },
+            { es: "forzado", en: "forced" },
+            { es: "natural", en: "natural" },
+            { es: "artificial", en: "artificial" },
+            { es: "automático", en: "automatic" },
+            { es: "manual", en: "manual" },
+            { es: "digital", en: "digital" },
+            { es: "analógico", en: "analog" },
+            { es: "virtual", en: "virtual" },
+            { es: "físico", en: "physical" },
+            { es: "mental", en: "mental" },
+            { es: "emocional", en: "emotional" },
+            { es: "racional", en: "rational" },
+            { es: "lógico", en: "logical" },
+            { es: "ilógico", en: "illogical" },
+            { es: "absurdo", en: "absurd" },
+            { es: "razonable", en: "reasonable" },
+            { es: "irracional", en: "irrational" },
+            { es: "objetivo", en: "objective" },
+            { es: "subjetivo", en: "subjective" },
+            { es: "absoluto", en: "absolute" },
+            { es: "relativo", en: "relative" },
+            { es: "definitivo", en: "definitive" },
+            { es: "provisional", en: "provisional" },
+            { es: "evidente", en: "evident" },
+            { es: "invisible", en: "invisible" },
+            { es: "visible", en: "visible" },
+            { es: "audible", en: "audible" },
+            { es: "inaudible", en: "inaudible" },
+            { es: "táctil", en: "tactile" },
+            { es: "intangible", en: "intangible" },
+            { es: "concreto", en: "concrete" },
+            { es: "abstracto", en: "abstract" },
+            { es: "teórico", en: "theoretical" },
+            { es: "práctico", en: "practical" },
+            { es: "académico", en: "academic" },
+            { es: "profesional", en: "professional" },
+            { es: "amateur", en: "amateur" },
+            { es: "experto", en: "expert" },
+            { es: "novato", en: "novice" },
+            { es: "experimentado", en: "experienced" },
+            { es: "ingenuo", en: "naive" },
+            { es: "inocente", en: "innocent" },
+            { es: "culpable", en: "guilty" },
+            { es: "sospechoso", en: "suspicious" },
+            { es: "confiado", en: "trusting" },
+            { es: "cauteloso", en: "cautious" },
+            { es: "arriesgado", en: "risky" },
+            { es: "conservador", en: "conservative" },
+            { es: "progresista", en: "progressive" },
+            { es: "tradicional", en: "traditional" },
+            { es: "innovador", en: "innovative" },
+            { es: "creativo", en: "creative" },
+            { es: "destructivo", en: "destructive" },
+            { es: "constructivo", en: "constructive" },
+            { es: "productivo", en: "productive" },
+            { es: "improductivo", en: "unproductive" },
+            { es: "eficiente", en: "efficient" },
+            { es: "ineficiente", en: "inefficient" },
+            { es: "efectivo", en: "effective" },
+            { es: "inefectivo", en: "ineffective" },
+            { es: "rentable", en: "profitable" },
+            { es: "costoso", en: "costly" },
+            { es: "gratuito", en: "free of charge" },
+            { es: "voluntario", en: "voluntary" },
+            { es: "involuntario", en: "involuntary" },
+            { es: "consciente", en: "conscious" },
+            { es: "inconsciente", en: "unconscious" },
+            { es: "intencional", en: "intentional" },
+            { es: "accidental", en: "accidental" },
+            { es: "deliberado", en: "deliberate" },
+            { es: "espontáneo", en: "spontaneous" },
+            { es: "planificado", en: "planned" },
+            { es: "improvisado", en: "improvised" },
+            { es: "organizado", en: "organized" },
+            { es: "desordenado", en: "messy" },
+            { es: "ordenado", en: "tidy" },
+            { es: "caótico", en: "chaotic" },
+            { es: "sistemático", en: "systematic" },
+            { es: "aleatorio", en: "random" },
+            { es: "predecible", en: "predictable" },
+            { es: "impredecible", en: "unpredictable" },
+            { es: "estable", en: "stable" },
+            { es: "inestable", en: "unstable" },
+            { es: "variable", en: "variable" },
+            { es: "fijo", en: "fixed" },
+            { es: "móvil", en: "mobile" },
+            { es: "portátil", en: "portable" },
+            { es: "pesado", en: "heavy" },
+            { es: "liviano", en: "lightweight" },
+            { es: "compacto", en: "compact" },
+            { es: "espacioso", en: "spacious" },
+            { es: "cómodo", en: "comfortable" },
+            { es: "incómodo", en: "uncomfortable" },
+            { es: "conveniente", en: "convenient" },
+            { es: "inconveniente", en: "inconvenient" },
+            { es: "práctico", en: "practical" },
+            { es: "impracticable", en: "impractical" },
+            { es: "factible", en: "feasible" },
+            { es: "viable", en: "viable" },
+            { es: "sostenible", en: "sustainable" },
+            { es: "insostenible", en: "unsustainable" },
+            { es: "renovable", en: "renewable" },
+            { es: "reciclable", en: "recyclable" },
+            { es: "biodegradable", en: "biodegradable" },
+            { es: "tóxico", en: "toxic" },
+            { es: "venenoso", en: "poisonous" },
+            { es: "inofensivo", en: "harmless" },
+            { es: "nocivo", en: "harmful" },
+            { es: "beneficioso", en: "beneficial" },
+            { es: "perjudicial", en: "detrimental" },
+            { es: "saludable", en: "healthy" },
+            { es: "enfermizo", en: "sickly" },
+            { es: "robusto", en: "robust" },
+            { es: "frágil", en: "fragile" },
+            { es: "resistente", en: "resistant" },
+            { es: "vulnerable", en: "vulnerable" },
+            { es: "inmune", en: "immune" },
+            { es: "sensible", en: "sensitive" },
+            { es: "insensible", en: "insensitive" },
+            { es: "delicado", en: "delicate" },
+            { es: "brusco", en: "abrupt" },
+            { es: "gentil", en: "gentle" },
+            { es: "violento", en: "violent" },
+            { es: "pacífico", en: "peaceful" },
+            { es: "agresivo", en: "aggressive" },
+            { es: "pasivo", en: "passive" },
+            { es: "activo", en: "active" },
+            { es: "dinámico", en: "dynamic" },
+            { es: "estático", en: "static" },
+            { es: "energético", en: "energetic" },
+            { es: "letárgico", en: "lethargic" },
+
+            // Weather & Nature
+            { es: "soleado", en: "sunny" },
+            { es: "nublado", en: "cloudy" },
+            { es: "lluvioso", en: "rainy" },
+            { es: "tormentoso", en: "stormy" },
+            { es: "nevado", en: "snowy" },
+            { es: "ventoso", en: "windy" },
+            { es: "húmedo", en: "humid" },
+            { es: "árido", en: "arid" },
+            { es: "tropical", en: "tropical" },
+            { es: "polar", en: "polar" },
+            { es: "templado", en: "temperate" },
+            { es: "selvático", en: "jungle-like" },
+            { es: "desértico", en: "desert-like" },
+            { es: "montañoso", en: "mountainous" },
+            { es: "costero", en: "coastal" },
+            { es: "marino", en: "marine" },
+            { es: "terrestre", en: "terrestrial" },
+            { es: "acuático", en: "aquatic" },
+            { es: "aéreo", en: "aerial" },
+            { es: "subterráneo", en: "underground" },
+            { es: "volcánico", en: "volcanic" },
+            { es: "sísmico", en: "seismic" },
+            { es: "florido", en: "flowery" },
+            { es: "frondoso", en: "leafy" },
+            { es: "silvestre", en: "wild" },
+            { es: "cultivado", en: "cultivated" },
+
+            // Food & Cooking
+            { es: "crudo", en: "raw" },
+            { es: "cocido", en: "cooked" },
+            { es: "asado", en: "roasted" },
+            { es: "frito", en: "fried" },
+            { es: "hervido", en: "boiled" },
+            { es: "horneado", en: "baked" },
+            { es: "ahumado", en: "smoked" },
+            { es: "marinado", en: "marinated" },
+            { es: "condimentado", en: "seasoned" },
+            { es: "casero", en: "homemade" },
+            { es: "orgánico", en: "organic" },
+            { es: "procesado", en: "processed" },
+            { es: "fresco", en: "fresh" },
+            { es: "podrido", en: "rotten" },
+            { es: "maduro", en: "ripe" },
+            { es: "verde", en: "unripe" },
+            { es: "congelado", en: "frozen" },
+            { es: "enlatado", en: "canned" },
+            { es: "nutritivo", en: "nutritious" },
+            { es: "grasoso", en: "greasy" },
+            { es: "magro", en: "lean" },
+            { es: "tierno", en: "tender" },
+            { es: "correoso", en: "chewy" },
+
+            // Materials & Textures
+            { es: "metálico", en: "metallic" },
+            { es: "plástico", en: "plastic" },
+            { es: "cristalino", en: "crystalline" },
+            { es: "vidrioso", en: "glassy" },
+            { es: "cerámico", en: "ceramic" },
+            { es: "textil", en: "textile" },
+            { es: "lanudo", en: "woolly" },
+            { es: "sedoso", en: "silky" },
+            { es: "aterciopelado", en: "velvety" },
+            { es: "acolchado", en: "padded" },
+            { es: "afilado", en: "sharp" },
+            { es: "puntiagudo", en: "pointed" },
+            { es: "redondeado", en: "rounded" },
+            { es: "ondulado", en: "wavy" },
+            { es: "rizado", en: "curly" },
+            { es: "liso", en: "straight, smooth" },
+            { es: "rugoso", en: "wrinkled" },
+            { es: "arrugado", en: "wrinkled" },
+            { es: "agrietado", en: "cracked" },
+            { es: "pulido", en: "polished" },
+            { es: "oxidado", en: "rusty" },
+            { es: "brilloso", en: "shiny" },
+            { es: "mate", en: "matte" },
+            { es: "satinado", en: "satin" },
+            { es: "esmaltado", en: "enameled" },
+            { es: "barnizado", en: "varnished" },
+            { es: "pintado", en: "painted" },
+            { es: "teñido", en: "dyed" },
+            { es: "bordado", en: "embroidered" },
+            { es: "tejido", en: "woven" },
+            { es: "trenzado", en: "braided" },
+
+            // Body & Health
+            { es: "musculoso", en: "muscular" },
+            { es: "atlético", en: "athletic" },
+            { es: "esbelto", en: "slender" },
+            { es: "corpulento", en: "corpulent" },
+            { es: "obeso", en: "obese" },
+            { es: "desnutrido", en: "malnourished" },
+            { es: "bronceado", en: "tanned" },
+            { es: "pálido", en: "pale" },
+            { es: "sonrojado", en: "blushed" },
+            { es: "arrugado", en: "wrinkled" },
+            { es: "juvenil", en: "youthful" },
+            { es: "senil", en: "senile" },
+            { es: "fértil", en: "fertile" },
+            { es: "estéril", en: "sterile" },
+            { es: "contagioso", en: "contagious" },
+            { es: "infeccioso", en: "infectious" },
+            { es: "crónico", en: "chronic" },
+            { es: "agudo", en: "acute" },
+            { es: "terminal", en: "terminal" },
+            { es: "benigno", en: "benign" },
+            { es: "maligno", en: "malignant" },
+            { es: "hereditario", en: "hereditary" },
+            { es: "genético", en: "genetic" },
+            { es: "congénito", en: "congenital" },
+            { es: "adquirido", en: "acquired" },
+            { es: "inmunizado", en: "immunized" },
+            { es: "vacunado", en: "vaccinated" },
+            { es: "alérgico", en: "allergic" },
+            { es: "diabético", en: "diabetic" },
+            { es: "cardíaco", en: "cardiac" },
+            { es: "pulmonar", en: "pulmonary" },
+            { es: "cerebral", en: "cerebral" },
+            { es: "intestinal", en: "intestinal" },
+            { es: "renal", en: "renal" },
+            { es: "hepático", en: "hepatic" },
+
+            // Social & Relationships
+            { es: "casado", en: "married" },
+            { es: "soltero", en: "single" },
+            { es: "divorciado", en: "divorced" },
+            { es: "viudo", en: "widowed" },
+            { es: "comprometido", en: "engaged" },
+            { es: "enamorado", en: "in love" },
+            { es: "separado", en: "separated" },
+            { es: "maternal", en: "maternal" },
+            { es: "paternal", en: "paternal" },
+            { es: "fraternal", en: "fraternal" },
+            { es: "filial", en: "filial" },
+            { es: "conyugal", en: "conjugal" },
+            { es: "familiar", en: "familiar" },
+            { es: "amistoso", en: "friendly" },
+            { es: "hostil", en: "hostile" },
+            { es: "cordial", en: "cordial" },
+            { es: "afectuoso", en: "affectionate" },
+            { es: "cálido", en: "warm" },
+            { es: "distante", en: "distant" },
+            { es: "cercano", en: "close" },
+            { es: "íntimo", en: "intimate" },
+            { es: "superficial", en: "superficial" },
+            { es: "leal", en: "loyal" },
+            { es: "traidor", en: "treacherous" },
+            { es: "fiel", en: "faithful" },
+            { es: "infiel", en: "unfaithful" },
+
+            // Work & Professional
+            { es: "laboral", en: "work-related" },
+            { es: "empresarial", en: "business" },
+            { es: "comercial", en: "commercial" },
+            { es: "industrial", en: "industrial" },
+            { es: "agrícola", en: "agricultural" },
+            { es: "tecnológico", en: "technological" },
+            { es: "científico", en: "scientific" },
+            { es: "artístico", en: "artistic" },
+            { es: "literario", en: "literary" },
+            { es: "musical", en: "musical" },
+            { es: "teatral", en: "theatrical" },
+            { es: "cinematográfico", en: "cinematographic" },
+            { es: "periodístico", en: "journalistic" },
+            { es: "editorial", en: "editorial" },
+            { es: "publicitario", en: "advertising" },
+            { es: "financiero", en: "financial" },
+            { es: "bancario", en: "banking" },
+            { es: "contable", en: "accounting" },
+            { es: "administrativo", en: "administrative" },
+            { es: "ejecutivo", en: "executive" },
+            { es: "gerencial", en: "managerial" },
+            { es: "operativo", en: "operational" },
+            { es: "estratégico", en: "strategic" },
+            { es: "táctico", en: "tactical" },
+            { es: "logístico", en: "logistical" },
+            { es: "competitivo", en: "competitive" },
+            { es: "colaborativo", en: "collaborative" },
+            { es: "cooperativo", en: "cooperative" },
+            { es: "corporativo", en: "corporate" },
+            { es: "sindical", en: "union" },
+            { es: "salarial", en: "salary-related" },
+            { es: "pensional", en: "pension-related" },
+            { es: "jubilado", en: "retired" },
+            { es: "desempleado", en: "unemployed" },
+            { es: "autónomo", en: "self-employed" },
+            { es: "asalariado", en: "salaried" },
+            { es: "freelance", en: "freelance" },
+            { es: "temporal", en: "temporary" },
+            { es: "permanente", en: "permanent" },
+            { es: "parcial", en: "part-time" },
+            { es: "completo", en: "full-time" },
+
+            // Education & Learning
+            { es: "educativo", en: "educational" },
+            { es: "pedagógico", en: "pedagogical" },
+            { es: "didáctico", en: "didactic" },
+            { es: "escolar", en: "school" },
+            { es: "universitario", en: "university" },
+            { es: "doctoral", en: "doctoral" },
+            { es: "graduado", en: "graduate" },
+            { es: "licenciado", en: "licensed" },
+            { es: "certificado", en: "certified" },
+            { es: "titulado", en: "titled" },
+            { es: "alfabetizado", en: "literate" },
+            { es: "analfabeto", en: "illiterate" },
+            { es: "bilingüe", en: "bilingual" },
+            { es: "multilingüe", en: "multilingual" },
+            { es: "nativo", en: "native" },
+            { es: "extranjero", en: "foreign" },
+            { es: "autodidacta", en: "self-taught" },
+            { es: "estudioso", en: "studious" },
+            { es: "aplicado", en: "diligent" },
+            { es: "brillante", en: "brilliant" },
+            { es: "mediocre", en: "mediocre" },
+            { es: "sobresaliente", en: "outstanding" },
+            { es: "notable", en: "notable" },
+            { es: "aprobado", en: "passed" },
+            { es: "reprobado", en: "failed" },
+            { es: "suspendido", en: "suspended" },
+            { es: "expulsado", en: "expelled" },
+            { es: "becado", en: "scholarship" },
+
+            // Legal & Political
+            { es: "legal", en: "legal" },
+            { es: "ilegal", en: "illegal" },
+            { es: "legítimo", en: "legitimate" },
+            { es: "ilegítimo", en: "illegitimate" },
+            { es: "constitucional", en: "constitutional" },
+            { es: "inconstitucional", en: "unconstitutional" },
+            { es: "judicial", en: "judicial" },
+            { es: "penal", en: "penal" },
+            { es: "civil", en: "civil" },
+            { es: "criminal", en: "criminal" },
+            { es: "delictivo", en: "criminal" },
+            { es: "culposo", en: "negligent" },
+            { es: "doloso", en: "willful" },
+            { es: "fraudulento", en: "fraudulent" },
+            { es: "corrupto", en: "corrupt" },
+            { es: "sobornado", en: "bribed" },
+            { es: "acusado", en: "accused" },
+            { es: "absuelto", en: "acquitted" },
+            { es: "condenado", en: "convicted" },
+            { es: "encarcelado", en: "imprisoned" },
+            { es: "libertado", en: "freed" },
+            { es: "democrático", en: "democratic" },
+            { es: "autoritario", en: "authoritarian" },
+            { es: "dictatorial", en: "dictatorial" },
+            { es: "totalitario", en: "totalitarian" },
+            { es: "republicano", en: "republican" },
+            { es: "monárquico", en: "monarchic" },
+            { es: "parlamentario", en: "parliamentary" },
+            { es: "presidencial", en: "presidential" },
+            { es: "federal", en: "federal" },
+            { es: "estatal", en: "state" },
+            { es: "municipal", en: "municipal" },
+            { es: "local", en: "local" },
+            { es: "regional", en: "regional" },
+            { es: "nacional", en: "national" },
+            { es: "internacional", en: "international" },
+            { es: "global", en: "global" },
+            { es: "mundial", en: "worldwide" },
+            { es: "continental", en: "continental" },
+            { es: "hemisférico", en: "hemispheric" },
+            { es: "bilateral", en: "bilateral" },
+            { es: "multilateral", en: "multilateral" },
+            { es: "unilateral", en: "unilateral" },
+
+            // Religion & Spirituality
+            { es: "religioso", en: "religious" },
+            { es: "espiritual", en: "spiritual" },
+            { es: "sagrado", en: "sacred" },
+            { es: "profano", en: "profane" },
+            { es: "divino", en: "divine" },
+            { es: "celestial", en: "celestial" },
+            { es: "terrenal", en: "earthly" },
+            { es: "mundano", en: "mundane" },
+            { es: "santo", en: "holy" },
+            { es: "pecador", en: "sinful" },
+            { es: "bendito", en: "blessed" },
+            { es: "maldito", en: "cursed" },
+            { es: "milagroso", en: "miraculous" },
+            { es: "místico", en: "mystical" },
+            { es: "devoto", en: "devout" },
+            { es: "ateo", en: "atheist" },
+            { es: "agnóstico", en: "agnostic" },
+            { es: "católico", en: "Catholic" },
+            { es: "protestante", en: "Protestant" },
+            { es: "ortodoxo", en: "Orthodox" },
+            { es: "judío", en: "Jewish" },
+            { es: "musulmán", en: "Muslim" },
+            { es: "budista", en: "Buddhist" },
+            { es: "hindú", en: "Hindu" },
+            { es: "pagano", en: "pagan" },
+
+            // Architecture & Construction
+            { es: "arquitectónico", en: "architectural" },
+            { es: "estructural", en: "structural" },
+            { es: "residencial", en: "residential" },
+            { es: "habitacional", en: "housing" },
+            { es: "urbano", en: "urban" },
+            { es: "rural", en: "rural" },
+            { es: "suburbano", en: "suburban" },
+            { es: "céntrico", en: "central" },
+            { es: "periférico", en: "peripheral" },
+            { es: "renovado", en: "renovated" },
+            { es: "restaurado", en: "restored" },
+            { es: "demolido", en: "demolished" },
+            { es: "construido", en: "built" },
+            { es: "prefabricado", en: "prefabricated" },
+            { es: "modular", en: "modular" },
+            { es: "antisísmico", en: "earthquake-resistant" },
+            { es: "aislado", en: "insulated" },
+            { es: "ventilado", en: "ventilated" },
+            { es: "climatizado", en: "air-conditioned" },
+            { es: "iluminado", en: "illuminated" },
+            { es: "amueblado", en: "furnished" },
+            { es: "decorado", en: "decorated" },
+            { es: "remodelado", en: "remodeled" },
+            { es: "ampliado", en: "expanded" },
+
+            // Transportation
+            { es: "vehicular", en: "vehicular" },
+            { es: "peatonal", en: "pedestrian" },
+            { es: "motorizado", en: "motorized" },
+            { es: "eléctrico", en: "electric" },
+            { es: "híbrido", en: "hybrid" },
+            { es: "automático", en: "automatic" },
+            { es: "manual", en: "manual" },
+            { es: "aéreo", en: "aerial" },
+            { es: "marítimo", en: "maritime" },
+            { es: "fluvial", en: "river" },
+            { es: "ferroviario", en: "railway" },
+            { es: "subterráneo", en: "underground" },
+            { es: "elevado", en: "elevated" },
+            { es: "blindado", en: "armored" },
+            { es: "descapotable", en: "convertible" },
+            { es: "deportivo", en: "sporty" },
+            { es: "utilitario", en: "utility" },
+            { es: "comercial", en: "commercial" },
+            { es: "particular", en: "private" },
+            { es: "alquilado", en: "rented" },
+            { es: "prestado", en: "borrowed" },
+            { es: "robado", en: "stolen" },
+            { es: "recuperado", en: "recovered" },
+            { es: "asegurado", en: "insured" },
+
+            // Technology & Computing
+            { es: "informático", en: "computing" },
+            { es: "computacional", en: "computational" },
+            { es: "programable", en: "programmable" },
+            { es: "compatible", en: "compatible" },
+            { es: "incompatible", en: "incompatible" },
+            { es: "interactivo", en: "interactive" },
+            { es: "multimedia", en: "multimedia" },
+            { es: "inalámbrico", en: "wireless" },
+            { es: "conectado", en: "connected" },
+            { es: "desconectado", en: "disconnected" },
+            { es: "encriptado", en: "encrypted" },
+            { es: "hackeado", en: "hacked" },
+            { es: "actualizado", en: "updated" },
+            { es: "obsoleto", en: "obsolete" },
+            { es: "descargable", en: "downloadable" },
+            { es: "instalado", en: "installed" },
+            { es: "configurado", en: "configured" },
+            { es: "reiniciado", en: "restarted" },
+            { es: "bloqueado", en: "blocked" },
+            { es: "desbloqueado", en: "unlocked" },
+            { es: "sincronizado", en: "synchronized" },
+            { es: "respaldado", en: "backed up" },
+            { es: "eliminado", en: "deleted" },
+            { es: "recuperado", en: "recovered" },
+            { es: "compartido", en: "shared" },
+            { es: "privado", en: "private" },
+            { es: "viral", en: "viral" },
+            { es: "trending", en: "trending" },
+
+            // Sports & Fitness
+            { es: "deportivo", en: "sporty" },
+            { es: "competitivo", en: "competitive" },
+            { es: "olímpico", en: "Olympic" },
+            { es: "profesional", en: "professional" },
+            { es: "amateur", en: "amateur" },
+            { es: "ganador", en: "winning" },
+            { es: "perdedor", en: "losing" },
+            { es: "empatado", en: "tied" },
+            { es: "clasificado", en: "qualified" },
+            { es: "eliminado", en: "eliminated" },
+            { es: "lesionado", en: "injured" },
+            { es: "recuperado", en: "recovered" },
+            { es: "entrenado", en: "trained" },
+            { es: "acondicionado", en: "conditioned" },
+            { es: "calentado", en: "warmed up" },
+            { es: "estirado", en: "stretched" },
+            { es: "tonificado", en: "toned" },
+            { es: "definido", en: "defined" },
+            { es: "aeróbico", en: "aerobic" },
+            { es: "anaeróbico", en: "anaerobic" },
+            { es: "cardiovascular", en: "cardiovascular" },
+            { es: "muscular", en: "muscular" },
+
+            // Art & Aesthetics
+            { es: "estético", en: "aesthetic" },
+            { es: "artístico", en: "artistic" },
+            { es: "pictórico", en: "pictorial" },
+            { es: "escultórico", en: "sculptural" },
+            { es: "figurativo", en: "figurative" },
+            { es: "abstracto", en: "abstract" },
+            { es: "surrealista", en: "surrealist" },
+            { es: "impresionista", en: "impressionist" },
+            { es: "expresionista", en: "expressionist" },
+            { es: "minimalista", en: "minimalist" },
+            { es: "barroco", en: "baroque" },
+            { es: "gótico", en: "gothic" },
+            { es: "clásico", en: "classical" },
+            { es: "romántico", en: "romantic" },
+            { es: "moderno", en: "modern" },
+            { es: "posmoderno", en: "postmodern" },
+            { es: "vanguardista", en: "avant-garde" },
+            { es: "kitsch", en: "kitsch" },
+            { es: "ecléctico", en: "eclectic" },
+            { es: "ornamental", en: "ornamental" },
+            { es: "decorativo", en: "decorative" },
+            { es: "funcional", en: "functional" },
+            { es: "simbólico", en: "symbolic" },
+            { es: "alegórico", en: "allegorical" },
+            { es: "icónico", en: "iconic" },
+
+            // Music
+            { es: "melódico", en: "melodic" },
+            { es: "armónico", en: "harmonic" },
+            { es: "rítmico", en: "rhythmic" },
+            { es: "sinfónico", en: "symphonic" },
+            { es: "coral", en: "choral" },
+            { es: "instrumental", en: "instrumental" },
+            { es: "vocal", en: "vocal" },
+            { es: "acústico", en: "acoustic" },
+            { es: "electrónico", en: "electronic" },
+            { es: "clásico", en: "classical" },
+            { es: "folclórico", en: "folk" },
+            { es: "popular", en: "popular" },
+            { es: "experimental", en: "experimental" },
+            { es: "improvisado", en: "improvised" },
+            { es: "compuesto", en: "composed" },
+            { es: "arreglado", en: "arranged" },
+            { es: "grabado", en: "recorded" },
+            { es: "mezclado", en: "mixed" },
+            { es: "masterizado", en: "mastered" },
+            { es: "afinado", en: "tuned" },
+            { es: "desafinado", en: "out of tune" },
+
+            // Miscellaneous additions
+            { es: "cotidiano", en: "everyday" },
+            { es: "excepcional", en: "exceptional" },
+            { es: "extraordinario", en: "extraordinary" },
+            { es: "corriente", en: "ordinary" },
+            { es: "peculiar", en: "peculiar" },
+            { es: "singular", en: "singular" },
+            { es: "plural", en: "plural" },
+            { es: "colectivo", en: "collective" },
+            { es: "individual", en: "individual" },
+            { es: "grupal", en: "group" },
+            { es: "masivo", en: "massive" },
+            { es: "minoritario", en: "minority" },
+            { es: "mayoritario", en: "majority" },
+            { es: "unánime", en: "unanimous" },
+            { es: "dividido", en: "divided" },
+            { es: "unido", en: "united" },
+            { es: "fragmentado", en: "fragmented" },
+            { es: "integrado", en: "integrated" },
+            { es: "aislado", en: "isolated" },
+            { es: "conectado", en: "connected" },
+            { es: "vinculado", en: "linked" },
+            { es: "asociado", en: "associated" },
+            { es: "afiliado", en: "affiliated" },
+            { es: "independiente", en: "independent" },
+            { es: "dependiente", en: "dependent" },
+            { es: "autosuficiente", en: "self-sufficient" },
+            { es: "interdependiente", en: "interdependent" },
+            { es: "recíproco", en: "reciprocal" },
+            { es: "mutuo", en: "mutual" },
+            { es: "unidireccional", en: "unidirectional" },
+            { es: "bidireccional", en: "bidirectional" },
+            { es: "multidireccional", en: "multidirectional" },
+            { es: "omnidireccional", en: "omnidirectional" },
+            { es: "centrífugo", en: "centrifugal" },
+            { es: "centrípeto", en: "centripetal" },
+            { es: "convergente", en: "convergent" },
+            { es: "divergente", en: "divergent" },
+            { es: "paralelo", en: "parallel" },
+            { es: "perpendicular", en: "perpendicular" },
+            { es: "diagonal", en: "diagonal" },
+            { es: "horizontal", en: "horizontal" },
+            { es: "vertical", en: "vertical" },
+            { es: "inclinado", en: "inclined" },
+            { es: "torcido", en: "twisted" },
+            { es: "doblado", en: "folded" },
+            { es: "enrollado", en: "rolled" },
+            { es: "desplegado", en: "unfolded" },
+            { es: "extendido", en: "extended" },
+            { es: "contraído", en: "contracted" },
+            { es: "expandido", en: "expanded" },
+            { es: "comprimido", en: "compressed" },
+            { es: "estirado", en: "stretched" },
+            { es: "encogido", en: "shrunk" },
+            { es: "hinchado", en: "swollen" },
+            { es: "desinflado", en: "deflated" },
+            { es: "inflado", en: "inflated" },
+            { es: "derretido", en: "melted" },
+            { es: "solidificado", en: "solidified" },
+            { es: "evaporado", en: "evaporated" },
+            { es: "condensado", en: "condensed" },
+            { es: "cristalizado", en: "crystallized" },
+            { es: "disuelto", en: "dissolved" },
+            { es: "mezclado", en: "mixed" },
+            { es: "separado", en: "separated" },
+            { es: "filtrado", en: "filtered" },
+            { es: "destilado", en: "distilled" },
+            { es: "fermentado", en: "fermented" },
+            { es: "oxidado", en: "oxidized" },
+            { es: "reducido", en: "reduced" },
+            { es: "neutralizado", en: "neutralized" },
+            { es: "catalizado", en: "catalyzed" },
+        ];
+
+        const WORDS_TO_SHOW = 150;
+
+        // Levenshtein distance to detect cognates
+        function levenshtein(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) {
+                matrix[i] = [i];
+            }
+            for (let j = 0; j <= a.length; j++) {
+                matrix[0][j] = j;
+            }
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        // Get similarity score (0 = very different, 1 = identical)
+        function getSimilarity(spanish, english) {
+            // Get first English word (before comma)
+            const englishFirst = english.split(',')[0].trim().toLowerCase();
+            const spanishLower = spanish.toLowerCase()
+                .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
+                .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ñ/g, 'n');
+
+            const distance = levenshtein(spanishLower, englishFirst);
+            const maxLen = Math.max(spanishLower.length, englishFirst.length);
+            return 1 - (distance / maxLen);
+        }
+
+        // Get gradient color based on similarity
+        // Hard (different) = orange #F97316, Easy (similar) = gray #555
+        function getDifficultyColor(similarity) {
+            // Clamp similarity between 0 and 1
+            const s = Math.max(0, Math.min(1, similarity));
+
+            // Orange RGB: 249, 115, 22
+            // Gray RGB: 85, 85, 85
+            const r = Math.round(249 + s * (85 - 249));
+            const g = Math.round(115 + s * (85 - 115));
+            const b = Math.round(22 + s * (85 - 22));
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        const svg = document.getElementById('wordCloud');
+        const translationBox = document.getElementById('translationBox');
+        const spanishWord = document.getElementById('spanishWord');
+        const englishWord = document.getElementById('englishWord');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        let activeWord = null;
+
+        function renderWords() {
+            // Clear SVG
+            svg.innerHTML = '';
+            translationBox.classList.remove('visible');
+            activeWord = null;
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // Shuffle and take subset
+            const shuffled = [...allAdjectives].sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, WORDS_TO_SHOW);
+
+            // Place words avoiding overlap
+            const placed = [];
+            const padding = 15;
+
+            function checkOverlap(x, y, w, h) {
+                for (const p of placed) {
+                    if (x < p.x + p.w + padding &&
+                        x + w + padding > p.x &&
+                        y - h < p.y + padding &&
+                        y + padding > p.y - p.h) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            selected.forEach((adj, i) => {
+                const fontSize = 14 + Math.random() * 18;
+                const approxWidth = adj.es.length * fontSize * 0.6;
+                const approxHeight = fontSize;
+
+                let x, y, attempts = 0;
+                do {
+                    x = 60 + Math.random() * (width - 150);
+                    y = 80 + Math.random() * (height - 160);
+                    attempts++;
+                } while (checkOverlap(x, y, approxWidth, approxHeight) && attempts < 100);
+
+                if (attempts < 100) {
+                    placed.push({ x, y, w: approxWidth, h: approxHeight });
+
+                    const similarity = getSimilarity(adj.es, adj.en);
+                    const color = getDifficultyColor(similarity);
+
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', x);
+                    text.setAttribute('y', y);
+                    text.setAttribute('font-size', fontSize);
+                    text.setAttribute('fill', color);
+                    text.setAttribute('class', 'word');
+                    text.setAttribute('font-family', '-apple-system, BlinkMacSystemFont, sans-serif');
+                    text.textContent = adj.es;
+
+                    text.addEventListener('click', () => {
+                        if (activeWord) {
+                            activeWord.classList.remove('active');
+                        }
+                        text.classList.add('active');
+                        activeWord = text;
+
+                        spanishWord.textContent = adj.es;
+                        englishWord.textContent = adj.en;
+                        translationBox.classList.add('visible');
+                    });
+
+                    svg.appendChild(text);
+                }
+            });
+        }
+
+        refreshBtn.addEventListener('click', renderWords);
+
+        // Initial render
+        renderWords();
+    </script>
+</body>
+</html>

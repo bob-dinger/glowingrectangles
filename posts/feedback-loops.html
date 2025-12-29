@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Loops</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 60px;
+            padding: 40px;
+        }
+
+        .loop-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .loop-label {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .loop-label.positive { color: #EF4444; }
+        .loop-label.negative { color: #22C55E; }
+
+        canvas {
+            border-radius: 50%;
+            background: #0f0f14;
+            border: 1px solid #222;
+        }
+
+        .loop-description {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+            max-width: 200px;
+        }
+
+        .drawer {
+            width: 340px;
+            height: 100vh;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .drawer-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+
+        .drawer-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            background: #22C55E;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 15px;
+        }
+
+        .btn:hover {
+            background: #16A34A;
+        }
+
+        .btn.secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn.secondary:hover {
+            background: #444;
+        }
+
+        .examples {
+            margin-bottom: 25px;
+        }
+
+        .example-group {
+            margin-bottom: 20px;
+        }
+
+        .example-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .example-title.positive { color: #EF4444; }
+        .example-title.negative { color: #22C55E; }
+
+        .example-list {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .insight-box {
+            background: #1a1a1a;
+            border-left: 3px solid #F59E0B;
+            padding: 15px;
+            margin-top: auto;
+        }
+
+        .insight-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .insight-text {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 900px) {
+            .drawer {
+                display: none;
+            }
+            .main-content {
+                flex-direction: column;
+                gap: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back</a>
+
+    <div class="main-content">
+        <div class="loop-container">
+            <div class="loop-label positive">Positive Feedback</div>
+            <canvas id="positiveCanvas" width="280" height="280"></canvas>
+            <div class="loop-description">Amplifies change. More leads to more.</div>
+        </div>
+
+        <div class="loop-container">
+            <div class="loop-label negative">Negative Feedback</div>
+            <canvas id="negativeCanvas" width="280" height="280"></canvas>
+            <div class="loop-description">Resists change. Returns to balance.</div>
+        </div>
+    </div>
+
+    <div class="drawer">
+        <div class="drawer-title">Feedback Loops</div>
+        <div class="drawer-subtitle">How systems amplify or stabilize</div>
+
+        <button class="btn" id="playBtn">Start</button>
+        <button class="btn secondary" id="resetBtn">Reset</button>
+
+        <div class="examples">
+            <div class="example-group">
+                <div class="example-title positive">Positive (Reinforcing)</div>
+                <div class="example-list">
+                    Compound interest<br>
+                    Viral spread<br>
+                    Bank runs<br>
+                    Audio feedback screech<br>
+                    Population explosion
+                </div>
+            </div>
+
+            <div class="example-group">
+                <div class="example-title negative">Negative (Balancing)</div>
+                <div class="example-list">
+                    Thermostat<br>
+                    Body temperature<br>
+                    Predator-prey cycles<br>
+                    Supply and demand<br>
+                    Cruise control
+                </div>
+            </div>
+        </div>
+
+        <div class="insight-box">
+            <div class="insight-title">The Paradox</div>
+            <div class="insight-text">
+                "Positive" feedback often causes crashes and bubbles. "Negative" feedback keeps you alive. The names describe the math, not the outcome.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const posCanvas = document.getElementById('positiveCanvas');
+        const negCanvas = document.getElementById('negativeCanvas');
+        const posCtx = posCanvas.getContext('2d');
+        const negCtx = negCanvas.getContext('2d');
+        const centerX = 140;
+        const centerY = 140;
+
+        let animating = false;
+        let animationId = null;
+
+        // Positive feedback state
+        let posRadius = 15;
+        let posParticles = [];
+        let posMaxRadius = 100;
+
+        // Negative feedback state
+        let negRadius = 60;
+        let negTargetRadius = 35;
+        let negParticles = [];
+
+        class Particle {
+            constructor(startAngle, size, growing, color) {
+                this.startAngle = startAngle;
+                this.progress = 0; // 0 to 1 around the loop
+                this.size = size;
+                this.growing = growing; // true = will add to circle, false = will subtract
+                this.color = color;
+                this.loopRadius = 70; // how far out the loop goes
+            }
+
+            update() {
+                this.progress += 0.012;
+                return this.progress >= 1;
+            }
+
+            getPosition(circleRadius) {
+                // Particle travels in a loop: exits circle, arcs around, returns
+                const angle = this.startAngle + this.progress * Math.PI * 2;
+
+                // Distance from center varies - goes out then comes back
+                const loopPhase = Math.sin(this.progress * Math.PI);
+                const dist = circleRadius + loopPhase * this.loopRadius;
+
+                return {
+                    x: centerX + Math.cos(angle) * dist,
+                    y: centerY + Math.sin(angle) * dist
+                };
+            }
+        }
+
+        function drawPositive() {
+            posCtx.fillStyle = '#0f0f14';
+            posCtx.fillRect(0, 0, 280, 280);
+
+            // Draw the main circle
+            posCtx.beginPath();
+            posCtx.arc(centerX, centerY, posRadius, 0, Math.PI * 2);
+            posCtx.fillStyle = '#EF4444';
+            posCtx.fill();
+
+            // Draw feedback loop arrow (faint guide)
+            posCtx.beginPath();
+            posCtx.arc(centerX, centerY, posRadius + 35, 0, Math.PI * 1.7);
+            posCtx.strokeStyle = 'rgba(239, 68, 68, 0.15)';
+            posCtx.lineWidth = 2;
+            posCtx.stroke();
+
+            // Draw particles
+            posParticles.forEach(p => {
+                const pos = p.getPosition(posRadius);
+                posCtx.beginPath();
+                posCtx.arc(pos.x, pos.y, p.size, 0, Math.PI * 2);
+                posCtx.fillStyle = p.color;
+                posCtx.fill();
+            });
+
+            // Draw + symbol in center
+            if (posRadius > 20) {
+                posCtx.font = 'bold 16px -apple-system, sans-serif';
+                posCtx.fillStyle = 'rgba(255,255,255,0.8)';
+                posCtx.textAlign = 'center';
+                posCtx.textBaseline = 'middle';
+                posCtx.fillText('+', centerX, centerY);
+            }
+        }
+
+        function drawNegative() {
+            negCtx.fillStyle = '#0f0f14';
+            negCtx.fillRect(0, 0, 280, 280);
+
+            // Draw target circle (dashed)
+            negCtx.beginPath();
+            negCtx.arc(centerX, centerY, negTargetRadius, 0, Math.PI * 2);
+            negCtx.strokeStyle = 'rgba(34, 197, 94, 0.3)';
+            negCtx.lineWidth = 2;
+            negCtx.setLineDash([5, 5]);
+            negCtx.stroke();
+            negCtx.setLineDash([]);
+
+            // Draw the main circle
+            negCtx.beginPath();
+            negCtx.arc(centerX, centerY, negRadius, 0, Math.PI * 2);
+            negCtx.fillStyle = '#22C55E';
+            negCtx.fill();
+
+            // Draw feedback loop arrow (faint guide)
+            negCtx.beginPath();
+            negCtx.arc(centerX, centerY, negRadius + 35, 0, Math.PI * 1.7);
+            negCtx.strokeStyle = 'rgba(34, 197, 94, 0.15)';
+            negCtx.lineWidth = 2;
+            negCtx.stroke();
+
+            // Draw particles
+            negParticles.forEach(p => {
+                const pos = p.getPosition(negRadius);
+                negCtx.beginPath();
+                negCtx.arc(pos.x, pos.y, p.size, 0, Math.PI * 2);
+                negCtx.fillStyle = p.color;
+                negCtx.fill();
+            });
+
+            // Draw - symbol in center
+            negCtx.font = 'bold 16px -apple-system, sans-serif';
+            negCtx.fillStyle = 'rgba(255,255,255,0.8)';
+            negCtx.textAlign = 'center';
+            negCtx.textBaseline = 'middle';
+            negCtx.fillText('−', centerX, centerY);
+        }
+
+        let frameCount = 0;
+
+        function animate() {
+            frameCount++;
+
+            // POSITIVE: Spawn particles that return and grow the circle
+            if (frameCount % 60 === 0 && posRadius < posMaxRadius) {
+                const size = 3 + posRadius * 0.05;
+                posParticles.push(new Particle(
+                    Math.random() * Math.PI * 2,
+                    size,
+                    true,
+                    '#EF4444'
+                ));
+            }
+
+            // Update positive particles
+            posParticles = posParticles.filter(p => {
+                const done = p.update();
+                if (done) {
+                    // Particle returns - circle grows
+                    posRadius = Math.min(posRadius + p.size * 0.5, posMaxRadius);
+                    return false;
+                }
+                return true;
+            });
+
+            // NEGATIVE: Spawn particles based on difference from target
+            if (frameCount % 40 === 0) {
+                const diff = negRadius - negTargetRadius;
+                if (Math.abs(diff) > 2) {
+                    const size = Math.abs(diff) * 0.15;
+                    negParticles.push(new Particle(
+                        Math.random() * Math.PI * 2,
+                        size,
+                        diff < 0, // if too small, particle will add; if too big, will subtract
+                        diff > 0 ? '#166534' : '#22C55E' // darker = removing
+                    ));
+                }
+            }
+
+            // Update negative particles
+            negParticles = negParticles.filter(p => {
+                const done = p.update();
+                if (done) {
+                    // Particle returns - adjusts circle toward target
+                    if (negRadius > negTargetRadius) {
+                        negRadius -= p.size * 0.8;
+                    } else {
+                        negRadius += p.size * 0.8;
+                    }
+                    return false;
+                }
+                return true;
+            });
+
+            drawPositive();
+            drawNegative();
+
+            if (animating) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        function start() {
+            if (animating) {
+                animating = false;
+                cancelAnimationFrame(animationId);
+                document.getElementById('playBtn').textContent = 'Continue';
+                return;
+            }
+            animating = true;
+            document.getElementById('playBtn').textContent = 'Pause';
+            animate();
+        }
+
+        function reset() {
+            animating = false;
+            cancelAnimationFrame(animationId);
+            frameCount = 0;
+            posRadius = 15;
+            posParticles = [];
+            negRadius = 60;
+            negParticles = [];
+            document.getElementById('playBtn').textContent = 'Start';
+            drawPositive();
+            drawNegative();
+        }
+
+        document.getElementById('playBtn').addEventListener('click', start);
+        document.getElementById('resetBtn').addEventListener('click', reset);
+
+        // Initial draw
+        drawPositive();
+        drawNegative();
+    </script>
+</body>
+</html>

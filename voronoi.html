@@ -15,7 +15,8 @@
             background-color: #1a1a1a;
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
         .container {
             display: flex;
@@ -31,10 +32,12 @@
         }
         .info-section {
             width: 380px;
+            height: 100vh;
             background: #141414;
             border-left: 1px solid #333;
             padding: 30px;
             overflow-y: auto;
+            flex-shrink: 0;
         }
         h1 {
             font-size: 28px;
@@ -107,6 +110,36 @@
             color: #93c5fd;
             line-height: 1.6;
         }
+        .nature-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        .nature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .nature-img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #333;
+        }
+        .nature-label {
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+            margin-top: 4px;
+        }
+        .nature-item {
+            display: flex;
+            flex-direction: column;
+        }
     </style>
 </head>
 <body>
@@ -142,6 +175,30 @@
             <div class="example-item">
                 <span class="example-icon">✈️</span>
                 <span>Airport catchment areas</span>
+            </div>
+
+            <div class="nature-title">Voronoi in Nature</div>
+            <div class="nature-grid">
+                <div class="nature-item">
+                    <img src="images/voronoi-giraffe.webp" alt="Giraffe pattern" class="nature-img">
+                    <div class="nature-label">Giraffe</div>
+                </div>
+                <div class="nature-item">
+                    <img src="images/voronoi-leaf.webp" alt="Leaf veins" class="nature-img">
+                    <div class="nature-label">Leaf Veins</div>
+                </div>
+                <div class="nature-item">
+                    <img src="images/voronoi-wings.avif" alt="Dragonfly wings" class="nature-img">
+                    <div class="nature-label">Dragonfly Wings</div>
+                </div>
+                <div class="nature-item">
+                    <img src="images/voronoi-earth.webp" alt="Dry earth" class="nature-img">
+                    <div class="nature-label">Dry Earth</div>
+                </div>
+                <div class="nature-item">
+                    <img src="images/voronoi-pattern.webp" alt="City districts" class="nature-img">
+                    <div class="nature-label">City Districts</div>
+                </div>
             </div>
         </div>
     </div>

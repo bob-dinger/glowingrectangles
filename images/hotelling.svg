@@ -1,0 +1,18 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="#0a0a0f"/>
+  <!-- Beach/line -->
+  <rect x="10" y="58" width="80" height="6" rx="3" fill="#c2a366"/>
+  <!-- Customers distributed along beach -->
+  <circle cx="15" cy="48" r="3" fill="#F97316" opacity="0.8"/>
+  <circle cx="25" cy="48" r="3" fill="#F97316" opacity="0.8"/>
+  <circle cx="38" cy="48" r="3" fill="#F97316" opacity="0.8"/>
+  <circle cx="62" cy="48" r="3" fill="#3B82F6" opacity="0.8"/>
+  <circle cx="75" cy="48" r="3" fill="#3B82F6" opacity="0.8"/>
+  <circle cx="85" cy="48" r="3" fill="#3B82F6" opacity="0.8"/>
+  <!-- Two stands clustered in middle -->
+  <rect x="44" y="40" width="5" height="12" fill="#F97316"/>
+  <rect x="51" y="40" width="5" height="12" fill="#3B82F6"/>
+  <!-- Arrows showing convergence -->
+  <path d="M25 30 L43 38" stroke="#F97316" stroke-width="1.5" fill="none" opacity="0.5"/>
+  <path d="M75 30 L57 38" stroke="#3B82F6" stroke-width="1.5" fill="none" opacity="0.5"/>
+</svg>
