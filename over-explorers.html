@@ -32,7 +32,7 @@
         h1 {
             font-size: 42px;
             margin-bottom: 8px;
-            background: linear-gradient(135deg, #EF4444, #F59E0B);
+            background: linear-gradient(135deg, #EF4444, #EC4899, #8B5CF6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -41,6 +41,8 @@
             color: #666;
             font-size: 16px;
             font-style: italic;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .grid {
@@ -62,10 +64,11 @@
             transition: all 0.3s ease;
         }
         .card:hover {
-            border-color: #F59E0B;
             transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
+        .card.male:hover { border-color: #F59E0B; }
+        .card.female:hover { border-color: #EC4899; }
 
         .card-class {
             position: absolute;
@@ -89,10 +92,11 @@
 
         .card-title {
             font-size: 12px;
-            color: #F59E0B;
             margin-bottom: 12px;
             font-style: italic;
         }
+        .card.male .card-title { color: #F59E0B; }
+        .card.female .card-title { color: #EC4899; }
 
         .card-move {
             font-size: 13px;
@@ -100,10 +104,8 @@
             margin-bottom: 15px;
             line-height: 1.4;
         }
-
-        .card-move strong {
-            color: #EF4444;
-        }
+        .card.male .card-move strong { color: #EF4444; }
+        .card.female .card-move strong { color: #8B5CF6; }
 
         .stats {
             display: flex;
@@ -119,14 +121,10 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .stat-label {
-            color: #666;
-        }
-        .stat-value {
-            color: #22C55E;
-            font-weight: 600;
-            margin-left: 4px;
-        }
+        .stat-label { color: #666; }
+        .card.male .stat-value { color: #22C55E; }
+        .card.female .stat-value { color: #EC4899; }
+        .stat-value { font-weight: 600; margin-left: 4px; }
 
         .card-quote {
             margin-top: 15px;
@@ -147,8 +145,20 @@
             border-bottom: 1px solid #222;
             margin-top: 20px;
         }
-        .category-label:first-of-type {
-            margin-top: 0;
+        .category-label:first-of-type { margin-top: 0; }
+
+        .made-up-words {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .made-up-word {
+            font-size: 9px;
+            padding: 3px 6px;
+            background: rgba(139, 92, 246, 0.2);
+            color: #A78BFA;
+            border-radius: 3px;
         }
 
         footer {
@@ -164,31 +174,29 @@
 
     <header>
         <h1>Over Explorers</h1>
-        <p class="subtitle">People who need to stop. Or at least shut up about it.</p>
-        <p style="margin-top: 15px;"><a href="over-explorers-women.html" style="color: #EC4899; text-decoration: none; font-size: 14px;">See also: The Wellness Industrial Complex →</a></p>
+        <p class="subtitle">People who made up words to sell you healing, optimized their way out of happiness, and won't stop telling you about it</p>
     </header>
 
     <div class="grid">
         <div class="category-label">The Biohackers</div>
 
-        <div class="card">
+        <div class="card male">
             <div class="card-class">Biohacker</div>
             <div class="card-name">Bryan Johnson</div>
             <div class="card-title">The Man Who Would Not Die</div>
             <div class="card-move"><strong>Special Move:</strong> Blood transfusions from his teenage son. 100+ pills daily. $2M/year budget. Publishes every biomarker online.</div>
             <div class="stats">
                 <div class="stat"><span class="stat-label">Self-Awareness:</span><span class="stat-value">2</span></div>
-                <div class="stat"><span class="stat-label">Content Output:</span><span class="stat-value">99</span></div>
                 <div class="stat"><span class="stat-label">Pills/Day:</span><span class="stat-value">111</span></div>
             </div>
             <div class="card-quote">"My 18-year-old son's blood is the fountain of youth"</div>
         </div>
 
-        <div class="card">
+        <div class="card male">
             <div class="card-class">Biohacker</div>
             <div class="card-name">Dave Asprey</div>
             <div class="card-title">Bulletproof Coffee's Bulletproof Ego</div>
-            <div class="card-move"><strong>Special Move:</strong> Put butter in coffee, called it innovation. Claims he'll live to 180. Stem cell injections. $1M+ on "upgrading" himself.</div>
+            <div class="card-move"><strong>Special Move:</strong> Put butter in coffee, called it innovation. Claims he'll live to 180. Stem cell injections.</div>
             <div class="stats">
                 <div class="stat"><span class="stat-label">Butter Consumed:</span><span class="stat-value">∞</span></div>
                 <div class="stat"><span class="stat-label">Years Promised:</span><span class="stat-value">180</span></div>
@@ -196,19 +204,7 @@
             <div class="card-quote">"I spent $1 million hacking my own biology"</div>
         </div>
 
-        <div class="card">
-            <div class="card-class">Biohacker</div>
-            <div class="card-name">Ben Greenfield</div>
-            <div class="card-title">The Enema Enthusiast</div>
-            <div class="card-move"><strong>Special Move:</strong> Coffee enemas. Parasite cleanses. Grounding mats. 4-hour podcast episodes about supplementation.</div>
-            <div class="stats">
-                <div class="stat"><span class="stat-label">Orifices Used:</span><span class="stat-value">All</span></div>
-                <div class="stat"><span class="stat-label">Episode Length:</span><span class="stat-value">4hrs</span></div>
-            </div>
-            <div class="card-quote">"Have you tried putting coffee... somewhere else?"</div>
-        </div>
-
-        <div class="card">
+        <div class="card male">
             <div class="card-class">Fraud</div>
             <div class="card-name">Liver King</div>
             <div class="card-title">Ancestral Liar</div>
@@ -220,35 +216,62 @@
             <div class="card-quote">"I just eat liver bro" (and inject testosterone)</div>
         </div>
 
-        <div class="category-label">The Longevity Doctors</div>
+        <div class="category-label">The Wellness Empresses</div>
 
-        <div class="card">
-            <div class="card-class">MD Influencer</div>
-            <div class="card-name">Peter Attia</div>
-            <div class="card-title">Zone 2 Zealot</div>
-            <div class="card-move"><strong>Special Move:</strong> 3-hour podcast episodes about not dying. Zone 2 cardio. Rapamycin. Makes simple things complicated.</div>
+        <div class="card female">
+            <div class="card-class">CEO of Goop</div>
+            <div class="card-name">Gwyneth Paltrow</div>
+            <div class="card-title">Jade Egg Empress</div>
+            <div class="card-move"><strong>Special Move:</strong> Vagina candles. Jade eggs for your yoni. Vaginal steaming. $75 supplements. Got sued, kept going.</div>
             <div class="stats">
-                <div class="stat"><span class="stat-label">Ep. Length:</span><span class="stat-value">3hrs</span></div>
-                <div class="stat"><span class="stat-label">Zone:</span><span class="stat-value">2</span></div>
+                <div class="stat"><span class="stat-label">FDA Warnings:</span><span class="stat-value">Many</span></div>
+                <div class="stat"><span class="stat-label">Lawsuits:</span><span class="stat-value">Several</span></div>
             </div>
-            <div class="card-quote">"Let me explain VO2 max for the next 47 minutes"</div>
+            <div class="made-up-words">
+                <span class="made-up-word">clean beauty</span>
+                <span class="made-up-word">yoni</span>
+                <span class="made-up-word">detox</span>
+            </div>
+            <div class="card-quote">"This candle smells like my vagina" - actual product</div>
         </div>
 
-        <div class="card">
-            <div class="card-class">Harvard</div>
-            <div class="card-name">David Sinclair</div>
-            <div class="card-title">The Supplement Salesman with a PhD</div>
-            <div class="card-move"><strong>Special Move:</strong> Sells NMN supplements. Resveratrol evangelist. Harvard credentials lending legitimacy to sketchy claims.</div>
+        <div class="card female">
+            <div class="card-class">Manifestor</div>
+            <div class="card-name">Rhonda Byrne</div>
+            <div class="card-title">The Secret Keeper</div>
+            <div class="card-move"><strong>Special Move:</strong> Wrote "The Secret." Told people they can manifest anything by thinking about it. Blame the victim if it doesn't work.</div>
             <div class="stats">
-                <div class="stat"><span class="stat-label">Supplements Sold:</span><span class="stat-value">∞</span></div>
-                <div class="stat"><span class="stat-label">Peer Review:</span><span class="stat-value">Pending</span></div>
+                <div class="stat"><span class="stat-label">Copies Sold:</span><span class="stat-value">30M</span></div>
+                <div class="stat"><span class="stat-label">Science:</span><span class="stat-value">0</span></div>
             </div>
-            <div class="card-quote">"Aging is a disease and I have the cure (for sale)"</div>
+            <div class="made-up-words">
+                <span class="made-up-word">law of attraction</span>
+                <span class="made-up-word">vibration</span>
+                <span class="made-up-word">manifest</span>
+            </div>
+            <div class="card-quote">"You attracted your own cancer with negative thoughts"</div>
+        </div>
+
+        <div class="card female">
+            <div class="card-class">Channel</div>
+            <div class="card-name">Esther Hicks</div>
+            <div class="card-title">Abraham's Vessel</div>
+            <div class="card-move"><strong>Special Move:</strong> "Channels" a group of spirits called Abraham. Charges thousands for workshops. Speaks in a weird cadence when "channeling."</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Entities:</span><span class="stat-value">Abraham</span></div>
+                <div class="stat"><span class="stat-label">Workshop:</span><span class="stat-value">$1000+</span></div>
+            </div>
+            <div class="made-up-words">
+                <span class="made-up-word">vortex</span>
+                <span class="made-up-word">alignment</span>
+                <span class="made-up-word">source energy</span>
+            </div>
+            <div class="card-quote">"Abraham says you create your own reality" (Abraham is her)</div>
         </div>
 
         <div class="category-label">The Wisdom Gurus</div>
 
-        <div class="card">
+        <div class="card male">
             <div class="card-class">Podcaster</div>
             <div class="card-name">Tim Ferriss</div>
             <div class="card-title">The 4-Hour Humble Bragger</div>
@@ -260,7 +283,7 @@
             <div class="card-quote">"When I was having dinner with [famous person]..."</div>
         </div>
 
-        <div class="card">
+        <div class="card male">
             <div class="card-class">Stoic™</div>
             <div class="card-name">Ryan Holiday</div>
             <div class="card-title">Marcus Aurelius's Marketing Manager</div>
@@ -272,7 +295,7 @@
             <div class="card-quote">"The obstacle is the way... to my bank account"</div>
         </div>
 
-        <div class="card">
+        <div class="card male">
             <div class="card-class">One Book</div>
             <div class="card-name">James Clear</div>
             <div class="card-title">Mr. 1% Better</div>
@@ -284,7 +307,7 @@
             <div class="card-quote">"1% better every day = 37x better in a year" (not how math works)</div>
         </div>
 
-        <div class="card">
+        <div class="card male">
             <div class="card-class">Angel Philosopher</div>
             <div class="card-name">Naval Ravikant</div>
             <div class="card-title">Fortune Cookie Billionaire</div>
@@ -296,35 +319,135 @@
             <div class="card-quote">"Seek wealth, not money" (has billions)</div>
         </div>
 
-        <div class="category-label">The Wellness Woo</div>
+        <div class="category-label">The Girlboss Gurus</div>
 
-        <div class="card">
-            <div class="card-class">CEO of Goop</div>
-            <div class="card-name">Gwyneth Paltrow</div>
-            <div class="card-title">Jade Egg Empress</div>
-            <div class="card-move"><strong>Special Move:</strong> Vagina candles. Jade eggs. $75 supplements. Sued for pseudoscience, kept going.</div>
+        <div class="card female">
+            <div class="card-class">Fallen</div>
+            <div class="card-name">Rachel Hollis</div>
+            <div class="card-title">Girl, Wash Your Privilege</div>
+            <div class="card-move"><strong>Special Move:</strong> "Girl, Wash Your Face." Toxic positivity. Compared herself to Harriet Tubman. Marriage fell apart publicly.</div>
             <div class="stats">
-                <div class="stat"><span class="stat-label">FDA Warnings:</span><span class="stat-value">Many</span></div>
-                <div class="stat"><span class="stat-label">Candle Price:</span><span class="stat-value">$75</span></div>
+                <div class="stat"><span class="stat-label">Self-Awareness:</span><span class="stat-value">-5</span></div>
+                <div class="stat"><span class="stat-label">Status:</span><span class="stat-value">Cancelled</span></div>
             </div>
-            <div class="card-quote">"This candle smells like my vagina"</div>
+            <div class="made-up-words">
+                <span class="made-up-word">girl, wash your face</span>
+                <span class="made-up-word">sis</span>
+            </div>
+            <div class="card-quote">"I'm like Harriet Tubman" - said unironically</div>
         </div>
 
-        <div class="card">
-            <div class="card-class">Ice Man</div>
-            <div class="card-name">Wim Hof</div>
-            <div class="card-title">Cold as a Personality</div>
-            <div class="card-move"><strong>Special Move:</strong> Ice baths. Breathing techniques. Has a point, but followers think cold water cures everything.</div>
+        <div class="card female">
+            <div class="card-class">B-School</div>
+            <div class="card-name">Marie Forleo</div>
+            <div class="card-title">Everything Is Figureoutable™</div>
+            <div class="card-move"><strong>Special Move:</strong> Trademarked "Everything is figureoutable." B-School costs $2000. Sells optimism to women who can't afford it.</div>
             <div class="stats">
-                <div class="stat"><span class="stat-label">Temperature:</span><span class="stat-value">Cold</span></div>
-                <div class="stat"><span class="stat-label">Shirts:</span><span class="stat-value">0</span></div>
+                <div class="stat"><span class="stat-label">Course Price:</span><span class="stat-value">$2000</span></div>
+                <div class="stat"><span class="stat-label">Substance:</span><span class="stat-value">Low</span></div>
             </div>
-            <div class="card-quote">"The cold is my master" (that's... concerning)</div>
+            <div class="made-up-words">
+                <span class="made-up-word">figureoutable</span>
+                <span class="made-up-word">multi-passionate</span>
+            </div>
+            <div class="card-quote">"The world needs that special gift that only you have" (pay me $2k)</div>
+        </div>
+
+        <div class="card female">
+            <div class="card-class">Badass</div>
+            <div class="card-name">Jen Sincero</div>
+            <div class="card-title">You Are a Badass at Giving Me Money</div>
+            <div class="card-move"><strong>Special Move:</strong> Wrote "You Are a Badass." Manifestation + hustle culture for women. Endless sequels.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Badass Books:</span><span class="stat-value">5+</span></div>
+                <div class="stat"><span class="stat-label">Original Ideas:</span><span class="stat-value">1</span></div>
+            </div>
+            <div class="made-up-words">
+                <span class="made-up-word">badassery</span>
+                <span class="made-up-word">money mindset</span>
+            </div>
+            <div class="card-quote">"You are a badass at making money" (buying my book)</div>
+        </div>
+
+        <div class="category-label">The Longevity Doctors</div>
+
+        <div class="card male">
+            <div class="card-class">MD Influencer</div>
+            <div class="card-name">Peter Attia</div>
+            <div class="card-title">Zone 2 Zealot</div>
+            <div class="card-move"><strong>Special Move:</strong> 3-hour podcast episodes about not dying. Zone 2 cardio. Rapamycin. Makes simple things complicated.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Ep. Length:</span><span class="stat-value">3hrs</span></div>
+                <div class="stat"><span class="stat-label">Zone:</span><span class="stat-value">2</span></div>
+            </div>
+            <div class="card-quote">"Let me explain VO2 max for the next 47 minutes"</div>
+        </div>
+
+        <div class="card male">
+            <div class="card-class">Harvard</div>
+            <div class="card-name">David Sinclair</div>
+            <div class="card-title">The Supplement Salesman with a PhD</div>
+            <div class="card-move"><strong>Special Move:</strong> Sells NMN supplements. Resveratrol evangelist. Harvard credentials lending legitimacy to sketchy claims.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Supplements Sold:</span><span class="stat-value">∞</span></div>
+                <div class="stat"><span class="stat-label">Peer Review:</span><span class="stat-value">Pending</span></div>
+            </div>
+            <div class="card-quote">"Aging is a disease and I have the cure (for sale)"</div>
+        </div>
+
+        <div class="category-label">The Spiritual Influencers</div>
+
+        <div class="card female">
+            <div class="card-class">Spirit Junkie</div>
+            <div class="card-name">Gabby Bernstein</div>
+            <div class="card-title">Millennial Marianne</div>
+            <div class="card-move"><strong>Special Move:</strong> "Spirit Junkie." Manifesting. A Course in Miracles but make it Instagram. Super Attractor™.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Courses:</span><span class="stat-value">Many</span></div>
+                <div class="stat"><span class="stat-label">Vibes:</span><span class="stat-value">High</span></div>
+            </div>
+            <div class="made-up-words">
+                <span class="made-up-word">super attractor</span>
+                <span class="made-up-word">spirit junkie</span>
+            </div>
+            <div class="card-quote">"The universe has your back" (results may vary)</div>
+        </div>
+
+        <div class="card female">
+            <div class="card-class">Candidate</div>
+            <div class="card-name">Marianne Williamson</div>
+            <div class="card-title">A Course in Running for President</div>
+            <div class="card-move"><strong>Special Move:</strong> A Course in Miracles teacher. Ran for president. Wants to create a Department of Peace.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Miracles:</span><span class="stat-value">Pending</span></div>
+                <div class="stat"><span class="stat-label">Elections Won:</span><span class="stat-value">0</span></div>
+            </div>
+            <div class="made-up-words">
+                <span class="made-up-word">dark psychic force</span>
+                <span class="made-up-word">politics of love</span>
+            </div>
+            <div class="card-quote">"We need to defeat the dark psychic force" - at a debate</div>
+        </div>
+
+        <div class="card female">
+            <div class="card-class">Dangerous</div>
+            <div class="card-name">Teal Swan</div>
+            <div class="card-title">The Spiritual Catalyst</div>
+            <div class="card-move"><strong>Special Move:</strong> Controversial spiritual teacher. Accused of cult behavior. Gave dangerous advice about suicide.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Red Flags:</span><span class="stat-value">∞</span></div>
+                <div class="stat"><span class="stat-label">Documentaries:</span><span class="stat-value">1</span></div>
+            </div>
+            <div class="made-up-words">
+                <span class="made-up-word">completion process</span>
+                <span class="made-up-word">frequency</span>
+            </div>
+            <div class="card-quote">"I am an Arcturian" - claims to be an alien soul</div>
         </div>
 
         <div class="category-label">The Hustle Bros</div>
 
-        <div class="card">
+        <div class="card male">
             <div class="card-class">Hustler</div>
             <div class="card-name">Gary Vaynerchuk</div>
             <div class="card-title">Grind Culture Incarnate</div>
@@ -336,7 +459,7 @@
             <div class="card-quote">"HUSTLE! GRIND! BUY MY NFTS!"</div>
         </div>
 
-        <div class="card">
+        <div class="card male">
             <div class="card-class">Tech CEO</div>
             <div class="card-name">Jack Dorsey</div>
             <div class="card-title">Silicon Valley Monk (Retired)</div>
@@ -348,9 +471,43 @@
             <div class="card-quote">"Food is optional when you're disrupting industries"</div>
         </div>
 
+        <div class="category-label">The Pseudoscience Peddlers</div>
+
+        <div class="card female">
+            <div class="card-class">Food Babe</div>
+            <div class="card-name">Vani Hari</div>
+            <div class="card-title">The Food Babe</div>
+            <div class="card-move"><strong>Special Move:</strong> "If you can't pronounce it, don't eat it." Made people afraid of yoga mats in bread. Zero science background.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Chemistry Knowledge:</span><span class="stat-value">0</span></div>
+                <div class="stat"><span class="stat-label">Fear Mongering:</span><span class="stat-value">100</span></div>
+            </div>
+            <div class="made-up-words">
+                <span class="made-up-word">food babe army</span>
+                <span class="made-up-word">toxins</span>
+            </div>
+            <div class="card-quote">"There's yoga mat chemical in your bread!" (it's safe)</div>
+        </div>
+
+        <div class="card female">
+            <div class="card-class">Medical Medium</div>
+            <div class="card-name">Anthony William</div>
+            <div class="card-title">Celery Juice Messiah</div>
+            <div class="card-move"><strong>Special Move:</strong> Claims a spirit tells him medical information. Celery juice cures everything. No medical training.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Medical Degree:</span><span class="stat-value">No</span></div>
+                <div class="stat"><span class="stat-label">Spirit Guides:</span><span class="stat-value">1</span></div>
+            </div>
+            <div class="made-up-words">
+                <span class="made-up-word">mystery illness</span>
+                <span class="made-up-word">epstein-barr</span>
+            </div>
+            <div class="card-quote">"Spirit told me celery juice heals everything"</div>
+        </div>
+
         <div class="category-label">The Platformers</div>
 
-        <div class="card">
+        <div class="card male">
             <div class="card-class">Podcast King</div>
             <div class="card-name">Joe Rogan</div>
             <div class="card-title">The Amplifier</div>
@@ -362,7 +519,7 @@
             <div class="card-quote">"Have you tried DMT and elk meat?"</div>
         </div>
 
-        <div class="card">
+        <div class="card male">
             <div class="card-class">Neuroscientist</div>
             <div class="card-name">Andrew Huberman</div>
             <div class="card-title">Morning Sunlight Protocol</div>
@@ -372,6 +529,52 @@
                 <div class="stat"><span class="stat-label">Protocols:</span><span class="stat-value">∞</span></div>
             </div>
             <div class="card-quote">"Get morning sunlight in your eyes" (okay that one's actually good)</div>
+        </div>
+
+        <div class="card male">
+            <div class="card-class">Ice Man</div>
+            <div class="card-name">Wim Hof</div>
+            <div class="card-title">Cold as a Personality</div>
+            <div class="card-move"><strong>Special Move:</strong> Ice baths. Breathing techniques. Has a point, but followers think cold water cures everything.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Temperature:</span><span class="stat-value">Cold</span></div>
+                <div class="stat"><span class="stat-label">Shirts:</span><span class="stat-value">0</span></div>
+            </div>
+            <div class="card-quote">"The cold is my master" (that's... concerning)</div>
+        </div>
+
+        <div class="category-label">The Fitness Frauds</div>
+
+        <div class="card female">
+            <div class="card-class">Trainer</div>
+            <div class="card-name">Tracy Anderson</div>
+            <div class="card-title">Celebrity Pseudoscience</div>
+            <div class="card-move"><strong>Special Move:</strong> Gwyneth's trainer. Claims women shouldn't lift over 3 lbs. Made up exercise science. $900/month studio.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Max Weight:</span><span class="stat-value">3 lbs</span></div>
+                <div class="stat"><span class="stat-label">Monthly:</span><span class="stat-value">$900</span></div>
+            </div>
+            <div class="made-up-words">
+                <span class="made-up-word">accessory muscles</span>
+                <span class="made-up-word">tiny movements</span>
+            </div>
+            <div class="card-quote">"Women should never lift more than 3 pounds"</div>
+        </div>
+
+        <div class="card female">
+            <div class="card-class">Biggest Loser</div>
+            <div class="card-name">Jillian Michaels</div>
+            <div class="card-title">Scream Your Way Thin</div>
+            <div class="card-move"><strong>Special Move:</strong> Yelled at overweight people on TV. Biggest Loser created eating disorders. Now sells supplements.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Volume:</span><span class="stat-value">LOUD</span></div>
+                <div class="stat"><span class="stat-label">Empathy:</span><span class="stat-value">Low</span></div>
+            </div>
+            <div class="made-up-words">
+                <span class="made-up-word">shred</span>
+                <span class="made-up-word">30-day</span>
+            </div>
+            <div class="card-quote">"Unless you puke, faint, or die, keep going"</div>
         </div>
     </div>
 
