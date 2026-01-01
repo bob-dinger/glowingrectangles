@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Problem With Comfort</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .page {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 10px 0;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 30px;
+            min-height: 0;
+            padding: 20px 0;
+        }
+
+        .scenario {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .scenario-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .scenario-subtitle {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .scenario.discomfort .scenario-title { color: #22C55E; }
+        .scenario.comfort .scenario-title { color: #EF4444; }
+
+        .canvas-container {
+            flex: 1;
+            width: 100%;
+            position: relative;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .scenario.discomfort .stat-value { color: #22C55E; }
+        .scenario.comfort .stat-value { color: #EF4444; }
+
+        .divider {
+            width: 1px;
+            background: #333;
+            align-self: stretch;
+            margin: 30px 0;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 15px 0;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            padding: 10px 25px;
+            border-radius: 6px;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn:hover { transform: scale(1.05); }
+        .btn-primary {
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            color: #fff;
+        }
+        .btn-reset {
+            background: #333;
+            color: #888;
+        }
+
+        .message {
+            text-align: center;
+            padding: 10px;
+            font-size: 13px;
+            color: #666;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="page">
+        <header>
+            <h1>The Problem With Comfort</h1>
+            <p class="subtitle">What doesn't kill you makes you stronger. What coddles you makes you fragile.</p>
+        </header>
+
+        <div class="main">
+            <div class="scenario discomfort">
+                <div class="scenario-title">Embracing Discomfort</div>
+                <div class="scenario-subtitle">Stress → Recovery → Growth</div>
+                <div class="canvas-container">
+                    <canvas id="canvas-discomfort"></canvas>
+                </div>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="discomfort-size">100</div>
+                        <div class="stat-label">Capacity</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="discomfort-hits">0</div>
+                        <div class="stat-label">Challenges</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="scenario comfort">
+                <div class="scenario-title">Seeking Comfort</div>
+                <div class="scenario-subtitle">Avoid stress → Atrophy → Fragility</div>
+                <div class="canvas-container">
+                    <canvas id="canvas-comfort"></canvas>
+                </div>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="comfort-size">100</div>
+                        <div class="stat-label">Capacity</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="comfort-shield">100</div>
+                        <div class="stat-label">Shield</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn">Start Simulation</button>
+            <button class="btn btn-reset" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="message" id="message">
+            Watch what happens when challenges hit. One grows. One breaks.
+        </div>
+    </div>
+
+    <script>
+        // Discomfort canvas
+        const canvasD = document.getElementById('canvas-discomfort');
+        const ctxD = canvasD.getContext('2d');
+
+        // Comfort canvas
+        const canvasC = document.getElementById('canvas-comfort');
+        const ctxC = canvasC.getContext('2d');
+
+        let running = false;
+        let animationId = null;
+
+        // State
+        let discomfortState = {
+            baseSize: 80,
+            currentSize: 80,
+            targetSize: 80,
+            hits: 0,
+            rocks: [],
+            pulsePhase: 0
+        };
+
+        let comfortState = {
+            baseSize: 80,
+            currentSize: 80,
+            targetSize: 80,
+            shield: 100,
+            hits: 0,
+            rocks: [],
+            pulsePhase: 0,
+            cracks: []
+        };
+
+        function resizeCanvas() {
+            const containers = document.querySelectorAll('.canvas-container');
+            containers.forEach((container, i) => {
+                const canvas = i === 0 ? canvasD : canvasC;
+                const rect = container.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+            });
+        }
+
+        function createRock(canvas, state) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = Math.max(canvas.width, canvas.height);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            return {
+                x: centerX + Math.cos(angle) * distance,
+                y: centerY + Math.sin(angle) * distance,
+                targetX: centerX,
+                targetY: centerY,
+                size: 8 + Math.random() * 8,
+                speed: 3 + Math.random() * 2,
+                hit: false
+            };
+        }
+
+        function updateRocks(canvas, state, isDiscomfort) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            state.rocks.forEach(rock => {
+                if (rock.hit) return;
+
+                const dx = rock.targetX - rock.x;
+                const dy = rock.targetY - rock.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist > rock.speed) {
+                    rock.x += (dx / dist) * rock.speed;
+                    rock.y += (dy / dist) * rock.speed;
+                }
+
+                // Check collision with circle
+                const distToCenter = Math.sqrt(
+                    Math.pow(rock.x - centerX, 2) + Math.pow(rock.y - centerY, 2)
+                );
+
+                if (distToCenter < state.currentSize + rock.size) {
+                    rock.hit = true;
+                    state.hits++;
+
+                    if (isDiscomfort) {
+                        // Shrink then grow bigger
+                        state.currentSize *= 0.85;
+                        state.baseSize += 3;
+                        state.targetSize = state.baseSize;
+                    } else {
+                        // Shield absorbs, but weakens
+                        state.shield -= 15;
+                        if (state.shield <= 0) {
+                            state.shield = 0;
+                            // Now hits hurt the core
+                            state.baseSize -= 8;
+                            state.targetSize = state.baseSize;
+                            // Add crack
+                            const angle = Math.atan2(rock.y - centerY, rock.x - centerX);
+                            state.cracks.push({ angle, length: 20 + Math.random() * 20 });
+                        }
+                    }
+                }
+            });
+
+            // Remove old rocks
+            state.rocks = state.rocks.filter(r => !r.hit || Math.random() > 0.1);
+
+            // Recovery
+            if (isDiscomfort) {
+                state.currentSize += (state.targetSize - state.currentSize) * 0.02;
+            } else {
+                state.currentSize += (state.targetSize - state.currentSize) * 0.05;
+                // Comfort atrophies without stress
+                if (state.rocks.filter(r => !r.hit).length === 0 && Math.random() < 0.01) {
+                    state.baseSize -= 0.5;
+                    state.targetSize = state.baseSize;
+                }
+            }
+        }
+
+        function drawScene(canvas, ctx, state, isDiscomfort) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw rocks
+            state.rocks.forEach(rock => {
+                if (!rock.hit) {
+                    ctx.beginPath();
+                    ctx.arc(rock.x, rock.y, rock.size, 0, Math.PI * 2);
+                    ctx.fillStyle = '#666';
+                    ctx.fill();
+                }
+            });
+
+            // Draw main circle
+            state.pulsePhase += 0.05;
+            const pulse = Math.sin(state.pulsePhase) * 3;
+
+            if (isDiscomfort) {
+                // Healthy glow
+                const gradient = ctx.createRadialGradient(
+                    centerX, centerY, 0,
+                    centerX, centerY, state.currentSize + pulse + 20
+                );
+                gradient.addColorStop(0, '#22C55E');
+                gradient.addColorStop(0.7, 'rgba(34, 197, 94, 0.3)');
+                gradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, state.currentSize + pulse + 20, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, state.currentSize + pulse, 0, Math.PI * 2);
+                ctx.fillStyle = '#22C55E';
+                ctx.fill();
+            } else {
+                // Draw shield if present
+                if (state.shield > 0) {
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, state.currentSize + 15, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(239, 68, 68, ${state.shield / 100})`;
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+
+                // Draw cracks
+                state.cracks.forEach(crack => {
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.lineTo(
+                        centerX + Math.cos(crack.angle) * (state.currentSize + crack.length),
+                        centerY + Math.sin(crack.angle) * (state.currentSize + crack.length)
+                    );
+                    ctx.strokeStyle = '#EF4444';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                });
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, Math.max(10, state.currentSize + pulse), 0, Math.PI * 2);
+                ctx.fillStyle = state.shield > 0 ? '#EF4444' : '#7F1D1D';
+                ctx.fill();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('discomfort-size').textContent = Math.round(discomfortState.baseSize);
+            document.getElementById('discomfort-hits').textContent = discomfortState.hits;
+            document.getElementById('comfort-size').textContent = Math.max(0, Math.round(comfortState.baseSize));
+            document.getElementById('comfort-shield').textContent = Math.max(0, Math.round(comfortState.shield));
+
+            // Update message based on state
+            const msg = document.getElementById('message');
+            if (discomfortState.baseSize > 150 && comfortState.baseSize < 50) {
+                msg.textContent = "One grew from challenges. One broke from avoiding them.";
+            } else if (comfortState.shield <= 0) {
+                msg.textContent = "The shield is gone. Now every hit damages the core.";
+            }
+        }
+
+        function animate() {
+            if (!running) return;
+
+            // Randomly spawn rocks
+            if (Math.random() < 0.03) {
+                discomfortState.rocks.push(createRock(canvasD, discomfortState));
+                comfortState.rocks.push(createRock(canvasC, comfortState));
+            }
+
+            updateRocks(canvasD, discomfortState, true);
+            updateRocks(canvasC, comfortState, false);
+
+            drawScene(canvasD, ctxD, discomfortState, true);
+            drawScene(canvasC, ctxC, comfortState, false);
+
+            updateStats();
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function reset() {
+            running = false;
+            if (animationId) cancelAnimationFrame(animationId);
+
+            discomfortState = {
+                baseSize: 80,
+                currentSize: 80,
+                targetSize: 80,
+                hits: 0,
+                rocks: [],
+                pulsePhase: 0
+            };
+
+            comfortState = {
+                baseSize: 80,
+                currentSize: 80,
+                targetSize: 80,
+                shield: 100,
+                hits: 0,
+                rocks: [],
+                pulsePhase: 0,
+                cracks: []
+            };
+
+            drawScene(canvasD, ctxD, discomfortState, true);
+            drawScene(canvasC, ctxC, comfortState, false);
+            updateStats();
+
+            document.getElementById('startBtn').textContent = 'Start Simulation';
+            document.getElementById('message').textContent = 'Watch what happens when challenges hit. One grows. One breaks.';
+        }
+
+        document.getElementById('startBtn').addEventListener('click', function() {
+            if (running) {
+                running = false;
+                this.textContent = 'Resume';
+            } else {
+                running = true;
+                this.textContent = 'Pause';
+                animate();
+            }
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', reset);
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            drawScene(canvasD, ctxD, discomfortState, true);
+            drawScene(canvasC, ctxC, comfortState, false);
+        });
+
+        // Initial setup
+        resizeCanvas();
+        drawScene(canvasD, ctxD, discomfortState, true);
+        drawScene(canvasC, ctxC, comfortState, false);
+        updateStats();
+    </script>
+</body>
+</html>
