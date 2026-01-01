@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#0a0a0f"/>
+
+  <!-- Players in background -->
+  <circle cx="25" cy="40" r="8" fill="#f0f0f0" opacity="0.6"/>
+  <circle cx="75" cy="35" r="8" fill="#222" stroke="#444" opacity="0.6"/>
+  <circle cx="30" cy="70" r="8" fill="#f0f0f0" opacity="0.6"/>
+  <circle cx="70" cy="65" r="8" fill="#222" stroke="#444" opacity="0.6"/>
+
+  <!-- Ball -->
+  <circle cx="40" cy="30" r="5" fill="#f97316"/>
+
+  <!-- Gorilla silhouette in center (semi-transparent to show it's "invisible") -->
+  <ellipse cx="50" cy="55" rx="15" ry="20" fill="#1a1a1a" opacity="0.4"/>
+  <circle cx="50" cy="30" r="12" fill="#1a1a1a" opacity="0.4"/>
+
+  <!-- Question mark overlay -->
+  <text x="50" y="58" font-size="30" fill="#8B5CF6" text-anchor="middle" font-weight="bold">?</text>
+</svg>

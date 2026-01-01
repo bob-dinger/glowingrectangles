@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Invisible Gorilla</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .page {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .instruction {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #8B5CF6, #EC4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .task {
+            font-size: 18px;
+            color: #888;
+        }
+
+        .task strong {
+            color: #fff;
+        }
+
+        .canvas-container {
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            background: #111;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn:hover { transform: scale(1.05); }
+        .btn-primary {
+            background: linear-gradient(135deg, #8B5CF6, #EC4899);
+            color: #fff;
+        }
+        .btn-secondary {
+            background: #333;
+            color: #888;
+        }
+
+        .result {
+            display: none;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .result h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .result p {
+            font-size: 16px;
+            color: #888;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .result .highlight {
+            color: #EC4899;
+        }
+
+        .counter {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .counter span {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .question-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 30px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .question-modal h2 {
+            font-size: 24px;
+        }
+
+        .question-modal .options {
+            display: flex;
+            gap: 20px;
+        }
+
+        .answer-btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .answer-btn:hover {
+            border-color: #8B5CF6;
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .passes-question {
+            margin-bottom: 20px;
+        }
+
+        .passes-question input {
+            width: 80px;
+            padding: 10px;
+            font-size: 24px;
+            text-align: center;
+            background: #222;
+            border: 2px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            margin-left: 10px;
+        }
+
+        .submit-count {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="page" id="mainPage">
+        <div class="instruction">
+            <h1>Count The Passes</h1>
+            <p class="task">Watch the players in <strong>white</strong>. Count how many times they pass the ball.</p>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div class="counter">Passes: <span id="passCount">0</span></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn">Start</button>
+            <button class="btn btn-secondary" id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <div class="question-modal" id="questionModal">
+        <h2>The video has ended.</h2>
+
+        <div class="passes-question">
+            <label>How many passes did you count? <input type="number" id="userCount" min="0" max="50"></label>
+        </div>
+
+        <h2>Did you see the gorilla?</h2>
+
+        <div class="options">
+            <button class="answer-btn" id="yesBtn">Yes</button>
+            <button class="answer-btn" id="noBtn">No</button>
+        </div>
+    </div>
+
+    <div class="question-modal" id="resultModal">
+        <div class="result" style="display: block;">
+            <h2 id="resultTitle"></h2>
+            <p id="resultText"></p>
+            <p id="passResult"></p>
+            <button class="btn btn-primary" id="watchAgainBtn">Watch Again (Look for the Gorilla)</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let running = false;
+        let frame = 0;
+        let passCount = 0;
+        let actualPasses = 0;
+        let gorillaAppeared = false;
+        let showGorilla = false;
+        let replayMode = false;
+        const TOTAL_FRAMES = 900; // 15 seconds at 60fps
+        const GORILLA_START = 360; // Gorilla appears at 6 seconds
+        const GORILLA_END = 540; // Gorilla leaves at 9 seconds
+
+        // Players
+        const players = [];
+        const ball = { x: 0, y: 0, holder: null, inFlight: false, targetPlayer: null, flightProgress: 0 };
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const rect = container.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        function initPlayers() {
+            players.length = 0;
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // White team (3 players) - the ones to watch
+            players.push({ x: w * 0.2, y: h * 0.3, team: 'white', baseX: w * 0.2, baseY: h * 0.3, phase: 0 });
+            players.push({ x: w * 0.5, y: h * 0.5, team: 'white', baseX: w * 0.5, baseY: h * 0.5, phase: 2 });
+            players.push({ x: w * 0.3, y: h * 0.7, team: 'white', baseX: w * 0.3, baseY: h * 0.7, phase: 4 });
+
+            // Black team (3 players) - distractors
+            players.push({ x: w * 0.7, y: h * 0.35, team: 'black', baseX: w * 0.7, baseY: h * 0.35, phase: 1 });
+            players.push({ x: w * 0.8, y: h * 0.6, team: 'black', baseX: w * 0.8, baseY: h * 0.6, phase: 3 });
+            players.push({ x: w * 0.6, y: h * 0.75, team: 'black', baseX: w * 0.6, baseY: h * 0.75, phase: 5 });
+
+            // Give ball to first white player
+            ball.holder = players[0];
+            ball.x = players[0].x;
+            ball.y = players[0].y;
+            ball.inFlight = false;
+        }
+
+        function drawPlayer(p) {
+            const radius = 25;
+
+            // Body
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = p.team === 'white' ? '#f0f0f0' : '#222';
+            ctx.fill();
+            ctx.strokeStyle = p.team === 'white' ? '#ccc' : '#444';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Head
+            ctx.beginPath();
+            ctx.arc(p.x, p.y - radius - 10, 12, 0, Math.PI * 2);
+            ctx.fillStyle = '#d4a574';
+            ctx.fill();
+        }
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y - 30, 12, 0, Math.PI * 2);
+            ctx.fillStyle = '#f97316';
+            ctx.fill();
+            ctx.strokeStyle = '#ea580c';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawGorilla(progress) {
+            // progress: 0 to 1 (left to right across screen)
+            const x = -50 + (canvas.width + 100) * progress;
+            const y = canvas.height * 0.5;
+
+            // Gorilla body (larger, more prominent)
+            ctx.fillStyle = '#1a1a1a';
+
+            // Body
+            ctx.beginPath();
+            ctx.ellipse(x, y, 35, 45, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Head
+            ctx.beginPath();
+            ctx.arc(x, y - 55, 25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Arms swinging
+            const armSwing = Math.sin(progress * 20) * 15;
+            ctx.beginPath();
+            ctx.moveTo(x - 30, y - 20);
+            ctx.lineTo(x - 50, y + armSwing);
+            ctx.lineWidth = 12;
+            ctx.strokeStyle = '#1a1a1a';
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x + 30, y - 20);
+            ctx.lineTo(x + 50, y - armSwing);
+            ctx.stroke();
+
+            // Face
+            ctx.fillStyle = '#4a4a4a';
+            ctx.beginPath();
+            ctx.ellipse(x, y - 50, 12, 15, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Chest thump animation occasionally
+            if (Math.sin(progress * 30) > 0.9) {
+                ctx.beginPath();
+                ctx.arc(x, y - 10, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#333';
+                ctx.fill();
+            }
+        }
+
+        function updatePlayers() {
+            players.forEach(p => {
+                p.phase += 0.02;
+                p.x = p.baseX + Math.sin(p.phase) * 40;
+                p.y = p.baseY + Math.cos(p.phase * 0.7) * 30;
+            });
+        }
+
+        function updateBall() {
+            if (ball.inFlight) {
+                ball.flightProgress += 0.05;
+                if (ball.flightProgress >= 1) {
+                    ball.inFlight = false;
+                    ball.holder = ball.targetPlayer;
+                    ball.x = ball.holder.x;
+                    ball.y = ball.holder.y;
+
+                    // Count pass if it's between white team members
+                    if (ball.holder.team === 'white') {
+                        actualPasses++;
+                        document.getElementById('passCount').textContent = actualPasses;
+                    }
+                } else {
+                    // Lerp ball position
+                    const startX = ball.startX;
+                    const startY = ball.startY;
+                    ball.x = startX + (ball.targetPlayer.x - startX) * ball.flightProgress;
+                    ball.y = startY + (ball.targetPlayer.y - startY) * ball.flightProgress - Math.sin(ball.flightProgress * Math.PI) * 50;
+                }
+            } else if (ball.holder) {
+                ball.x = ball.holder.x;
+                ball.y = ball.holder.y;
+
+                // Randomly pass to another player on same team
+                if (Math.random() < 0.02) {
+                    const teammates = players.filter(p => p.team === ball.holder.team && p !== ball.holder);
+                    if (teammates.length > 0) {
+                        ball.targetPlayer = teammates[Math.floor(Math.random() * teammates.length)];
+                        ball.startX = ball.x;
+                        ball.startY = ball.y;
+                        ball.inFlight = true;
+                        ball.flightProgress = 0;
+                    }
+                }
+
+                // Occasionally "steal" or switch teams
+                if (Math.random() < 0.005) {
+                    const otherTeam = players.filter(p => p.team !== ball.holder.team);
+                    ball.targetPlayer = otherTeam[Math.floor(Math.random() * otherTeam.length)];
+                    ball.startX = ball.x;
+                    ball.startY = ball.y;
+                    ball.inFlight = true;
+                    ball.flightProgress = 0;
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw all players
+            players.forEach(drawPlayer);
+
+            // Draw gorilla if in range
+            if (frame >= GORILLA_START && frame <= GORILLA_END) {
+                showGorilla = true;
+                const gorillaProgress = (frame - GORILLA_START) / (GORILLA_END - GORILLA_START);
+                drawGorilla(gorillaProgress);
+            }
+
+            // Draw ball
+            drawBall();
+        }
+
+        function animate() {
+            if (!running) return;
+
+            frame++;
+            updatePlayers();
+            updateBall();
+            draw();
+
+            if (frame >= TOTAL_FRAMES) {
+                running = false;
+                document.getElementById('startBtn').textContent = 'Start';
+
+                if (!replayMode) {
+                    // Show question modal
+                    document.getElementById('questionModal').style.display = 'flex';
+                } else {
+                    // In replay mode, just show result
+                    document.getElementById('resultModal').style.display = 'flex';
+                    document.getElementById('resultTitle').textContent = "There it was!";
+                    document.getElementById('resultText').textContent = "The gorilla walked right through the middle of the scene, even beating its chest. When you're focused on counting, your brain literally filters out unexpected information.";
+                    document.getElementById('passResult').innerHTML = "";
+                    document.getElementById('watchAgainBtn').textContent = "Try Again";
+                }
+                return;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function reset() {
+            running = false;
+            frame = 0;
+            actualPasses = 0;
+            showGorilla = false;
+            replayMode = false;
+            document.getElementById('passCount').textContent = '0';
+            document.getElementById('startBtn').textContent = 'Start';
+            document.getElementById('questionModal').style.display = 'none';
+            document.getElementById('resultModal').style.display = 'none';
+            initPlayers();
+            draw();
+        }
+
+        document.getElementById('startBtn').addEventListener('click', function() {
+            if (running) {
+                running = false;
+                this.textContent = 'Resume';
+            } else {
+                if (frame >= TOTAL_FRAMES) {
+                    reset();
+                }
+                running = true;
+                this.textContent = 'Pause';
+                animate();
+            }
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', reset);
+
+        document.getElementById('yesBtn').addEventListener('click', () => showResult(true));
+        document.getElementById('noBtn').addEventListener('click', () => showResult(false));
+
+        function showResult(sawGorilla) {
+            const userCount = parseInt(document.getElementById('userCount').value) || 0;
+            document.getElementById('questionModal').style.display = 'none';
+            document.getElementById('resultModal').style.display = 'flex';
+
+            if (sawGorilla) {
+                document.getElementById('resultTitle').textContent = "You spotted it!";
+                document.getElementById('resultText').innerHTML = "You're one of the ~50% who notice the gorilla. But here's the thing: <span class='highlight'>people who see the gorilla often miscount the passes.</span> Attention is a tradeoff.";
+            } else {
+                document.getElementById('resultTitle').textContent = "You missed the gorilla.";
+                document.getElementById('resultText').innerHTML = "A gorilla walked right through the middle of the screen, <span class='highlight'>even beat its chest</span>, and you didn't see it. This is called <span class='highlight'>inattentional blindness</span>. When you focus on one thing, you become blind to everything else.";
+            }
+
+            const diff = Math.abs(userCount - actualPasses);
+            if (diff === 0) {
+                document.getElementById('passResult').textContent = `You counted ${userCount} passes. That's exactly right!`;
+            } else {
+                document.getElementById('passResult').textContent = `You counted ${userCount} passes. The actual count was ${actualPasses}.`;
+            }
+        }
+
+        document.getElementById('watchAgainBtn').addEventListener('click', () => {
+            document.getElementById('resultModal').style.display = 'none';
+            replayMode = true;
+            frame = 0;
+            actualPasses = 0;
+            showGorilla = false;
+            document.getElementById('passCount').textContent = '0';
+            initPlayers();
+            running = true;
+            document.getElementById('startBtn').textContent = 'Pause';
+            animate();
+        });
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initPlayers();
+            if (!running) draw();
+        });
+
+        // Init
+        resizeCanvas();
+        initPlayers();
+        draw();
+    </script>
+</body>
+</html>
