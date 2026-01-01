@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grifters</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 42px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #DC2626, #F59E0B, #EF4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            font-style: italic;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #1a1a1a, #111);
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-color: #DC2626;
+        }
+
+        .card-class {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.1);
+            color: #888;
+        }
+
+        .card-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        .card-title {
+            font-size: 12px;
+            margin-bottom: 12px;
+            font-style: italic;
+            color: #F59E0B;
+        }
+
+        .card-move {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        .card-move strong { color: #DC2626; }
+
+        .stats {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: #222;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-label { color: #666; }
+        .stat-value { color: #22C55E; font-weight: 600; margin-left: 4px; }
+
+        .card-quote {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid #333;
+            font-size: 11px;
+            color: #666;
+            font-style: italic;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #333;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>Grifters</h1>
+        <p class="subtitle">A certain psychological profile rises to the top of every institution.</p>
+        <p class="subtitle" style="margin-top: 8px;">They don't build things. They take over things other people built, extract value, and move on.</p>
+        <p class="subtitle" style="margin-top: 8px;">Churches. Companies. Countries. Movements. They're all the same person wearing different costumes.</p>
+    </header>
+
+    <div class="grid">
+
+        <div class="card">
+            <div class="card-class">Crypto</div>
+            <div class="card-name">Sam Bankman-Fried</div>
+            <div class="card-title">Effective Altruism's Favorite Thief</div>
+            <div class="card-move"><strong>Grift:</strong> Stole $8 billion in customer funds. Played League of Legends during meetings. Pretended to care about saving the world.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Stolen:</span><span class="stat-value">$8B</span></div>
+                <div class="stat"><span class="stat-label">Prison:</span><span class="stat-value">25 yrs</span></div>
+            </div>
+            <div class="card-quote">"I'm sorry" - after getting caught</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Megachurch</div>
+            <div class="card-name">Kenneth Copeland</div>
+            <div class="card-title">Demon Eyes Prosperity Gospel</div>
+            <div class="card-move"><strong>Grift:</strong> $300M net worth from telling poor people God wants them to give him money. Private jets. That interview where he looked possessed.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Net Worth:</span><span class="stat-value">$300M</span></div>
+                <div class="stat"><span class="stat-label">Jets:</span><span class="stat-value">3</span></div>
+            </div>
+            <div class="card-quote">"I can't fly commercial, I'd have to talk to demons" - actual quote</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Megachurch</div>
+            <div class="card-name">Joel Osteen</div>
+            <div class="card-title">Smile While Houston Drowns</div>
+            <div class="card-move"><strong>Grift:</strong> Locked his megachurch during Hurricane Harvey. $100M net worth. Prosperity gospel with better teeth.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Net Worth:</span><span class="stat-value">$100M</span></div>
+                <div class="stat"><span class="stat-label">Flood Victims Helped:</span><span class="stat-value">Eventually</span></div>
+            </div>
+            <div class="card-quote">"The church was inaccessible" - it wasn't</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Corporate</div>
+            <div class="card-name">Adam Neumann</div>
+            <div class="card-title">WeWork's $47B Nothing</div>
+            <div class="card-move"><strong>Grift:</strong> Convinced people a real estate company was a tech company. Walked away with $1B when it collapsed. Doing it again with apartments.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Peak Valuation:</span><span class="stat-value">$47B</span></div>
+                <div class="stat"><span class="stat-label">Actual Value:</span><span class="stat-value">~$0</span></div>
+            </div>
+            <div class="card-quote">"We are here to change the world" - rented desks</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Crypto</div>
+            <div class="card-name">Do Kwon</div>
+            <div class="card-title">Terra Luna to Zero</div>
+            <div class="card-move"><strong>Grift:</strong> Created algorithmic stablecoin. It wasn't stable. $40 billion vanished in days. Fled to Montenegro.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Vaporized:</span><span class="stat-value">$40B</span></div>
+                <div class="stat"><span class="stat-label">Status:</span><span class="stat-value">Arrested</span></div>
+            </div>
+            <div class="card-quote">"I don't debate the poor" - before the crash</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Political</div>
+            <div class="card-name">George Santos</div>
+            <div class="card-title">Lied About Everything</div>
+            <div class="card-move"><strong>Grift:</strong> Fake resume. Fake heritage. Fake charity. Stole from donors. Still got elected. Got expelled. Running again.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">True Statements:</span><span class="stat-value">0</span></div>
+                <div class="stat"><span class="stat-label">Shame:</span><span class="stat-value">0</span></div>
+            </div>
+            <div class="card-quote">"I am not a criminal" - facing 23 federal charges</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Pharma</div>
+            <div class="card-name">Martin Shkreli</div>
+            <div class="card-title">Pharma Bro</div>
+            <div class="card-move"><strong>Grift:</strong> Raised AIDS drug price 5,000%. Smirked at Congress. Bought Wu-Tang album. Finally went to prison for fraud.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Price Increase:</span><span class="stat-value">5,000%</span></div>
+                <div class="stat"><span class="stat-label">Prison:</span><span class="stat-value">7 yrs</span></div>
+            </div>
+            <div class="card-quote">"I probably would have raised it higher"</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Megachurch</div>
+            <div class="card-name">Jerry Falwell Jr.</div>
+            <div class="card-title">Liberty University's Pool Boy Scandal</div>
+            <div class="card-move"><strong>Grift:</strong> Ran Christian university. Wife had affair with pool boy. He watched. Embezzled millions. Still claiming moral authority.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Hypocrisy:</span><span class="stat-value">∞</span></div>
+                <div class="stat"><span class="stat-label">Settlement:</span><span class="stat-value">$10M+</span></div>
+            </div>
+            <div class="card-quote">"I'm a good person" - narrator: he wasn't</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Corporate</div>
+            <div class="card-name">Travis Kalanick</div>
+            <div class="card-title">Uber's Original Sin</div>
+            <div class="card-move"><strong>Grift:</strong> Built Uber by breaking every law. Toxic culture. Spied on competitors. Berated drivers. Golden parachute exit.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Laws Broken:</span><span class="stat-value">Many</span></div>
+                <div class="stat"><span class="stat-label">Exit Package:</span><span class="stat-value">$2.7B</span></div>
+            </div>
+            <div class="card-quote">"We're just a technology platform" - when drivers got hurt</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Finance</div>
+            <div class="card-name">Bernie Madoff</div>
+            <div class="card-title">The Original Ponzi King</div>
+            <div class="card-move"><strong>Grift:</strong> Largest Ponzi scheme in history. $65 billion. Ran it for decades. Only got caught when the market crashed.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Stolen:</span><span class="stat-value">$65B</span></div>
+                <div class="stat"><span class="stat-label">Prison:</span><span class="stat-value">150 yrs</span></div>
+            </div>
+            <div class="card-quote">"I'm sorry" - same energy as SBF</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">MLM</div>
+            <div class="card-name">LuLaRoe Founders</div>
+            <div class="card-title">Leggings Pyramid Scheme</div>
+            <div class="card-move"><strong>Grift:</strong> Convinced women to buy $5k-$10k in ugly leggings. Defective products. Destroyed families. Founders bought mansions.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Victims:</span><span class="stat-value">Thousands</span></div>
+                <div class="stat"><span class="stat-label">Ugly Patterns:</span><span class="stat-value">∞</span></div>
+            </div>
+            <div class="card-quote">"You're a business owner!" - you're inventory</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Megachurch</div>
+            <div class="card-name">Jim Bakker</div>
+            <div class="card-title">Came Back From Prison</div>
+            <div class="card-move"><strong>Grift:</strong> 1980s televangelist. Prison for fraud. Came back selling apocalypse food buckets and fake COVID cures.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Comebacks:</span><span class="stat-value">1</span></div>
+                <div class="stat"><span class="stat-label">Learning:</span><span class="stat-value">0</span></div>
+            </div>
+            <div class="card-quote">"God told me to come back" - to sell more stuff</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Influence</div>
+            <div class="card-name">Andrew Tate</div>
+            <div class="card-title">Hustler's University Dropout</div>
+            <div class="card-move"><strong>Grift:</strong> Sold courses on being an asshole. Ran webcam business. Moved to Romania. Human trafficking charges. Still has fans.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Red Flags:</span><span class="stat-value">∞</span></div>
+                <div class="stat"><span class="stat-label">Status:</span><span class="stat-value">Charged</span></div>
+            </div>
+            <div class="card-quote">"What color is your Bugatti?" - facing prison</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Corporate</div>
+            <div class="card-name">The Sackler Family</div>
+            <div class="card-title">Opioid Empire</div>
+            <div class="card-move"><strong>Grift:</strong> Knew OxyContin was addictive. Pushed it anyway. 500,000+ dead. Paid fines, kept billions, got immunity.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Deaths:</span><span class="stat-value">500K+</span></div>
+                <div class="stat"><span class="stat-label">Prison Time:</span><span class="stat-value">0</span></div>
+            </div>
+            <div class="card-quote">"We did nothing wrong" - while funding museums</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Telecom</div>
+            <div class="card-name">Every Cable Company CEO</div>
+            <div class="card-title">The Legal Monopolists</div>
+            <div class="card-move"><strong>Grift:</strong> Carve up territories. Never compete. Worst customer service on earth. Buy politicians. Raise prices forever.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Competition:</span><span class="stat-value">0</span></div>
+                <div class="stat"><span class="stat-label">Customer Satisfaction:</span><span class="stat-value">LOL</span></div>
+            </div>
+            <div class="card-quote">"We value our customers" - while on hold for 3 hours</div>
+        </div>
+
+    </div>
+
+    <footer>
+        The profile: Charm without empathy. Confidence without competence. Always failing upward. Never facing consequences.
+    </footer>
+</body>
+</html>
