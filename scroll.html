@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuck The Scroll</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .page {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 {
+            font-size: clamp(36px, 8vw, 72px);
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #EF4444, #F59E0B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .manifesto {
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .point {
+            font-size: clamp(14px, 2.5vw, 18px);
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .point strong {
+            color: #fff;
+        }
+
+        .point em {
+            color: #F59E0B;
+            font-style: normal;
+        }
+
+        .bottom-line {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #333;
+            font-size: clamp(12px, 2vw, 14px);
+            color: #444;
+        }
+
+        .this-is-it {
+            margin-top: 20px;
+            font-size: clamp(11px, 1.5vw, 13px);
+            color: #333;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="page">
+        <h1>Fuck The Scroll</h1>
+
+        <div class="manifesto">
+            <p class="point">
+                <strong>The infinite scroll taught you that there's always more.</strong> Another post. Another take. Another thing you haven't seen yet. It trained your brain to never stop, never be satisfied, never sit with anything.
+            </p>
+
+            <p class="point">
+                <strong>You don't finish things anymore.</strong> You consume the first 30 seconds, then move on. Articles, videos, conversations, relationships. There might be something better <em>just below</em>.
+            </p>
+
+            <p class="point">
+                <strong>Understanding requires stillness.</strong> It requires reading something twice. Thinking about it. Letting it sit. The scroll made that feel like a waste of time. Why think when you could consume?
+            </p>
+
+            <p class="point">
+                <strong>This page doesn't scroll.</strong> This is everything. There is nothing below. No more content. No comments section. No related posts. No infinite feed of alternatives.
+            </p>
+        </div>
+
+        <div class="bottom-line">
+            The scroll isn't free. You pay with your attention, your depth, and your ability to be satisfied.
+        </div>
+
+        <div class="this-is-it">
+            This is it. Sit with it.
+        </div>
+    </div>
+</body>
+</html>
