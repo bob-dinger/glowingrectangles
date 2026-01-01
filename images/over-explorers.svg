@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#0a0a0f"/>
+
+  <!-- Stylized meditation/biohacking figure -->
+  <circle cx="50" cy="28" r="10" fill="#3B82F6"/>
+  <path d="M30 65 Q50 45 70 65" stroke="#3B82F6" stroke-width="3" fill="none"/>
+  <line x1="50" y1="38" x2="50" y2="55" stroke="#3B82F6" stroke-width="3"/>
+
+  <!-- Data/optimization symbols around -->
+  <text x="20" y="25" font-size="8" fill="#22C55E" font-family="monospace">+5%</text>
+  <text x="70" y="25" font-size="8" fill="#22C55E" font-family="monospace">HRV</text>
+  <text x="15" y="80" font-size="8" fill="#F59E0B" font-family="monospace">VO2</text>
+  <text x="70" y="80" font-size="8" fill="#F59E0B" font-family="monospace">REM</text>
+
+  <!-- Chart line -->
+  <polyline points="20,90 35,85 50,75 65,78 80,70" stroke="#EC4899" stroke-width="2" fill="none"/>
+</svg>

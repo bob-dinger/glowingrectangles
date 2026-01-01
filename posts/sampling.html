@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sampling</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            padding: 20px;
+            overflow: hidden;
+            gap: 30px;
+        }
+
+        .left-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        .right-column {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .spreadsheet-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .spreadsheet {
+            flex: 1;
+            background: #0a0a0f;
+            border: 1px solid #222;
+            border-radius: 8px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+
+        .spreadsheet-header {
+            display: flex;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        .spreadsheet-header div {
+            padding: 8px 10px;
+        }
+
+        .col-time {
+            width: 60px;
+            text-align: right;
+            border-right: 1px solid #222;
+        }
+
+        .col-binary {
+            flex: 1;
+            text-align: left;
+        }
+
+        .spreadsheet-row {
+            display: flex;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .spreadsheet-row:hover {
+            background: #111;
+        }
+
+        .spreadsheet-row div {
+            padding: 6px 10px;
+        }
+
+        .spreadsheet-row .col-time {
+            color: #666;
+        }
+
+        .spreadsheet-row .col-binary {
+            color: #22C55E;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .waveform-display {
+            margin-bottom: 20px;
+        }
+
+        .waveform-display canvas {
+            border-radius: 6px;
+            background: #111;
+        }
+
+        .viz-section {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        .section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        canvas {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #222;
+            background: #0f0f14;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .control-label {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-value {
+            font-size: 14px;
+            color: #F59E0B;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        input[type="range"] {
+            width: 120px;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #222;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #F59E0B;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .sample-info {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .info-box {
+            background: #1a1a1a;
+            border-radius: 6px;
+            padding: 10px 15px;
+            text-align: center;
+        }
+
+        .info-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .info-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        /* Right Drawer */
+        .drawer {
+            width: 320px;
+            height: 100vh;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 25px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .drawer-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+
+        .drawer-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #999;
+        }
+
+        .info-text p {
+            margin-bottom: 14px;
+        }
+
+        .info-text strong {
+            color: #ccc;
+        }
+
+        .steps-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+
+        .steps-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        .step {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #1a1a1a;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .step-num {
+            width: 20px;
+            height: 20px;
+            background: #F59E0B;
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        .key-insight {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #FDBA74;
+            line-height: 1.6;
+        }
+
+        .quality-list {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+
+        .quality-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .quality-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .quality-rate {
+            color: #22C55E;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-column">
+            <h1>Sampling</h1>
+            <p class="subtitle">How sound becomes numbers</p>
+
+            <div class="waveform-display">
+                <canvas id="audioWaveform" width="500" height="80"></canvas>
+            </div>
+
+            <div class="sample-info">
+                <div class="info-box">
+                    <div class="info-value" id="sampleCount">0</div>
+                    <div class="info-label">Samples</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-value" id="bitDepth">8-bit</div>
+                    <div class="info-label">Bit Depth</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-value" id="dataSize">0</div>
+                    <div class="info-label">Bits Total</div>
+                </div>
+            </div>
+
+            <div class="viz-section">
+                <div class="section-label">Continuous Sound Wave → Discrete Samples</div>
+                <canvas id="waveCanvas" width="600" height="200"></canvas>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">Sample Rate</div>
+                    <div class="control-value" id="rateValue">20 samples</div>
+                    <input type="range" id="rateSlider" min="5" max="200" value="20">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Frequency</div>
+                    <div class="control-value" id="freqValue">2 Hz</div>
+                    <input type="range" id="freqSlider" min="1" max="5" step="0.5" value="2">
+                </div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="spreadsheet-title">Sample Data</div>
+            <div class="spreadsheet">
+                <div class="spreadsheet-header">
+                    <div class="col-time">Time</div>
+                    <div class="col-binary">Binary Height</div>
+                </div>
+                <div id="spreadsheetBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="drawer">
+        <div class="drawer-title">Analog to Digital</div>
+        <div class="drawer-subtitle">Capturing continuous reality in discrete chunks</div>
+
+        <div class="info-text">
+            <p>Sound is a <strong>continuous wave</strong> — air pressure changing smoothly over time.</p>
+            <p>Computers can only store <strong>discrete numbers</strong>. So we "sample" the wave at regular intervals, measuring its height.</p>
+            <p>Each measurement becomes a number. Each number becomes <strong>binary</strong> (1s and 0s).</p>
+        </div>
+
+        <div class="steps-section">
+            <div class="steps-title">The Process</div>
+            <div class="step">
+                <div class="step-num">1</div>
+                <div>Sound wave enters microphone</div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div>Sample the amplitude X times per second</div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div>Convert each sample to a number (0-255 for 8-bit)</div>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <div>Convert numbers to binary</div>
+            </div>
+        </div>
+
+        <div class="quality-list">
+            <div class="quality-title">Common Sample Rates</div>
+            <div class="quality-item">
+                <span>CD Quality</span>
+                <span class="quality-rate">44,100 Hz</span>
+            </div>
+            <div class="quality-item">
+                <span>DVD / Pro Audio</span>
+                <span class="quality-rate">48,000 Hz</span>
+            </div>
+            <div class="quality-item">
+                <span>Hi-Res Audio</span>
+                <span class="quality-rate">96,000 Hz</span>
+            </div>
+            <div class="quality-item">
+                <span>Phone Call</span>
+                <span class="quality-rate">8,000 Hz</span>
+            </div>
+        </div>
+
+        <div class="key-insight">
+            <strong>The tradeoff:</strong> More samples = more accurate sound, but bigger file. A 3-minute CD song is ~30 million samples.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('waveCanvas');
+        const ctx = canvas.getContext('2d');
+        const waveformCanvas = document.getElementById('audioWaveform');
+        const waveformCtx = waveformCanvas.getContext('2d');
+        const rateSlider = document.getElementById('rateSlider');
+        const freqSlider = document.getElementById('freqSlider');
+        const rateValue = document.getElementById('rateValue');
+        const freqValue = document.getElementById('freqValue');
+        const spreadsheetBody = document.getElementById('spreadsheetBody');
+        const sampleCount = document.getElementById('sampleCount');
+        const dataSize = document.getElementById('dataSize');
+
+        let sampleRate = 20;
+        let frequency = 2;
+
+        // Draw realistic audio waveform at top (like actual recorded audio)
+        function drawAudioWaveform() {
+            const w = waveformCanvas.width;
+            const h = waveformCanvas.height;
+            const centerY = h / 2;
+
+            waveformCtx.fillStyle = '#111';
+            waveformCtx.fillRect(0, 0, w, h);
+
+            // Generate seeded random for consistent waveform
+            function seededRandom(seed) {
+                const x = Math.sin(seed * 9999) * 10000;
+                return x - Math.floor(x);
+            }
+
+            waveformCtx.fillStyle = '#3B82F6';
+
+            // Simulate real audio: speech/music-like with transients and dynamics
+            for (let x = 0; x < w; x++) {
+                const t = x / w;
+
+                // Create realistic envelope with words/beats
+                let envelope = 0;
+
+                // Simulate spoken words or musical phrases
+                const words = [
+                    { start: 0.02, end: 0.12, peak: 0.8 },
+                    { start: 0.15, end: 0.28, peak: 0.95 },
+                    { start: 0.32, end: 0.38, peak: 0.5 },
+                    { start: 0.42, end: 0.58, peak: 1.0 },
+                    { start: 0.62, end: 0.68, peak: 0.4 },
+                    { start: 0.72, end: 0.88, peak: 0.85 },
+                    { start: 0.91, end: 0.98, peak: 0.6 }
+                ];
+
+                for (const word of words) {
+                    if (t >= word.start && t <= word.end) {
+                        const wordT = (t - word.start) / (word.end - word.start);
+                        // Attack-decay envelope for each word
+                        const attack = Math.min(1, wordT * 8);
+                        const decay = Math.pow(1 - wordT, 0.5);
+                        envelope = Math.max(envelope, attack * decay * word.peak);
+                    }
+                }
+
+                // Add some baseline noise
+                envelope = Math.max(envelope, 0.03);
+
+                // High frequency detail (the actual waveform shape)
+                const noise1 = seededRandom(x * 1.1) * 2 - 1;
+                const noise2 = seededRandom(x * 2.3) * 2 - 1;
+                const noise3 = seededRandom(x * 0.7) * 2 - 1;
+
+                // Mix of frequencies like real audio
+                const wave = noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2;
+
+                const amplitude = wave * envelope * (h * 0.42);
+                const barHeight = Math.abs(amplitude);
+
+                waveformCtx.fillRect(x, centerY - barHeight, 1, barHeight * 2);
+            }
+
+            // Center line
+            waveformCtx.strokeStyle = '#222';
+            waveformCtx.lineWidth = 1;
+            waveformCtx.beginPath();
+            waveformCtx.moveTo(0, centerY);
+            waveformCtx.lineTo(w, centerY);
+            waveformCtx.stroke();
+        }
+
+        drawAudioWaveform();
+
+        // Generate a more realistic audio waveform (combination of frequencies)
+        function getWaveValue(t) {
+            // Combine multiple frequencies for a more complex sound wave
+            return Math.sin(t * Math.PI * 2 * frequency) * 0.6 +
+                   Math.sin(t * Math.PI * 2 * frequency * 2.5) * 0.25 +
+                   Math.sin(t * Math.PI * 2 * frequency * 4) * 0.15;
+        }
+
+        function drawWave() {
+            ctx.fillStyle = '#0f0f14';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const centerY = canvas.height / 2;
+            const amplitude = 70;
+            const padding = 30;
+            const waveWidth = canvas.width - padding * 2;
+            const barWidth = Math.max(1, Math.min(4, waveWidth / sampleRate * 0.5));
+
+            // Draw center line (zero line)
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(padding, centerY);
+            ctx.lineTo(canvas.width - padding, centerY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw continuous wave (the actual sound - more visible)
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let x = 0; x <= waveWidth; x++) {
+                const t = x / waveWidth;
+                const waveVal = getWaveValue(t);
+                const y = centerY - waveVal * amplitude;
+                if (x === 0) {
+                    ctx.moveTo(padding + x, y);
+                } else {
+                    ctx.lineTo(padding + x, y);
+                }
+            }
+            ctx.stroke();
+
+            // Draw sample bars
+            const samples = [];
+            for (let i = 0; i < sampleRate; i++) {
+                const t = i / (sampleRate - 1);
+                const x = padding + t * waveWidth;
+                const waveVal = getWaveValue(t);
+                const y = centerY - waveVal * amplitude;
+                const barHeight = Math.abs(y - centerY);
+
+                // Convert to 0-255 range (8-bit)
+                const normalizedValue = Math.round((waveVal + 1) * 127.5);
+                samples.push(normalizedValue);
+
+                // Draw bar from center line
+                ctx.fillStyle = '#F59E0B';
+                if (y < centerY) {
+                    // Positive value - bar goes up
+                    ctx.fillRect(x - barWidth/2, y, barWidth, centerY - y);
+                } else {
+                    // Negative value - bar goes down
+                    ctx.fillRect(x - barWidth/2, centerY, barWidth, y - centerY);
+                }
+            }
+
+            // Update spreadsheet
+            let html = '';
+            for (let i = 0; i < samples.length; i++) {
+                const time = (i / (sampleRate - 1)).toFixed(3);
+                const binary = samples[i].toString(2).padStart(8, '0');
+                html += `<div class="spreadsheet-row">
+                    <div class="col-time">${time}s</div>
+                    <div class="col-binary">${binary}</div>
+                </div>`;
+            }
+            spreadsheetBody.innerHTML = html;
+
+            // Update stats
+            sampleCount.textContent = sampleRate;
+            dataSize.textContent = sampleRate * 8;
+        }
+
+        rateSlider.addEventListener('input', (e) => {
+            sampleRate = parseInt(e.target.value);
+            rateValue.textContent = `${sampleRate} samples`;
+            drawWave();
+        });
+
+        freqSlider.addEventListener('input', (e) => {
+            frequency = parseFloat(e.target.value);
+            freqValue.textContent = `${frequency} Hz`;
+            drawWave();
+        });
+
+        // Initial draw
+        drawWave();
+
+        // Auto-animate on page load: go from low to high sample rate
+        function animateSampleRate() {
+            const startRate = 5;
+            const endRate = 200;
+            const duration = 5000; // 5 seconds
+            const startTime = performance.now();
+
+            // Start at low sample rate
+            sampleRate = startRate;
+            rateSlider.value = startRate;
+            rateValue.textContent = `${startRate} samples`;
+            drawWave();
+
+            function step(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Ease-out curve for smooth deceleration
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                sampleRate = Math.round(startRate + (endRate - startRate) * eased);
+                rateSlider.value = sampleRate;
+                rateValue.textContent = `${sampleRate} samples`;
+                drawWave();
+
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                }
+            }
+
+            requestAnimationFrame(step);
+        }
+
+        // Start animation after a brief delay
+        setTimeout(animateSampleRate, 500);
+    </script>
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>When Induction Goes Wrong</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .turkey-scene {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .days-label {
+            font-size: 14px;
+            color: #F59E0B;
+            margin-bottom: 10px;
+        }
+
+        .day-counter {
+            font-size: 48px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .turkey-container {
+            position: relative;
+            width: 200px;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .turkey {
+            font-size: 80px;
+            transition: all 0.3s;
+        }
+
+        .turkey.happy {
+            filter: none;
+        }
+
+        .turkey.worried {
+            filter: grayscale(0.5);
+        }
+
+        .turkey.gone {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .food-icon {
+            position: absolute;
+            font-size: 30px;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .food-icon.visible {
+            opacity: 1;
+        }
+
+        .confidence-section {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+
+        .confidence-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .confidence-bar-bg {
+            height: 20px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .confidence-bar {
+            height: 100%;
+            background: linear-gradient(to right, #22C55E, #16A34A);
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .confidence-bar.danger {
+            background: linear-gradient(to right, #EF4444, #DC2626);
+        }
+
+        .thought-bubble {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            max-width: 350px;
+            text-align: center;
+            font-size: 14px;
+            color: #ccc;
+            font-style: italic;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: #22C55E;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #16A34A;
+        }
+
+        .btn.secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn.secondary:hover {
+            background: #444;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .timeline {
+            display: flex;
+            gap: 3px;
+            margin-bottom: 15px;
+        }
+
+        .timeline-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #333;
+            transition: all 0.3s;
+        }
+
+        .timeline-dot.fed {
+            background: #22C55E;
+        }
+
+        .timeline-dot.danger {
+            background: #EF4444;
+        }
+
+        /* Right Drawer */
+        .drawer {
+            width: 340px;
+            height: 100vh;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 25px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .drawer-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #EF4444;
+            margin-bottom: 8px;
+        }
+
+        .drawer-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #999;
+        }
+
+        .info-text p {
+            margin-bottom: 14px;
+        }
+
+        .info-text strong {
+            color: #ccc;
+        }
+
+        .key-insight {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #FCA5A5;
+            line-height: 1.6;
+        }
+
+        .examples-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+
+        .examples-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        .example-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #1a1a1a;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .example-row-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .quote-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1a1a1a;
+            border-left: 3px solid #F59E0B;
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        .quote-author {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>The Turkey Problem</h1>
+        <p class="subtitle">When pattern-matching betrays you</p>
+
+        <div class="timeline" id="timeline"></div>
+
+        <div class="turkey-scene">
+            <div class="days-label">Day</div>
+            <div class="day-counter" id="dayCounter">1</div>
+            <div class="turkey-container">
+                <div class="turkey" id="turkey">🦃</div>
+                <div class="food-icon" id="food" style="right: 20px; top: 20px;">🌽</div>
+            </div>
+        </div>
+
+        <div class="confidence-section">
+            <div class="confidence-label">Turkey's confidence: "The farmer is my friend"</div>
+            <div class="confidence-bar-bg">
+                <div class="confidence-bar" id="confidenceBar" style="width: 10%;"></div>
+            </div>
+        </div>
+
+        <div class="thought-bubble" id="thought">
+            "Day 1... the farmer brought food. Interesting."
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="nextDayBtn">Next Day</button>
+            <button class="btn secondary" id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <div class="drawer">
+        <div class="drawer-title">The Problem of Induction</div>
+        <div class="drawer-subtitle">Same brain, dangerous conclusions</div>
+
+        <div class="info-text">
+            <p>The <strong>same mental shortcut</strong> that helps us learn from one switch also leads us astray.</p>
+            <p>A turkey is fed every day for 364 days. Each feeding <strong>increases its confidence</strong> that the farmer is a friend.</p>
+            <p>On day 365, the turkey's confidence is at an all-time high. It's also Thanksgiving.</p>
+        </div>
+
+        <div class="quote-box">
+            "The fact that the sun has risen every day of your life doesn't prove it will rise tomorrow."
+            <div class="quote-author">— David Hume (paraphrased)</div>
+        </div>
+
+        <div class="examples-section">
+            <div class="examples-title">Everyday Turkey Problems</div>
+            <div class="example-row">
+                <span class="example-row-icon">📈</span>
+                <span>"Housing prices always go up" — everyone before 2008</span>
+            </div>
+            <div class="example-row">
+                <span class="example-row-icon">🏦</span>
+                <span>"This bank has never failed" — until it does</span>
+            </div>
+            <div class="example-row">
+                <span class="example-row-icon">🐕</span>
+                <span>"One dog bit me, all dogs are dangerous"</span>
+            </div>
+            <div class="example-row">
+                <span class="example-row-icon">👤</span>
+                <span>"One person from X was rude, they're all rude"</span>
+            </div>
+            <div class="example-row">
+                <span class="example-row-icon">💼</span>
+                <span>"I've never been fired" — until restructuring</span>
+            </div>
+        </div>
+
+        <div class="key-insight">
+            <strong>The trap:</strong> More evidence can increase confidence without increasing truth. 364 days of feeding didn't make the farmer a friend — it just made the turkey more certain of a false belief.
+        </div>
+    </div>
+
+    <script>
+        const turkey = document.getElementById('turkey');
+        const food = document.getElementById('food');
+        const dayCounter = document.getElementById('dayCounter');
+        const confidenceBar = document.getElementById('confidenceBar');
+        const thought = document.getElementById('thought');
+        const timeline = document.getElementById('timeline');
+        const nextDayBtn = document.getElementById('nextDayBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let day = 1;
+        const totalDays = 30; // Shortened for demo
+        const thanksgivingDay = 30;
+
+        const thoughts = {
+            1: "Day 1... the farmer brought food. Interesting.",
+            2: "Food again! Maybe this is a pattern...",
+            5: "Five days in a row. The farmer likes me.",
+            10: "Ten days! The farmer is definitely my friend.",
+            15: "This is wonderful. I can count on him.",
+            20: "Twenty days of proof. I trust him completely.",
+            25: "The most reliable friend I've ever had.",
+            28: "Life is good. Tomorrow will be just like today.",
+            29: "I've never been more certain of anything.",
+            30: "Wait... why does he have that axe?"
+        };
+
+        function initTimeline() {
+            timeline.innerHTML = '';
+            for (let i = 1; i <= totalDays; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'timeline-dot';
+                dot.id = `dot-${i}`;
+                timeline.appendChild(dot);
+            }
+        }
+
+        function getThought(d) {
+            const keys = Object.keys(thoughts).map(Number).sort((a, b) => a - b);
+            let closest = keys[0];
+            for (const k of keys) {
+                if (k <= d) closest = k;
+            }
+            return thoughts[closest];
+        }
+
+        function updateDisplay() {
+            dayCounter.textContent = day;
+
+            // Update timeline
+            for (let i = 1; i <= totalDays; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (i < day) {
+                    dot.className = 'timeline-dot fed';
+                } else if (i === day && day === thanksgivingDay) {
+                    dot.className = 'timeline-dot danger';
+                } else {
+                    dot.className = 'timeline-dot';
+                }
+            }
+
+            // Update confidence (grows with each day)
+            const confidence = Math.min(95, 10 + (day - 1) * 3);
+            confidenceBar.style.width = confidence + '%';
+
+            // Update thought
+            thought.textContent = `"${getThought(day)}"`;
+
+            // Show food animation
+            if (day < thanksgivingDay) {
+                food.textContent = '🌽';
+                food.classList.add('visible');
+                setTimeout(() => food.classList.remove('visible'), 500);
+                turkey.className = 'turkey happy';
+            }
+
+            // Thanksgiving!
+            if (day === thanksgivingDay) {
+                confidenceBar.classList.add('danger');
+                turkey.className = 'turkey worried';
+                food.textContent = '🪓';
+                food.classList.add('visible');
+                nextDayBtn.disabled = true;
+
+                setTimeout(() => {
+                    turkey.className = 'turkey gone';
+                    thought.textContent = '"..."';
+                }, 1500);
+            }
+        }
+
+        function nextDay() {
+            if (day < thanksgivingDay) {
+                day++;
+                updateDisplay();
+            }
+        }
+
+        function reset() {
+            day = 1;
+            confidenceBar.classList.remove('danger');
+            turkey.className = 'turkey happy';
+            food.classList.remove('visible');
+            nextDayBtn.disabled = false;
+            initTimeline();
+            updateDisplay();
+        }
+
+        nextDayBtn.addEventListener('click', nextDay);
+        resetBtn.addEventListener('click', reset);
+
+        // Initialize
+        initTimeline();
+        updateDisplay();
+    </script>
+</body>
+</html>

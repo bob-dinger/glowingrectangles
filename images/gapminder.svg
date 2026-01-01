@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#0a0a0a"/>
+  <!-- Axes -->
+  <line x1="15" y1="85" x2="95" y2="85" stroke="#333" stroke-width="1"/>
+  <line x1="15" y1="85" x2="15" y2="10" stroke="#333" stroke-width="1"/>
+  <!-- Bubbles - Africa (orange) -->
+  <circle cx="25" cy="70" r="6" fill="#F59E0B" opacity="0.7"/>
+  <circle cx="35" cy="60" r="4" fill="#F59E0B" opacity="0.7"/>
+  <circle cx="30" cy="75" r="3" fill="#F59E0B" opacity="0.7"/>
+  <!-- Bubbles - Asia (red) -->
+  <circle cx="55" cy="40" r="18" fill="#EF4444" opacity="0.7"/>
+  <circle cx="75" cy="30" r="12" fill="#EF4444" opacity="0.7"/>
+  <circle cx="45" cy="55" r="8" fill="#EF4444" opacity="0.7"/>
+  <!-- Bubbles - Americas (green) -->
+  <circle cx="70" cy="25" r="7" fill="#22C55E" opacity="0.7"/>
+  <circle cx="50" cy="45" r="5" fill="#22C55E" opacity="0.7"/>
+  <circle cx="40" cy="50" r="4" fill="#22C55E" opacity="0.7"/>
+  <!-- Bubbles - Europe (blue) -->
+  <circle cx="80" cy="20" r="5" fill="#3B82F6" opacity="0.7"/>
+  <circle cx="85" cy="25" r="4" fill="#3B82F6" opacity="0.7"/>
+  <circle cx="75" cy="28" r="3" fill="#3B82F6" opacity="0.7"/>
+  <!-- Bubbles - Oceania (purple) -->
+  <circle cx="88" cy="22" r="3" fill="#8B5CF6" opacity="0.7"/>
+</svg>

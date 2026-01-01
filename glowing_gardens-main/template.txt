@@ -1,0 +1,27 @@
+<template>
+  <div id="container">
+    <svg viewBox="0 0 600 600"></svg>
+  </div>
+</template>
+
+<script setup></script>
+
+<style scoped>
+#container {
+  width: 600px;
+  margin: 0 auto;
+  margin-top: 84px;
+}
+svg {
+  box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 600px) {
+  #container {
+    width: 100vw;
+  }
+  svg {
+    width: 100vw;
+  }
+}
+</style>

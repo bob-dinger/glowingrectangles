@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Over Explorers</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+        }
+        h1 {
+            font-size: 42px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #EF4444, #F59E0B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            font-style: italic;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #1a1a1a, #111);
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            border-color: #F59E0B;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2);
+        }
+
+        .card-class {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.1);
+            color: #888;
+        }
+
+        .card-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        .card-title {
+            font-size: 12px;
+            color: #F59E0B;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+
+        .card-move {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .card-move strong {
+            color: #EF4444;
+        }
+
+        .stats {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: #222;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-label {
+            color: #666;
+        }
+        .stat-value {
+            color: #22C55E;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        .card-quote {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid #333;
+            font-size: 11px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .category-label {
+            grid-column: 1 / -1;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #444;
+            padding: 20px 0 10px;
+            border-bottom: 1px solid #222;
+            margin-top: 20px;
+        }
+        .category-label:first-of-type {
+            margin-top: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #333;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>Over Explorers</h1>
+        <p class="subtitle">People who need to stop. Or at least shut up about it.</p>
+        <p style="margin-top: 15px;"><a href="over-explorers-women.html" style="color: #EC4899; text-decoration: none; font-size: 14px;">See also: The Wellness Industrial Complex →</a></p>
+    </header>
+
+    <div class="grid">
+        <div class="category-label">The Biohackers</div>
+
+        <div class="card">
+            <div class="card-class">Biohacker</div>
+            <div class="card-name">Bryan Johnson</div>
+            <div class="card-title">The Man Who Would Not Die</div>
+            <div class="card-move"><strong>Special Move:</strong> Blood transfusions from his teenage son. 100+ pills daily. $2M/year budget. Publishes every biomarker online.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Self-Awareness:</span><span class="stat-value">2</span></div>
+                <div class="stat"><span class="stat-label">Content Output:</span><span class="stat-value">99</span></div>
+                <div class="stat"><span class="stat-label">Pills/Day:</span><span class="stat-value">111</span></div>
+            </div>
+            <div class="card-quote">"My 18-year-old son's blood is the fountain of youth"</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Biohacker</div>
+            <div class="card-name">Dave Asprey</div>
+            <div class="card-title">Bulletproof Coffee's Bulletproof Ego</div>
+            <div class="card-move"><strong>Special Move:</strong> Put butter in coffee, called it innovation. Claims he'll live to 180. Stem cell injections. $1M+ on "upgrading" himself.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Butter Consumed:</span><span class="stat-value">∞</span></div>
+                <div class="stat"><span class="stat-label">Years Promised:</span><span class="stat-value">180</span></div>
+            </div>
+            <div class="card-quote">"I spent $1 million hacking my own biology"</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Biohacker</div>
+            <div class="card-name">Ben Greenfield</div>
+            <div class="card-title">The Enema Enthusiast</div>
+            <div class="card-move"><strong>Special Move:</strong> Coffee enemas. Parasite cleanses. Grounding mats. 4-hour podcast episodes about supplementation.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Orifices Used:</span><span class="stat-value">All</span></div>
+                <div class="stat"><span class="stat-label">Episode Length:</span><span class="stat-value">4hrs</span></div>
+            </div>
+            <div class="card-quote">"Have you tried putting coffee... somewhere else?"</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Fraud</div>
+            <div class="card-name">Liver King</div>
+            <div class="card-title">Ancestral Liar</div>
+            <div class="card-move"><strong>Special Move:</strong> Ate raw liver on camera. Preached "ancestral living." Was on $10k/month of steroids the whole time.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Authenticity:</span><span class="stat-value">0</span></div>
+                <div class="stat"><span class="stat-label">Steroids/mo:</span><span class="stat-value">$10k</span></div>
+            </div>
+            <div class="card-quote">"I just eat liver bro" (and inject testosterone)</div>
+        </div>
+
+        <div class="category-label">The Longevity Doctors</div>
+
+        <div class="card">
+            <div class="card-class">MD Influencer</div>
+            <div class="card-name">Peter Attia</div>
+            <div class="card-title">Zone 2 Zealot</div>
+            <div class="card-move"><strong>Special Move:</strong> 3-hour podcast episodes about not dying. Zone 2 cardio. Rapamycin. Makes simple things complicated.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Ep. Length:</span><span class="stat-value">3hrs</span></div>
+                <div class="stat"><span class="stat-label">Zone:</span><span class="stat-value">2</span></div>
+            </div>
+            <div class="card-quote">"Let me explain VO2 max for the next 47 minutes"</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Harvard</div>
+            <div class="card-name">David Sinclair</div>
+            <div class="card-title">The Supplement Salesman with a PhD</div>
+            <div class="card-move"><strong>Special Move:</strong> Sells NMN supplements. Resveratrol evangelist. Harvard credentials lending legitimacy to sketchy claims.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Supplements Sold:</span><span class="stat-value">∞</span></div>
+                <div class="stat"><span class="stat-label">Peer Review:</span><span class="stat-value">Pending</span></div>
+            </div>
+            <div class="card-quote">"Aging is a disease and I have the cure (for sale)"</div>
+        </div>
+
+        <div class="category-label">The Wisdom Gurus</div>
+
+        <div class="card">
+            <div class="card-class">Podcaster</div>
+            <div class="card-name">Tim Ferriss</div>
+            <div class="card-title">The 4-Hour Humble Bragger</div>
+            <div class="card-move"><strong>Special Move:</strong> "4-Hour" everything. Now just asks billionaires about morning routines. Name-drops constantly.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Hours Claimed:</span><span class="stat-value">4</span></div>
+                <div class="stat"><span class="stat-label">Actual Hours:</span><span class="stat-value">80</span></div>
+            </div>
+            <div class="card-quote">"When I was having dinner with [famous person]..."</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Stoic™</div>
+            <div class="card-name">Ryan Holiday</div>
+            <div class="card-title">Marcus Aurelius's Marketing Manager</div>
+            <div class="card-move"><strong>Special Move:</strong> Turned ancient philosophy into a newsletter. Sells the same ideas in 47 different books. Daily Stoic™ empire.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Books (Same Idea):</span><span class="stat-value">12</span></div>
+                <div class="stat"><span class="stat-label">Emails/Day:</span><span class="stat-value">3</span></div>
+            </div>
+            <div class="card-quote">"The obstacle is the way... to my bank account"</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">One Book</div>
+            <div class="card-name">James Clear</div>
+            <div class="card-title">Mr. 1% Better</div>
+            <div class="card-move"><strong>Special Move:</strong> Wrote one book about habits. Has produced infinite content about getting 1% better every day.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Books:</span><span class="stat-value">1</span></div>
+                <div class="stat"><span class="stat-label">Tweets About It:</span><span class="stat-value">∞</span></div>
+            </div>
+            <div class="card-quote">"1% better every day = 37x better in a year" (not how math works)</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Angel Philosopher</div>
+            <div class="card-name">Naval Ravikant</div>
+            <div class="card-title">Fortune Cookie Billionaire</div>
+            <div class="card-move"><strong>Special Move:</strong> Tweets cryptic wisdom. "How to get rich without getting lucky." Speaks in koans.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Words/Tweet:</span><span class="stat-value">12</span></div>
+                <div class="stat"><span class="stat-label">Depth:</span><span class="stat-value">Shallow</span></div>
+            </div>
+            <div class="card-quote">"Seek wealth, not money" (has billions)</div>
+        </div>
+
+        <div class="category-label">The Wellness Woo</div>
+
+        <div class="card">
+            <div class="card-class">CEO of Goop</div>
+            <div class="card-name">Gwyneth Paltrow</div>
+            <div class="card-title">Jade Egg Empress</div>
+            <div class="card-move"><strong>Special Move:</strong> Vagina candles. Jade eggs. $75 supplements. Sued for pseudoscience, kept going.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">FDA Warnings:</span><span class="stat-value">Many</span></div>
+                <div class="stat"><span class="stat-label">Candle Price:</span><span class="stat-value">$75</span></div>
+            </div>
+            <div class="card-quote">"This candle smells like my vagina"</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Ice Man</div>
+            <div class="card-name">Wim Hof</div>
+            <div class="card-title">Cold as a Personality</div>
+            <div class="card-move"><strong>Special Move:</strong> Ice baths. Breathing techniques. Has a point, but followers think cold water cures everything.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Temperature:</span><span class="stat-value">Cold</span></div>
+                <div class="stat"><span class="stat-label">Shirts:</span><span class="stat-value">0</span></div>
+            </div>
+            <div class="card-quote">"The cold is my master" (that's... concerning)</div>
+        </div>
+
+        <div class="category-label">The Hustle Bros</div>
+
+        <div class="card">
+            <div class="card-class">Hustler</div>
+            <div class="card-name">Gary Vaynerchuk</div>
+            <div class="card-title">Grind Culture Incarnate</div>
+            <div class="card-move"><strong>Special Move:</strong> Yells about working harder. Sleeps 4 hours. Produces 900 pieces of content per day. Exhausting.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Sleep:</span><span class="stat-value">4hrs</span></div>
+                <div class="stat"><span class="stat-label">Volume:</span><span class="stat-value">LOUD</span></div>
+            </div>
+            <div class="card-quote">"HUSTLE! GRIND! BUY MY NFTS!"</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Tech CEO</div>
+            <div class="card-name">Jack Dorsey</div>
+            <div class="card-title">Silicon Valley Monk (Retired)</div>
+            <div class="card-move"><strong>Special Move:</strong> One meal a day. Walked 5 miles to work. Ice baths. Silent meditation retreats. Has since calmed down.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Meals/Day:</span><span class="stat-value">1</span></div>
+                <div class="stat"><span class="stat-label">Status:</span><span class="stat-value">Recovered</span></div>
+            </div>
+            <div class="card-quote">"Food is optional when you're disrupting industries"</div>
+        </div>
+
+        <div class="category-label">The Platformers</div>
+
+        <div class="card">
+            <div class="card-class">Podcast King</div>
+            <div class="card-name">Joe Rogan</div>
+            <div class="card-title">The Amplifier</div>
+            <div class="card-move"><strong>Special Move:</strong> Gave all these people a microphone. Sauna. Elk meat. DMT. "It's entirely possible."</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Guests Platformed:</span><span class="stat-value">All</span></div>
+                <div class="stat"><span class="stat-label">Sauna Temp:</span><span class="stat-value">200°F</span></div>
+            </div>
+            <div class="card-quote">"Have you tried DMT and elk meat?"</div>
+        </div>
+
+        <div class="card">
+            <div class="card-class">Neuroscientist</div>
+            <div class="card-name">Andrew Huberman</div>
+            <div class="card-title">Morning Sunlight Protocol</div>
+            <div class="card-move"><strong>Special Move:</strong> Legitimate scientist turned influencer. Morning sunlight. Very specific protocols. Accidentally created a cult.</div>
+            <div class="stats">
+                <div class="stat"><span class="stat-label">Sunlight:</span><span class="stat-value">10min</span></div>
+                <div class="stat"><span class="stat-label">Protocols:</span><span class="stat-value">∞</span></div>
+            </div>
+            <div class="card-quote">"Get morning sunlight in your eyes" (okay that one's actually good)</div>
+        </div>
+    </div>
+
+    <footer>
+        The pattern: Curiosity → Extremism → Monetization → Can't Stop Sharing → Becomes Entire Identity
+    </footer>
+</body>
+</html>

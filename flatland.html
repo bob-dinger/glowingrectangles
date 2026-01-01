@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flatland - A Romance of Many Dimensions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-top: 30px;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #F59E0B, #EF4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .author {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .intro {
+            color: #888;
+            font-size: 18px;
+            line-height: 1.7;
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+
+        .intro em {
+            color: #F59E0B;
+            font-style: normal;
+        }
+
+        h2 {
+            font-size: 28px;
+            margin: 50px 0 30px;
+            color: #fff;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .hierarchy {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .class-row {
+            display: flex;
+            align-items: center;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 25px;
+            gap: 30px;
+            transition: all 0.3s;
+        }
+
+        .class-row:hover {
+            border-color: #444;
+            transform: translateX(5px);
+        }
+
+        .shape-container {
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shape-container svg {
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        .class-info {
+            flex: 1;
+        }
+
+        .class-name {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .class-desc {
+            color: #888;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .rank {
+            font-size: 14px;
+            color: #555;
+            background: #1a1a1a;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        /* Color coding */
+        .priests { --color: #8B5CF6; }
+        .nobility { --color: #3B82F6; }
+        .professional { --color: #22C55E; }
+        .middle { --color: #F59E0B; }
+        .soldiers { --color: #EF4444; }
+        .women { --color: #EC4899; }
+
+        .class-row .class-name { color: var(--color); }
+        .shape-container svg { color: var(--color); }
+
+        /* Concept sections */
+        .concept {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .concept h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #F59E0B;
+        }
+
+        .concept p {
+            color: #888;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .concept p:last-child {
+            margin-bottom: 0;
+        }
+
+        .dimension-demo {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 30px 0;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .dimension {
+            text-align: center;
+        }
+
+        .dimension svg {
+            margin-bottom: 10px;
+        }
+
+        .dimension-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .dimension-name {
+            font-size: 18px;
+            color: #fff;
+            margin-top: 5px;
+        }
+
+        .quote {
+            border-left: 3px solid #F59E0B;
+            padding-left: 20px;
+            margin: 30px 0;
+            font-style: italic;
+            color: #888;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .quote cite {
+            display: block;
+            margin-top: 10px;
+            font-style: normal;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .satire-note {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 40px 0;
+        }
+
+        .satire-note h3 {
+            color: #EF4444;
+            margin-bottom: 10px;
+        }
+
+        .satire-note p {
+            color: #888;
+            line-height: 1.7;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid #222;
+            color: #444;
+            font-size: 13px;
+        }
+
+        .links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .ext-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #888;
+            text-decoration: none;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .ext-link:hover {
+            background: #222;
+            border-color: #F59E0B;
+            color: #F59E0B;
+        }
+
+        footer a {
+            color: #F59E0B;
+            text-decoration: none;
+        }
+
+        /* Animation for shapes */
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .shape-container svg {
+            animation: pulse 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back to Home</a>
+
+    <div class="container">
+        <header>
+            <h1>Flatland</h1>
+            <p class="author">A Romance of Many Dimensions (1884) by Edwin A. Abbott</p>
+        </header>
+
+        <p class="intro">
+            Imagine a world with only <em>two dimensions</em>—length and width, but no height.
+            The inhabitants are geometric shapes who slide around on a flat plane, unable to
+            conceive of "up" or "down." In this world, your <em>shape determines your social class</em>,
+            and the more sides you have, the higher your status.
+        </p>
+
+        <h2>The Social Hierarchy</h2>
+
+        <div class="hierarchy">
+            <div class="class-row priests">
+                <div class="shape-container">
+                    <svg width="80" height="80" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="35" fill="none" stroke="currentColor" stroke-width="3"/>
+                    </svg>
+                </div>
+                <div class="class-info">
+                    <div class="class-name">Circles (Priests)</div>
+                    <div class="class-desc">The highest class. Technically polygons with so many sides they appear circular. They govern Flatland as priests and administrators, believed to possess the greatest intelligence and virtue.</div>
+                </div>
+                <div class="rank">Highest</div>
+            </div>
+
+            <div class="class-row nobility">
+                <div class="shape-container">
+                    <svg width="80" height="80" viewBox="0 0 80 80">
+                        <polygon points="40,5 75,30 65,70 15,70 5,30" fill="none" stroke="currentColor" stroke-width="3"/>
+                    </svg>
+                </div>
+                <div class="class-info">
+                    <div class="class-name">Polygons (Nobility)</div>
+                    <div class="class-desc">Hexagons, heptagons, octagons, and beyond. The more sides, the higher the rank. Each generation typically gains one side, so noble families grow more circular over centuries.</div>
+                </div>
+                <div class="rank">Upper</div>
+            </div>
+
+            <div class="class-row professional">
+                <div class="shape-container">
+                    <svg width="80" height="80" viewBox="0 0 80 80">
+                        <polygon points="40,8 72,50 55,75 25,75 8,50" fill="none" stroke="currentColor" stroke-width="3"/>
+                    </svg>
+                </div>
+                <div class="class-info">
+                    <div class="class-name">Pentagons (Professional)</div>
+                    <div class="class-desc">Doctors, lawyers, and gentlemen. Five sides mark the entry into the respectable professional class, able to participate in governance and intellectual life.</div>
+                </div>
+                <div class="rank">Upper-Middle</div>
+            </div>
+
+            <div class="class-row middle">
+                <div class="shape-container">
+                    <svg width="80" height="80" viewBox="0 0 80 80">
+                        <rect x="12" y="12" width="56" height="56" fill="none" stroke="currentColor" stroke-width="3"/>
+                    </svg>
+                </div>
+                <div class="class-info">
+                    <div class="class-name">Squares (Middle Class)</div>
+                    <div class="class-desc">Our narrator, A. Square, belongs to this class. Merchants, shopkeepers, and minor professionals. Respectable but not elite. The protagonist who discovers the third dimension.</div>
+                </div>
+                <div class="rank">Middle</div>
+            </div>
+
+            <div class="class-row soldiers">
+                <div class="shape-container">
+                    <svg width="80" height="80" viewBox="0 0 80 80">
+                        <polygon points="40,10 70,70 10,70" fill="none" stroke="currentColor" stroke-width="3"/>
+                    </svg>
+                </div>
+                <div class="class-info">
+                    <div class="class-name">Triangles (Working Class)</div>
+                    <div class="class-desc">Isoceles triangles serve as soldiers and workers. The sharper (more acute) the angle, the lower and more dangerous the individual. Equilateral triangles are respectable; acute ones are laborers or criminals.</div>
+                </div>
+                <div class="rank">Lower</div>
+            </div>
+
+            <div class="class-row women">
+                <div class="shape-container">
+                    <svg width="80" height="80" viewBox="0 0 80 80">
+                        <line x1="10" y1="40" x2="70" y2="40" stroke="currentColor" stroke-width="3"/>
+                    </svg>
+                </div>
+                <div class="class-info">
+                    <div class="class-name">Lines (Women)</div>
+                    <div class="class-desc">Women in Flatland are straight lines—essentially triangles with no width. They're considered dangerous (sharp at one end, invisible from another) and are forbidden from intellectual life. Abbott used this to satirize Victorian attitudes toward women.</div>
+                </div>
+                <div class="rank">Lowest</div>
+            </div>
+        </div>
+
+        <div class="satire-note">
+            <h3>A Victorian Satire</h3>
+            <p>Abbott wasn't celebrating this hierarchy—he was mocking it. The rigid class system of Flatland, where birth determines destiny and women are oppressed, mirrors the Victorian England of his time. The book asks: what limitations do <em>we</em> accept as natural that are actually arbitrary?</p>
+        </div>
+
+        <h2>The Dimension Problem</h2>
+
+        <div class="concept">
+            <h3>How Flatlanders See Each Other</h3>
+            <p>In a 2D world, you can't look "down" at shapes from above. You see everything edge-on, like looking at coins on a table at eye level. Every shape appears as a <strong>line segment</strong>. Flatlanders distinguish each other by subtle shading gradients and by "feeling" each other's angles.</p>
+        </div>
+
+        <div class="dimension-demo">
+            <div class="dimension">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                    <circle cx="30" cy="30" r="5" fill="#F59E0B"/>
+                </svg>
+                <div class="dimension-label">0D</div>
+                <div class="dimension-name">Pointland</div>
+            </div>
+            <div class="dimension">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                    <line x1="10" y1="30" x2="50" y2="30" stroke="#22C55E" stroke-width="3"/>
+                </svg>
+                <div class="dimension-label">1D</div>
+                <div class="dimension-name">Lineland</div>
+            </div>
+            <div class="dimension">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                    <rect x="12" y="12" width="36" height="36" fill="none" stroke="#3B82F6" stroke-width="3"/>
+                </svg>
+                <div class="dimension-label">2D</div>
+                <div class="dimension-name">Flatland</div>
+            </div>
+            <div class="dimension">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                    <path d="M20,45 L20,20 L45,10 L45,35 Z" fill="none" stroke="#8B5CF6" stroke-width="2"/>
+                    <path d="M20,20 L35,25 L45,10" fill="none" stroke="#8B5CF6" stroke-width="2"/>
+                    <path d="M35,25 L35,50 L20,45" fill="none" stroke="#8B5CF6" stroke-width="2"/>
+                    <path d="M35,50 L45,35" fill="none" stroke="#8B5CF6" stroke-width="2"/>
+                </svg>
+                <div class="dimension-label">3D</div>
+                <div class="dimension-name">Spaceland</div>
+            </div>
+        </div>
+
+        <div class="concept">
+            <h3>The Sphere's Visit</h3>
+            <p>A sphere from Spaceland (3D) visits A. Square to reveal the third dimension. When a sphere passes through Flatland, it appears first as a point, grows into a circle, then shrinks back to a point and vanishes. To a Flatlander, this looks like magic—a shape appearing from nowhere, changing size, then disappearing.</p>
+            <p>The sphere lifts A. Square out of his plane, allowing him to see Flatland from above for the first time. He sees inside closed rooms, inside other shapes—everything laid bare. It's a revelation that changes him forever.</p>
+        </div>
+
+        <div class="quote">
+            "I call our world Flatland, not because we call it so, but to make its nature clearer to you, my happy readers, who are privileged to live in Space."
+            <cite>— A. Square, narrator of Flatland</cite>
+        </div>
+
+        <div class="concept">
+            <h3>The Big Question</h3>
+            <p>If a 2D being cannot imagine 3D, and a 3D being showed them... what about us? Could there be a fourth spatial dimension we're equally blind to? The sphere refuses to consider this possibility, showing that even enlightened beings have limits to their imagination.</p>
+            <p>Flatland isn't just about geometry. It's about the <strong>limits of perception</strong>, the <strong>arrogance of certainty</strong>, and the possibility that reality is far stranger than we can conceive.</p>
+        </div>
+
+        <div class="links">
+            <a href="https://en.wikipedia.org/wiki/Flatland" target="_blank" class="ext-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                Wikipedia
+            </a>
+            <a href="https://www.amazon.com/Flatland-Romance-Dimensions-Edwin-Abbott/dp/048627263X" target="_blank" class="ext-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.42 14.58c-.51-.19-1.03-.16-1.47.09l-.18.1c-.27.15-.56.23-.86.23-.68 0-1.31-.41-1.59-1.04l-.06-.14-.42-.97-.42-.97c-.24-.54-.74-.88-1.33-.88-.35 0-.68.11-.95.32l-.91.68c-.26.2-.42.51-.42.84v2.16c0 .55.45 1 1 1h5c.37 0 .7-.21.88-.53l.69-1.38c.18-.35.12-.77-.14-1.06l-.82-.45zM21.96 11.22l-.93-.42c-.14-.06-.27-.14-.39-.24l-.02-.01c-.27-.22-.62-.35-.99-.35-.45 0-.87.19-1.17.52l-.52.59c-.26.29-.63.47-1.02.47-.25 0-.49-.06-.71-.19l-.91-.52c-.35-.2-.76-.2-1.11 0l-.91.52c-.22.13-.46.19-.71.19-.39 0-.76-.18-1.02-.47l-.52-.59c-.3-.33-.72-.52-1.17-.52-.37 0-.72.13-.99.35l-.02.01c-.12.1-.25.18-.39.24l-.93.42c-.48.22-.79.7-.79 1.22v.56c0 .34.14.67.38.91.24.24.57.38.91.38h.71l.32 1.95c.07.41.37.73.77.82l2.56.64c.09.02.18.03.27.03.35 0 .68-.18.87-.48l1.1-1.79 1.1 1.79c.19.3.52.48.87.48.09 0 .18-.01.27-.03l2.56-.64c.4-.1.7-.41.77-.82l.32-1.95h.71c.34 0 .67-.14.91-.38.24-.24.38-.57.38-.91v-.56c0-.52-.31-1-.79-1.22z"/></svg>
+                Get the Book
+            </a>
+        </div>
+
+        <footer>
+            Based on "Flatland: A Romance of Many Dimensions" (1884) by Edwin A. Abbott<br>
+            Part of <a href="index.html">Glowing Gardens</a>
+        </footer>
+    </div>
+</body>
+</html>

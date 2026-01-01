@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Morality</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .stage {
+            width: 650px;
+            height: 350px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 60%, #90EE90 60%, #90EE90 100%);
+            border-radius: 12px;
+            position: relative;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .hill {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 200px solid transparent;
+            border-right: 200px solid transparent;
+            border-bottom: 250px solid #228B22;
+        }
+
+        .hill-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 180px solid transparent;
+            border-right: 180px solid transparent;
+            border-bottom: 230px solid #2E8B2E;
+        }
+
+        .character {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            transition: all 0.8s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .eyes {
+            position: relative;
+            width: 30px;
+            height: 15px;
+        }
+
+        .eye {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            top: 0;
+        }
+
+        .eye::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #000;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+        }
+
+        .eye.left { left: 0; }
+        .eye.right { right: 0; }
+
+        .climber {
+            background: #FFD700;
+            bottom: 140px;
+            left: 300px;
+            z-index: 10;
+        }
+
+        .climber.at-bottom {
+            bottom: 60px;
+            left: 300px;
+        }
+
+        .climber.climbing {
+            bottom: 140px;
+            left: 300px;
+        }
+
+        .climber.at-top {
+            bottom: 220px;
+            left: 300px;
+        }
+
+        .climber.pushed-down {
+            bottom: 60px;
+            left: 300px;
+        }
+
+        .helper {
+            background: #22C55E;
+            bottom: 60px;
+            left: 150px;
+            z-index: 5;
+        }
+
+        .helper.pushing {
+            bottom: 120px;
+            left: 260px;
+        }
+
+        .helper.done {
+            bottom: 60px;
+            left: 150px;
+        }
+
+        .hinderer {
+            background: #EF4444;
+            bottom: 200px;
+            right: 150px;
+            z-index: 5;
+        }
+
+        .hinderer.pushing {
+            bottom: 160px;
+            right: 240px;
+        }
+
+        .hinderer.done {
+            bottom: 200px;
+            right: 150px;
+        }
+
+        .character-label {
+            position: absolute;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .climber-label {
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #FFD700;
+        }
+
+        .helper-label {
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #22C55E;
+        }
+
+        .hinderer-label {
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #EF4444;
+        }
+
+        .sun {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            width: 50px;
+            height: 50px;
+            background: #FFD700;
+            border-radius: 50%;
+            box-shadow: 0 0 30px #FFD700;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.9;
+        }
+
+        .cloud1 {
+            top: 30px;
+            left: 50px;
+            width: 80px;
+            height: 30px;
+        }
+
+        .cloud2 {
+            top: 60px;
+            left: 120px;
+            width: 50px;
+            height: 20px;
+        }
+
+        .narration {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 650px;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .narration-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #F59E0B;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #D97706;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button.secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        button.secondary:hover {
+            background: #444;
+        }
+
+        .scenario-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .scenario-tab {
+            padding: 10px 20px;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .scenario-tab.active {
+            background: #F59E0B;
+            color: #000;
+            border-color: #F59E0B;
+        }
+
+        .scenario-tab:hover:not(.active) {
+            background: #333;
+        }
+
+        .choice-section {
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .choice-section.visible {
+            display: block;
+        }
+
+        .choice-prompt {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #F59E0B;
+        }
+
+        .choice-buttons {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+        }
+
+        .choice-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 40px;
+            background: #1a1a2e;
+            border: 2px solid #333;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .choice-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .choice-btn.helper-choice {
+            border-color: #22C55E;
+        }
+
+        .choice-btn.helper-choice:hover {
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .choice-btn.hinderer-choice {
+            border-color: #EF4444;
+        }
+
+        .choice-btn.hinderer-choice:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .choice-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .choice-circle.green { background: #22C55E; }
+        .choice-circle.red { background: #EF4444; }
+
+        .choice-label {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .results-box {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 650px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .results-box.visible {
+            display: block;
+        }
+
+        .results-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #F59E0B;
+        }
+
+        .results-stat {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat-bar {
+            flex: 1;
+            height: 30px;
+            background: #222;
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .stat-helper {
+            background: #22C55E;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            color: #000;
+        }
+
+        .stat-hinderer {
+            background: #EF4444;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .results-explanation {
+            font-size: 14px;
+            color: #999;
+            line-height: 1.7;
+        }
+
+        /* Drawer */
+        .drawer {
+            width: 350px;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .drawer-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+
+        .drawer-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            line-height: 1.8;
+            color: #999;
+        }
+
+        .info-text p {
+            margin-bottom: 15px;
+        }
+
+        .info-text strong {
+            color: #ccc;
+        }
+
+        .study-info {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #222;
+        }
+
+        .study-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .study-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #1a1a1a;
+            font-size: 12px;
+        }
+
+        .study-label {
+            color: #666;
+        }
+
+        .study-value {
+            color: #ccc;
+        }
+
+        .key-insight {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #86EFAC;
+            line-height: 1.6;
+        }
+
+        .action-indicator {
+            position: absolute;
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .action-indicator.visible {
+            opacity: 1;
+        }
+
+        .push-up {
+            color: #22C55E;
+        }
+
+        .push-down {
+            color: #EF4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h1>Baby Morality</h1>
+        <p class="subtitle">The Helping vs. Hindering Study</p>
+
+        <div class="scenario-tabs">
+            <div class="scenario-tab active" data-scenario="helper">Helper Scenario</div>
+            <div class="scenario-tab" data-scenario="hinderer">Hinderer Scenario</div>
+        </div>
+
+        <div class="stage" id="stage">
+            <div class="sun"></div>
+            <div class="cloud cloud1"></div>
+            <div class="cloud cloud2"></div>
+            <div class="hill"></div>
+            <div class="hill-overlay"></div>
+
+            <div class="character climber at-bottom" id="climber">
+                <div class="eyes">
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+                </div>
+                <span class="character-label climber-label">Climber</span>
+            </div>
+
+            <div class="character helper" id="helper">
+                <div class="eyes">
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+                </div>
+                <span class="character-label helper-label">Helper</span>
+            </div>
+
+            <div class="character hinderer" id="hinderer" style="display: none;">
+                <div class="eyes">
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+                </div>
+                <span class="character-label hinderer-label">Hinderer</span>
+            </div>
+
+            <div class="action-indicator push-up" id="pushUp" style="bottom: 150px; left: 320px;">↑</div>
+            <div class="action-indicator push-down" id="pushDown" style="bottom: 180px; right: 280px;">↓</div>
+        </div>
+
+        <div class="narration">
+            <div class="narration-text" id="narration">
+                The yellow character wants to climb to the top of the hill.
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="playBtn">Play Animation</button>
+            <button id="resetBtn" class="secondary">Reset</button>
+        </div>
+
+        <div class="choice-section" id="choiceSection">
+            <div class="choice-prompt">After watching both scenarios, which character do babies prefer?</div>
+            <div class="choice-buttons">
+                <div class="choice-btn helper-choice" id="chooseHelper">
+                    <div class="choice-circle green">
+                        <div class="eyes">
+                            <div class="eye left"></div>
+                            <div class="eye right"></div>
+                        </div>
+                    </div>
+                    <span class="choice-label">The Helper</span>
+                </div>
+                <div class="choice-btn hinderer-choice" id="chooseHinderer">
+                    <div class="choice-circle red">
+                        <div class="eyes">
+                            <div class="eye left"></div>
+                            <div class="eye right"></div>
+                        </div>
+                    </div>
+                    <span class="choice-label">The Hinderer</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-box" id="resultsBox">
+            <div class="results-title">What the research found:</div>
+            <div class="results-stat">
+                <div class="stat-bar">
+                    <div class="stat-helper" style="width: 80%;">80% Helper</div>
+                    <div class="stat-hinderer" style="width: 20%;">20%</div>
+                </div>
+            </div>
+            <div class="results-explanation" id="resultsExplanation">
+                In the original study, <strong>80% of 6-month-old babies</strong> reached for the helper character,
+                and <strong>only 20% reached for the hinderer</strong>.<br><br>
+                This suggests that even before babies can talk or walk, they already have a preference for
+                those who help others over those who hinder them—a rudimentary sense of morality.
+            </div>
+        </div>
+    </div>
+
+    <div class="drawer">
+        <div class="drawer-title">Infant Moral Cognition</div>
+        <div class="drawer-subtitle">Are we born with a sense of right and wrong?</div>
+
+        <div class="info-text">
+            <p>
+                In 2007, researchers at Yale's <strong>Infant Cognition Center</strong> conducted
+                a groundbreaking study on babies as young as 6 months old.
+            </p>
+            <p>
+                Babies watched a simple puppet show: a character tries to climb a hill.
+                Sometimes a <strong style="color: #22C55E;">helper</strong> pushes it up.
+                Sometimes a <strong style="color: #EF4444;">hinderer</strong> pushes it down.
+            </p>
+            <p>
+                When offered both characters afterward, the vast majority of babies
+                <strong>reached for the helper</strong>.
+            </p>
+            <p>
+                This was revolutionary: it suggested that some sense of morality—preferring
+                helpful over harmful behavior—might be <strong>innate</strong>, not learned.
+            </p>
+        </div>
+
+        <div class="study-info">
+            <div class="study-title">Study Details</div>
+            <div class="study-detail">
+                <span class="study-label">Researchers</span>
+                <span class="study-value">Hamlin, Wynn, Bloom</span>
+            </div>
+            <div class="study-detail">
+                <span class="study-label">Institution</span>
+                <span class="study-value">Yale University</span>
+            </div>
+            <div class="study-detail">
+                <span class="study-label">Year</span>
+                <span class="study-value">2007</span>
+            </div>
+            <div class="study-detail">
+                <span class="study-label">Ages Tested</span>
+                <span class="study-value">6 & 10 months</span>
+            </div>
+            <div class="study-detail">
+                <span class="study-label">Helper Preference</span>
+                <span class="study-value" style="color: #22C55E;">~80%</span>
+            </div>
+        </div>
+
+        <div class="key-insight">
+            <strong>The implication:</strong> Humans may be born with a basic moral sense—a
+            foundation that culture and experience then build upon. We don't start as "blank slates."
+        </div>
+    </div>
+
+    <script>
+        let currentScenario = 'helper';
+        let isPlaying = false;
+        let watchedBoth = { helper: false, hinderer: false };
+
+        const climber = document.getElementById('climber');
+        const helper = document.getElementById('helper');
+        const hinderer = document.getElementById('hinderer');
+        const narration = document.getElementById('narration');
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const pushUp = document.getElementById('pushUp');
+        const pushDown = document.getElementById('pushDown');
+        const choiceSection = document.getElementById('choiceSection');
+        const resultsBox = document.getElementById('resultsBox');
+
+        const scenarioTabs = document.querySelectorAll('.scenario-tab');
+
+        scenarioTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                if (isPlaying) return;
+
+                scenarioTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentScenario = tab.dataset.scenario;
+                resetStage();
+            });
+        });
+
+        function resetStage() {
+            climber.className = 'character climber at-bottom';
+            helper.className = 'character helper';
+            helper.style.display = currentScenario === 'helper' ? 'flex' : 'none';
+            hinderer.className = 'character hinderer';
+            hinderer.style.display = currentScenario === 'hinderer' ? 'flex' : 'none';
+            pushUp.classList.remove('visible');
+            pushDown.classList.remove('visible');
+            playBtn.disabled = false;
+
+            narration.textContent = "The yellow character wants to climb to the top of the hill.";
+        }
+
+        function playHelperScenario() {
+            isPlaying = true;
+            playBtn.disabled = true;
+
+            // Step 1: Climber tries to climb
+            narration.textContent = "The climber tries to go up the hill...";
+            climber.className = 'character climber climbing';
+
+            setTimeout(() => {
+                // Step 2: Climber struggles, slides back
+                narration.textContent = "But it's hard! The climber keeps sliding back down.";
+                climber.className = 'character climber at-bottom';
+            }, 1500);
+
+            setTimeout(() => {
+                // Step 3: Helper comes
+                narration.textContent = "The green helper comes over...";
+                helper.className = 'character helper pushing';
+            }, 3000);
+
+            setTimeout(() => {
+                // Step 4: Helper pushes up
+                narration.textContent = "And pushes the climber up to the top!";
+                pushUp.classList.add('visible');
+                climber.className = 'character climber at-top';
+            }, 4500);
+
+            setTimeout(() => {
+                pushUp.classList.remove('visible');
+                helper.className = 'character helper done';
+                narration.textContent = "The helper helped the climber reach their goal! 🎉";
+                isPlaying = false;
+                watchedBoth.helper = true;
+                checkShowChoice();
+            }, 6000);
+        }
+
+        function playHindererScenario() {
+            isPlaying = true;
+            playBtn.disabled = true;
+
+            // Step 1: Climber tries to climb
+            narration.textContent = "The climber tries to go up the hill...";
+            climber.className = 'character climber climbing';
+
+            setTimeout(() => {
+                // Step 2: Climber making progress
+                narration.textContent = "The climber is making progress!";
+                climber.className = 'character climber at-top';
+            }, 1500);
+
+            setTimeout(() => {
+                // Step 3: Hinderer comes
+                narration.textContent = "But the red hinderer comes over...";
+                hinderer.className = 'character hinderer pushing';
+            }, 3000);
+
+            setTimeout(() => {
+                // Step 4: Hinderer pushes down
+                narration.textContent = "And pushes the climber all the way down!";
+                pushDown.classList.add('visible');
+                climber.className = 'character climber pushed-down';
+            }, 4500);
+
+            setTimeout(() => {
+                pushDown.classList.remove('visible');
+                hinderer.className = 'character hinderer done';
+                narration.textContent = "The hinderer stopped the climber from reaching their goal. 😢";
+                isPlaying = false;
+                watchedBoth.hinderer = true;
+                checkShowChoice();
+            }, 6000);
+        }
+
+        function checkShowChoice() {
+            if (watchedBoth.helper && watchedBoth.hinderer) {
+                choiceSection.classList.add('visible');
+            }
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (currentScenario === 'helper') {
+                playHelperScenario();
+            } else {
+                playHindererScenario();
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            isPlaying = false;
+            resetStage();
+        });
+
+        document.getElementById('chooseHelper').addEventListener('click', () => {
+            choiceSection.classList.remove('visible');
+            resultsBox.classList.add('visible');
+            document.getElementById('resultsExplanation').innerHTML = `
+                <strong style="color: #22C55E;">You chose correctly!</strong><br><br>
+                In the original study, <strong>80% of 6-month-old babies</strong> reached for the helper character,
+                and only 20% reached for the hinderer.<br><br>
+                This suggests that even before babies can talk or walk, they already prefer
+                those who help others over those who hinder them—a rudimentary sense of morality.
+            `;
+        });
+
+        document.getElementById('chooseHinderer').addEventListener('click', () => {
+            choiceSection.classList.remove('visible');
+            resultsBox.classList.add('visible');
+            document.getElementById('resultsExplanation').innerHTML = `
+                Actually, babies overwhelmingly prefer the <strong style="color: #22C55E;">helper</strong>!<br><br>
+                In the original study, <strong>80% of 6-month-old babies</strong> reached for the helper character,
+                and only 20% reached for the hinderer.<br><br>
+                This suggests that even before babies can talk or walk, they already prefer
+                those who help others—a rudimentary sense of morality that may be innate.
+            `;
+        });
+
+        // Initialize
+        resetStage();
+    </script>
+</body>
+</html>

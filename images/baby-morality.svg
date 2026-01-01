@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#0a0a0f"/>
+  <!-- Sky gradient -->
+  <rect y="0" width="100" height="60" fill="#1e3a5f"/>
+  <!-- Hill -->
+  <polygon points="50,25 10,90 90,90" fill="#228B22"/>
+  <polygon points="50,30 18,88 82,88" fill="#2E8B2E"/>
+  <!-- Climber (yellow) at middle -->
+  <circle cx="50" cy="55" r="8" fill="#FFD700"/>
+  <circle cx="47" cy="53" r="2" fill="#fff"/>
+  <circle cx="53" cy="53" r="2" fill="#fff"/>
+  <circle cx="47" cy="53" r="1" fill="#000"/>
+  <circle cx="53" cy="53" r="1" fill="#000"/>
+  <!-- Helper (green) below -->
+  <circle cx="35" cy="75" r="8" fill="#22C55E"/>
+  <circle cx="32" cy="73" r="2" fill="#fff"/>
+  <circle cx="38" cy="73" r="2" fill="#fff"/>
+  <circle cx="32" cy="73" r="1" fill="#000"/>
+  <circle cx="38" cy="73" r="1" fill="#000"/>
+  <!-- Push up arrow -->
+  <path d="M42 68 L50 58" stroke="#22C55E" stroke-width="2" fill="none"/>
+  <polygon points="50,55 47,61 53,61" fill="#22C55E"/>
+  <!-- Hinderer (red) above -->
+  <circle cx="68" cy="42" r="8" fill="#EF4444"/>
+  <circle cx="65" cy="40" r="2" fill="#fff"/>
+  <circle cx="71" cy="40" r="2" fill="#fff"/>
+  <circle cx="65" cy="40" r="1" fill="#000"/>
+  <circle cx="71" cy="40" r="1" fill="#000"/>
+  <!-- Push down arrow -->
+  <path d="M60 48 L54 58" stroke="#EF4444" stroke-width="2" fill="none"/>
+  <polygon points="52,60 55,54 49,54" fill="#EF4444"/>
+</svg>

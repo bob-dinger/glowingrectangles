@@ -176,6 +176,48 @@
     </div>
 
     <div class="section">
+        <h2>Emotions</h2>
+        <p style="color: #888; margin-bottom: 20px;">Feelings are expressed by combining the heart symbol with direction and intensity</p>
+        <div class="symbols-grid" id="emotions"></div>
+    </div>
+
+    <div class="section">
+        <h2>Time & Tense</h2>
+        <p style="color: #888; margin-bottom: 20px;">Past, present, and future are shown with position markers</p>
+        <div class="symbols-grid" id="time"></div>
+    </div>
+
+    <div class="section">
+        <h2>Questions & Negation</h2>
+        <p style="color: #888; margin-bottom: 20px;">Turning statements into questions and expressing "not"</p>
+        <div class="symbols-grid" id="questions"></div>
+    </div>
+
+    <div class="section">
+        <h2>People & Relationships</h2>
+        <p style="color: #888; margin-bottom: 20px;">Family, roles, and connections between people</p>
+        <div class="symbols-grid" id="people"></div>
+    </div>
+
+    <div class="section">
+        <h2>Nature & World</h2>
+        <p style="color: #888; margin-bottom: 20px;">Elements of the natural world</p>
+        <div class="symbols-grid" id="nature"></div>
+    </div>
+
+    <div class="section">
+        <h2>Actions</h2>
+        <p style="color: #888; margin-bottom: 20px;">Common verbs and activities</p>
+        <div class="symbols-grid" id="actions"></div>
+    </div>
+
+    <div class="section">
+        <h2>Sample Sentences</h2>
+        <p style="color: #888; margin-bottom: 20px;">How symbols string together to form complete thoughts</p>
+        <div class="combo-grid" id="sentences"></div>
+    </div>
+
+    <div class="section">
         <h2>The Story of Bliss</h2>
         <div class="history">
             <p>
@@ -727,6 +769,718 @@
             card.appendChild(explanation);
 
             comboContainer.appendChild(card);
+        });
+
+        // Emotions
+        const emotions = [
+            {
+                name: 'Happy',
+                meaning: 'Heart + upward',
+                draw: (svg) => {
+                    drawHeart(svg, 40, 50, 12, 'none', '#fff', 3);
+                    drawArrow(svg, 40, 35, 40, 15);
+                }
+            },
+            {
+                name: 'Sad',
+                meaning: 'Heart + downward',
+                draw: (svg) => {
+                    drawHeart(svg, 40, 30, 12, 'none', '#fff', 3);
+                    drawArrow(svg, 40, 50, 40, 70);
+                }
+            },
+            {
+                name: 'Love',
+                meaning: 'Heart filled/intense',
+                draw: (svg) => {
+                    drawHeart(svg, 40, 40, 18, '#E11D48', '#E11D48', 0);
+                }
+            },
+            {
+                name: 'Anger',
+                meaning: 'Heart + fire',
+                draw: (svg) => {
+                    drawHeart(svg, 40, 50, 12, 'none', '#fff', 3);
+                    drawTriangle(svg, 40, 25, 10, 'up', '#EF4444', '#EF4444', 0);
+                }
+            },
+            {
+                name: 'Fear',
+                meaning: 'Heart + down intensity',
+                draw: (svg) => {
+                    drawHeart(svg, 40, 35, 10, 'none', '#fff', 3);
+                    drawLine(svg, 30, 55, 30, 70);
+                    drawLine(svg, 40, 55, 40, 70);
+                    drawLine(svg, 50, 55, 50, 70);
+                }
+            },
+            {
+                name: 'Calm',
+                meaning: 'Heart + horizontal',
+                draw: (svg) => {
+                    drawHeart(svg, 40, 40, 12, 'none', '#fff', 3);
+                    drawLine(svg, 15, 60, 65, 60);
+                }
+            },
+            {
+                name: 'Excited',
+                meaning: 'Heart + multiple up',
+                draw: (svg) => {
+                    drawHeart(svg, 40, 50, 10, 'none', '#fff', 3);
+                    drawArrow(svg, 25, 35, 25, 18);
+                    drawArrow(svg, 40, 35, 40, 18);
+                    drawArrow(svg, 55, 35, 55, 18);
+                }
+            },
+            {
+                name: 'Confused',
+                meaning: 'Mind + question',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 30, 12);
+                    const text = document.createElementNS(svgNS, 'text');
+                    text.setAttribute('x', 40);
+                    text.setAttribute('y', 62);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('fill', '#fff');
+                    text.setAttribute('font-size', '24');
+                    text.setAttribute('font-weight', 'bold');
+                    text.textContent = '?';
+                    svg.appendChild(text);
+                }
+            }
+        ];
+
+        // Time indicators
+        const timeSymbols = [
+            {
+                name: 'Past',
+                meaning: 'Behind the reference line',
+                draw: (svg) => {
+                    drawLine(svg, 50, 15, 50, 65, '#666');
+                    drawCircle(svg, 30, 40, 10, '#fff');
+                    drawArrow(svg, 45, 40, 35, 40, '#3B82F6', 2);
+                }
+            },
+            {
+                name: 'Present',
+                meaning: 'On the reference line',
+                draw: (svg) => {
+                    drawLine(svg, 40, 15, 40, 65, '#666');
+                    drawCircle(svg, 40, 40, 10, '#fff');
+                }
+            },
+            {
+                name: 'Future',
+                meaning: 'Ahead of reference line',
+                draw: (svg) => {
+                    drawLine(svg, 30, 15, 30, 65, '#666');
+                    drawCircle(svg, 50, 40, 10, '#fff');
+                    drawArrow(svg, 35, 40, 45, 40, '#22C55E', 2);
+                }
+            },
+            {
+                name: 'Always',
+                meaning: 'Infinite time',
+                draw: (svg) => {
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', 'M 20 40 Q 30 25, 40 40 Q 50 55, 60 40 Q 50 25, 40 40 Q 30 55, 20 40');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '3');
+                    svg.appendChild(path);
+                }
+            },
+            {
+                name: 'Day',
+                meaning: 'Sun cycle',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 35, 12);
+                    drawLine(svg, 40, 50, 40, 65);
+                    drawLine(svg, 15, 65, 65, 65);
+                }
+            },
+            {
+                name: 'Night',
+                meaning: 'Moon cycle',
+                draw: (svg) => {
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', 'M 45 25 A 15 15 0 1 0 45 55 A 10 10 0 1 1 45 25');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '3');
+                    svg.appendChild(path);
+                }
+            }
+        ];
+
+        // Questions & Negation
+        const questionSymbols = [
+            {
+                name: 'Question',
+                meaning: 'Turns statement to question',
+                draw: (svg) => {
+                    const text = document.createElementNS(svgNS, 'text');
+                    text.setAttribute('x', 40);
+                    text.setAttribute('y', 55);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('fill', '#fff');
+                    text.setAttribute('font-size', '40');
+                    text.setAttribute('font-weight', 'bold');
+                    text.textContent = '?';
+                    svg.appendChild(text);
+                }
+            },
+            {
+                name: 'Not / Negation',
+                meaning: 'Cancels or reverses',
+                draw: (svg) => {
+                    drawLine(svg, 20, 20, 60, 60);
+                    drawLine(svg, 60, 20, 20, 60);
+                }
+            },
+            {
+                name: 'What',
+                meaning: 'Question + thing',
+                draw: (svg) => {
+                    drawRect(svg, 25, 20, 30, 25, 'none', '#fff', 2);
+                    const text = document.createElementNS(svgNS, 'text');
+                    text.setAttribute('x', 40);
+                    text.setAttribute('y', 70);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('fill', '#fff');
+                    text.setAttribute('font-size', '20');
+                    text.textContent = '?';
+                    svg.appendChild(text);
+                }
+            },
+            {
+                name: 'Who',
+                meaning: 'Question + person',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 18, 8);
+                    drawLine(svg, 40, 26, 40, 42);
+                    drawLine(svg, 40, 42, 30, 55);
+                    drawLine(svg, 40, 42, 50, 55);
+                    const text = document.createElementNS(svgNS, 'text');
+                    text.setAttribute('x', 40);
+                    text.setAttribute('y', 75);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('fill', '#fff');
+                    text.setAttribute('font-size', '16');
+                    text.textContent = '?';
+                    svg.appendChild(text);
+                }
+            },
+            {
+                name: 'Where',
+                meaning: 'Question + place',
+                draw: (svg) => {
+                    drawLine(svg, 15, 50, 65, 50);
+                    drawCircle(svg, 40, 35, 8, '#fff');
+                    const text = document.createElementNS(svgNS, 'text');
+                    text.setAttribute('x', 40);
+                    text.setAttribute('y', 75);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('fill', '#fff');
+                    text.setAttribute('font-size', '16');
+                    text.textContent = '?';
+                    svg.appendChild(text);
+                }
+            },
+            {
+                name: 'When',
+                meaning: 'Question + time',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 30, 15, 'none', '#fff', 2);
+                    drawLine(svg, 40, 30, 40, 20);
+                    drawLine(svg, 40, 30, 50, 35);
+                    const text = document.createElementNS(svgNS, 'text');
+                    text.setAttribute('x', 40);
+                    text.setAttribute('y', 70);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('fill', '#fff');
+                    text.setAttribute('font-size', '16');
+                    text.textContent = '?';
+                    svg.appendChild(text);
+                }
+            }
+        ];
+
+        // People & Relationships
+        const peopleSymbols = [
+            {
+                name: 'Man',
+                meaning: 'Adult male person',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 18, 10);
+                    drawLine(svg, 40, 28, 40, 52);
+                    drawLine(svg, 40, 52, 28, 70);
+                    drawLine(svg, 40, 52, 52, 70);
+                    drawLine(svg, 40, 38, 28, 45);
+                    drawLine(svg, 40, 38, 52, 45);
+                    drawArrow(svg, 55, 25, 65, 15);
+                }
+            },
+            {
+                name: 'Woman',
+                meaning: 'Adult female person',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 18, 10);
+                    drawLine(svg, 40, 28, 40, 52);
+                    drawLine(svg, 40, 52, 28, 70);
+                    drawLine(svg, 40, 52, 52, 70);
+                    drawLine(svg, 40, 38, 28, 45);
+                    drawLine(svg, 40, 38, 52, 45);
+                    drawCircle(svg, 60, 18, 6, 'none', '#fff', 2);
+                }
+            },
+            {
+                name: 'Child',
+                meaning: 'Young person',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 30, 8);
+                    drawLine(svg, 40, 38, 40, 55);
+                    drawLine(svg, 40, 55, 32, 68);
+                    drawLine(svg, 40, 55, 48, 68);
+                    drawLine(svg, 40, 45, 32, 50);
+                    drawLine(svg, 40, 45, 48, 50);
+                }
+            },
+            {
+                name: 'Mother',
+                meaning: 'Female + protection',
+                draw: (svg) => {
+                    drawCircle(svg, 30, 22, 8);
+                    drawLine(svg, 30, 30, 30, 48);
+                    drawLine(svg, 30, 40, 22, 48);
+                    drawLine(svg, 30, 40, 38, 48);
+                    drawCircle(svg, 50, 40, 5);
+                    drawLine(svg, 50, 45, 50, 55);
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', 'M 25 35 Q 15 45, 25 60 L 55 60 Q 65 45, 55 35');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '2');
+                    svg.appendChild(path);
+                }
+            },
+            {
+                name: 'Father',
+                meaning: 'Male + protection',
+                draw: (svg) => {
+                    drawCircle(svg, 30, 22, 8);
+                    drawLine(svg, 30, 30, 30, 48);
+                    drawLine(svg, 30, 40, 22, 48);
+                    drawLine(svg, 30, 40, 38, 48);
+                    drawArrow(svg, 38, 18, 48, 10);
+                    drawCircle(svg, 50, 40, 5);
+                    drawLine(svg, 50, 45, 50, 55);
+                }
+            },
+            {
+                name: 'Friend',
+                meaning: 'Person + positive feeling',
+                draw: (svg) => {
+                    drawCircle(svg, 25, 25, 7);
+                    drawLine(svg, 25, 32, 25, 45);
+                    drawCircle(svg, 55, 25, 7);
+                    drawLine(svg, 55, 32, 55, 45);
+                    drawHeart(svg, 40, 58, 10, '#E11D48', '#E11D48', 0);
+                }
+            },
+            {
+                name: 'Teacher',
+                meaning: 'Person + give + knowledge',
+                draw: (svg) => {
+                    drawCircle(svg, 25, 22, 8);
+                    drawLine(svg, 25, 30, 25, 48);
+                    drawArrow(svg, 35, 40, 55, 40);
+                    drawCircle(svg, 62, 30, 8, 'none', '#fff', 2);
+                    drawRect(svg, 55, 45, 15, 12, 'none', '#fff', 2);
+                }
+            },
+            {
+                name: 'Group / We',
+                meaning: 'Multiple people together',
+                draw: (svg) => {
+                    drawCircle(svg, 25, 25, 6);
+                    drawLine(svg, 25, 31, 25, 42);
+                    drawCircle(svg, 40, 25, 6);
+                    drawLine(svg, 40, 31, 40, 42);
+                    drawCircle(svg, 55, 25, 6);
+                    drawLine(svg, 55, 31, 55, 42);
+                    drawLine(svg, 15, 55, 65, 55);
+                }
+            }
+        ];
+
+        // Nature symbols
+        const natureSymbols = [
+            {
+                name: 'Tree',
+                meaning: 'Plant with trunk',
+                draw: (svg) => {
+                    drawLine(svg, 40, 45, 40, 70);
+                    drawTriangle(svg, 40, 30, 18, 'up', 'none', '#fff', 3);
+                }
+            },
+            {
+                name: 'Flower',
+                meaning: 'Plant + beauty',
+                draw: (svg) => {
+                    drawLine(svg, 40, 45, 40, 70);
+                    drawCircle(svg, 40, 35, 6, '#fff');
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (i * Math.PI * 2) / 6;
+                        const cx = 40 + 12 * Math.cos(angle);
+                        const cy = 35 + 12 * Math.sin(angle);
+                        drawCircle(svg, cx, cy, 5, 'none', '#fff', 2);
+                    }
+                }
+            },
+            {
+                name: 'Mountain',
+                meaning: 'Earth rising high',
+                draw: (svg) => {
+                    drawLine(svg, 10, 60, 70, 60);
+                    drawTriangle(svg, 40, 40, 22, 'up', 'none', '#fff', 3);
+                }
+            },
+            {
+                name: 'Rain',
+                meaning: 'Water from sky',
+                draw: (svg) => {
+                    drawLine(svg, 15, 25, 65, 25);
+                    drawLine(svg, 25, 35, 25, 50);
+                    drawLine(svg, 40, 35, 40, 55);
+                    drawLine(svg, 55, 35, 55, 45);
+                    drawLine(svg, 32, 40, 32, 48);
+                    drawLine(svg, 48, 38, 48, 52);
+                }
+            },
+            {
+                name: 'Star',
+                meaning: 'Light in sky',
+                draw: (svg) => {
+                    const cx = 40, cy = 40, r = 18;
+                    const path = document.createElementNS(svgNS, 'path');
+                    let d = '';
+                    for (let i = 0; i < 5; i++) {
+                        const angle1 = (i * 4 * Math.PI / 5) - Math.PI / 2;
+                        const x = cx + r * Math.cos(angle1);
+                        const y = cy + r * Math.sin(angle1);
+                        d += (i === 0 ? 'M' : 'L') + ` ${x} ${y} `;
+                    }
+                    d += 'Z';
+                    path.setAttribute('d', d);
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '3');
+                    svg.appendChild(path);
+                }
+            },
+            {
+                name: 'Cloud',
+                meaning: 'Water in sky',
+                draw: (svg) => {
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', 'M 20 45 Q 20 30 35 30 Q 40 20 50 25 Q 65 20 65 35 Q 70 45 60 50 L 25 50 Q 15 50 20 45');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '3');
+                    svg.appendChild(path);
+                }
+            },
+            {
+                name: 'Animal',
+                meaning: 'Living creature',
+                draw: (svg) => {
+                    drawCircle(svg, 55, 30, 10);
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', 'M 45 30 Q 30 25 20 35 Q 15 45 25 50');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '3');
+                    svg.appendChild(path);
+                    drawLine(svg, 25, 50, 25, 65);
+                    drawLine(svg, 35, 45, 35, 65);
+                    drawLine(svg, 45, 42, 45, 65);
+                    drawLine(svg, 55, 40, 55, 65);
+                }
+            },
+            {
+                name: 'Bird',
+                meaning: 'Animal + sky',
+                draw: (svg) => {
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', 'M 20 45 Q 30 30 40 40 Q 50 30 60 45');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '3');
+                    svg.appendChild(path);
+                }
+            }
+        ];
+
+        // Action symbols
+        const actionSymbols = [
+            {
+                name: 'Go / Walk',
+                meaning: 'Movement forward',
+                draw: (svg) => {
+                    drawCircle(svg, 30, 20, 8);
+                    drawLine(svg, 30, 28, 30, 45);
+                    drawLine(svg, 30, 45, 20, 60);
+                    drawLine(svg, 30, 45, 40, 60);
+                    drawArrow(svg, 45, 40, 65, 40);
+                }
+            },
+            {
+                name: 'Come',
+                meaning: 'Movement toward',
+                draw: (svg) => {
+                    drawCircle(svg, 50, 20, 8);
+                    drawLine(svg, 50, 28, 50, 45);
+                    drawLine(svg, 50, 45, 40, 60);
+                    drawLine(svg, 50, 45, 60, 60);
+                    drawArrow(svg, 35, 40, 15, 40);
+                }
+            },
+            {
+                name: 'Give',
+                meaning: 'Transfer outward',
+                draw: (svg) => {
+                    drawCircle(svg, 25, 25, 8);
+                    drawLine(svg, 25, 33, 25, 50);
+                    drawArrow(svg, 35, 40, 60, 40);
+                    drawCircle(svg, 55, 45, 5, '#fff');
+                }
+            },
+            {
+                name: 'Take / Receive',
+                meaning: 'Transfer inward',
+                draw: (svg) => {
+                    drawCircle(svg, 55, 25, 8);
+                    drawLine(svg, 55, 33, 55, 50);
+                    drawArrow(svg, 45, 40, 20, 40);
+                    drawCircle(svg, 25, 45, 5, '#fff');
+                }
+            },
+            {
+                name: 'Make / Create',
+                meaning: 'Produce something',
+                draw: (svg) => {
+                    drawCircle(svg, 25, 30, 8);
+                    drawLine(svg, 25, 38, 25, 55);
+                    drawArrow(svg, 35, 45, 50, 45);
+                    drawRect(svg, 52, 35, 18, 18, 'none', '#fff', 3);
+                }
+            },
+            {
+                name: 'Speak / Say',
+                meaning: 'Mouth + action',
+                draw: (svg) => {
+                    drawCircle(svg, 30, 40, 10);
+                    drawLine(svg, 20, 40, 40, 40);
+                    drawLine(svg, 45, 35, 60, 25);
+                    drawLine(svg, 45, 40, 65, 40);
+                    drawLine(svg, 45, 45, 60, 55);
+                }
+            },
+            {
+                name: 'Think',
+                meaning: 'Mind + action',
+                draw: (svg) => {
+                    drawCircle(svg, 40, 30, 15);
+                    drawCircle(svg, 55, 55, 4, '#fff');
+                    drawCircle(svg, 62, 65, 3, '#fff');
+                }
+            },
+            {
+                name: 'Want / Desire',
+                meaning: 'Heart reaching out',
+                draw: (svg) => {
+                    drawHeart(svg, 30, 40, 12, 'none', '#fff', 3);
+                    drawArrow(svg, 45, 40, 65, 40);
+                }
+            }
+        ];
+
+        // Sample sentences
+        const sentences = [
+            {
+                result: 'I am happy',
+                explanation: 'Person indicator + feeling up',
+                draw1: null,
+                draw2: null,
+                drawResult: (svg) => {
+                    // I/person
+                    drawCircle(svg, 15, 18, 6);
+                    drawLine(svg, 15, 24, 15, 38);
+                    drawLine(svg, 15, 38, 10, 48);
+                    drawLine(svg, 15, 38, 20, 48);
+                    // happy
+                    drawHeart(svg, 45, 38, 8, 'none', '#fff', 2);
+                    drawArrow(svg, 45, 28, 45, 15, '#fff', 2);
+                }
+            },
+            {
+                result: 'I want water',
+                explanation: 'Person + desire + water symbol',
+                draw1: null,
+                draw2: null,
+                drawResult: (svg) => {
+                    drawCircle(svg, 12, 20, 5);
+                    drawLine(svg, 12, 25, 12, 35);
+                    drawHeart(svg, 30, 30, 6, 'none', '#fff', 2);
+                    drawArrow(svg, 38, 30, 48, 30, '#fff', 2);
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', 'M 52 30 Q 60 22, 68 30 Q 76 38, 68 30');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#fff');
+                    path.setAttribute('stroke-width', '2');
+                    svg.appendChild(path);
+                }
+            },
+            {
+                result: 'Go home',
+                explanation: 'Movement + house symbol',
+                draw1: null,
+                draw2: null,
+                drawResult: (svg) => {
+                    drawCircle(svg, 15, 18, 5);
+                    drawLine(svg, 15, 23, 15, 35);
+                    drawLine(svg, 15, 35, 10, 45);
+                    drawLine(svg, 15, 35, 20, 45);
+                    drawArrow(svg, 25, 30, 40, 30, '#fff', 2);
+                    drawRect(svg, 50, 30, 22, 18);
+                    drawLine(svg, 50, 30, 61, 18);
+                    drawLine(svg, 61, 18, 72, 30);
+                }
+            },
+            {
+                result: 'Do you want food?',
+                explanation: 'Question + you + desire + food',
+                draw1: null,
+                draw2: null,
+                drawResult: (svg) => {
+                    const text = document.createElementNS(svgNS, 'text');
+                    text.setAttribute('x', 10);
+                    text.setAttribute('y', 35);
+                    text.setAttribute('fill', '#fff');
+                    text.setAttribute('font-size', '18');
+                    text.textContent = '?';
+                    svg.appendChild(text);
+                    drawCircle(svg, 25, 22, 5);
+                    drawLine(svg, 25, 27, 25, 38);
+                    drawHeart(svg, 42, 30, 5, 'none', '#fff', 2);
+                    drawCircle(svg, 60, 28, 6);
+                    drawLine(svg, 54, 28, 66, 28);
+                    drawLine(svg, 50, 42, 70, 42);
+                }
+            }
+        ];
+
+        // Render emotions
+        const emotionContainer = document.getElementById('emotions');
+        emotions.forEach(elem => {
+            const card = document.createElement('div');
+            card.className = 'symbol-card';
+            const svg = createSVG();
+            elem.draw(svg);
+            card.appendChild(svg);
+            card.innerHTML += `<div class="symbol-name">${elem.name}</div>`;
+            card.innerHTML += `<div class="symbol-meaning">${elem.meaning}</div>`;
+            emotionContainer.appendChild(card);
+        });
+
+        // Render time
+        const timeContainer = document.getElementById('time');
+        timeSymbols.forEach(elem => {
+            const card = document.createElement('div');
+            card.className = 'symbol-card';
+            const svg = createSVG();
+            elem.draw(svg);
+            card.appendChild(svg);
+            card.innerHTML += `<div class="symbol-name">${elem.name}</div>`;
+            card.innerHTML += `<div class="symbol-meaning">${elem.meaning}</div>`;
+            timeContainer.appendChild(card);
+        });
+
+        // Render questions
+        const questionContainer = document.getElementById('questions');
+        questionSymbols.forEach(elem => {
+            const card = document.createElement('div');
+            card.className = 'symbol-card';
+            const svg = createSVG();
+            elem.draw(svg);
+            card.appendChild(svg);
+            card.innerHTML += `<div class="symbol-name">${elem.name}</div>`;
+            card.innerHTML += `<div class="symbol-meaning">${elem.meaning}</div>`;
+            questionContainer.appendChild(card);
+        });
+
+        // Render people
+        const peopleContainer = document.getElementById('people');
+        peopleSymbols.forEach(elem => {
+            const card = document.createElement('div');
+            card.className = 'symbol-card';
+            const svg = createSVG();
+            elem.draw(svg);
+            card.appendChild(svg);
+            card.innerHTML += `<div class="symbol-name">${elem.name}</div>`;
+            card.innerHTML += `<div class="symbol-meaning">${elem.meaning}</div>`;
+            peopleContainer.appendChild(card);
+        });
+
+        // Render nature
+        const natureContainer = document.getElementById('nature');
+        natureSymbols.forEach(elem => {
+            const card = document.createElement('div');
+            card.className = 'symbol-card';
+            const svg = createSVG();
+            elem.draw(svg);
+            card.appendChild(svg);
+            card.innerHTML += `<div class="symbol-name">${elem.name}</div>`;
+            card.innerHTML += `<div class="symbol-meaning">${elem.meaning}</div>`;
+            natureContainer.appendChild(card);
+        });
+
+        // Render actions
+        const actionContainer = document.getElementById('actions');
+        actionSymbols.forEach(elem => {
+            const card = document.createElement('div');
+            card.className = 'symbol-card';
+            const svg = createSVG();
+            elem.draw(svg);
+            card.appendChild(svg);
+            card.innerHTML += `<div class="symbol-name">${elem.name}</div>`;
+            card.innerHTML += `<div class="symbol-meaning">${elem.meaning}</div>`;
+            actionContainer.appendChild(card);
+        });
+
+        // Render sentences
+        const sentenceContainer = document.getElementById('sentences');
+        sentences.forEach(sent => {
+            const card = document.createElement('div');
+            card.className = 'combo-card';
+
+            const svg = createSVG(200, 60);
+            svg.setAttribute('viewBox', '0 0 80 60');
+            sent.drawResult(svg);
+            card.appendChild(svg);
+
+            const result = document.createElement('div');
+            result.className = 'combo-result';
+            result.textContent = sent.result;
+            card.appendChild(result);
+
+            const explanation = document.createElement('div');
+            explanation.className = 'combo-explanation';
+            explanation.textContent = sent.explanation;
+            card.appendChild(explanation);
+
+            sentenceContainer.appendChild(card);
         });
 
         // Render position examples

@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entropy</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+            padding-right: 400px;
+        }
+
+        @media (max-width: 1400px) {
+            body { padding-right: 340px; }
+        }
+
+        @media (max-width: 1100px) {
+            body { padding-right: 20px; }
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        h1 { font-size: 32px; margin-bottom: 8px; text-align: center; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; text-align: center; }
+
+        .intro {
+            color: #888;
+            font-size: 15px;
+            line-height: 1.7;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .intro strong { color: #fff; }
+
+        /* Simulation Box */
+        .sim-container {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .sim-label {
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+
+        canvas {
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .barrier {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: #444;
+            border-radius: 2px;
+            transition: opacity 0.3s;
+        }
+
+        .barrier.hidden {
+            opacity: 0;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 28px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #252525;
+            border-color: #444;
+        }
+
+        button.primary {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+
+        button.primary:hover {
+            background: #2563EB;
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .hot { color: #EF4444; }
+        .cold { color: #3B82F6; }
+        .mixed { color: #A855F7; }
+
+        /* Cards Analogy */
+        .cards-section {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .cards-title {
+            font-size: 16px;
+            color: #F59E0B;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .cards-display {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            min-height: 60px;
+            align-items: center;
+        }
+
+        .card {
+            width: 20px;
+            height: 30px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            transition: all 0.1s;
+        }
+
+        .card.red {
+            background: #EF4444;
+            color: #fff;
+        }
+
+        .card.black {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            color: #fff;
+        }
+
+        .cards-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .shuffle-count {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .shuffle-count span {
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        /* Probability Display */
+        .probability {
+            background: #0a0a0f;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .probability .label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .probability .value {
+            font-size: 14px;
+            color: #888;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .probability .value em {
+            color: #22C55E;
+            font-style: normal;
+        }
+
+        /* Key Insight */
+        .insight {
+            background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(59,130,246,0.1));
+            border: 1px solid #A855F7;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .insight-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #A855F7;
+            margin-bottom: 10px;
+        }
+
+        .insight-text {
+            color: #999;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .insight-text em {
+            color: #A855F7;
+            font-style: normal;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 380px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 30px;
+            z-index: 50;
+        }
+
+        @media (max-width: 1400px) {
+            .sidebar { width: 320px; }
+        }
+
+        @media (max-width: 1100px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                max-width: 700px;
+                height: auto;
+                margin: 40px auto 0;
+                border-left: none;
+                border-top: 1px solid #222;
+                border-radius: 16px;
+            }
+        }
+
+        .sidebar h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #A855F7;
+        }
+
+        .sidebar .source {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #222;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .sidebar .source a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+
+        .sidebar p {
+            color: #999;
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .sidebar strong { color: #fff; }
+        .sidebar em { color: #A855F7; font-style: normal; }
+
+        .sidebar .quote {
+            border-left: 2px solid #A855F7;
+            padding-left: 15px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #888;
+        }
+
+        .wiki-link {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #222;
+        }
+
+        .wiki-link a {
+            color: #3B82F6;
+            text-decoration: none;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <h1>Entropy</h1>
+        <p class="subtitle">Why order becomes disorder</p>
+
+        <p class="intro">
+            It's not a force. It's not a law. It's just <strong>probability</strong>.<br>
+            There are astronomically more ways to be disordered than ordered.
+        </p>
+
+        <!-- Particle Simulation -->
+        <div class="sim-container">
+            <div class="sim-label">Fast particles (hot) on left, slow particles (cold) on right</div>
+            <div class="canvas-wrapper">
+                <canvas id="simCanvas" width="600" height="300"></canvas>
+                <div class="barrier" id="barrier"></div>
+            </div>
+            <div class="controls">
+                <button onclick="sortParticles()">Sort (Order)</button>
+                <button class="primary" onclick="removeBarrier()">Remove Barrier</button>
+                <button onclick="resetSim()">Reset</button>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value hot" id="leftHot">25</div>
+                    <div class="stat-label">Hot on Left</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value cold" id="leftCold">0</div>
+                    <div class="stat-label">Cold on Left</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value hot" id="rightHot">0</div>
+                    <div class="stat-label">Hot on Right</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value cold" id="rightCold">25</div>
+                    <div class="stat-label">Cold on Right</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Shuffle Analogy -->
+        <div class="cards-section">
+            <div class="cards-title">The Card Shuffle Analogy</div>
+            <div class="cards-display" id="cardsDisplay"></div>
+            <div class="cards-controls">
+                <button onclick="sortCards()">Sort</button>
+                <button onclick="shuffleOnce()">Shuffle Once</button>
+                <button onclick="shuffleMany()">Shuffle 100x</button>
+            </div>
+            <div class="shuffle-count">Shuffles: <span id="shuffleCount">0</span></div>
+            <div class="probability">
+                <div class="label">Probability of returning to sorted state:</div>
+                <div class="value">1 in <em>80,658,175,170,943,878,571,660,636,856,403,766,975,289,505,440,883,277,824,000,000,000,000</em></div>
+            </div>
+        </div>
+
+        <!-- Key Insight -->
+        <div class="insight">
+            <div class="insight-title">The Second Law of Thermodynamics</div>
+            <div class="insight-text">
+                Entropy always increases — not because the universe "wants" disorder,<br>
+                but because <em>disorder is overwhelmingly more probable</em>.
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>What is Entropy?</h2>
+        <div class="source">
+            From: <a href="https://www.amazon.com/Order-Time-Carlo-Rovelli/dp/073521610X" target="_blank">
+                <strong>The Order of Time</strong>
+            </a>
+            <br>Carlo Rovelli
+        </div>
+
+        <p>Entropy measures the <em>number of ways</em> a system can be arranged while looking the same from the outside.</p>
+
+        <p>A "sorted" state (all hot particles on one side) has very <strong>few arrangements</strong>. A "mixed" state has <strong>astronomically more</strong>.</p>
+
+        <div class="quote">
+            "The growth of entropy is nothing more than the natural tendency of things to go from rare configurations to more probable ones."
+        </div>
+
+        <p>This is why:</p>
+        <p>• Heat flows from <strong>hot to cold</strong> (not the reverse)<br>
+           • Ice cubes <strong>melt</strong> in warm water<br>
+           • Eggs <strong>break</strong> but don't unbreak<br>
+           • Time seems to <strong>flow forward</strong></p>
+
+        <p>The "arrow of time" itself comes from entropy. We remember the past (low entropy) and not the future (high entropy).</p>
+
+        <p><em>Heat</em> is just the random motion of particles. When fast (hot) particles collide with slow (cold) ones, they share energy until everything is the same temperature — the most probable state.</p>
+
+        <div class="wiki-link">
+            <a href="https://en.wikipedia.org/wiki/Entropy" target="_blank">Wikipedia: Entropy</a>
+            <a href="https://en.wikipedia.org/wiki/Second_law_of_thermodynamics" target="_blank">Wikipedia: Second Law of Thermodynamics</a>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const barrier = document.getElementById('barrier');
+
+        let barrierActive = true;
+        let particles = [];
+
+        class Particle {
+            constructor(x, y, speed, isHot) {
+                this.x = x;
+                this.y = y;
+                this.speed = speed;
+                this.isHot = isHot;
+                this.angle = Math.random() * Math.PI * 2;
+                this.radius = 5;
+            }
+
+            update() {
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+
+                // Bounce off walls
+                if (this.x < this.radius) {
+                    this.x = this.radius;
+                    this.angle = Math.PI - this.angle;
+                }
+                if (this.x > canvas.width - this.radius) {
+                    this.x = canvas.width - this.radius;
+                    this.angle = Math.PI - this.angle;
+                }
+                if (this.y < this.radius) {
+                    this.y = this.radius;
+                    this.angle = -this.angle;
+                }
+                if (this.y > canvas.height - this.radius) {
+                    this.y = canvas.height - this.radius;
+                    this.angle = -this.angle;
+                }
+
+                // Barrier collision
+                if (barrierActive) {
+                    const mid = canvas.width / 2;
+                    if (this.x > mid - this.radius - 2 && this.x < mid + this.radius + 2) {
+                        if (this.x < mid) {
+                            this.x = mid - this.radius - 2;
+                        } else {
+                            this.x = mid + this.radius + 2;
+                        }
+                        this.angle = Math.PI - this.angle;
+                    }
+                }
+
+                // Random direction changes
+                if (Math.random() < 0.02) {
+                    this.angle += (Math.random() - 0.5) * 0.5;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.isHot ? 'rgba(239, 68, 68, 0.8)' : 'rgba(59, 130, 246, 0.8)';
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            // Hot particles on left
+            for (let i = 0; i < 25; i++) {
+                particles.push(new Particle(
+                    30 + Math.random() * (canvas.width / 2 - 60),
+                    30 + Math.random() * (canvas.height - 60),
+                    3 + Math.random() * 2,
+                    true
+                ));
+            }
+            // Cold particles on right
+            for (let i = 0; i < 25; i++) {
+                particles.push(new Particle(
+                    canvas.width / 2 + 30 + Math.random() * (canvas.width / 2 - 60),
+                    30 + Math.random() * (canvas.height - 60),
+                    0.5 + Math.random() * 0.5,
+                    false
+                ));
+            }
+        }
+
+        function sortParticles() {
+            barrierActive = true;
+            barrier.classList.remove('hidden');
+            particles.forEach(p => {
+                if (p.isHot) {
+                    p.x = 30 + Math.random() * (canvas.width / 2 - 60);
+                } else {
+                    p.x = canvas.width / 2 + 30 + Math.random() * (canvas.width / 2 - 60);
+                }
+                p.y = 30 + Math.random() * (canvas.height - 60);
+            });
+        }
+
+        function removeBarrier() {
+            barrierActive = false;
+            barrier.classList.add('hidden');
+        }
+
+        function resetSim() {
+            barrierActive = true;
+            barrier.classList.remove('hidden');
+            initParticles();
+        }
+
+        function updateStats() {
+            const mid = canvas.width / 2;
+            let leftHot = 0, leftCold = 0, rightHot = 0, rightCold = 0;
+
+            particles.forEach(p => {
+                if (p.x < mid) {
+                    if (p.isHot) leftHot++; else leftCold++;
+                } else {
+                    if (p.isHot) rightHot++; else rightCold++;
+                }
+            });
+
+            document.getElementById('leftHot').textContent = leftHot;
+            document.getElementById('leftCold').textContent = leftCold;
+            document.getElementById('rightHot').textContent = rightHot;
+            document.getElementById('rightCold').textContent = rightCold;
+        }
+
+        function animate() {
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw divider line (faint)
+            ctx.strokeStyle = '#222';
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            updateStats();
+            requestAnimationFrame(animate);
+        }
+
+        // Card shuffle
+        let cards = [];
+        let shuffleCount = 0;
+
+        function initCards() {
+            cards = [];
+            for (let i = 0; i < 10; i++) cards.push('red');
+            for (let i = 0; i < 10; i++) cards.push('black');
+        }
+
+        function renderCards() {
+            const display = document.getElementById('cardsDisplay');
+            display.innerHTML = cards.map(c =>
+                `<div class="card ${c}">${c === 'red' ? '♥' : '♠'}</div>`
+            ).join('');
+        }
+
+        function sortCards() {
+            cards = [];
+            for (let i = 0; i < 10; i++) cards.push('red');
+            for (let i = 0; i < 10; i++) cards.push('black');
+            shuffleCount = 0;
+            document.getElementById('shuffleCount').textContent = shuffleCount;
+            renderCards();
+        }
+
+        function shuffleOnce() {
+            // Fisher-Yates shuffle
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+            shuffleCount++;
+            document.getElementById('shuffleCount').textContent = shuffleCount;
+            renderCards();
+        }
+
+        function shuffleMany() {
+            let count = 0;
+            const interval = setInterval(() => {
+                shuffleOnce();
+                count++;
+                if (count >= 100) clearInterval(interval);
+            }, 30);
+        }
+
+        // Initialize
+        initParticles();
+        initCards();
+        renderCards();
+        animate();
+    </script>
+</body>
+</html>

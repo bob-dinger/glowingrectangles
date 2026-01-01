@@ -12,6 +12,15 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
             padding: 40px 20px;
+            padding-right: 380px;
+        }
+
+        @media (max-width: 1400px) {
+            body { padding-right: 340px; }
+        }
+
+        @media (max-width: 1100px) {
+            body { padding-right: 20px; }
         }
         .back-link {
             position: fixed;
@@ -24,13 +33,25 @@
         .back-link:hover { color: #fff; }
 
         .container {
-            max-width: 600px;
+            max-width: 900px;
             margin: 0 auto;
             text-align: center;
         }
 
         h1 { font-size: 32px; margin-bottom: 8px; }
         .subtitle { color: #666; font-size: 14px; margin-bottom: 40px; }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 700px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
         .hormone-card {
             background: #111;
@@ -47,7 +68,7 @@
         }
         .hormone-card:hover {
             border-color: #444;
-            transform: translateX(5px);
+            transform: translateY(-3px);
         }
 
         .hormone-icon {
@@ -95,6 +116,75 @@
         }
         .detail-label { color: #666; }
         .detail-value { color: #fff; }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 360px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 30px;
+            z-index: 50;
+        }
+
+        @media (max-width: 1400px) {
+            .sidebar { width: 320px; }
+        }
+
+        @media (max-width: 1100px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                max-width: 900px;
+                height: auto;
+                margin: 40px auto 0;
+                border-left: none;
+                border-top: 1px solid #222;
+                border-radius: 16px;
+            }
+        }
+
+        .sidebar h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #EC4899;
+        }
+
+        .sidebar .source {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #222;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .sidebar .source a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+
+        .sidebar .source a:hover {
+            text-decoration: underline;
+        }
+
+        .sidebar p {
+            color: #999;
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .sidebar strong {
+            color: #fff;
+        }
+
+        .sidebar em {
+            color: #EC4899;
+            font-style: normal;
+        }
     </style>
 </head>
 <body>
@@ -104,6 +194,7 @@
         <h1>Hormones</h1>
         <p class="subtitle">Chemical messengers that control your body</p>
 
+        <div class="cards-grid">
         <div class="hormone-card" style="--color: #EF4444" onclick="this.classList.toggle('expanded')">
             <div class="hormone-icon" style="background: rgba(239,68,68,0.2); color: #EF4444">⚡</div>
             <div class="hormone-info">
@@ -215,6 +306,26 @@
                 </div>
             </div>
         </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>What Are Hormones?</h2>
+        <div class="source">
+            From: <a href="https://www.amazon.com/Body-Guide-Occupants-Bill-Bryson/dp/0385539304" target="_blank">
+                <strong>The Body: A Guide for Occupants</strong>
+            </a>
+            <br>Bill Bryson (pp. 173-174)
+        </div>
+        <p>Hormones are the <em>bicycle couriers</em> of the body, delivering chemical messages all around the teeming metropolis that is you.</p>
+        <p>They are defined as any substance that is produced in one part of the body and causes an action somewhere else, but beyond that they are <strong>not easy to characterize</strong>.</p>
+        <p>They come in different sizes, have different chemistries, go to different places, have different effects when they get there. Some are proteins, some are steroids, some are from a group called amines.</p>
+        <p>They are linked by their <em>purpose</em>, not their chemistry.</p>
+        <p>Our understanding of them is far from complete, and much of what we do know is surprisingly recent.</p>
+        <p>As late as 1958, only about <em>twenty hormones</em> were known. No one seems to know quite how many there are now. "Oh, I think it must be at least eighty," says Wass, "but perhaps as many as <em>a hundred</em> now. We really do keep discovering more all the time."</p>
+        <p style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #222;">
+            <a href="https://en.wikipedia.org/wiki/List_of_human_hormones" target="_blank" style="color: #3B82F6; text-decoration: none;">Wikipedia: List of Human Hormones</a>
+        </p>
     </div>
 </body>
 </html>

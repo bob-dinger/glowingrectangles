@@ -6,7 +6,8 @@ Then access: http://localhost:3002/icons?term=cooking
 """
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import requests
+import urllib.request
+import ssl
 import json
 
 API_KEY = 'FPSX98b5430c546d73ef259e47ed0df6eabd'
@@ -24,19 +25,32 @@ class ProxyHandler(BaseHTTPRequestHandler):
             # Build Freepik API URL
             api_url = f"{FREEPIK_BASE}{self.path}"
 
-            # Make request to Freepik using requests library
-            headers = {
-                'x-freepik-api-key': API_KEY,
-                'Accept': 'application/json'
-            }
-            response = requests.get(api_url, headers=headers)
+            # Create request with headers
+            req = urllib.request.Request(api_url)
+            req.add_header('x-freepik-api-key', API_KEY)
+            req.add_header('Accept', 'application/json')
+
+            # SSL context
+            ctx = ssl.create_default_context()
+
+            # Make request
+            with urllib.request.urlopen(req, context=ctx) as response:
+                content = response.read()
+                status = response.status
 
             # Send response with CORS headers
-            self.send_response(response.status_code)
+            self.send_response(status)
             self.send_cors_headers()
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            self.wfile.write(response.content)
+            self.wfile.write(content)
+
+        except urllib.error.HTTPError as e:
+            self.send_response(e.code)
+            self.send_cors_headers()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': str(e)}).encode())
 
         except Exception as e:
             self.send_response(500)

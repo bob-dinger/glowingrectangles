@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Where Humans Fit</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+
+        .level {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .node {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 8px 16px;
+            text-align: center;
+            position: relative;
+        }
+
+        .node.highlighted {
+            border-color: #F59E0B;
+            background: rgba(249, 158, 11, 0.1);
+        }
+
+        .node-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .node.highlighted .node-name {
+            color: #F59E0B;
+        }
+
+        .node-rank {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        .connector {
+            width: 2px;
+            height: 20px;
+            background: #333;
+        }
+
+        .connector.highlighted {
+            background: #F59E0B;
+        }
+
+        .branch-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .branch-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .horizontal-line {
+            height: 2px;
+            background: #333;
+        }
+
+        .split {
+            display: flex;
+            position: relative;
+        }
+
+        .split::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            height: 2px;
+            background: #333;
+        }
+
+        .split-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 4px;
+        }
+
+        .split-branch .connector:first-child {
+            height: 15px;
+        }
+
+        .dimmed .node-name {
+            color: #555;
+        }
+
+        .dimmed .node {
+            border-color: #222;
+            background: #111;
+        }
+
+        .dimmed .connector {
+            background: #222;
+        }
+
+        .ape-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 5px;
+        }
+
+        .ape-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6px 10px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            min-width: 70px;
+        }
+
+        .ape-node.human {
+            border-color: #F59E0B;
+            background: rgba(249, 158, 11, 0.15);
+        }
+
+        .ape-emoji {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .ape-name {
+            font-size: 10px;
+            color: #888;
+        }
+
+        .ape-node.human .ape-name {
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        .other-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.4;
+        }
+
+        .other-label {
+            font-size: 9px;
+            color: #555;
+            padding: 4px 8px;
+            background: #111;
+            border-radius: 4px;
+        }
+
+        /* Right Drawer */
+        .drawer {
+            width: 300px;
+            height: 100vh;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 25px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .drawer-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+
+        .drawer-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #999;
+        }
+
+        .info-text p {
+            margin-bottom: 14px;
+        }
+
+        .key-insight {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #FDBA74;
+            line-height: 1.6;
+        }
+
+        .dna-box {
+            margin-top: 20px;
+            padding: 12px;
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
+
+        .dna-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .dna-item {
+            font-size: 12px;
+            color: #888;
+            padding: 4px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .dna-pct {
+            color: #22C55E;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Where Humans Fit</h1>
+        <p class="subtitle">The tree of life, zoomed in on us</p>
+
+        <div class="tree">
+            <!-- Life -->
+            <div class="level">
+                <div class="node highlighted">
+                    <div class="node-name">Life</div>
+                </div>
+                <div class="connector highlighted"></div>
+            </div>
+
+            <!-- Domain split -->
+            <div class="split">
+                <div class="split-branch dimmed">
+                    <div class="connector"></div>
+                    <div class="other-label">Bacteria</div>
+                </div>
+                <div class="split-branch dimmed">
+                    <div class="connector"></div>
+                    <div class="other-label">Archaea</div>
+                </div>
+                <div class="split-branch">
+                    <div class="connector highlighted"></div>
+                    <div class="node highlighted">
+                        <div class="node-name">Eukaryota</div>
+                        <div class="node-rank">Domain</div>
+                    </div>
+                    <div class="connector highlighted"></div>
+                </div>
+            </div>
+
+            <!-- Kingdom split -->
+            <div class="split">
+                <div class="split-branch dimmed">
+                    <div class="connector"></div>
+                    <div class="other-label">Plants</div>
+                </div>
+                <div class="split-branch dimmed">
+                    <div class="connector"></div>
+                    <div class="other-label">Fungi</div>
+                </div>
+                <div class="split-branch">
+                    <div class="connector highlighted"></div>
+                    <div class="node highlighted">
+                        <div class="node-name">Animalia</div>
+                        <div class="node-rank">Kingdom</div>
+                    </div>
+                    <div class="connector highlighted"></div>
+                </div>
+            </div>
+
+            <!-- Phylum -->
+            <div class="split">
+                <div class="split-branch dimmed">
+                    <div class="connector"></div>
+                    <div class="other-label">Invertebrates</div>
+                </div>
+                <div class="split-branch">
+                    <div class="connector highlighted"></div>
+                    <div class="node highlighted">
+                        <div class="node-name">Chordata</div>
+                        <div class="node-rank">Phylum</div>
+                    </div>
+                    <div class="connector highlighted"></div>
+                </div>
+            </div>
+
+            <!-- Class -->
+            <div class="split">
+                <div class="split-branch dimmed">
+                    <div class="connector"></div>
+                    <div class="other-label">Fish</div>
+                </div>
+                <div class="split-branch dimmed">
+                    <div class="connector"></div>
+                    <div class="other-label">Reptiles</div>
+                </div>
+                <div class="split-branch dimmed">
+                    <div class="connector"></div>
+                    <div class="other-label">Birds</div>
+                </div>
+                <div class="split-branch">
+                    <div class="connector highlighted"></div>
+                    <div class="node highlighted">
+                        <div class="node-name">Mammalia</div>
+                        <div class="node-rank">Class</div>
+                    </div>
+                    <div class="connector highlighted"></div>
+                </div>
+            </div>
+
+            <!-- Order -->
+            <div class="split">
+                <div class="split-branch dimmed">
+                    <div class="connector"></div>
+                    <div class="other-label">Rodents</div>
+                </div>
+                <div class="split-branch dimmed">
+                    <div class="connector"></div>
+                    <div class="other-label">Carnivores</div>
+                </div>
+                <div class="split-branch">
+                    <div class="connector highlighted"></div>
+                    <div class="node highlighted">
+                        <div class="node-name">Primates</div>
+                        <div class="node-rank">Order</div>
+                    </div>
+                    <div class="connector highlighted"></div>
+                </div>
+            </div>
+
+            <!-- Family -->
+            <div class="split">
+                <div class="split-branch dimmed">
+                    <div class="connector"></div>
+                    <div class="other-label">Monkeys</div>
+                </div>
+                <div class="split-branch dimmed">
+                    <div class="connector"></div>
+                    <div class="other-label">Lemurs</div>
+                </div>
+                <div class="split-branch">
+                    <div class="connector highlighted"></div>
+                    <div class="node highlighted">
+                        <div class="node-name">Hominidae</div>
+                        <div class="node-rank">Family — Great Apes</div>
+                    </div>
+                    <div class="connector highlighted"></div>
+                </div>
+            </div>
+
+            <!-- Great Apes -->
+            <div class="ape-row">
+                <div class="ape-node">
+                    <div class="ape-emoji">🦧</div>
+                    <div class="ape-name">Orangutan</div>
+                </div>
+                <div class="ape-node">
+                    <div class="ape-emoji">🦍</div>
+                    <div class="ape-name">Gorilla</div>
+                </div>
+                <div class="ape-node">
+                    <div class="ape-emoji">🐵</div>
+                    <div class="ape-name">Chimp</div>
+                </div>
+                <div class="ape-node">
+                    <div class="ape-emoji">🐵</div>
+                    <div class="ape-name">Bonobo</div>
+                </div>
+                <div class="ape-node human">
+                    <div class="ape-emoji">🧑</div>
+                    <div class="ape-name">Human</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="drawer">
+        <div class="drawer-title">You Are Here</div>
+        <div class="drawer-subtitle">A great ape reading this</div>
+
+        <div class="info-text">
+            <p>Humans aren't descended from apes — we <strong>are</strong> apes.</p>
+            <p>We're one of five living species in the family <em>Hominidae</em>: the great apes.</p>
+            <p>The highlighted path shows every fork where our ancestors went one way instead of another.</p>
+        </div>
+
+        <div class="dna-box">
+            <div class="dna-title">DNA Shared with Humans</div>
+            <div class="dna-item">
+                <span>Chimpanzees</span>
+                <span class="dna-pct">~98.8%</span>
+            </div>
+            <div class="dna-item">
+                <span>Gorillas</span>
+                <span class="dna-pct">~98.4%</span>
+            </div>
+            <div class="dna-item">
+                <span>Orangutans</span>
+                <span class="dna-pct">~96.9%</span>
+            </div>
+            <div class="dna-item">
+                <span>Mice</span>
+                <span class="dna-pct">~85%</span>
+            </div>
+            <div class="dna-item">
+                <span>Bananas</span>
+                <span class="dna-pct">~60%</span>
+            </div>
+        </div>
+
+        <div class="key-insight">
+            <strong>Every living thing</strong> on Earth shares the same genetic code. We're all related — just separated by time.
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Pop!</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+
+        #gameCanvas {
+            display: block;
+        }
+
+        .hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+
+        .streak {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .current-word {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 100;
+            background: rgba(0,0,0,0.5);
+            padding: 15px 40px;
+            border-radius: 12px;
+            border: 2px solid #22C55E;
+        }
+
+        .target-word {
+            font-size: 42px;
+            font-weight: bold;
+            color: #22C55E;
+            text-shadow: 0 2px 10px rgba(34, 197, 94, 0.5);
+        }
+
+        .target-translation {
+            font-size: 16px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        button {
+            background: #F59E0B;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        button:hover {
+            background: #D97706;
+        }
+
+        .category-select {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        #floatingEmojis {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .floating-emoji {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.1s;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+
+        .floating-emoji:hover {
+            transform: scale(1.2);
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5));
+        }
+
+        .floating-emoji img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .combo-text {
+            position: absolute;
+            font-size: 32px;
+            font-weight: bold;
+            color: #F59E0B;
+            pointer-events: none;
+            z-index: 200;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            animation: comboFloat 1s ease-out forwards;
+        }
+
+        @keyframes comboFloat {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.5); }
+        }
+
+        .wrong-flash {
+            animation: wrongShake 0.3s ease-out;
+        }
+
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="floatingEmojis"></div>
+
+        <div class="hud">
+            <div class="score">Score: <span id="scoreValue">0</span></div>
+            <div class="streak">Streak: <span id="streakValue">0</span></div>
+        </div>
+
+        <div class="current-word">
+            <div class="target-word" id="targetWord">gato</div>
+            <div class="target-translation" id="targetTranslation">cat</div>
+        </div>
+
+        <div class="controls">
+            <select class="category-select" id="categorySelect">
+                <option value="all">All Words (300+)</option>
+                <option value="animals">Animals (70+)</option>
+                <option value="food">Food & Drink (80+)</option>
+                <option value="nature">Nature (40+)</option>
+                <option value="objects">Objects (80+)</option>
+                <option value="places">Places</option>
+                <option value="sports">Sports</option>
+                <option value="body">Body Parts</option>
+                <option value="emotions">Emotions</option>
+                <option value="music">Music & Arts</option>
+            </select>
+            <button id="resetBtn">New Game</button>
+        </div>
+    </div>
+
+    <script src="spanish-vocab.js"></script>
+    <script>
+        // Use vocabulary from spanish-vocab.js
+        const vocabulary = spanishVocab;
+
+        // Matter.js for falling pieces
+        const Engine = Matter.Engine,
+              Render = Matter.Render,
+              Runner = Matter.Runner,
+              Bodies = Matter.Bodies,
+              Body = Matter.Body,
+              Composite = Matter.Composite,
+              Events = Matter.Events;
+
+        const canvas = document.getElementById('gameCanvas');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const engine = Engine.create();
+        const world = engine.world;
+        engine.world.gravity.y = 1.5;
+
+        const render = Render.create({
+            canvas: canvas,
+            engine: engine,
+            options: {
+                width: width,
+                height: height,
+                wireframes: false,
+                background: 'transparent'
+            }
+        });
+
+        // Game state
+        let score = 0;
+        let streak = 0;
+        let currentTarget = null;
+        let floatingEmojis = [];
+        let fallingPieces = [];
+        let currentCategory = 'all';
+
+        // Create ground for falling pieces
+        const ground = Bodies.rectangle(width / 2, height + 30, width, 60, {
+            isStatic: true,
+            render: { fillStyle: 'transparent' }
+        });
+        Composite.add(world, ground);
+
+        // Get vocabulary for category
+        function getVocabList() {
+            if (currentCategory === 'all') {
+                return Object.values(vocabulary).flat();
+            }
+            return vocabulary[currentCategory] || [];
+        }
+
+        // Create floating emojis
+        function createFloatingEmojis() {
+            const container = document.getElementById('floatingEmojis');
+            container.innerHTML = '';
+            floatingEmojis = [];
+
+            let vocabList = getVocabList();
+            vocabList = [...vocabList].sort(() => Math.random() - 0.5).slice(0, 15);
+
+            // Pick target
+            currentTarget = vocabList[Math.floor(Math.random() * vocabList.length)];
+            document.getElementById('targetWord').textContent = currentTarget.spanish;
+            document.getElementById('targetTranslation').textContent = currentTarget.english;
+
+            // Create floating emojis
+            vocabList.forEach((vocab, i) => {
+                const emoji = document.createElement('div');
+                emoji.className = 'floating-emoji';
+                emoji.innerHTML = `<img src="images/openmoji/${vocab.code}.svg" alt="${vocab.spanish}" onerror="this.style.display='none'">`;
+                emoji.dataset.spanish = vocab.spanish;
+
+                // Random starting position
+                const x = 100 + Math.random() * (width - 200);
+                const y = 150 + Math.random() * (height - 300);
+                emoji.style.left = x + 'px';
+                emoji.style.top = y + 'px';
+
+                // Random velocity
+                const vx = (Math.random() - 0.5) * 2;
+                const vy = (Math.random() - 0.5) * 2;
+
+                emoji.addEventListener('click', () => handleClick(emoji, vocab));
+
+                container.appendChild(emoji);
+                floatingEmojis.push({
+                    element: emoji,
+                    vocab: vocab,
+                    x: x,
+                    y: y,
+                    vx: vx,
+                    vy: vy
+                });
+            });
+        }
+
+        // Animate floating emojis
+        function animateFloating() {
+            floatingEmojis.forEach(emoji => {
+                emoji.x += emoji.vx;
+                emoji.y += emoji.vy;
+
+                // Bounce off walls
+                if (emoji.x < 50 || emoji.x > width - 130) {
+                    emoji.vx *= -1;
+                    emoji.x = Math.max(50, Math.min(width - 130, emoji.x));
+                }
+                if (emoji.y < 120 || emoji.y > height - 130) {
+                    emoji.vy *= -1;
+                    emoji.y = Math.max(120, Math.min(height - 130, emoji.y));
+                }
+
+                emoji.element.style.left = emoji.x + 'px';
+                emoji.element.style.top = emoji.y + 'px';
+            });
+
+            requestAnimationFrame(animateFloating);
+        }
+
+        // Handle emoji click
+        function handleClick(element, vocab) {
+            if (vocab.spanish === currentTarget.spanish) {
+                // Correct!
+                streak++;
+                const bonus = Math.min(streak, 10) * 10;
+                score += 100 + bonus;
+                document.getElementById('scoreValue').textContent = score;
+                document.getElementById('streakValue').textContent = streak;
+
+                // Show combo text
+                if (streak > 1) {
+                    showCombo(element, streak);
+                }
+
+                // Create explosion
+                const rect = element.getBoundingClientRect();
+                createFallingPieces(rect.left + 40, rect.top + 40, vocab.spanish);
+
+                // Remove from floating
+                floatingEmojis = floatingEmojis.filter(e => e.element !== element);
+                element.remove();
+
+                // Pick new target or refill
+                if (floatingEmojis.length > 0) {
+                    const newTarget = floatingEmojis[Math.floor(Math.random() * floatingEmojis.length)];
+                    currentTarget = newTarget.vocab;
+                    document.getElementById('targetWord').textContent = currentTarget.spanish;
+                    document.getElementById('targetTranslation').textContent = currentTarget.english;
+                } else {
+                    // All cleared! New round
+                    setTimeout(createFloatingEmojis, 1000);
+                }
+            } else {
+                // Wrong!
+                streak = 0;
+                document.getElementById('streakValue').textContent = streak;
+                element.classList.add('wrong-flash');
+                setTimeout(() => element.classList.remove('wrong-flash'), 300);
+            }
+        }
+
+        // Show combo text
+        function showCombo(element, combo) {
+            const rect = element.getBoundingClientRect();
+            const text = document.createElement('div');
+            text.className = 'combo-text';
+            text.textContent = `${combo}x Combo!`;
+            text.style.left = rect.left + 'px';
+            text.style.top = rect.top + 'px';
+            document.body.appendChild(text);
+            setTimeout(() => text.remove(), 1000);
+        }
+
+        // Create falling pieces with physics
+        function createFallingPieces(x, y, spanish) {
+            const numPieces = 8;
+            const colors = ['#22C55E', '#F59E0B', '#3B82F6', '#EC4899', '#8B5CF6'];
+
+            for (let i = 0; i < numPieces; i++) {
+                const size = 10 + Math.random() * 20;
+                const piece = Bodies.rectangle(
+                    x + (Math.random() - 0.5) * 40,
+                    y + (Math.random() - 0.5) * 40,
+                    size,
+                    size,
+                    {
+                        restitution: 0.6,
+                        friction: 0.3,
+                        angle: Math.random() * Math.PI * 2,
+                        render: {
+                            fillStyle: colors[Math.floor(Math.random() * colors.length)]
+                        }
+                    }
+                );
+
+                // Apply explosion force
+                const angle = (Math.PI * 2 * i) / numPieces;
+                const force = 0.02 + Math.random() * 0.03;
+                Body.setVelocity(piece, {
+                    x: Math.cos(angle) * force * 300,
+                    y: Math.sin(angle) * force * 300 - 5
+                });
+                Body.setAngularVelocity(piece, (Math.random() - 0.5) * 0.3);
+
+                Composite.add(world, piece);
+                fallingPieces.push({ body: piece, life: 150 });
+            }
+        }
+
+        // Clean up old pieces
+        function cleanupPieces() {
+            fallingPieces = fallingPieces.filter(p => {
+                p.life--;
+                if (p.life <= 0 || p.body.position.y > height + 100) {
+                    Composite.remove(world, p.body);
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        // Game loop
+        Events.on(engine, 'afterUpdate', cleanupPieces);
+
+        // Initialize
+        function init() {
+            createFloatingEmojis();
+            animateFloating();
+            Runner.run(Runner.create(), engine);
+            Render.run(render);
+        }
+
+        // Event listeners
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            score = 0;
+            streak = 0;
+            document.getElementById('scoreValue').textContent = 0;
+            document.getElementById('streakValue').textContent = 0;
+            createFloatingEmojis();
+        });
+
+        document.getElementById('categorySelect').addEventListener('change', (e) => {
+            currentCategory = e.target.value;
+            score = 0;
+            streak = 0;
+            document.getElementById('scoreValue').textContent = 0;
+            document.getElementById('streakValue').textContent = 0;
+            createFloatingEmojis();
+        });
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

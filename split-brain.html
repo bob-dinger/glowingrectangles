@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split Brain</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+            padding-right: 340px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 { font-size: 32px; margin-bottom: 8px; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 40px; }
+
+        .experiment-area {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .trial-label {
+            font-size: 13px;
+            color: #10b981;
+            margin-bottom: 20px;
+            min-height: 20px;
+        }
+
+        .diagram {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .diagram svg {
+            width: 100%;
+            height: auto;
+        }
+
+        .screen {
+            font-size: 24px;
+            font-weight: bold;
+            fill: #fff;
+        }
+
+        .screen-label {
+            font-size: 10px;
+            fill: #666;
+            text-transform: uppercase;
+        }
+
+        .hemisphere-label {
+            font-size: 9px;
+            fill: #888;
+        }
+
+        .hemisphere-title {
+            font-size: 11px;
+            fill: #fff;
+            font-weight: 600;
+        }
+
+        .output-box {
+            font-size: 11px;
+            fill: #888;
+        }
+
+        .output-value {
+            font-size: 13px;
+            fill: #fff;
+            font-weight: 500;
+        }
+
+        .pathway {
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.3;
+        }
+
+        .pathway.active {
+            opacity: 1;
+            stroke-dasharray: 8, 4;
+            animation: flow 0.5s linear infinite;
+        }
+
+        @keyframes flow {
+            to { stroke-dashoffset: -12; }
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #10b981;
+        }
+
+        .sidebar p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .sidebar strong {
+            color: #fff;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .control-btn {
+            background: #10b981;
+            border: none;
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: #059669;
+        }
+
+        .control-btn.secondary {
+            background: #333;
+        }
+
+        .control-btn.secondary:hover {
+            background: #444;
+        }
+
+        .stepper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .step-btn {
+            background: #222;
+            border: 1px solid #333;
+            color: #888;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .step-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        .dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #333;
+            transition: all 0.2s;
+        }
+
+        .dot.active {
+            background: #10b981;
+        }
+
+        .dot.done {
+            background: #555;
+        }
+
+        .step-title {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <h1>The Split Brain</h1>
+        <p class="subtitle">What happens when the two hemispheres can't communicate</p>
+
+        <div class="experiment-area">
+            <div class="stepper">
+                <button class="step-btn" onclick="prevTrial()">←</button>
+                <div class="dots" id="dots"></div>
+                <button class="step-btn" onclick="nextTrial()">→</button>
+            </div>
+            <div class="step-title" id="stepTitle">Click → to begin</div>
+            <div class="trial-label" id="trialLabel"></div>
+
+            <div class="diagram">
+                <svg viewBox="0 0 400 380">
+                    <!-- Visual field screens - colors match DESTINATION to show crossing -->
+                    <rect x="30" y="15" width="100" height="75" rx="4" fill="#000" stroke="#EC4899" stroke-width="2"/>
+                    <text x="80" y="8" class="screen-label" text-anchor="middle">Left Screen</text>
+                    <text x="80" y="60" class="screen" text-anchor="middle" id="leftScreenText">+</text>
+                    <image x="40" y="22" width="80" height="60" id="leftScreenImg" style="display:none"/>
+
+                    <rect x="270" y="15" width="100" height="75" rx="4" fill="#000" stroke="#3B82F6" stroke-width="2"/>
+                    <text x="320" y="8" class="screen-label" text-anchor="middle">Right Screen</text>
+                    <text x="320" y="60" class="screen" text-anchor="middle" id="rightScreenText">+</text>
+                    <image x="280" y="22" width="80" height="60" id="rightScreenImg" style="display:none"/>
+
+                    <!-- Crossing pathways -->
+                    <path d="M80 90 Q80 110 200 130 Q280 150 280 170" class="pathway" stroke="#EC4899" id="rightPath"/>
+                    <path d="M320 90 Q320 110 200 130 Q120 150 120 170" class="pathway" stroke="#3B82F6" id="leftPath"/>
+
+                    <!-- Eyes -->
+                    <ellipse cx="200" cy="95" rx="25" ry="12" fill="#222" stroke="#444" stroke-width="1"/>
+                    <circle cx="200" cy="95" r="6" fill="#666"/>
+
+                    <!-- Brain -->
+                    <path d="M190 140 Q100 145 80 200 Q70 260 120 280 Q180 300 190 270 L190 140"
+                          fill="rgba(59, 130, 246, 0.25)" stroke="#3B82F6" stroke-width="2" id="leftHemi"/>
+                    <path d="M210 140 Q300 145 320 200 Q330 260 280 280 Q220 300 210 270 L210 140"
+                          fill="rgba(236, 72, 153, 0.25)" stroke="#EC4899" stroke-width="2" id="rightHemi"/>
+
+                    <!-- Severed corpus callosum -->
+                    <line x1="190" y1="180" x2="210" y2="180" stroke="#444" stroke-width="2" stroke-dasharray="3,2"/>
+                    <line x1="190" y1="200" x2="210" y2="200" stroke="#444" stroke-width="2" stroke-dasharray="3,2"/>
+                    <line x1="190" y1="220" x2="210" y2="220" stroke="#444" stroke-width="2" stroke-dasharray="3,2"/>
+                    <text x="200" y="245" font-size="8" fill="#555" text-anchor="middle">severed</text>
+
+                    <!-- Hemisphere labels - left gets word, right gets image -->
+                    <text x="130" y="185" fill="#3B82F6" font-size="14" font-weight="bold" text-anchor="middle">BRAIN</text>
+                    <text x="130" y="200" class="hemisphere-label" text-anchor="middle" id="leftHemiLabel">language</text>
+                    <image href="images/brain.svg" x="245" y="160" width="50" height="50"/>
+                    <text x="270" y="220" class="hemisphere-label" text-anchor="middle" id="rightHemiLabel">visual</text>
+
+                    <!-- Output: Left hand (flipped) -->
+                    <g transform="translate(70, 295) scale(-0.1, 0.1)" id="leftHandG">
+                        <path d="m288.16 227.79c0-17.88 13.53-32.37 30.22-32.37h.67c16.66 0 30.18 14.43 30.22 32.28.14 58.39.05 64.12-.03 151.33-.05 48.97-37.12 88.63-82.83 88.63h-98.14c-30.03 0-57.72-17.42-72.35-45.52l-87.5-168.11 9.14-7.58c18.93-17.4 47.4-15.26 63.87 4.79l24.49 29.81.14-205.09c.01-17.87 13.54-32.35 30.22-32.35h.01c16.69 0 30.22 14.5 30.22 32.38v124.12c.4-17.5 13.77-31.53 30.2-31.53h.71c16.69 0 30.22 14.49 30.22 32.37v10.42c0-17.88 13.53-32.37 30.23-32.37h.07c16.69 0 30.22 14.49 30.22 32.37z" fill="#f7caa5"/>
+                    </g>
+                    <text x="45" y="360" class="output-value" text-anchor="middle" id="leftHand" font-size="11">...</text>
+
+                    <!-- Output: Speech -->
+                    <rect x="130" y="295" width="140" height="50" rx="6" fill="rgba(59,130,246,0.1)" stroke="rgba(59,130,246,0.3)"/>
+                    <text x="200" y="315" class="output-box" text-anchor="middle">Patient Says</text>
+                    <text x="200" y="335" class="output-value" text-anchor="middle" id="speech">...</text>
+
+                    <!-- Output: Right hand -->
+                    <g transform="translate(290, 295) scale(0.1, 0.1)" id="rightHandG">
+                        <path d="m288.16 227.79c0-17.88 13.53-32.37 30.22-32.37h.67c16.66 0 30.18 14.43 30.22 32.28.14 58.39.05 64.12-.03 151.33-.05 48.97-37.12 88.63-82.83 88.63h-98.14c-30.03 0-57.72-17.42-72.35-45.52l-87.5-168.11 9.14-7.58c18.93-17.4 47.4-15.26 63.87 4.79l24.49 29.81.14-205.09c.01-17.87 13.54-32.35 30.22-32.35h.01c16.69 0 30.22 14.5 30.22 32.38v124.12c.4-17.5 13.77-31.53 30.2-31.53h.71c16.69 0 30.22 14.49 30.22 32.37v10.42c0-17.88 13.53-32.37 30.23-32.37h.07c16.69 0 30.22 14.49 30.22 32.37z" fill="#f7caa5"/>
+                    </g>
+                    <text x="355" y="360" class="output-value" text-anchor="middle" id="rightHand" font-size="11">...</text>
+                </svg>
+            </div>
+        </div>
+
+        </div>
+
+    <div class="sidebar">
+        <h3>The Crossed Wires</h3>
+        <p><strong>Left visual field → Right brain.</strong> Right visual field → Left brain. The pathways cross before reaching the brain.</p>
+        <p><strong>Language lives in the left hemisphere.</strong> So when only the right brain sees something, the patient literally cannot say what it is — the speech centers never got the message.</p>
+        <p><strong>But the left hand knows.</strong> The right brain controls the left hand. So it can pick up the object it saw, even while the patient insists they saw nothing.</p>
+    </div>
+
+    <script>
+        const trials = [
+            {
+                title: 'Image to left, word to right',
+                leftImg: 'images/key.svg',
+                leftText: null,
+                rightImg: null,
+                rightText: 'SHOVEL',
+                leftPath: true,
+                rightPath: true,
+                leftHand: 'Picks up key',
+                speech: '"I saw SHOVEL"',
+                rightHand: 'Picks up shovel'
+            },
+            {
+                title: 'Slide 3',
+                isPlaceholder: true
+            },
+            {
+                title: 'Slide 4',
+                isPlaceholder: true
+            },
+            {
+                title: 'Slide 5',
+                isPlaceholder: true
+            },
+            {
+                title: 'Slide 6',
+                isPlaceholder: true
+            },
+            {
+                title: 'Slide 7',
+                isPlaceholder: true
+            }
+        ];
+
+        let currentTrial = -1; // -1 means not started
+
+        function initDots() {
+            const dotsContainer = document.getElementById('dots');
+            dotsContainer.innerHTML = '';
+            for (let i = 0; i < trials.length; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        function updateUI() {
+            const dots = document.querySelectorAll('.dot');
+            const stepTitle = document.getElementById('stepTitle');
+
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active', 'done');
+                if (currentTrial >= 0) {
+                    if (i < currentTrial) {
+                        dot.classList.add('done');
+                    } else if (i === currentTrial) {
+                        dot.classList.add('active');
+                    }
+                }
+            });
+
+            if (currentTrial === -1) {
+                stepTitle.textContent = 'Click → to begin';
+            } else {
+                stepTitle.textContent = trials[currentTrial].title;
+            }
+        }
+
+        function resetVisuals() {
+            document.getElementById('leftScreenText').textContent = '+';
+            document.getElementById('rightScreenText').textContent = '+';
+            document.getElementById('leftScreenImg').style.display = 'none';
+            document.getElementById('rightScreenImg').style.display = 'none';
+            document.getElementById('leftPath').classList.remove('active');
+            document.getElementById('rightPath').classList.remove('active');
+            document.getElementById('leftHemi').style.fill = 'rgba(59, 130, 246, 0.25)';
+            document.getElementById('rightHemi').style.fill = 'rgba(236, 72, 153, 0.25)';
+            document.getElementById('leftHand').textContent = '...';
+            document.getElementById('speech').textContent = '...';
+            document.getElementById('rightHand').textContent = '...';
+        }
+
+        function runTrial(index) {
+            const trial = trials[index];
+
+            resetVisuals();
+
+            // Intro slide - just show the setup
+            if (trial.isIntro) {
+                document.getElementById('leftHand').textContent = '—';
+                document.getElementById('speech').textContent = '—';
+                document.getElementById('rightHand').textContent = '—';
+                return;
+            }
+
+            // Placeholder slide
+            if (trial.isPlaceholder) {
+                document.getElementById('leftHand').textContent = '—';
+                document.getElementById('speech').textContent = '—';
+                document.getElementById('rightHand').textContent = '—';
+                return;
+            }
+
+            // Reset hemisphere labels for experiment slides
+            document.getElementById('rightHemiLabel').textContent = 'controls left hand';
+            document.getElementById('leftHemiLabel').textContent = 'controls speech';
+
+            // Flash stimulus
+            setTimeout(() => {
+                // Left screen
+                if (trial.leftImg) {
+                    document.getElementById('leftScreenText').textContent = '';
+                    document.getElementById('leftScreenImg').setAttribute('href', trial.leftImg);
+                    document.getElementById('leftScreenImg').style.display = 'block';
+                } else if (trial.leftText) {
+                    document.getElementById('leftScreenText').textContent = trial.leftText;
+                }
+
+                // Right screen
+                if (trial.rightImg) {
+                    document.getElementById('rightScreenText').textContent = '';
+                    document.getElementById('rightScreenImg').setAttribute('href', trial.rightImg);
+                    document.getElementById('rightScreenImg').style.display = 'block';
+                } else if (trial.rightText) {
+                    document.getElementById('rightScreenText').textContent = trial.rightText;
+                }
+
+                if (trial.leftPath) {
+                    document.getElementById('leftPath').classList.add('active');
+                    document.getElementById('leftHemi').style.fill = 'rgba(59, 130, 246, 0.5)';
+                }
+                if (trial.rightPath) {
+                    document.getElementById('rightPath').classList.add('active');
+                    document.getElementById('rightHemi').style.fill = 'rgba(236, 72, 153, 0.5)';
+                }
+            }, 300);
+
+            // Show results
+            setTimeout(() => {
+                document.getElementById('leftHand').textContent = trial.leftHand;
+                document.getElementById('speech').textContent = trial.speech;
+                document.getElementById('rightHand').textContent = trial.rightHand;
+            }, 1000);
+        }
+
+        function nextTrial() {
+            if (currentTrial < trials.length - 1) {
+                currentTrial++;
+                updateUI();
+                runTrial(currentTrial);
+            }
+        }
+
+        function prevTrial() {
+            if (currentTrial > 0) {
+                currentTrial--;
+                updateUI();
+                runTrial(currentTrial);
+            } else if (currentTrial === 0) {
+                currentTrial = -1;
+                updateUI();
+                resetVisuals();
+            }
+        }
+
+        // Initialize
+        initDots();
+        updateUI();
+    </script>
+</body>
+</html>

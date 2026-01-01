@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Learning Works</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding-right: 380px;
+        }
+
+        @media (max-width: 1200px) {
+            body { padding-right: 320px; }
+        }
+
+        @media (max-width: 900px) {
+            body { padding-right: 0; overflow: auto; }
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 {
+            position: absolute;
+            top: 40px;
+            font-size: 28px;
+            color: #888;
+            font-weight: 400;
+        }
+
+        .stage {
+            position: relative;
+            width: 800px;
+            height: 400px;
+        }
+
+        .wall {
+            position: absolute;
+            right: 100px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 300px;
+            background: linear-gradient(90deg, #444 0%, #666 50%, #444 100%);
+            border-radius: 4px;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+        }
+
+        .wall::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(90deg, #333, #444);
+        }
+
+        .stone-container {
+            position: absolute;
+            left: 100px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 80px;
+            height: 80px;
+            transition: left 0.15s ease-in;
+        }
+
+        .stone-container.hitting {
+            left: 570px;
+            transition: left 0.12s ease-out;
+        }
+
+        .stone-container.bouncing {
+            left: 400px;
+            transition: left 0.2s ease-out;
+        }
+
+        .stone-container svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+        }
+
+        .stone-container.shake {
+            animation: shake 0.1s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateY(-50%) rotate(0deg); }
+            25% { transform: translateY(-50%) rotate(-5deg); }
+            75% { transform: translateY(-50%) rotate(5deg); }
+        }
+
+        .impact {
+            position: absolute;
+            right: 130px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .impact.show {
+            animation: impact 0.3s ease-out;
+        }
+
+        @keyframes impact {
+            0% { opacity: 1; transform: translateY(-50%) scale(0.5); }
+            100% { opacity: 0; transform: translateY(-50%) scale(2); }
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #F59E0B;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .counter {
+            position: absolute;
+            bottom: 60px;
+            font-size: 24px;
+            color: #666;
+        }
+
+        .counter span {
+            color: #F59E0B;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 40px;
+            width: 300px;
+            height: 8px;
+            background: #222;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #F59E0B, #22C55E);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .learned {
+            position: absolute;
+            font-size: 72px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #22C55E, #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0;
+            transform: scale(0.5);
+            pointer-events: none;
+        }
+
+        .learned.show {
+            animation: learnedPop 1.5s ease-out forwards;
+        }
+
+        @keyframes learnedPop {
+            0% { opacity: 0; transform: scale(0.5); }
+            20% { opacity: 1; transform: scale(1.2); }
+            40% { transform: scale(1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #22C55E;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .flash.show {
+            animation: flash 0.5s ease-out;
+        }
+
+        @keyframes flash {
+            0% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+
+        .restart-btn {
+            position: absolute;
+            bottom: 100px;
+            padding: 12px 30px;
+            background: #22C55E;
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+        }
+
+        .restart-btn.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .restart-btn:hover {
+            background: #16A34A;
+            transform: scale(1.05);
+        }
+
+        .subtitle {
+            position: absolute;
+            top: 80px;
+            font-size: 16px;
+            color: #555;
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .attempt-dots {
+            display: flex;
+            gap: 8px;
+            position: absolute;
+            bottom: 20px;
+        }
+
+        .attempt-dot {
+            width: 12px;
+            height: 12px;
+            background: #333;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .attempt-dot.hit {
+            background: #F59E0B;
+            box-shadow: 0 0 10px #F59E0B;
+        }
+
+        .attempt-dot.learned {
+            background: #22C55E;
+            box-shadow: 0 0 15px #22C55E;
+            transform: scale(1.3);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 380px;
+            height: 100vh;
+            background: #111;
+            border-left: 1px solid #333;
+            overflow-y: auto;
+            padding: 30px;
+            z-index: 50;
+        }
+
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 320px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-left: none;
+                border-top: 1px solid #333;
+            }
+            body {
+                flex-direction: column;
+            }
+        }
+
+        .sidebar h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #22C55E;
+        }
+
+        .sidebar-content p {
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .sidebar-content strong {
+            color: #fff;
+        }
+
+        .sidebar-content em {
+            color: #F59E0B;
+            font-style: normal;
+        }
+
+        .sidebar-content .highlight {
+            color: #22C55E;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            padding: 12px 0;
+        }
+
+        .sidebar-content .source {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .sidebar-content .source a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+
+        .sidebar-content .source a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back to Home</a>
+
+    <h1>How Learning Works</h1>
+    <p class="subtitle">Repetition through difficulty. Each attempt strengthens the neural pathway until it finally clicks.</p>
+
+    <div class="stage">
+        <div class="wall"></div>
+        <div class="stone-container" id="stone">
+            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <path d="m404.18 102.99 32.3 154.53-85.3-46.66z" fill="#616d77"/>
+                <path d="m436.48 257.52-16.95 139.68-68.35-186.34z" fill="#505c63"/>
+                <path d="m351.18 210.86 68.35 186.34-191.36-48.1-50.14-63.85z" fill="#798795"/>
+                <path d="m419.53 397.2-52.28 85.89-142.66-43.11 3.58-90.88z" fill="#616d77"/>
+                <path d="m404.18 102.99-53 107.87-57.42-108.24.22-91.62z" fill="#8e99a3"/>
+                <path d="m367.25 483.09-163.86 17.91-95.05-47.6 116.25-13.42z" fill="#505c63"/>
+                <path d="m293.76 102.62 57.42 108.24-173.15 74.39 4.43-89.01z" fill="#616d77"/>
+                <path d="m293.98 11-.22 91.62-93.18-22.33z" fill="#93a1ad"/>
+                <path d="m293.76 102.62-111.3 93.62-73.82-76.96 91.94-38.99z" fill="#798795"/>
+                <path d="m178.03 285.25 50.14 63.85-3.58 90.88-116.25 13.42-32.82-118.55z" fill="#8e99a3"/>
+                <path d="m108.64 119.28 73.82 76.96-4.43 89.01-102.51 49.6z" fill="#93a1ad"/>
+                <path d="m155.163 447.995-46.823 5.405 95.05 47.6 40.105-4.383z" fill="#414a4f"/>
+                <path d="m293.98 11-93.4 69.29 40.987 9.822 52.313-37.346z" fill="#748089"/>
+                <path d="m137.306 149.166-28.666-29.886-33.12 215.57 42.413-20.522z" fill="#79848c"/>
+                <path d="m241.567 90.112-40.987-9.822-91.94 38.99 28.666 29.886z" fill="#5e6a75"/>
+                <path d="m75.52 334.85 32.82 118.55 46.823-5.405-37.23-133.667z" fill="#747c82"/>
+                <path d="m121.559 177.414a6.078 6.078 0 0 1 -.991-.082 6 6 0 0 1 -4.935-6.9l.6-3.6a6 6 0 0 1 11.838 1.965l-.6 3.6a6 6 0 0 1 -5.912 5.017z" fill="#f4f8fc"/>
+                <path d="m107.276 263.452a6.063 6.063 0 0 1 -.989-.082 6 6 0 0 1 -4.936-6.9l11.11-66.928a6 6 0 0 1 11.838 1.964l-11.111 66.929a6 6 0 0 1 -5.912 5.017z" fill="#f4f8fc"/>
+            </svg>
+        </div>
+        <div class="impact" id="impact">
+            <svg width="60" height="60" viewBox="0 0 60 60">
+                <circle cx="30" cy="30" r="25" fill="none" stroke="#F59E0B" stroke-width="3"/>
+                <circle cx="30" cy="30" r="15" fill="none" stroke="#F59E0B" stroke-width="2"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="attempt-dots" id="dots"></div>
+
+    <div class="learned" id="learned">LEARNED!</div>
+    <div class="flash" id="flash"></div>
+    <button class="restart-btn" id="restartBtn">Try Another Concept</button>
+
+    <div class="sidebar">
+        <h2>The Neuroscience</h2>
+        <div class="sidebar-content">
+            <div class="source" style="margin-top: 0; margin-bottom: 20px; padding-top: 0; padding-bottom: 15px; border-top: none; border-bottom: 1px solid #333;">
+                From: <a href="https://www.amazon.com/Behave-Biology-Humans-Best-Worst/dp/0143110918" target="_blank">
+                    <strong>Behave: The Biology of Humans at Our Best and Worst</strong>
+                </a>
+                <br>Robert M. Sapolsky (pp. 138-139)
+            </div>
+            <p>Extensive research shows that experience that causes repeated firing across a synapse "strengthens" it, with a key role played by the neurotransmitter glutamate.</p>
+
+            <p>Recall how an excitatory neurotransmitter binds to its receptor in the postsynaptic dendritic spine, causing a sodium channel to open; some sodium flows in, causing a blip of excitation, which then spreads. Glutamate signaling works in a fancier way that is essential to learning.</p>
+
+            <p>To simplify considerably, while dendritic spines typically contain only one type of receptor, those responsive to glutamate contain <strong>two</strong>.</p>
+
+            <p>The first (the <em>"non-NMDA"</em>) works in a conventional way—for every little smidgen of glutamate binding to these receptors, a smidgen of sodium flows in, causing a smidgen of excitation.</p>
+
+            <p>The second (the <em>"NMDA"</em>) works in a nonlinear, <strong>threshold</strong> manner. It is usually unresponsive to glutamate. It's not until the non-NMDA has been stimulated over and over by a long train of glutamate release, allowing enough sodium to flow in, that this activates the NMDA receptor. It suddenly responds to all that glutamate, opening its channels, allowing an <strong>explosion of excitation</strong>.</p>
+
+            <p class="highlight">This is the essence of learning.</p>
+
+            <p>The lecturer says something, and it goes in one ear and out the other. The factoid is repeated; same thing. It's repeated enough times and—<em>aha!</em>—the lightbulb goes on and suddenly you get it.</p>
+
+            <p>At a synaptic level, the axon terminal having to repeatedly release glutamate is the lecturer droning on repetitively; the moment when the postsynaptic threshold is passed and the NMDA receptors first activate is the dendritic spine finally getting it.</p>
+        </div>
+    </div>
+
+    <script>
+        const stone = document.getElementById('stone');
+        const impact = document.getElementById('impact');
+        const learned = document.getElementById('learned');
+        const flash = document.getElementById('flash');
+        const restartBtn = document.getElementById('restartBtn');
+        const dotsContainer = document.getElementById('dots');
+
+        const totalAttempts = 5;
+        let currentAttempt = 0;
+        let isAnimating = false;
+
+        // Create attempt dots
+        for (let i = 0; i < totalAttempts; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'attempt-dot';
+            dotsContainer.appendChild(dot);
+        }
+
+        const dots = document.querySelectorAll('.attempt-dot');
+
+        function createParticles() {
+            const colors = ['#F59E0B', '#EF4444', '#8B5CF6', '#666'];
+            for (let i = 0; i < 8; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.left = (580 + Math.random() * 20) + 'px';
+                particle.style.top = (50 + Math.random() * 40) + '%';
+                document.querySelector('.stage').appendChild(particle);
+
+                const angle = (Math.random() - 0.5) * Math.PI;
+                const velocity = 5 + Math.random() * 10;
+                const vx = Math.cos(angle) * velocity * -1;
+                const vy = Math.sin(angle) * velocity;
+
+                let x = parseFloat(particle.style.left);
+                let y = parseFloat(particle.style.top);
+                let opacity = 1;
+
+                const animateParticle = () => {
+                    x += vx;
+                    y += vy * 0.1;
+                    opacity -= 0.05;
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + '%';
+                    particle.style.opacity = opacity;
+
+                    if (opacity > 0) {
+                        requestAnimationFrame(animateParticle);
+                    } else {
+                        particle.remove();
+                    }
+                };
+                requestAnimationFrame(animateParticle);
+            }
+        }
+
+        function doAttempt() {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            // Move stone toward wall
+            stone.classList.add('hitting');
+
+            setTimeout(() => {
+                // Impact!
+                impact.classList.add('show');
+                stone.classList.add('shake');
+                createParticles();
+
+                // Mark dot
+                if (currentAttempt < totalAttempts) {
+                    dots[currentAttempt].classList.add('hit');
+                }
+                currentAttempt++;
+
+                setTimeout(() => {
+                    impact.classList.remove('show');
+                    stone.classList.remove('shake');
+
+                    if (currentAttempt >= totalAttempts) {
+                        // Learning complete!
+                        stone.style.opacity = '0';
+                        stone.style.transform = 'translateY(-50%) scale(0)';
+                        stone.style.transition = 'all 0.3s ease-out';
+
+                        setTimeout(() => {
+                            flash.classList.add('show');
+                            learned.classList.add('show');
+                            dots[totalAttempts - 1].classList.add('learned');
+                            restartBtn.classList.add('show');
+
+                            setTimeout(() => {
+                                flash.classList.remove('show');
+                            }, 500);
+                        }, 200);
+                    } else {
+                        // Bounce back
+                        stone.classList.remove('hitting');
+                        stone.classList.add('bouncing');
+
+                        setTimeout(() => {
+                            stone.classList.remove('bouncing');
+                            isAnimating = false;
+
+                            // Auto-continue
+                            setTimeout(doAttempt, 400);
+                        }, 200);
+                    }
+                }, 150);
+            }, 120);
+        }
+
+        function reset() {
+            currentAttempt = 0;
+            isAnimating = false;
+            stone.style.opacity = '1';
+            stone.style.transform = 'translateY(-50%) scale(1)';
+            stone.classList.remove('hitting', 'bouncing');
+            learned.classList.remove('show');
+            restartBtn.classList.remove('show');
+            dots.forEach(dot => dot.classList.remove('hit', 'learned'));
+
+            setTimeout(doAttempt, 500);
+        }
+
+        restartBtn.addEventListener('click', reset);
+
+        // Start animation after a short delay
+        setTimeout(doAttempt, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Compare Versions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .version {
+            padding: 12px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .version-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .version-desc {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        a {
+            color: #3B82F6;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: auto;
+        }
+        .status.new { background: #22C55E; color: #000; }
+        .status.wip { background: #EAB308; color: #000; }
+        .status.off { background: #666; color: #fff; }
+
+        .original-code {
+            background: #0d0d0d;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #888;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test - Compare Versions</h1>
+    <p class="subtitle">Your original Vue/Nuxt approaches vs my static HTML versions</p>
+
+    <div class="grid">
+        <!-- Binary -->
+        <div class="card">
+            <div class="card-title">
+                Binary
+                <span class="status new">New version</span>
+            </div>
+            <div class="version">
+                <div class="version-label">My Version</div>
+                <div class="version-desc">Glowing lights, tap letters to see binary representation</div>
+                <a href="/posts/binary/index.html">View →</a>
+            </div>
+            <div class="version">
+                <div class="version-label">Your Original</div>
+                <div class="version-desc">Empty template (was placeholder)</div>
+            </div>
+        </div>
+
+        <!-- Taxonomy -->
+        <div class="card">
+            <div class="card-title">
+                Taxonomy
+                <span class="status new">New version</span>
+            </div>
+            <div class="version">
+                <div class="version-label">My Version</div>
+                <div class="version-desc">Vertical path Kingdom→Species with mnemonic</div>
+                <a href="/posts/taxonomy/index.html">View →</a>
+            </div>
+            <div class="version">
+                <div class="version-label">Your Original</div>
+                <div class="version-desc">Large Vue file (1.6MB) - probably had extensive data/visualization</div>
+            </div>
+        </div>
+
+        <!-- Mosquitoes -->
+        <div class="card">
+            <div class="card-title">
+                Mosquitoes
+                <span class="status wip">Wrong concept</span>
+            </div>
+            <div class="version">
+                <div class="version-label">My Version</div>
+                <div class="version-desc">Bed nets & malaria (wrong concept!)</div>
+                <a href="/posts/mosquitoes/index.html">View →</a>
+            </div>
+            <div class="version">
+                <div class="version-label">Your Original</div>
+                <div class="version-desc"><strong>Random walk animation</strong> - probability visualization. Click SVG to draw random path. About probability in circles.</div>
+                <div class="original-code">
+// Random walk: moves ±5px in x or y each step
+for (let r = 0; r < 1000; r++) {
+  const random_x = choices[Math.floor(Math.random() * 2)];
+  const random_y = choices[Math.floor(Math.random() * 2)];
+  // Draw path: L${x},${y}
+}
+// Animated with GSAP DrawSVG
+                </div>
+            </div>
+        </div>
+
+        <!-- Bliss -->
+        <div class="card">
+            <div class="card-title">
+                Bliss Symbolics
+                <span class="status wip">Needs work</span>
+            </div>
+            <div class="version">
+                <div class="version-label">My Version</div>
+                <div class="version-desc">Step-by-step lessons (Earth, Sky, Person, etc.)</div>
+                <a href="/posts/bliss/index.html">View →</a>
+            </div>
+            <div class="version">
+                <div class="version-label">Your Original</div>
+                <div class="version-desc">Carousel with markdown content from GitHub</div>
+            </div>
+            <div class="version">
+                <div class="version-label">Reference Page</div>
+                <div class="version-desc">Full overview with all symbols</div>
+                <a href="/bliss.html">View →</a>
+            </div>
+        </div>
+
+        <!-- Hormones -->
+        <div class="card">
+            <div class="card-title">
+                Hormones
+                <span class="status new">New version</span>
+            </div>
+            <div class="version">
+                <div class="version-label">My Version</div>
+                <div class="version-desc">8 expandable cards (cortisol, insulin, oxytocin, etc.)</div>
+                <a href="/posts/hormones/index.html">View →</a>
+            </div>
+            <div class="version">
+                <div class="version-label">Your Original</div>
+                <div class="version-desc">Vue carousel with markdown content</div>
+            </div>
+        </div>
+
+        <!-- Enzymes -->
+        <div class="card">
+            <div class="card-title">
+                Enzymes
+                <span class="status new">New version</span>
+            </div>
+            <div class="version">
+                <div class="version-label">My Version</div>
+                <div class="version-desc">Visual cards: enzyme → what it breaks down</div>
+                <a href="/posts/enzymes/index.html">View →</a>
+            </div>
+            <div class="version">
+                <div class="version-label">Your Original</div>
+                <div class="version-desc">List of enzyme names (incomplete)</div>
+            </div>
+        </div>
+
+        <!-- Nutrition -->
+        <div class="card">
+            <div class="card-title">
+                Nutrition
+                <span class="status new">New version</span>
+            </div>
+            <div class="version">
+                <div class="version-label">My Version</div>
+                <div class="version-desc">Food grid with tabs, tap for macros</div>
+                <a href="/posts/nutrition/index.html">View →</a>
+            </div>
+            <div class="version">
+                <div class="version-label">Your Original</div>
+                <div class="version-desc">Grid with SVG food icons by category</div>
+            </div>
+        </div>
+
+        <!-- Box Breathing -->
+        <div class="card">
+            <div class="card-title">
+                Box Breathing
+                <span class="status new">Working</span>
+            </div>
+            <div class="version">
+                <div class="version-label">My Version</div>
+                <div class="version-desc">Ball traces square, center circle expands/contracts</div>
+                <a href="/posts/box_breathing/index.html">View →</a>
+            </div>
+        </div>
+
+        <!-- Straight Line -->
+        <div class="card">
+            <div class="card-title">
+                Straight Line Instinct
+                <span class="status wip">Doesn't hit</span>
+            </div>
+            <div class="version">
+                <div class="version-label">My Version</div>
+                <div class="version-desc">Population/birthrate charts, toggle straight line expectation</div>
+                <a href="/straight-line.html">View →</a>
+            </div>
+            <div class="version">
+                <div class="version-label">Notes</div>
+                <div class="version-desc">Informative but doesn't create emotional impact. Needs rethinking.</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

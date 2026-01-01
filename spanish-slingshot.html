@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Slingshot</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+
+        #gameCanvas {
+            display: block;
+        }
+
+        .hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+
+        .current-word {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 100;
+        }
+
+        .target-word {
+            font-size: 36px;
+            font-weight: bold;
+            color: #22C55E;
+            text-shadow: 0 2px 10px rgba(34, 197, 94, 0.5);
+        }
+
+        .target-translation {
+            font-size: 16px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        .result-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: #1a1a2e;
+            border: 2px solid #22C55E;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            z-index: 200;
+            transition: transform 0.3s ease-out;
+        }
+
+        .result-popup.visible {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .result-popup.wrong {
+            border-color: #EF4444;
+        }
+
+        .result-emoji {
+            font-size: 64px;
+            margin-bottom: 15px;
+        }
+
+        .result-text {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .result-popup.wrong .result-text {
+            color: #EF4444;
+        }
+
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        button {
+            background: #F59E0B;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        button:hover {
+            background: #D97706;
+        }
+
+        .slingshot-base {
+            position: absolute;
+            bottom: 100px;
+            left: 80px;
+            width: 60px;
+            height: 120px;
+            z-index: 50;
+        }
+
+        .category-select {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        #emojiOverlays {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .emoji-overlay {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            transform-origin: center;
+            pointer-events: none;
+        }
+
+        .emoji-overlay img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .projectile-label {
+            position: absolute;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="emojiOverlays"></div>
+
+        <div class="hud">
+            <div class="score">Score: <span id="scoreValue">0</span></div>
+        </div>
+
+        <div class="current-word">
+            <div class="target-word" id="targetWord">gato</div>
+            <div class="target-translation" id="targetTranslation">cat</div>
+        </div>
+
+        <div class="controls">
+            <select class="category-select" id="categorySelect">
+                <option value="animals">Animals (70+)</option>
+                <option value="food">Food & Drink (80+)</option>
+                <option value="nature">Nature (40+)</option>
+                <option value="objects">Objects (80+)</option>
+                <option value="places">Places</option>
+                <option value="sports">Sports</option>
+                <option value="body">Body Parts</option>
+                <option value="emotions">Emotions</option>
+                <option value="music">Music & Arts</option>
+                <option value="all">All (300+)</option>
+            </select>
+            <button id="resetBtn">New Round</button>
+        </div>
+
+        <div class="instructions">
+            Drag and release to launch! Hit the matching emoji.
+        </div>
+    </div>
+
+    <script src="spanish-vocab.js"></script>
+    <script>
+        // Use vocabulary from spanish-vocab.js
+        const vocabulary = spanishVocab;
+
+        // Matter.js setup
+        const Engine = Matter.Engine,
+              Render = Matter.Render,
+              Runner = Matter.Runner,
+              Bodies = Matter.Bodies,
+              Body = Matter.Body,
+              Composite = Matter.Composite,
+              Events = Matter.Events;
+
+        const canvas = document.getElementById('gameCanvas');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Create engine
+        const engine = Engine.create();
+        const world = engine.world;
+        engine.world.gravity.y = 1;
+
+        // Create renderer
+        const render = Render.create({
+            canvas: canvas,
+            engine: engine,
+            options: {
+                width: width,
+                height: height,
+                wireframes: false,
+                background: '#1a1a2e'
+            }
+        });
+
+        // Game state
+        let score = 0;
+        let currentTarget = null;
+        let projectile = null;
+        let sling = null;
+        let emojiBlocks = [];
+        let launched = false;
+        let currentCategory = 'animals';
+
+        // Load SVG as image
+        const emojiImages = {};
+        async function loadEmoji(name) {
+            if (emojiImages[name]) return emojiImages[name];
+
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    emojiImages[name] = img;
+                    resolve(img);
+                };
+                img.onerror = () => resolve(null);
+                img.src = `images/emoji/${name}.svg`;
+            });
+        }
+
+        // Create ground and walls
+        function createBoundaries() {
+            const ground = Bodies.rectangle(width / 2, height - 30, width, 60, {
+                isStatic: true,
+                render: { fillStyle: '#2d2d44' }
+            });
+
+            const leftWall = Bodies.rectangle(-30, height / 2, 60, height, {
+                isStatic: true,
+                render: { fillStyle: '#2d2d44' }
+            });
+
+            const rightWall = Bodies.rectangle(width + 30, height / 2, 60, height, {
+                isStatic: true,
+                render: { fillStyle: '#2d2d44' }
+            });
+
+            Composite.add(world, [ground, leftWall, rightWall]);
+        }
+
+        // Create emoji block
+        function createEmojiBlock(vocab, x, y) {
+            const size = 70;
+            const block = Bodies.rectangle(x, y, size, size, {
+                restitution: 0.3,
+                friction: 0.5,
+                render: {
+                    fillStyle: 'transparent',
+                    strokeStyle: '#444',
+                    lineWidth: 2
+                },
+                label: vocab.spanish
+            });
+
+            block.vocabData = vocab;
+
+            // Create HTML overlay for emoji
+            const overlay = document.createElement('div');
+            overlay.className = 'emoji-overlay';
+            overlay.innerHTML = `<img src="images/openmoji/${vocab.code}.svg" alt="${vocab.spanish}" onerror="this.style.display='none'">`;
+            overlay.id = `emoji-${block.id}`;
+            document.getElementById('emojiOverlays').appendChild(overlay);
+
+            block.overlay = overlay;
+
+            return block;
+        }
+
+        // Update emoji overlay positions
+        function updateOverlays() {
+            emojiBlocks.forEach(block => {
+                if (block.overlay) {
+                    const pos = block.position;
+                    const angle = block.angle;
+                    block.overlay.style.left = (pos.x - 30) + 'px';
+                    block.overlay.style.top = (pos.y - 30) + 'px';
+                    block.overlay.style.transform = `rotate(${angle}rad)`;
+                }
+            });
+        }
+
+        // Create stacked emoji blocks
+        function createEmojiStack() {
+            // Clear existing blocks and overlays
+            emojiBlocks.forEach(block => {
+                Composite.remove(world, block);
+                if (block.overlay) block.overlay.remove();
+            });
+            emojiBlocks = [];
+            document.getElementById('emojiOverlays').innerHTML = '';
+
+            // Get vocabulary for current category
+            let vocabList = currentCategory === 'all'
+                ? Object.values(vocabulary).flat()
+                : vocabulary[currentCategory];
+
+            // Shuffle and pick 5-6 words
+            vocabList = [...vocabList].sort(() => Math.random() - 0.5).slice(0, 6);
+
+            // Pick target from the list
+            currentTarget = vocabList[Math.floor(Math.random() * vocabList.length)];
+            document.getElementById('targetWord').textContent = currentTarget.spanish;
+            document.getElementById('targetTranslation').textContent = currentTarget.english;
+
+            // Create stacked blocks on the right side - vertical tower
+            const baseX = width - 200;
+            const baseY = height - 90;
+            const blockSize = 70;
+
+            // Create vertical stack
+            for (let i = 0; i < vocabList.length; i++) {
+                const x = baseX;
+                const y = baseY - (i * blockSize);
+                const block = createEmojiBlock(vocabList[i], x, y);
+                emojiBlocks.push(block);
+                Composite.add(world, block);
+            }
+        }
+
+        // Slingshot state
+        const slingOrigin = { x: 250, y: 0 };
+        let isDragging = false;
+        let dragStart = null;
+
+        // Create projectile (the word ball)
+        function createProjectile() {
+            if (projectile) {
+                Composite.remove(world, projectile);
+            }
+
+            slingOrigin.y = height - 200;
+
+            projectile = Bodies.circle(slingOrigin.x, slingOrigin.y, 30, {
+                restitution: 0.8,
+                friction: 0.3,
+                density: 0.005,
+                isStatic: true,
+                render: {
+                    fillStyle: '#22C55E',
+                    strokeStyle: '#16A34A',
+                    lineWidth: 3
+                },
+                label: 'projectile'
+            });
+
+            Composite.add(world, projectile);
+            launched = false;
+            isDragging = false;
+        }
+
+        // Draw slingshot band
+        function drawSlingshot() {
+            const ctx = render.context;
+            if (!projectile || launched) return;
+
+            const pos = projectile.position;
+
+            // Draw band from origin to ball
+            ctx.beginPath();
+            ctx.moveTo(slingOrigin.x - 20, slingOrigin.y);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.lineTo(slingOrigin.x + 20, slingOrigin.y);
+            ctx.strokeStyle = '#F59E0B';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+
+            // Draw slingshot base
+            ctx.beginPath();
+            ctx.moveTo(slingOrigin.x - 25, slingOrigin.y);
+            ctx.lineTo(slingOrigin.x - 20, slingOrigin.y + 60);
+            ctx.moveTo(slingOrigin.x + 25, slingOrigin.y);
+            ctx.lineTo(slingOrigin.x + 20, slingOrigin.y + 60);
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 8;
+            ctx.stroke();
+        }
+
+        // Mouse/touch control
+        function setupMouse() {
+            const getPos = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            };
+
+            const onStart = (e) => {
+                if (launched) return;
+                const pos = getPos(e);
+                const dist = Math.hypot(pos.x - projectile.position.x, pos.y - projectile.position.y);
+                if (dist < 50) {
+                    isDragging = true;
+                    dragStart = pos;
+                    e.preventDefault();
+                }
+            };
+
+            const onMove = (e) => {
+                if (!isDragging || launched) return;
+                const pos = getPos(e);
+
+                // Limit drag distance
+                const dx = pos.x - slingOrigin.x;
+                const dy = pos.y - slingOrigin.y;
+                const dist = Math.hypot(dx, dy);
+                const maxDist = 150;
+
+                if (dist > maxDist) {
+                    const angle = Math.atan2(dy, dx);
+                    pos.x = slingOrigin.x + Math.cos(angle) * maxDist;
+                    pos.y = slingOrigin.y + Math.sin(angle) * maxDist;
+                }
+
+                Body.setPosition(projectile, pos);
+                e.preventDefault();
+            };
+
+            const onEnd = (e) => {
+                if (!isDragging || launched) return;
+                isDragging = false;
+
+                // Calculate launch velocity based on pull distance
+                const pos = projectile.position;
+                const dx = slingOrigin.x - pos.x;
+                const dy = slingOrigin.y - pos.y;
+
+                // Make it dynamic (not static) and apply velocity
+                Body.setStatic(projectile, false);
+
+                const power = 0.3;
+                Body.setVelocity(projectile, { x: dx * power, y: dy * power });
+
+                launched = true;
+            };
+
+            canvas.addEventListener('mousedown', onStart);
+            canvas.addEventListener('mousemove', onMove);
+            canvas.addEventListener('mouseup', onEnd);
+            canvas.addEventListener('touchstart', onStart);
+            canvas.addEventListener('touchmove', onMove);
+            canvas.addEventListener('touchend', onEnd);
+        }
+
+        // Check for collisions
+        function setupCollisionDetection() {
+            Events.on(engine, 'collisionStart', (event) => {
+                event.pairs.forEach(pair => {
+                    const bodyA = pair.bodyA;
+                    const bodyB = pair.bodyB;
+
+                    // Check if projectile hit an emoji block
+                    let hitBlock = null;
+                    if (bodyA.label === 'projectile' && bodyB.vocabData) {
+                        hitBlock = bodyB;
+                    } else if (bodyB.label === 'projectile' && bodyA.vocabData) {
+                        hitBlock = bodyA;
+                    }
+
+                    if (hitBlock && launched) {
+                        // Check if it's the correct target
+                        if (hitBlock.vocabData.spanish === currentTarget.spanish) {
+                            handleCorrectHit(hitBlock);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Explosion particles
+        let particles = [];
+
+        function createExplosion(x, y, color = '#F59E0B') {
+            const numParticles = 20;
+            for (let i = 0; i < numParticles; i++) {
+                const angle = (Math.PI * 2 * i) / numParticles + Math.random() * 0.5;
+                const speed = 5 + Math.random() * 10;
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1,
+                    size: 5 + Math.random() * 10,
+                    color: color
+                });
+            }
+        }
+
+        function updateParticles() {
+            const ctx = render.context;
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.3; // gravity
+                p.life -= 0.02;
+
+                if (p.life > 0) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.life;
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        // Handle correct hit
+        function handleCorrectHit(block) {
+            const pos = block.position;
+
+            // Create explosion
+            createExplosion(pos.x, pos.y, '#22C55E');
+            createExplosion(pos.x, pos.y, '#F59E0B');
+
+            // Remove the block
+            Composite.remove(world, block);
+            if (block.overlay) block.overlay.remove();
+            emojiBlocks = emojiBlocks.filter(b => b !== block);
+
+            // Update score
+            score += 100;
+            document.getElementById('scoreValue').textContent = score;
+
+            // Flash the score
+            const scoreEl = document.getElementById('scoreValue');
+            scoreEl.style.transform = 'scale(1.5)';
+            scoreEl.style.transition = 'transform 0.2s';
+            setTimeout(() => {
+                scoreEl.style.transform = 'scale(1)';
+            }, 200);
+
+            // Pick new target from remaining blocks, or start new round
+            if (emojiBlocks.length > 0) {
+                const newTarget = emojiBlocks[Math.floor(Math.random() * emojiBlocks.length)];
+                currentTarget = newTarget.vocabData;
+                document.getElementById('targetWord').textContent = currentTarget.spanish;
+                document.getElementById('targetTranslation').textContent = currentTarget.english;
+            } else {
+                // All blocks cleared! Bonus and new round
+                score += 500;
+                document.getElementById('scoreValue').textContent = score;
+                setTimeout(newRound, 1000);
+            }
+
+            // Reset projectile for next shot
+            setTimeout(createProjectile, 500);
+        }
+
+        // Start new round
+        function newRound() {
+            createEmojiStack();
+            createProjectile();
+        }
+
+        // Reset after miss
+        let missCheckTimeout = null;
+
+        function checkMiss() {
+            if (launched && projectile && !missCheckTimeout) {
+                const vel = projectile.velocity;
+                const pos = projectile.position;
+
+                // If projectile has stopped moving or is on the ground or went off screen
+                const stopped = Math.abs(vel.x) < 0.5 && Math.abs(vel.y) < 0.5;
+                const onGround = pos.y > height - 100;
+                const offScreen = pos.x < -50 || pos.x > width + 50 || pos.y > height + 50;
+
+                if ((stopped && onGround) || offScreen) {
+                    missCheckTimeout = setTimeout(() => {
+                        createProjectile();
+                        missCheckTimeout = null;
+                    }, 800);
+                }
+            }
+        }
+
+        // Game loop
+        Events.on(engine, 'afterUpdate', () => {
+            updateOverlays();
+            checkMiss();
+        });
+
+        // Draw slingshot and particles on top of render
+        Events.on(render, 'afterRender', () => {
+            drawSlingshot();
+            updateParticles();
+        });
+
+        // Initialize game
+        function init() {
+            createBoundaries();
+            setupMouse();
+            setupCollisionDetection();
+            newRound();
+
+            // Start engine and renderer
+            Runner.run(Runner.create(), engine);
+            Render.run(render);
+        }
+
+        // Event listeners
+        document.getElementById('resetBtn').addEventListener('click', newRound);
+        document.getElementById('categorySelect').addEventListener('change', (e) => {
+            currentCategory = e.target.value;
+            newRound();
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            render.canvas.width = window.innerWidth;
+            render.canvas.height = window.innerHeight;
+        });
+
+        // Start game
+        init();
+    </script>
+</body>
+</html>

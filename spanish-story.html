@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Story Mode</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 20px 40px;
+            border-bottom: 1px solid #222;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .back-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 20px;
+            background: linear-gradient(135deg, #DC2626 0%, #F59E0B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .story-select {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .story-container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .sentence-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 50px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .spanish-sentence {
+            font-size: 32px;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 20px;
+            min-height: 50px;
+        }
+
+        .word {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease-out;
+            margin: 0 6px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .word.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .word.has-image {
+            color: #F59E0B;
+            border-bottom: 2px dotted #F59E0B;
+        }
+
+        .word.has-image:hover {
+            color: #FBBF24;
+        }
+
+        .english-sentence {
+            font-size: 18px;
+            color: #666;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .english-sentence.visible {
+            opacity: 1;
+        }
+
+        .image-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: #1a1a1a;
+            border: 2px solid #F59E0B;
+            border-radius: 16px;
+            padding: 20px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease-out;
+            text-align: center;
+            max-width: 350px;
+        }
+
+        .image-popup.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+
+        .image-popup img {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .image-popup .vocab-spanish {
+            font-size: 28px;
+            color: #F59E0B;
+            margin-bottom: 5px;
+        }
+
+        .image-popup .vocab-english {
+            font-size: 16px;
+            color: #888;
+        }
+
+        .image-popup .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .image-popup .close-btn:hover {
+            color: #fff;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button {
+            background: #F59E0B;
+            color: #000;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #D97706;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button.secondary {
+            background: #222;
+            color: #fff;
+            border: 1px solid #333;
+        }
+
+        button.secondary:hover {
+            background: #333;
+        }
+
+        .progress {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #333;
+            transition: all 0.3s;
+        }
+
+        .progress-dot.active {
+            background: #F59E0B;
+            transform: scale(1.2);
+        }
+
+        .progress-dot.completed {
+            background: #22C55E;
+        }
+
+        .story-title {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .sentence-counter {
+            font-size: 13px;
+            color: #555;
+            margin-top: 20px;
+        }
+
+        .loading-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .loading-indicator.loading::after {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #333;
+            border-top-color: #F59E0B;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hint {
+            font-size: 13px;
+            color: #555;
+            margin-top: 15px;
+        }
+
+        .hint span {
+            color: #F59E0B;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="spanish.html" class="back-link">← Spanish Tools</a>
+        <h1>Story Mode</h1>
+        <select class="story-select" id="storySelect">
+            <option value="morning">La Mañana de María</option>
+            <option value="market">El Mercado</option>
+            <option value="park">En el Parque</option>
+        </select>
+    </div>
+
+    <div class="main-content">
+        <div class="story-container">
+            <div class="story-title" id="storyTitle">La Mañana de María</div>
+
+            <div class="progress" id="progress"></div>
+
+            <div class="sentence-box">
+                <div class="loading-indicator" id="loadingIndicator"></div>
+                <div class="spanish-sentence" id="spanishSentence"></div>
+                <div class="english-sentence" id="englishSentence"></div>
+                <div class="hint">Click <span>highlighted words</span> to see images</div>
+            </div>
+
+            <div class="controls">
+                <button class="secondary" id="prevBtn" disabled>← Previous</button>
+                <button id="nextBtn">Start Story</button>
+            </div>
+
+            <div class="sentence-counter" id="sentenceCounter"></div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="image-popup" id="imagePopup">
+        <button class="close-btn" id="closePopup">×</button>
+        <img id="popupImage" src="" alt="">
+        <div class="vocab-spanish" id="popupSpanish"></div>
+        <div class="vocab-english" id="popupEnglish"></div>
+    </div>
+
+    <script src="freepik-api.js"></script>
+    <script>
+        // Stories data
+        const stories = {
+            morning: {
+                title: "La Mañana de María",
+                sentences: [
+                    {
+                        spanish: "María se despierta en su cama.",
+                        english: "María wakes up in her bed.",
+                        vocab: { "cama": { en: "bed", search: "bed flat color" } }
+                    },
+                    {
+                        spanish: "Ella mira por la ventana y ve el sol.",
+                        english: "She looks through the window and sees the sun.",
+                        vocab: {
+                            "ventana": { en: "window", search: "window flat color" },
+                            "sol": { en: "sun", search: "sun flat color" }
+                        }
+                    },
+                    {
+                        spanish: "María va a la cocina para hacer café.",
+                        english: "María goes to the kitchen to make coffee.",
+                        vocab: {
+                            "cocina": { en: "kitchen", search: "kitchen flat color" },
+                            "café": { en: "coffee", search: "coffee cup flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Ella come pan con mantequilla.",
+                        english: "She eats bread with butter.",
+                        vocab: {
+                            "pan": { en: "bread", search: "bread flat color" },
+                            "mantequilla": { en: "butter", search: "butter flat color" }
+                        }
+                    },
+                    {
+                        spanish: "El gato quiere leche también.",
+                        english: "The cat wants milk too.",
+                        vocab: {
+                            "gato": { en: "cat", search: "cat flat color" },
+                            "leche": { en: "milk", search: "milk flat color" }
+                        }
+                    },
+                    {
+                        spanish: "María busca sus llaves y su bolso.",
+                        english: "María looks for her keys and her purse.",
+                        vocab: {
+                            "llaves": { en: "keys", search: "key flat color" },
+                            "bolso": { en: "purse/bag", search: "handbag flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Ella sale de la casa y camina a la parada de autobús.",
+                        english: "She leaves the house and walks to the bus stop.",
+                        vocab: {
+                            "casa": { en: "house", search: "house flat color" },
+                            "autobús": { en: "bus", search: "bus flat color" }
+                        }
+                    },
+                    {
+                        spanish: "El autobús llega y María sube.",
+                        english: "The bus arrives and María gets on.",
+                        vocab: {}
+                    },
+                    {
+                        spanish: "Ella lee un libro durante el viaje.",
+                        english: "She reads a book during the trip.",
+                        vocab: {
+                            "libro": { en: "book", search: "book flat color" }
+                        }
+                    },
+                    {
+                        spanish: "María llega a su oficina. ¡Buen día!",
+                        english: "María arrives at her office. Good day!",
+                        vocab: {
+                            "oficina": { en: "office", search: "office flat color" }
+                        }
+                    }
+                ]
+            },
+            market: {
+                title: "El Mercado",
+                sentences: [
+                    {
+                        spanish: "Pedro va al mercado con una bolsa grande.",
+                        english: "Pedro goes to the market with a big bag.",
+                        vocab: {
+                            "mercado": { en: "market", search: "market flat color" },
+                            "bolsa": { en: "bag", search: "shopping bag flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Él necesita comprar frutas y verduras.",
+                        english: "He needs to buy fruits and vegetables.",
+                        vocab: {
+                            "frutas": { en: "fruits", search: "fruit flat color" },
+                            "verduras": { en: "vegetables", search: "vegetables flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Primero, Pedro compra manzanas rojas.",
+                        english: "First, Pedro buys red apples.",
+                        vocab: {
+                            "manzanas": { en: "apples", search: "apple flat color" }
+                        }
+                    },
+                    {
+                        spanish: "También compra naranjas y plátanos.",
+                        english: "He also buys oranges and bananas.",
+                        vocab: {
+                            "naranjas": { en: "oranges", search: "orange fruit flat color" },
+                            "plátanos": { en: "bananas", search: "banana flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Una señora vende tomates frescos.",
+                        english: "A lady sells fresh tomatoes.",
+                        vocab: {
+                            "tomates": { en: "tomatoes", search: "tomato flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Pedro compra un kilo de tomates.",
+                        english: "Pedro buys a kilo of tomatoes.",
+                        vocab: {}
+                    },
+                    {
+                        spanish: "Él ve pescado fresco en otro puesto.",
+                        english: "He sees fresh fish at another stand.",
+                        vocab: {
+                            "pescado": { en: "fish", search: "fish flat color" }
+                        }
+                    },
+                    {
+                        spanish: "El pescado es para la cena de esta noche.",
+                        english: "The fish is for tonight's dinner.",
+                        vocab: {
+                            "cena": { en: "dinner", search: "dinner flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Pedro paga con dinero en efectivo.",
+                        english: "Pedro pays with cash.",
+                        vocab: {
+                            "dinero": { en: "money", search: "money flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Él regresa a casa con la bolsa llena.",
+                        english: "He returns home with the bag full.",
+                        vocab: {
+                            "casa": { en: "house/home", search: "house flat color" }
+                        }
+                    }
+                ]
+            },
+            park: {
+                title: "En el Parque",
+                sentences: [
+                    {
+                        spanish: "Es un día soleado y Ana va al parque.",
+                        english: "It's a sunny day and Ana goes to the park.",
+                        vocab: {
+                            "parque": { en: "park", search: "park flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Ella lleva a su perro, que se llama Max.",
+                        english: "She brings her dog, who is named Max.",
+                        vocab: {
+                            "perro": { en: "dog", search: "dog flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Los árboles tienen hojas verdes.",
+                        english: "The trees have green leaves.",
+                        vocab: {
+                            "árboles": { en: "trees", search: "tree flat color" },
+                            "hojas": { en: "leaves", search: "leaf flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Ana se sienta en un banco de madera.",
+                        english: "Ana sits on a wooden bench.",
+                        vocab: {
+                            "banco": { en: "bench", search: "bench flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Hay niños jugando con una pelota.",
+                        english: "There are children playing with a ball.",
+                        vocab: {
+                            "niños": { en: "children", search: "children flat color" },
+                            "pelota": { en: "ball", search: "ball flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Max corre detrás de las mariposas.",
+                        english: "Max runs after the butterflies.",
+                        vocab: {
+                            "mariposas": { en: "butterflies", search: "butterfly flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Un pájaro canta en la rama.",
+                        english: "A bird sings on the branch.",
+                        vocab: {
+                            "pájaro": { en: "bird", search: "bird flat color" },
+                            "rama": { en: "branch", search: "branch flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Ana come un helado de chocolate.",
+                        english: "Ana eats a chocolate ice cream.",
+                        vocab: {
+                            "helado": { en: "ice cream", search: "ice cream flat color" }
+                        }
+                    },
+                    {
+                        spanish: "El cielo se pone anaranjado al atardecer.",
+                        english: "The sky turns orange at sunset.",
+                        vocab: {
+                            "cielo": { en: "sky", search: "sunset flat color" }
+                        }
+                    },
+                    {
+                        spanish: "Ana y Max regresan a casa, felices.",
+                        english: "Ana and Max return home, happy.",
+                        vocab: {}
+                    }
+                ]
+            }
+        };
+
+        // State
+        let currentStory = 'morning';
+        let currentSentenceIndex = -1;
+        let imageCache = new Map();
+        let freepik = null;
+
+        // DOM elements
+        const storySelect = document.getElementById('storySelect');
+        const storyTitle = document.getElementById('storyTitle');
+        const progress = document.getElementById('progress');
+        const spanishSentence = document.getElementById('spanishSentence');
+        const englishSentence = document.getElementById('englishSentence');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const sentenceCounter = document.getElementById('sentenceCounter');
+        const overlay = document.getElementById('overlay');
+        const imagePopup = document.getElementById('imagePopup');
+        const popupImage = document.getElementById('popupImage');
+        const popupSpanish = document.getElementById('popupSpanish');
+        const popupEnglish = document.getElementById('popupEnglish');
+        const closePopup = document.getElementById('closePopup');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        // Initialize Freepik API
+        try {
+            freepik = new FreepikAPI('', true); // Using proxy
+        } catch (e) {
+            console.log('Freepik API not available, using placeholder images');
+        }
+
+        // Build progress dots
+        function buildProgress() {
+            const story = stories[currentStory];
+            progress.innerHTML = story.sentences.map((_, i) =>
+                `<div class="progress-dot" data-index="${i}"></div>`
+            ).join('');
+        }
+
+        // Update progress dots
+        function updateProgress() {
+            const dots = progress.querySelectorAll('.progress-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active', 'completed');
+                if (i < currentSentenceIndex) {
+                    dot.classList.add('completed');
+                } else if (i === currentSentenceIndex) {
+                    dot.classList.add('active');
+                }
+            });
+        }
+
+        // Display sentence with word-by-word animation
+        async function displaySentence(index) {
+            const story = stories[currentStory];
+            const sentence = story.sentences[index];
+
+            // Clear previous
+            spanishSentence.innerHTML = '';
+            englishSentence.classList.remove('visible');
+
+            // Split into words
+            const words = sentence.spanish.split(' ');
+
+            // Create word spans
+            words.forEach((word, i) => {
+                const cleanWord = word.replace(/[.,!?¡¿]/g, '');
+                const hasImage = sentence.vocab[cleanWord] !== undefined;
+
+                const span = document.createElement('span');
+                span.className = 'word' + (hasImage ? ' has-image' : '');
+                span.textContent = word;
+                span.dataset.word = cleanWord;
+
+                if (hasImage) {
+                    span.addEventListener('click', () => showVocabPopup(cleanWord, sentence.vocab[cleanWord]));
+                }
+
+                spanishSentence.appendChild(span);
+            });
+
+            // Animate words appearing
+            const wordSpans = spanishSentence.querySelectorAll('.word');
+            for (let i = 0; i < wordSpans.length; i++) {
+                await delay(150);
+                wordSpans[i].classList.add('visible');
+            }
+
+            // Show English after a pause
+            await delay(500);
+            englishSentence.textContent = sentence.english;
+            englishSentence.classList.add('visible');
+
+            // Preload images for vocab words
+            preloadImages(sentence.vocab);
+
+            // Update counter
+            sentenceCounter.textContent = `Sentence ${index + 1} of ${story.sentences.length}`;
+        }
+
+        // Get 512px URL from 128px URL
+        function get512Url(url) {
+            return url.replace('/128/', '/512/');
+        }
+
+        // Preload images for vocabulary
+        async function preloadImages(vocab) {
+            if (!freepik) return;
+
+            for (const [spanish, data] of Object.entries(vocab)) {
+                if (!imageCache.has(spanish)) {
+                    loadingIndicator.classList.add('loading');
+                    loadingIndicator.textContent = 'Loading images';
+
+                    try {
+                        const result = await freepik.searchAndGetIcon(data.search, 512);
+                        if (result && result.pngUrl) {
+                            // Convert to 512px version
+                            imageCache.set(spanish, get512Url(result.pngUrl));
+                        }
+                    } catch (e) {
+                        console.log('Could not load image for', spanish);
+                    }
+                }
+            }
+
+            loadingIndicator.classList.remove('loading');
+            loadingIndicator.textContent = '';
+        }
+
+        // Show vocabulary popup with image
+        async function showVocabPopup(spanish, data) {
+            popupSpanish.textContent = spanish;
+            popupEnglish.textContent = data.en;
+
+            // Try to get cached image or load new one
+            let imageUrl = imageCache.get(spanish);
+
+            if (!imageUrl && freepik) {
+                try {
+                    const result = await freepik.searchAndGetIcon(data.search, 512);
+                    if (result && result.pngUrl) {
+                        imageUrl = get512Url(result.pngUrl);
+                        imageCache.set(spanish, imageUrl);
+                    }
+                } catch (e) {
+                    console.log('Could not load image');
+                }
+            }
+
+            // Use placeholder if no image
+            if (imageUrl) {
+                popupImage.src = imageUrl;
+            } else {
+                // Simple colored placeholder
+                popupImage.src = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="%23222" width="200" height="200"/><text x="100" y="100" text-anchor="middle" fill="%23F59E0B" font-size="48">${spanish.charAt(0).toUpperCase()}</text></svg>`;
+            }
+
+            overlay.classList.add('visible');
+            imagePopup.classList.add('visible');
+        }
+
+        // Close popup
+        function closeVocabPopup() {
+            overlay.classList.remove('visible');
+            imagePopup.classList.remove('visible');
+        }
+
+        // Navigation
+        function goNext() {
+            const story = stories[currentStory];
+
+            if (currentSentenceIndex < story.sentences.length - 1) {
+                currentSentenceIndex++;
+                displaySentence(currentSentenceIndex);
+                updateProgress();
+                updateButtons();
+            }
+        }
+
+        function goPrev() {
+            if (currentSentenceIndex > 0) {
+                currentSentenceIndex--;
+                displaySentence(currentSentenceIndex);
+                updateProgress();
+                updateButtons();
+            }
+        }
+
+        function updateButtons() {
+            const story = stories[currentStory];
+
+            prevBtn.disabled = currentSentenceIndex <= 0;
+
+            if (currentSentenceIndex === -1) {
+                nextBtn.textContent = 'Start Story';
+            } else if (currentSentenceIndex >= story.sentences.length - 1) {
+                nextBtn.textContent = 'The End!';
+                nextBtn.disabled = true;
+            } else {
+                nextBtn.textContent = 'Next →';
+                nextBtn.disabled = false;
+            }
+        }
+
+        // Change story
+        function changeStory(storyKey) {
+            currentStory = storyKey;
+            currentSentenceIndex = -1;
+
+            const story = stories[storyKey];
+            storyTitle.textContent = story.title;
+
+            spanishSentence.innerHTML = '<span class="word visible" style="color: #666;">Click "Start Story" to begin</span>';
+            englishSentence.textContent = '';
+            englishSentence.classList.remove('visible');
+            sentenceCounter.textContent = '';
+
+            buildProgress();
+            updateButtons();
+        }
+
+        // Utility
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Event listeners
+        nextBtn.addEventListener('click', goNext);
+        prevBtn.addEventListener('click', goPrev);
+        closePopup.addEventListener('click', closeVocabPopup);
+        overlay.addEventListener('click', closeVocabPopup);
+        storySelect.addEventListener('change', (e) => changeStory(e.target.value));
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                if (!nextBtn.disabled) goNext();
+            } else if (e.key === 'ArrowLeft') {
+                if (!prevBtn.disabled) goPrev();
+            } else if (e.key === 'Escape') {
+                closeVocabPopup();
+            }
+        });
+
+        // Initialize
+        changeStory('morning');
+    </script>
+</body>
+</html>

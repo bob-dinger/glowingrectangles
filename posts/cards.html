@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deck of Cards</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .page-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .deck-container {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 60px;
+        }
+
+        .suit-section {
+            margin-bottom: 30px;
+        }
+
+        .suit-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suit-label.hearts, .suit-label.diamonds {
+            color: #EF4444;
+        }
+
+        .suit-label.spades, .suit-label.clubs {
+            color: #888;
+        }
+
+        .cards-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            width: 70px;
+            height: 100px;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            background: #fff;
+            padding: 4px;
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            z-index: 10;
+        }
+
+        .card img {
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            margin: -2px;
+            object-fit: cover;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: #222;
+            color: #fff;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #333;
+            border-color: #F59E0B;
+        }
+
+        button.active {
+            background: #F59E0B;
+            color: #000;
+            border-color: #F59E0B;
+        }
+
+        .shuffle-animation .card {
+            animation: shuffle 0.5s ease-out;
+        }
+
+        @keyframes shuffle {
+            0% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(20px) rotate(5deg); }
+            50% { transform: translateX(-10px) rotate(-3deg); }
+            75% { transform: translateX(5px) rotate(2deg); }
+            100% { transform: translateX(0) rotate(0deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <h1>Deck of Cards</h1>
+        <p class="subtitle">52 cards, 4 suits</p>
+
+        <div class="controls">
+            <button id="shuffleBtn">Shuffle</button>
+            <button id="sortBtn" class="active">Sort by Suit</button>
+        </div>
+
+        <div class="deck-container" id="deckContainer">
+            <!-- Cards will be inserted here -->
+        </div>
+    </div>
+
+    <script>
+        const CARD_PATH = '../images/tekeye_cards/svg_playing_cards/fronts/';
+
+        const suits = ['spades', 'hearts', 'diamonds', 'clubs'];
+        const suitNames = { spades: 'Spades', hearts: 'Hearts', diamonds: 'Diamonds', clubs: 'Clubs' };
+        const ranks = ['ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king'];
+        const rankNames = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+        let deck = [];
+        let sorted = true;
+
+        // Build the deck
+        function buildDeck() {
+            deck = [];
+            for (const suit of suits) {
+                for (let i = 0; i < ranks.length; i++) {
+                    deck.push({
+                        suit: suit,
+                        rank: ranks[i],
+                        rankName: rankNames[i],
+                        file: `${suit}_${ranks[i]}.svg`
+                    });
+                }
+            }
+        }
+
+        // Shuffle the deck
+        function shuffleDeck() {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+
+        // Sort deck by suit
+        function sortDeck() {
+            deck.sort((a, b) => {
+                const suitDiff = suits.indexOf(a.suit) - suits.indexOf(b.suit);
+                if (suitDiff !== 0) return suitDiff;
+                return ranks.indexOf(a.rank) - ranks.indexOf(b.rank);
+            });
+        }
+
+        // Render the deck
+        function renderDeck() {
+            const container = document.getElementById('deckContainer');
+
+            if (sorted) {
+                // Render by suit sections
+                let html = '';
+                for (const suit of suits) {
+                    const suitCards = deck.filter(c => c.suit === suit);
+                    html += `
+                        <div class="suit-section">
+                            <div class="suit-label ${suit}s">${suitNames[suit]}</div>
+                            <div class="cards-row">
+                                ${suitCards.map(card => createCardHTML(card)).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+            } else {
+                // Render shuffled (single row, wrapped)
+                container.innerHTML = `
+                    <div class="cards-row">
+                        ${deck.map(card => createCardHTML(card)).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        function createCardHTML(card) {
+            return `
+                <div class="card">
+                    <img src="${CARD_PATH}${card.file}" alt="${card.rankName} of ${suitNames[card.suit]}">
+                </div>
+            `;
+        }
+
+        // Event listeners
+        document.getElementById('shuffleBtn').addEventListener('click', () => {
+            sorted = false;
+            shuffleDeck();
+            document.getElementById('sortBtn').classList.remove('active');
+            document.getElementById('shuffleBtn').classList.add('active');
+
+            const container = document.getElementById('deckContainer');
+            container.classList.add('shuffle-animation');
+            renderDeck();
+
+            setTimeout(() => {
+                container.classList.remove('shuffle-animation');
+            }, 500);
+        });
+
+        document.getElementById('sortBtn').addEventListener('click', () => {
+            sorted = true;
+            sortDeck();
+            document.getElementById('shuffleBtn').classList.remove('active');
+            document.getElementById('sortBtn').classList.add('active');
+            renderDeck();
+        });
+
+        // Initialize
+        buildDeck();
+        renderDeck();
+    </script>
+</body>
+</html>

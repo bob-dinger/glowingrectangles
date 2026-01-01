@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theory of Mind</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .stage {
+            width: 600px;
+            height: 350px;
+            background: #1a1a2e;
+            border-radius: 12px;
+            position: relative;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .floor {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: #2d2d44;
+        }
+
+        .container-obj {
+            position: absolute;
+            bottom: 60px;
+            width: 80px;
+            height: 70px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .container-obj:hover {
+            transform: scale(1.05);
+        }
+
+        .basket {
+            left: 120px;
+            background: #8B4513;
+            border-radius: 0 0 20px 20px;
+            border: 4px solid #654321;
+        }
+
+        .basket::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 20px;
+            border: 4px solid #654321;
+            border-bottom: none;
+            border-radius: 30px 30px 0 0;
+            background: transparent;
+        }
+
+        .box {
+            right: 120px;
+            background: #4169E1;
+            border: 4px solid #2a4a9e;
+            border-radius: 4px;
+        }
+
+        .box-lid {
+            position: absolute;
+            right: 120px;
+            bottom: 130px;
+            width: 88px;
+            height: 15px;
+            background: #5179F1;
+            border: 4px solid #2a4a9e;
+            border-radius: 4px;
+            transform-origin: left center;
+            transition: transform 0.5s;
+        }
+
+        .box-lid.open {
+            transform: rotate(-120deg);
+        }
+
+        .marble {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c0392b);
+            border-radius: 50%;
+            transition: all 0.8s ease-in-out;
+            z-index: 10;
+        }
+
+        .marble.in-basket {
+            left: 148px;
+            bottom: 80px;
+        }
+
+        .marble.in-box {
+            right: 148px;
+            bottom: 80px;
+            left: auto;
+        }
+
+        .marble.hidden {
+            opacity: 0.3;
+        }
+
+        .person {
+            position: absolute;
+            bottom: 60px;
+            transition: all 1s ease-in-out;
+        }
+
+        .person-body {
+            width: 40px;
+            height: 80px;
+            position: relative;
+        }
+
+        .person-head {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .person-torso {
+            width: 30px;
+            height: 35px;
+            position: absolute;
+            top: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px 5px 0 0;
+        }
+
+        .person-legs {
+            position: absolute;
+            top: 65px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 20px;
+        }
+
+        .person-leg {
+            width: 10px;
+            height: 20px;
+            position: absolute;
+            bottom: 0;
+            border-radius: 0 0 3px 3px;
+        }
+
+        .person-leg.left { left: 2px; }
+        .person-leg.right { right: 2px; }
+
+        .sally .person-head { background: #FFD93D; }
+        .sally .person-torso { background: #E91E63; }
+        .sally .person-leg { background: #1565C0; }
+
+        .anne .person-head { background: #8D6E63; }
+        .anne .person-torso { background: #4CAF50; }
+        .anne .person-leg { background: #5D4037; }
+
+        .sally {
+            left: 250px;
+        }
+
+        .sally.left-room {
+            left: -80px;
+            opacity: 0;
+        }
+
+        .anne {
+            right: 250px;
+        }
+
+        .person-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .sally .person-label { color: #FFD93D; }
+        .anne .person-label { color: #4CAF50; }
+
+        .thought-bubble {
+            position: absolute;
+            background: white;
+            border-radius: 20px;
+            padding: 10px 15px;
+            color: #333;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 20;
+        }
+
+        .thought-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 20px;
+            width: 15px;
+            height: 15px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .thought-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 15px;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .thought-bubble.visible {
+            opacity: 1;
+        }
+
+        .sally-thought {
+            top: 50px;
+            left: 200px;
+        }
+
+        .anne-thought {
+            top: 50px;
+            right: 150px;
+        }
+
+        .narration {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 600px;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .narration-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: #F59E0B;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #D97706;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button.secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        button.secondary:hover {
+            background: #444;
+        }
+
+        .question-box {
+            background: #1a1a2e;
+            border: 2px solid #F59E0B;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 600px;
+            text-align: center;
+            display: none;
+        }
+
+        .question-box.visible {
+            display: block;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #F59E0B;
+        }
+
+        .answer-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .answer-btn {
+            padding: 15px 30px;
+            font-size: 16px;
+            min-width: 150px;
+        }
+
+        .answer-btn.basket-btn {
+            background: #8B4513;
+        }
+
+        .answer-btn.box-btn {
+            background: #4169E1;
+        }
+
+        .result-box {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 600px;
+            display: none;
+        }
+
+        .result-box.visible {
+            display: block;
+        }
+
+        .result-box.correct {
+            border: 2px solid #22C55E;
+        }
+
+        .result-box.incorrect {
+            border: 2px solid #EF4444;
+        }
+
+        .result-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .result-box.correct .result-title {
+            color: #22C55E;
+        }
+
+        .result-box.incorrect .result-title {
+            color: #EF4444;
+        }
+
+        .result-explanation {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.7;
+        }
+
+        /* Drawer */
+        .drawer {
+            width: 350px;
+            background: #111;
+            border-left: 1px solid #222;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .drawer-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+
+        .drawer-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            line-height: 1.8;
+            color: #999;
+        }
+
+        .info-text p {
+            margin-bottom: 15px;
+        }
+
+        .info-text strong {
+            color: #ccc;
+        }
+
+        .age-chart {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #222;
+        }
+
+        .age-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .age-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .age-label {
+            width: 80px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .age-progress {
+            flex: 1;
+            height: 20px;
+            background: #222;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .age-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s;
+        }
+
+        .age-3 .age-fill { width: 15%; background: #EF4444; }
+        .age-4 .age-fill { width: 50%; background: #F59E0B; }
+        .age-5 .age-fill { width: 85%; background: #22C55E; }
+        .age-adult .age-fill { width: 98%; background: #3B82F6; }
+
+        .age-percent {
+            width: 40px;
+            text-align: right;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .key-insight {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #93C5FD;
+            line-height: 1.6;
+        }
+
+        .door {
+            position: absolute;
+            left: 0;
+            bottom: 60px;
+            width: 50px;
+            height: 100px;
+            background: #4a3728;
+            border: 3px solid #2d1f15;
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .door::after {
+            content: '';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            background: #FFD700;
+            border-radius: 50%;
+        }
+
+        .container-label {
+            position: absolute;
+            bottom: 30px;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .basket-label {
+            left: 130px;
+        }
+
+        .box-label {
+            right: 130px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h1>Theory of Mind</h1>
+        <p class="subtitle">The Sally-Anne Test</p>
+
+        <div class="stage" id="stage">
+            <div class="door"></div>
+            <div class="floor"></div>
+
+            <div class="container-obj basket" id="basket"></div>
+            <div class="container-obj box" id="box"></div>
+            <div class="box-lid" id="boxLid"></div>
+
+            <div class="marble in-basket" id="marble"></div>
+
+            <div class="person sally" id="sally">
+                <div class="person-body">
+                    <div class="person-head"></div>
+                    <div class="person-torso"></div>
+                    <div class="person-legs">
+                        <div class="person-leg left"></div>
+                        <div class="person-leg right"></div>
+                    </div>
+                </div>
+                <div class="person-label">Sally</div>
+            </div>
+
+            <div class="person anne" id="anne">
+                <div class="person-body">
+                    <div class="person-head"></div>
+                    <div class="person-torso"></div>
+                    <div class="person-legs">
+                        <div class="person-leg left"></div>
+                        <div class="person-leg right"></div>
+                    </div>
+                </div>
+                <div class="person-label">Anne</div>
+            </div>
+
+            <div class="thought-bubble sally-thought" id="sallyThought">
+                "My marble is in the basket"
+            </div>
+            <div class="thought-bubble anne-thought" id="anneThought">
+                "I'll move the marble..."
+            </div>
+
+            <div class="container-label basket-label">Basket</div>
+            <div class="container-label box-label">Box</div>
+        </div>
+
+        <div class="narration">
+            <div class="narration-text" id="narration">
+                This is Sally and Anne. Sally has a marble that she loves.
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="nextBtn">Next Step</button>
+            <button id="resetBtn" class="secondary">Reset</button>
+        </div>
+
+        <div class="question-box" id="questionBox">
+            <div class="question-text">Where will Sally look for her marble?</div>
+            <div class="answer-buttons">
+                <button class="answer-btn basket-btn" id="answerBasket">The Basket</button>
+                <button class="answer-btn box-btn" id="answerBox">The Box</button>
+            </div>
+        </div>
+
+        <div class="result-box" id="resultBox">
+            <div class="result-title" id="resultTitle"></div>
+            <div class="result-explanation" id="resultExplanation"></div>
+        </div>
+    </div>
+
+    <div class="drawer">
+        <div class="drawer-title">Theory of Mind</div>
+        <div class="drawer-subtitle">Understanding that others have different thoughts</div>
+
+        <div class="info-text">
+            <p>
+                <strong>Theory of Mind</strong> is the ability to understand that other people
+                have their own thoughts, beliefs, and knowledge—which may be different from yours.
+            </p>
+            <p>
+                The <strong>Sally-Anne test</strong> (1985) is a classic experiment by
+                Simon Baron-Cohen that reveals when children develop this ability.
+            </p>
+            <p>
+                Children under ~4 typically fail this test. They say Sally will look in the box
+                (where the marble actually is) because they can't separate their own knowledge
+                from Sally's.
+            </p>
+            <p>
+                Around age 4-5, most children begin to understand that <strong>Sally doesn't know
+                what they know</strong>—she has a "false belief" about where her marble is.
+            </p>
+        </div>
+
+        <div class="age-chart">
+            <div class="age-title">Pass Rate by Age</div>
+            <div class="age-bar age-3">
+                <div class="age-label">3 years</div>
+                <div class="age-progress"><div class="age-fill"></div></div>
+                <div class="age-percent">~15%</div>
+            </div>
+            <div class="age-bar age-4">
+                <div class="age-label">4 years</div>
+                <div class="age-progress"><div class="age-fill"></div></div>
+                <div class="age-percent">~50%</div>
+            </div>
+            <div class="age-bar age-5">
+                <div class="age-label">5 years</div>
+                <div class="age-progress"><div class="age-fill"></div></div>
+                <div class="age-percent">~85%</div>
+            </div>
+            <div class="age-bar age-adult">
+                <div class="age-label">Adults</div>
+                <div class="age-progress"><div class="age-fill"></div></div>
+                <div class="age-percent">~98%</div>
+            </div>
+        </div>
+
+        <div class="key-insight">
+            <strong>Why it matters:</strong> Theory of mind is fundamental to social interaction,
+            empathy, deception, teaching, and understanding that someone can be wrong about something
+            you know to be true.
+        </div>
+    </div>
+
+    <script>
+        const narrations = [
+            "This is Sally and Anne. Sally has a marble that she loves.",
+            "Sally puts her marble in the basket.",
+            "Sally leaves the room to go for a walk.",
+            "While Sally is away, Anne takes the marble from the basket...",
+            "...and puts it in the box!",
+            "Sally comes back. She wants her marble."
+        ];
+
+        let step = 0;
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const narration = document.getElementById('narration');
+        const sally = document.getElementById('sally');
+        const marble = document.getElementById('marble');
+        const boxLid = document.getElementById('boxLid');
+        const sallyThought = document.getElementById('sallyThought');
+        const anneThought = document.getElementById('anneThought');
+        const questionBox = document.getElementById('questionBox');
+        const resultBox = document.getElementById('resultBox');
+
+        function updateStage() {
+            narration.textContent = narrations[step];
+
+            // Reset thoughts
+            sallyThought.classList.remove('visible');
+            anneThought.classList.remove('visible');
+
+            switch(step) {
+                case 0:
+                    // Initial state
+                    break;
+                case 1:
+                    // Sally puts marble in basket
+                    marble.className = 'marble in-basket';
+                    sallyThought.textContent = '"My marble is safe in the basket!"';
+                    sallyThought.classList.add('visible');
+                    break;
+                case 2:
+                    // Sally leaves
+                    sally.classList.add('left-room');
+                    sallyThought.classList.remove('visible');
+                    break;
+                case 3:
+                    // Anne thinks about moving it
+                    anneThought.textContent = '"I\'ll move this marble..."';
+                    anneThought.classList.add('visible');
+                    boxLid.classList.add('open');
+                    break;
+                case 4:
+                    // Anne moves marble
+                    marble.className = 'marble in-box';
+                    anneThought.textContent = '"Hehe, now it\'s in the box!"';
+                    setTimeout(() => {
+                        boxLid.classList.remove('open');
+                    }, 500);
+                    break;
+                case 5:
+                    // Sally returns - question time
+                    sally.classList.remove('left-room');
+                    anneThought.classList.remove('visible');
+                    nextBtn.disabled = true;
+                    setTimeout(() => {
+                        questionBox.classList.add('visible');
+                    }, 1000);
+                    break;
+            }
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (step < narrations.length - 1) {
+                step++;
+                updateStage();
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            step = 0;
+            sally.classList.remove('left-room');
+            marble.className = 'marble in-basket';
+            boxLid.classList.remove('open');
+            sallyThought.classList.remove('visible');
+            anneThought.classList.remove('visible');
+            questionBox.classList.remove('visible');
+            resultBox.classList.remove('visible', 'correct', 'incorrect');
+            nextBtn.disabled = false;
+            updateStage();
+        });
+
+        document.getElementById('answerBasket').addEventListener('click', () => {
+            showResult(true);
+        });
+
+        document.getElementById('answerBox').addEventListener('click', () => {
+            showResult(false);
+        });
+
+        function showResult(choseBasket) {
+            questionBox.classList.remove('visible');
+            resultBox.classList.add('visible');
+
+            const resultTitle = document.getElementById('resultTitle');
+            const resultExplanation = document.getElementById('resultExplanation');
+
+            if (choseBasket) {
+                resultBox.classList.add('correct');
+                resultBox.classList.remove('incorrect');
+                resultTitle.textContent = "Correct! You have theory of mind.";
+                resultExplanation.innerHTML = `
+                    Sally will look in the <strong>basket</strong> because that's where she put it
+                    and she doesn't know Anne moved it.<br><br>
+                    You correctly understood that Sally has a <strong>false belief</strong>—she thinks
+                    the marble is still in the basket, even though you know it's in the box.<br><br>
+                    This ability to model someone else's (incorrect) mental state is called
+                    <strong>theory of mind</strong>.
+                `;
+            } else {
+                resultBox.classList.add('incorrect');
+                resultBox.classList.remove('correct');
+                resultTitle.textContent = "That's what young children say!";
+                resultExplanation.innerHTML = `
+                    Children under 4 typically say "the box" because they know the marble is there
+                    and can't separate their own knowledge from Sally's.<br><br>
+                    But Sally doesn't know the marble was moved! She wasn't in the room.
+                    She still <strong>believes</strong> it's in the basket.<br><br>
+                    The correct answer is: Sally will look in the <strong>basket</strong> first,
+                    because that's where she thinks it is.
+                `;
+            }
+
+            // Show Sally's thought
+            sallyThought.textContent = '"I left my marble in the basket..."';
+            sallyThought.classList.add('visible');
+        }
+
+        // Initialize
+        updateStage();
+    </script>
+</body>
+</html>
