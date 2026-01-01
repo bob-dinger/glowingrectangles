@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Hashing Works</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 40px;
+            padding-top: 30px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #22C55E, #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle { color: #666; font-size: 14px; }
+
+        .hash-demo {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .input-section {
+            margin-bottom: 25px;
+        }
+        .input-section label {
+            display: block;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .input-section input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'SF Mono', Monaco, monospace;
+            transition: border-color 0.2s;
+        }
+        .input-section input:focus {
+            outline: none;
+            border-color: #22C55E;
+        }
+
+        .arrow-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 0;
+        }
+        .arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .arrow-icon {
+            font-size: 32px;
+            color: #22C55E;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(5px); }
+        }
+        .arrow-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .output-section label {
+            display: block;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .hash-output {
+            padding: 15px;
+            background: #0d1f0d;
+            border: 2px solid #22C55E;
+            border-radius: 8px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 14px;
+            color: #22C55E;
+            word-break: break-all;
+            min-height: 50px;
+        }
+
+        .hash-visual {
+            display: flex;
+            gap: 2px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .hash-byte {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+
+        .properties {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+        .property {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .property-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .property-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .property-desc {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .comparison {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+        }
+        .comparison h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #F59E0B;
+        }
+        .compare-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+        }
+        .compare-item:last-child { border: none; }
+        .compare-input {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 13px;
+            color: #888;
+        }
+        .compare-hash {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 11px;
+            color: #22C55E;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .diff-highlight {
+            color: #EF4444;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .info-card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .info-card h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: #3B82F6;
+        }
+        .info-card p {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .uses-list {
+            list-style: none;
+        }
+        .uses-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+            font-size: 13px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .uses-list li:last-child { border: none; }
+        .use-icon {
+            font-size: 18px;
+        }
+
+        .key-point {
+            background: rgba(34, 197, 94, 0.1);
+            border-left: 3px solid #22C55E;
+            padding: 12px 15px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #22C55E;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .properties {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <div class="main-content">
+            <header>
+                <h1>How Hashing Works</h1>
+                <p class="subtitle">The one-way function that powers modern computing</p>
+            </header>
+
+            <div class="hash-demo">
+                <div class="input-section">
+                    <label>Type anything:</label>
+                    <input type="text" id="hashInput" placeholder="Hello, World!" value="Hello, World!">
+                </div>
+
+                <div class="arrow-section">
+                    <div class="arrow">
+                        <div class="arrow-icon">↓</div>
+                        <div class="arrow-label">SHA-256 Hash Function</div>
+                    </div>
+                </div>
+
+                <div class="output-section">
+                    <label>Hash output (always 64 hex characters):</label>
+                    <div class="hash-output" id="hashOutput"></div>
+                    <div class="hash-visual" id="hashVisual"></div>
+                </div>
+
+                <div class="properties">
+                    <div class="property">
+                        <div class="property-icon">🎯</div>
+                        <div class="property-title">Deterministic</div>
+                        <div class="property-desc">Same input always gives same output</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-icon">🔒</div>
+                        <div class="property-title">One-Way</div>
+                        <div class="property-desc">Cannot reverse to get input</div>
+                    </div>
+                    <div class="property">
+                        <div class="property-icon">❄️</div>
+                        <div class="property-title">Avalanche Effect</div>
+                        <div class="property-desc">Tiny change = completely different hash</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison">
+                <h3>Avalanche Effect Demo</h3>
+                <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Change one character, change everything:</p>
+                <div id="comparisonList"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="info-card">
+                <h3>What is Hashing?</h3>
+                <p>A hash function takes any input (a password, a file, an entire database) and outputs a fixed-size "fingerprint".</p>
+                <div class="key-point">You can't work backwards from the hash to find the original input. That's what makes it secure.</div>
+            </div>
+
+            <div class="info-card">
+                <h3>Used Everywhere</h3>
+                <ul class="uses-list">
+                    <li><span class="use-icon">🔐</span> Password storage</li>
+                    <li><span class="use-icon">✅</span> File integrity checks</li>
+                    <li><span class="use-icon">⛓️</span> Blockchain</li>
+                    <li><span class="use-icon">📦</span> Hash tables (O(1) lookup)</li>
+                    <li><span class="use-icon">✍️</span> Digital signatures</li>
+                    <li><span class="use-icon">🔍</span> Deduplication</li>
+                    <li><span class="use-icon">🌐</span> Git commits</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <h3>Why "One-Way"?</h3>
+                <p>When you log in, the site hashes your password and compares it to the stored hash. Even if hackers steal the database, they only get hashes—not your actual password.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple SHA-256 implementation for demo
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function hexToRgb(hex) {
+            const value = parseInt(hex, 16);
+            // Create a color based on the hex value
+            const hue = (value / 255) * 360;
+            return `hsl(${hue}, 70%, 50%)`;
+        }
+
+        async function updateHash() {
+            const input = document.getElementById('hashInput').value;
+            const hash = await sha256(input);
+
+            document.getElementById('hashOutput').textContent = hash;
+
+            // Create visual representation
+            const visual = document.getElementById('hashVisual');
+            visual.innerHTML = '';
+            for (let i = 0; i < hash.length; i += 2) {
+                const byte = hash.substr(i, 2);
+                const div = document.createElement('div');
+                div.className = 'hash-byte';
+                div.style.backgroundColor = hexToRgb(byte);
+                div.title = byte;
+                visual.appendChild(div);
+            }
+
+            // Update comparison
+            updateComparison(input);
+        }
+
+        async function updateComparison(baseInput) {
+            const comparisons = [
+                baseInput,
+                baseInput + '!',
+                baseInput.charAt(0).toLowerCase() + baseInput.slice(1),
+                baseInput + ' ',
+                baseInput.replace(baseInput.charAt(0), baseInput.charAt(0) === baseInput.charAt(0).toUpperCase()
+                    ? baseInput.charAt(0).toLowerCase()
+                    : baseInput.charAt(0).toUpperCase())
+            ];
+
+            const container = document.getElementById('comparisonList');
+            container.innerHTML = '';
+
+            for (const text of comparisons) {
+                const hash = await sha256(text);
+                const item = document.createElement('div');
+                item.className = 'compare-item';
+                item.innerHTML = `
+                    <span class="compare-input">"${text.length > 20 ? text.substring(0, 20) + '...' : text}"</span>
+                    <span class="compare-hash">${hash.substring(0, 16)}...</span>
+                `;
+                container.appendChild(item);
+            }
+        }
+
+        document.getElementById('hashInput').addEventListener('input', updateHash);
+
+        // Initial hash
+        updateHash();
+    </script>
+</body>
+</html>

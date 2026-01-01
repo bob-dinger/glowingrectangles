@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Women Entering the Workforce</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .page {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 15px 30px;
+        }
+
+        header {
+            text-align: center;
+            padding: 10px 0;
+            flex-shrink: 0;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #EC4899, #8B5CF6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle { color: #666; font-size: 13px; }
+
+        .main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            min-height: 0;
+        }
+
+        .scenario {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            max-width: 400px;
+            flex: 1;
+        }
+
+        .scenario-header {
+            text-align: center;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+        .scenario-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .scenario-subtitle {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .chart-container {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            padding: 8px 0;
+            flex-shrink: 0;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .scenario.fear .scenario-title { color: #EF4444; }
+        .scenario.reality .scenario-title { color: #22C55E; }
+        .scenario.fear .stat-value { color: #EF4444; }
+        .scenario.reality .stat-value { color: #22C55E; }
+
+        .divider {
+            width: 1px;
+            background: #333;
+            align-self: stretch;
+            margin: 40px 0;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            padding: 10px 0;
+            flex-shrink: 0;
+        }
+
+        .play-btn {
+            padding: 10px 25px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #EC4899, #8B5CF6);
+            border: none;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .play-btn:hover { transform: scale(1.05); }
+
+        .year-indicator {
+            font-size: 18px;
+            font-weight: bold;
+            color: #EC4899;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #888;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="page">
+        <header>
+            <h1>Women Entering the Workforce</h1>
+            <p class="subtitle">What men feared vs. what actually happened</p>
+        </header>
+
+        <div class="main">
+            <div class="scenario fear">
+                <div class="scenario-header">
+                    <div class="scenario-title">What Men Feared</div>
+                    <div class="scenario-subtitle">Zero-sum: Women replace men</div>
+                </div>
+                <div class="chart-container">
+                    <svg id="chart-fear"></svg>
+                </div>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="fear-men">100</div>
+                        <div class="stat-label">Men</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="fear-women">0</div>
+                        <div class="stat-label">Women</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="fear-total">100</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="scenario reality">
+                <div class="scenario-header">
+                    <div class="scenario-title">What Actually Happened</div>
+                    <div class="scenario-subtitle">Positive-sum: The pie grew</div>
+                </div>
+                <div class="chart-container">
+                    <svg id="chart-reality"></svg>
+                </div>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="reality-men">100</div>
+                        <div class="stat-label">Men</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="reality-women">0</div>
+                        <div class="stat-label">Women</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="reality-total">100</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #3B82F6"></div>
+                    Men
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #EC4899"></div>
+                    Women
+                </div>
+            </div>
+            <button class="play-btn" id="playBtn">Play 1950 → 2020</button>
+            <div class="year-indicator" id="yearDisplay">1950</div>
+        </div>
+    </div>
+
+    <script>
+        const MALE_COLOR = '#3B82F6';
+        const FEMALE_COLOR = '#EC4899';
+        const START_YEAR = 1950;
+        const END_YEAR = 2020;
+
+        function createBubbles(count, gender) {
+            return Array.from({ length: count }, (_, i) => ({
+                id: `${gender}-${i}`,
+                gender,
+                r: 10
+            }));
+        }
+
+        function initSimulation(svg, data, width, height) {
+            const simulation = d3.forceSimulation(data)
+                .force('charge', d3.forceManyBody().strength(2))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(d => d.r + 1.5))
+                .force('x', d3.forceX(width / 2).strength(0.05))
+                .force('y', d3.forceY(height / 2).strength(0.05));
+
+            const bubbles = svg.selectAll('circle')
+                .data(data, d => d.id)
+                .join('circle')
+                .attr('r', d => d.r)
+                .attr('fill', d => d.gender === 'male' ? MALE_COLOR : FEMALE_COLOR)
+                .attr('opacity', 0.8);
+
+            simulation.on('tick', () => {
+                bubbles
+                    .attr('cx', d => Math.max(d.r, Math.min(width - d.r, d.x)))
+                    .attr('cy', d => Math.max(d.r, Math.min(height - d.r, d.y)));
+            });
+
+            return simulation;
+        }
+
+        function updateSimulation(svg, simulation, data, width, height) {
+            const bubbles = svg.selectAll('circle')
+                .data(data, d => d.id);
+
+            bubbles.exit()
+                .transition()
+                .duration(200)
+                .attr('r', 0)
+                .remove();
+
+            bubbles.enter()
+                .append('circle')
+                .attr('r', 0)
+                .attr('cx', width / 2 + (Math.random() - 0.5) * 30)
+                .attr('cy', height / 2 + (Math.random() - 0.5) * 30)
+                .attr('fill', d => d.gender === 'male' ? MALE_COLOR : FEMALE_COLOR)
+                .attr('opacity', 0.8)
+                .transition()
+                .duration(200)
+                .attr('r', d => d.r);
+
+            simulation.nodes(data);
+            simulation.alpha(0.3).restart();
+        }
+
+        // Get actual container dimensions
+        const fearContainer = document.querySelector('#chart-fear').parentElement;
+        const realityContainer = document.querySelector('#chart-reality').parentElement;
+
+        function getSize() {
+            const rect = fearContainer.getBoundingClientRect();
+            return { width: rect.width, height: rect.height };
+        }
+
+        const fearSvg = d3.select('#chart-fear');
+        const realitySvg = d3.select('#chart-reality');
+
+        let size = getSize();
+        let fearData = createBubbles(100, 'male');
+        let realityData = createBubbles(100, 'male');
+
+        const fearSim = initSimulation(fearSvg, fearData, size.width, size.height);
+        const realitySim = initSimulation(realitySvg, realityData, size.width, size.height);
+
+        let currentYear = START_YEAR;
+        let animating = false;
+        let animationInterval = null;
+
+        function getStateForYear(year) {
+            const progress = (year - START_YEAR) / (END_YEAR - START_YEAR);
+            const fearMen = Math.round(100 - 50 * progress);
+            const fearWomen = Math.round(50 * progress);
+            const realityMen = Math.round(100 + 5 * progress);
+            const realityWomen = Math.round(75 * progress);
+            return { fearMen, fearWomen, realityMen, realityWomen };
+        }
+
+        function updateForYear(year) {
+            const state = getStateForYear(year);
+            const size = getSize();
+
+            fearData = [
+                ...createBubbles(state.fearMen, 'male'),
+                ...createBubbles(state.fearWomen, 'female')
+            ];
+            updateSimulation(fearSvg, fearSim, fearData, size.width, size.height);
+
+            realityData = [
+                ...createBubbles(state.realityMen, 'male'),
+                ...createBubbles(state.realityWomen, 'female')
+            ];
+            updateSimulation(realitySvg, realitySim, realityData, size.width, size.height);
+
+            document.getElementById('fear-men').textContent = state.fearMen;
+            document.getElementById('fear-women').textContent = state.fearWomen;
+            document.getElementById('fear-total').textContent = state.fearMen + state.fearWomen;
+
+            document.getElementById('reality-men').textContent = state.realityMen;
+            document.getElementById('reality-women').textContent = state.realityWomen;
+            document.getElementById('reality-total').textContent = state.realityMen + state.realityWomen;
+
+            document.getElementById('yearDisplay').textContent = year;
+        }
+
+        document.getElementById('playBtn').addEventListener('click', function() {
+            if (animating) {
+                clearInterval(animationInterval);
+                animating = false;
+                this.textContent = 'Play 1950 → 2020';
+                return;
+            }
+
+            animating = true;
+            this.textContent = 'Pause';
+
+            if (currentYear >= END_YEAR) {
+                currentYear = START_YEAR;
+            }
+
+            animationInterval = setInterval(() => {
+                currentYear += 2;
+                if (currentYear > END_YEAR) {
+                    currentYear = END_YEAR;
+                    clearInterval(animationInterval);
+                    animating = false;
+                    document.getElementById('playBtn').textContent = 'Replay';
+                }
+                updateForYear(currentYear);
+            }, 120);
+        });
+
+        // Initial render after layout settles
+        setTimeout(() => updateForYear(START_YEAR), 100);
+    </script>
+</body>
+</html>

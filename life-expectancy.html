@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Expectancy Myth</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .page {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 15px 40px;
+        }
+
+        header {
+            text-align: center;
+            padding: 5px 0 10px;
+            flex-shrink: 0;
+        }
+        h1 {
+            font-size: 26px;
+            margin-bottom: 4px;
+            color: #3B82F6;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .year-display {
+            font-size: 72px;
+            font-weight: bold;
+            color: #3B82F6;
+            text-align: center;
+            margin: 10px 0;
+            flex-shrink: 0;
+        }
+
+        .chart-area {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
+            padding-bottom: 30px;
+            min-height: 0;
+        }
+
+        .bar-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .bar {
+            width: 45px;
+            background: #3B82F6;
+            border-radius: 3px 3px 0 0;
+            position: relative;
+            transition: height 0.4s ease, background-color 0.4s ease;
+        }
+
+        .bar.death {
+            background: #EF4444;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            font-weight: 600;
+            color: #888;
+            transition: all 0.4s ease;
+        }
+
+        .bar-label {
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            margin-top: 6px;
+        }
+
+        .separator {
+            width: 2px;
+            height: 70%;
+            background: #333;
+            margin: 0 20px;
+            align-self: center;
+        }
+
+        .first-group .bar {
+            background: #EF4444;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 10px 0;
+            flex-shrink: 0;
+        }
+
+        .play-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #3B82F6;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .play-btn:hover { background: #2563EB; transform: scale(1.1); }
+        .play-btn.playing { background: #EF4444; }
+
+        .slider-container {
+            flex: 1;
+            max-width: 500px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #333;
+            border-radius: 3px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3B82F6;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 8px 0;
+            flex-shrink: 0;
+        }
+
+        .stat-box {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3B82F6;
+        }
+        .stat-value.danger {
+            color: #EF4444;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .legend {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #666;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="page">
+        <header>
+            <h1>The Most Misleading Statistic of All Time</h1>
+            <p class="subtitle">Mortality by age group in the United States</p>
+        </header>
+
+        <div class="year-display" id="yearDisplay">1900</div>
+
+        <div class="chart-area" id="chart"></div>
+
+        <div class="controls">
+            <button class="play-btn" id="playBtn">▶</button>
+            <div class="slider-container">
+                <input type="range" id="yearSlider" min="1900" max="2020" value="1900" step="10">
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #EF4444"></div>
+                    High mortality
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #3B82F6"></div>
+                    Lower mortality
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="stat-box">
+                <div class="stat-value danger" id="infantMort">16.0%</div>
+                <div class="stat-label">Infant Mortality (0-1)</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="lifeExp">47</div>
+                <div class="stat-label">Life Expectancy at Birth</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="lifeExpAt5">55</div>
+                <div class="stat-label">Life Expectancy at Age 5</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Historical US mortality data by decade (deaths per 1000 in age group)
+        const historicalData = {
+            1900: { infant: 160, child: 80, young: 20, teen: 25, twenties: 40, thirties: 50, forties: 70, fifties: 110, sixties: 200, seventies: 350, eighties: 500, lifeExp: 47, lifeExpAt5: 55 },
+            1910: { infant: 140, child: 65, young: 18, teen: 22, twenties: 38, thirties: 48, forties: 65, fifties: 105, sixties: 190, seventies: 340, eighties: 500, lifeExp: 50, lifeExpAt5: 57 },
+            1920: { infant: 100, child: 50, young: 15, teen: 20, twenties: 35, thirties: 45, forties: 60, fifties: 100, sixties: 180, seventies: 330, eighties: 490, lifeExp: 54, lifeExpAt5: 58 },
+            1930: { infant: 70, child: 35, young: 12, teen: 18, twenties: 30, thirties: 40, forties: 55, fifties: 95, sixties: 170, seventies: 320, eighties: 480, lifeExp: 60, lifeExpAt5: 62 },
+            1940: { infant: 50, child: 25, young: 10, teen: 15, twenties: 25, thirties: 35, forties: 50, fifties: 90, sixties: 160, seventies: 310, eighties: 470, lifeExp: 63, lifeExpAt5: 65 },
+            1950: { infant: 30, child: 15, young: 8, teen: 12, twenties: 20, thirties: 28, forties: 45, fifties: 85, sixties: 150, seventies: 300, eighties: 460, lifeExp: 68, lifeExpAt5: 69 },
+            1960: { infant: 26, child: 10, young: 6, teen: 10, twenties: 18, thirties: 25, forties: 42, fifties: 80, sixties: 145, seventies: 290, eighties: 450, lifeExp: 70, lifeExpAt5: 71 },
+            1970: { infant: 20, child: 8, young: 5, teen: 12, twenties: 18, thirties: 22, forties: 38, fifties: 75, sixties: 140, seventies: 280, eighties: 440, lifeExp: 71, lifeExpAt5: 72 },
+            1980: { infant: 13, child: 5, young: 3, teen: 10, twenties: 15, thirties: 18, forties: 32, fifties: 70, sixties: 130, seventies: 265, eighties: 430, lifeExp: 74, lifeExpAt5: 74 },
+            1990: { infant: 10, child: 4, young: 2, teen: 9, twenties: 14, thirties: 18, forties: 28, fifties: 60, sixties: 120, seventies: 250, eighties: 420, lifeExp: 75, lifeExpAt5: 76 },
+            2000: { infant: 7, child: 3, young: 2, teen: 8, twenties: 12, thirties: 15, forties: 25, fifties: 55, sixties: 110, seventies: 235, eighties: 400, lifeExp: 77, lifeExpAt5: 77 },
+            2010: { infant: 6, child: 2, young: 1, teen: 6, twenties: 10, thirties: 12, forties: 22, fifties: 48, sixties: 100, seventies: 220, eighties: 380, lifeExp: 79, lifeExpAt5: 79 },
+            2020: { infant: 5, child: 2, young: 1, teen: 5, twenties: 12, thirties: 14, forties: 20, fifties: 45, sixties: 95, seventies: 210, eighties: 370, lifeExp: 77, lifeExpAt5: 78 }
+        };
+
+        const ageGroups = [
+            { key: 'infant', label: '0-1' },
+            { key: 'child', label: '1-5' },
+            { key: 'young', label: '5-10' },
+            { key: 'teen', label: '10-20' },
+            { key: 'twenties', label: '20-30' },
+            { key: 'thirties', label: '30-40' },
+            { key: 'forties', label: '40-50' },
+            { key: 'fifties', label: '50-60' },
+            { key: 'sixties', label: '60-70' },
+            { key: 'seventies', label: '70-80' },
+            { key: 'eighties', label: '80+' }
+        ];
+
+        const chart = document.getElementById('chart');
+        const maxHeight = 280;
+        const maxDeaths = 500; // Fixed scale for comparison
+
+        // Build chart structure once
+        const bars = [];
+        ageGroups.forEach((group, i) => {
+            const barGroup = document.createElement('div');
+            barGroup.className = 'bar-group' + (i === 0 ? ' first-group' : '');
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'bar-wrapper';
+            wrapper.style.height = maxHeight + 'px';
+
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+
+            const value = document.createElement('div');
+            value.className = 'bar-value';
+            bar.appendChild(value);
+
+            wrapper.appendChild(bar);
+            barGroup.appendChild(wrapper);
+
+            const label = document.createElement('div');
+            label.className = 'bar-label';
+            label.textContent = group.label;
+            barGroup.appendChild(label);
+
+            chart.appendChild(barGroup);
+            bars.push({ bar, value, key: group.key });
+
+            if (i === 0) {
+                const sep = document.createElement('div');
+                sep.className = 'separator';
+                chart.appendChild(sep);
+            }
+        });
+
+        function updateChart(year) {
+            // Interpolate between decades if needed
+            const decade = Math.floor(year / 10) * 10;
+            const nextDecade = Math.min(decade + 10, 2020);
+            const t = (year - decade) / 10;
+
+            const data1 = historicalData[decade];
+            const data2 = historicalData[nextDecade];
+
+            bars.forEach(({ bar, value, key }) => {
+                const deaths1 = data1[key];
+                const deaths2 = data2[key];
+                const deaths = deaths1 + (deaths2 - deaths1) * t;
+
+                const barHeight = (deaths / maxDeaths) * maxHeight;
+                bar.style.height = barHeight + 'px';
+
+                if (deaths > 80) {
+                    bar.classList.add('death');
+                } else {
+                    bar.classList.remove('death');
+                }
+
+                value.textContent = (deaths / 10).toFixed(1) + '%';
+            });
+
+            // Update stats
+            const infantMort = data1.infant + (data2.infant - data1.infant) * t;
+            const lifeExp = data1.lifeExp + (data2.lifeExp - data1.lifeExp) * t;
+            const lifeExpAt5 = data1.lifeExpAt5 + (data2.lifeExpAt5 - data1.lifeExpAt5) * t;
+
+            document.getElementById('infantMort').textContent = (infantMort / 10).toFixed(1) + '%';
+            document.getElementById('lifeExp').textContent = Math.round(lifeExp);
+            document.getElementById('lifeExpAt5').textContent = Math.round(lifeExpAt5);
+
+            document.getElementById('yearDisplay').textContent = year;
+            document.getElementById('yearSlider').value = year;
+
+            // Color infant mortality stat based on severity
+            const infantEl = document.getElementById('infantMort');
+            if (infantMort > 50) {
+                infantEl.classList.add('danger');
+            } else {
+                infantEl.classList.remove('danger');
+            }
+        }
+
+        // Controls
+        const slider = document.getElementById('yearSlider');
+        const playBtn = document.getElementById('playBtn');
+        let playing = false;
+        let animationTimer = null;
+        let currentYear = 1900;
+
+        slider.addEventListener('input', (e) => {
+            currentYear = parseInt(e.target.value);
+            updateChart(currentYear);
+        });
+
+        playBtn.addEventListener('click', () => {
+            playing = !playing;
+            playBtn.textContent = playing ? '⏸' : '▶';
+            playBtn.classList.toggle('playing', playing);
+
+            if (playing) {
+                if (currentYear >= 2020) currentYear = 1900;
+                animate();
+            } else {
+                clearTimeout(animationTimer);
+            }
+        });
+
+        function animate() {
+            if (!playing) return;
+            currentYear += 1;
+            if (currentYear > 2020) {
+                currentYear = 2020;
+                playing = false;
+                playBtn.textContent = '▶';
+                playBtn.classList.remove('playing');
+                return;
+            }
+            updateChart(currentYear);
+            animationTimer = setTimeout(animate, 80);
+        }
+
+        // Initial render
+        updateChart(1900);
+    </script>
+</body>
+</html>
