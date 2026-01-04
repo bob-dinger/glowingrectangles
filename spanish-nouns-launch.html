@@ -127,6 +127,16 @@
             z-index: 1000;
             text-shadow: 0 0 20px rgba(255,255,255,0.3);
         }
+
+        /* Launched image (Freepik icons) */
+        .launched-image {
+            position: fixed;
+            width: 80px;
+            height: 80px;
+            pointer-events: none;
+            z-index: 1000;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.4));
+        }
     </style>
 </head>
 <body>
@@ -148,7 +158,19 @@
     </div>
 
     <script>
-        // Emoji mappings for nouns
+        // Freepik icon data (loaded from JSON)
+        let iconData = {};
+
+        // Load icon data
+        fetch('noun-icons.json')
+            .then(r => r.json())
+            .then(data => {
+                iconData = data;
+                console.log(`Loaded ${Object.keys(data).length} icon mappings`);
+            })
+            .catch(e => console.log('Icons not loaded, using emoji fallback'));
+
+        // Emoji mappings for nouns (fallback)
         const emojiMap = {
             // People & Family
             "hombre": "👨", "mujer": "👩", "niño": "👦", "niña": "👧",
@@ -798,11 +820,18 @@
         const refreshBtn = document.getElementById('refreshBtn');
         let activeWord = null;
 
-        // Launch emoji animation
-        function launchEmoji(emoji) {
-            const el = document.createElement('div');
-            el.className = 'launched-emoji';
-            el.textContent = emoji;
+        // Launch animation (image or emoji)
+        function launchVisual(content, isImage = false) {
+            let el;
+            if (isImage) {
+                el = document.createElement('img');
+                el.className = 'launched-image';
+                el.src = content;
+            } else {
+                el = document.createElement('div');
+                el.className = 'launched-emoji';
+                el.textContent = content;
+            }
             document.body.appendChild(el);
 
             // Start position: center bottom (above translation box)
@@ -823,6 +852,7 @@
             let targetScale = 1.2;
             let rotation = 0;
             let rotationSpeed = (Math.random() - 0.5) * 15;
+            const size = isImage ? 40 : 24; // Half size for centering
 
             function animate() {
                 // Apply physics
@@ -853,8 +883,8 @@
                 }
 
                 // Update position
-                el.style.left = (x - 24) + 'px';
-                el.style.top = (y - 24) + 'px';
+                el.style.left = (x - size) + 'px';
+                el.style.top = (y - size) + 'px';
                 el.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
                 el.style.opacity = Math.min(1, scale);
 
@@ -928,9 +958,14 @@
                         englishWord.textContent = noun.en;
                         translationBox.classList.add('visible');
 
-                        // Launch the emoji!
-                        const emoji = emojiMap[noun.es] || defaultEmoji;
-                        launchEmoji(emoji);
+                        // Launch the visual (Freepik icon or emoji fallback)
+                        const iconInfo = iconData[noun.es];
+                        if (iconInfo && iconInfo.icon && iconInfo.icon.url) {
+                            launchVisual(iconInfo.icon.url, true);
+                        } else {
+                            const emoji = emojiMap[noun.es] || defaultEmoji;
+                            launchVisual(emoji, false);
+                        }
                     });
 
                     svg.appendChild(text);
