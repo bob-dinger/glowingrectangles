@@ -100,6 +100,24 @@
             background: #16A34A;
         }
 
+        .sound-toggle {
+            position: fixed;
+            top: 52px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+        }
+        .sound-toggle input {
+            cursor: pointer;
+        }
+        .sound-toggle:hover {
+            color: #999;
+        }
+
         .legend {
             position: fixed;
             bottom: 20px;
@@ -143,6 +161,10 @@
     <a href="spanish.html" class="back-link">← Back</a>
     <div class="instructions">Click any word</div>
     <button id="refreshBtn">Refresh</button>
+    <label class="sound-toggle">
+        <input type="checkbox" id="soundToggle" checked>
+        <span>🔊 Pronounce</span>
+    </label>
 
     <svg id="wordCloud"></svg>
 
@@ -1985,7 +2007,33 @@
         const spanishWord = document.getElementById('spanishWord');
         const englishWord = document.getElementById('englishWord');
         const refreshBtn = document.getElementById('refreshBtn');
+        const soundToggle = document.getElementById('soundToggle');
         let activeWord = null;
+
+        // Text-to-speech for Spanish pronunciation
+        function speakSpanish(word) {
+            if (!soundToggle.checked) return;
+            if (!('speechSynthesis' in window)) return;
+
+            // Cancel any ongoing speech
+            speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.9;
+
+            // Try to find a Spanish voice
+            const voices = speechSynthesis.getVoices();
+            const spanishVoice = voices.find(v => v.lang.startsWith('es'));
+            if (spanishVoice) utterance.voice = spanishVoice;
+
+            speechSynthesis.speak(utterance);
+        }
+
+        // Preload voices (some browsers need this)
+        if ('speechSynthesis' in window) {
+            speechSynthesis.getVoices();
+        }
 
         // Launch animation (image or emoji)
         function launchVisual(content, isImage = false) {
@@ -2124,6 +2172,9 @@
                         spanishWord.textContent = noun.es;
                         englishWord.textContent = noun.en;
                         translationBox.classList.add('visible');
+
+                        // Pronounce the word
+                        speakSpanish(noun.es);
 
                         // Launch the visual (Freepik icon or emoji fallback)
                         const iconInfo = iconData[noun.es];
