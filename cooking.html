@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cooking Visualizations - Glowing Gardens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            margin-bottom: 30px;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        h1 {
+            font-size: 42px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #F97316 0%, #EAB308 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tagline {
+            font-size: 16px;
+            color: #888;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #F97316, #EAB308);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .card:hover {
+            border-color: #F97316;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(249, 115, 22, 0.15);
+        }
+        .card:hover::before {
+            opacity: 1;
+        }
+        .card-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        .card-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .card-description {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        .card-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #555;
+        }
+        .card-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(249, 115, 22, 0.2);
+            color: #F97316;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge.new {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22C55E;
+        }
+        .card.coming-soon {
+            opacity: 0.5;
+            cursor: default;
+        }
+        .card.coming-soon:hover {
+            transform: none;
+            border-color: #333;
+            box-shadow: none;
+        }
+        .card.coming-soon::before {
+            display: none;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid #222;
+            color: #555;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+
+        <header>
+            <h1>Cooking Visualizations</h1>
+            <p class="tagline">Making food knowledge visual and intuitive</p>
+        </header>
+
+        <div class="grid">
+            <div class="card" onclick="window.location.href='posts/cooking_times/index.html'">
+                <div class="card-icon">⏱️</div>
+                <div class="card-title">Cooking Times</div>
+                <div class="card-description">How long to cook meats, vegetables, grains, and more. Visual reference for perfect timing.</div>
+                <div class="card-meta">
+                    <span>Meats & Veggies</span>
+                    <span>Temperature guide</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="window.location.href='nutrition.html'">
+                <div class="card-icon">🥗</div>
+                <div class="card-title">Nutrition</div>
+                <div class="card-description">What's in your food? Vitamins, minerals, macros - all visualized for quick reference.</div>
+                <div class="card-meta">
+                    <span>Vitamins</span>
+                    <span>Minerals</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="window.location.href='visual-recipe-cookies.html'">
+                <div class="card-icon">🍪</div>
+                <div class="card-title">Visual Recipe: Cookies</div>
+                <div class="card-description">A chocolate chip cookie recipe shown as a visual flowchart. No walls of text.</div>
+                <div class="card-meta">
+                    <span>Step by step</span>
+                    <span>Visual guide</span>
+                </div>
+            </div>
+
+            <div class="card coming-soon">
+                <span class="badge">Coming Soon</span>
+                <div class="card-icon">🔪</div>
+                <div class="card-title">Knife Cuts</div>
+                <div class="card-description">Julienne, brunoise, chiffonade - all the professional cuts visualized with animations.</div>
+                <div class="card-meta">
+                    <span>Techniques</span>
+                </div>
+            </div>
+
+            <div class="card coming-soon">
+                <span class="badge">Coming Soon</span>
+                <div class="card-icon">🌡️</div>
+                <div class="card-title">Temperature Guide</div>
+                <div class="card-description">Safe internal temperatures for meats. Smoke points for oils. Candy stages for sugar.</div>
+                <div class="card-meta">
+                    <span>Safety</span>
+                </div>
+            </div>
+
+            <div class="card coming-soon">
+                <span class="badge">Coming Soon</span>
+                <div class="card-icon">⚖️</div>
+                <div class="card-title">Measurement Conversions</div>
+                <div class="card-description">Cups to grams, Fahrenheit to Celsius, tablespoons to milliliters. Quick visual converter.</div>
+                <div class="card-meta">
+                    <span>Units</span>
+                </div>
+            </div>
+
+            <div class="card coming-soon">
+                <span class="badge">Coming Soon</span>
+                <div class="card-icon">🧄</div>
+                <div class="card-title">Flavor Pairings</div>
+                <div class="card-description">What goes with what? Classic and unexpected flavor combinations visualized.</div>
+                <div class="card-meta">
+                    <span>Combinations</span>
+                </div>
+            </div>
+
+            <div class="card coming-soon">
+                <span class="badge">Coming Soon</span>
+                <div class="card-icon">🥘</div>
+                <div class="card-title">Cooking Methods</div>
+                <div class="card-description">Braise vs stew, sauté vs pan-fry. When to use each technique and why.</div>
+                <div class="card-meta">
+                    <span>Techniques</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Part of <a href="index.html" style="color:#F97316;text-decoration:none;">Glowing Gardens</a>
+        </footer>
+    </div>
+</body>
+</html>
