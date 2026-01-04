@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Animals</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #refreshBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #F59E0B;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #refreshBtn:hover { background: #D97706; }
+
+        svg {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .word {
+            cursor: pointer;
+            transition: fill 0.2s;
+        }
+        .word:hover {
+            fill: #fff !important;
+        }
+        .word.active {
+            fill: #F59E0B !important;
+        }
+        .word.dimmed {
+            fill-opacity: 0.15 !important;
+        }
+
+        .translation-box {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px 40px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .translation-box.visible { opacity: 1; }
+
+        .spanish-word {
+            font-size: 32px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 8px;
+        }
+        .english-word {
+            font-size: 22px;
+            color: #888;
+        }
+        .category-tag {
+            font-size: 11px;
+            color: #555;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-width: 500px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .legend-item:hover {
+            background: #222;
+        }
+        .legend-item.active {
+            background: #333;
+        }
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .legend-label { color: #555; }
+
+        .count {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 11px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <a href="spanish.html" class="back-link">← Back</a>
+    <div class="title">Los Animales</div>
+    <button id="refreshBtn">Shuffle</button>
+
+    <svg id="wordCloud"></svg>
+
+    <div class="translation-box" id="translationBox">
+        <div class="spanish-word" id="spanishWord"></div>
+        <div class="english-word" id="englishWord"></div>
+        <div class="category-tag" id="categoryTag"></div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+    <div class="count" id="count"></div>
+
+    <script>
+        const categories = {
+            'Pets': { color: '#EC4899', words: [
+                { es: 'el perro', en: 'dog' },
+                { es: 'la perra', en: 'female dog' },
+                { es: 'el cachorro', en: 'puppy' },
+                { es: 'el gato', en: 'cat' },
+                { es: 'la gata', en: 'female cat' },
+                { es: 'el gatito', en: 'kitten' },
+                { es: 'el hámster', en: 'hamster' },
+                { es: 'el conejo', en: 'rabbit' },
+                { es: 'el conejillo de indias', en: 'guinea pig' },
+                { es: 'el pez', en: 'fish' },
+                { es: 'el pez dorado', en: 'goldfish' },
+                { es: 'la tortuga', en: 'turtle/tortoise' },
+                { es: 'el periquito', en: 'parakeet' },
+                { es: 'el canario', en: 'canary' },
+                { es: 'el loro', en: 'parrot' },
+                { es: 'el hurón', en: 'ferret' },
+                { es: 'la mascota', en: 'pet' },
+            ]},
+            'Farm Animals': { color: '#10B981', words: [
+                { es: 'la vaca', en: 'cow' },
+                { es: 'el toro', en: 'bull' },
+                { es: 'el buey', en: 'ox' },
+                { es: 'el ternero', en: 'calf' },
+                { es: 'el caballo', en: 'horse' },
+                { es: 'la yegua', en: 'mare' },
+                { es: 'el potro', en: 'foal' },
+                { es: 'el burro', en: 'donkey' },
+                { es: 'la mula', en: 'mule' },
+                { es: 'el cerdo', en: 'pig' },
+                { es: 'la oveja', en: 'sheep' },
+                { es: 'el cordero', en: 'lamb' },
+                { es: 'la cabra', en: 'goat' },
+                { es: 'el chivo', en: 'billy goat' },
+                { es: 'la gallina', en: 'hen' },
+                { es: 'el gallo', en: 'rooster' },
+                { es: 'el pollo', en: 'chicken' },
+                { es: 'el pollito', en: 'chick' },
+                { es: 'el pato', en: 'duck' },
+                { es: 'el ganso', en: 'goose' },
+                { es: 'el pavo', en: 'turkey' },
+                { es: 'el conejo', en: 'rabbit' },
+            ]},
+            'Wild Mammals': { color: '#F59E0B', words: [
+                { es: 'el león', en: 'lion' },
+                { es: 'la leona', en: 'lioness' },
+                { es: 'el tigre', en: 'tiger' },
+                { es: 'el leopardo', en: 'leopard' },
+                { es: 'la pantera', en: 'panther' },
+                { es: 'el guepardo', en: 'cheetah' },
+                { es: 'el oso', en: 'bear' },
+                { es: 'el oso polar', en: 'polar bear' },
+                { es: 'el oso pardo', en: 'brown bear' },
+                { es: 'el lobo', en: 'wolf' },
+                { es: 'el zorro', en: 'fox' },
+                { es: 'el coyote', en: 'coyote' },
+                { es: 'el elefante', en: 'elephant' },
+                { es: 'la jirafa', en: 'giraffe' },
+                { es: 'la cebra', en: 'zebra' },
+                { es: 'el rinoceronte', en: 'rhinoceros' },
+                { es: 'el hipopótamo', en: 'hippopotamus' },
+                { es: 'el gorila', en: 'gorilla' },
+                { es: 'el chimpancé', en: 'chimpanzee' },
+                { es: 'el mono', en: 'monkey' },
+                { es: 'el orangután', en: 'orangutan' },
+                { es: 'el canguro', en: 'kangaroo' },
+                { es: 'el koala', en: 'koala' },
+                { es: 'el camello', en: 'camel' },
+                { es: 'la llama', en: 'llama' },
+                { es: 'la alpaca', en: 'alpaca' },
+            ]},
+            'Forest Animals': { color: '#84CC16', words: [
+                { es: 'el ciervo', en: 'deer' },
+                { es: 'el venado', en: 'deer (Latin Am)' },
+                { es: 'el alce', en: 'moose/elk' },
+                { es: 'el reno', en: 'reindeer' },
+                { es: 'el jabalí', en: 'wild boar' },
+                { es: 'el mapache', en: 'raccoon' },
+                { es: 'la ardilla', en: 'squirrel' },
+                { es: 'el castor', en: 'beaver' },
+                { es: 'el puercoespín', en: 'porcupine' },
+                { es: 'el erizo', en: 'hedgehog' },
+                { es: 'el tejón', en: 'badger' },
+                { es: 'la mofeta', en: 'skunk' },
+                { es: 'el zorrillo', en: 'skunk (Latin Am)' },
+                { es: 'la nutria', en: 'otter' },
+                { es: 'el topo', en: 'mole' },
+                { es: 'la liebre', en: 'hare' },
+                { es: 'el murciélago', en: 'bat' },
+            ]},
+            'Sea Creatures': { color: '#0EA5E9', words: [
+                { es: 'el pez', en: 'fish' },
+                { es: 'el tiburón', en: 'shark' },
+                { es: 'la ballena', en: 'whale' },
+                { es: 'el delfín', en: 'dolphin' },
+                { es: 'la orca', en: 'orca/killer whale' },
+                { es: 'la foca', en: 'seal' },
+                { es: 'el león marino', en: 'sea lion' },
+                { es: 'la morsa', en: 'walrus' },
+                { es: 'el pulpo', en: 'octopus' },
+                { es: 'el calamar', en: 'squid' },
+                { es: 'la medusa', en: 'jellyfish' },
+                { es: 'el cangrejo', en: 'crab' },
+                { es: 'la langosta', en: 'lobster' },
+                { es: 'el camarón', en: 'shrimp' },
+                { es: 'la gamba', en: 'prawn' },
+                { es: 'la almeja', en: 'clam' },
+                { es: 'el mejillón', en: 'mussel' },
+                { es: 'la ostra', en: 'oyster' },
+                { es: 'el caracol de mar', en: 'sea snail' },
+                { es: 'la estrella de mar', en: 'starfish' },
+                { es: 'el caballito de mar', en: 'seahorse' },
+                { es: 'el pez espada', en: 'swordfish' },
+                { es: 'el atún', en: 'tuna' },
+                { es: 'el salmón', en: 'salmon' },
+                { es: 'la trucha', en: 'trout' },
+                { es: 'el bacalao', en: 'cod' },
+                { es: 'la sardina', en: 'sardine' },
+                { es: 'el pez payaso', en: 'clownfish' },
+                { es: 'la mantarraya', en: 'manta ray' },
+                { es: 'la raya', en: 'stingray' },
+                { es: 'la anguila', en: 'eel' },
+            ]},
+            'Birds': { color: '#8B5CF6', words: [
+                { es: 'el pájaro', en: 'bird' },
+                { es: 'el ave', en: 'bird (formal)' },
+                { es: 'el águila', en: 'eagle' },
+                { es: 'el halcón', en: 'falcon' },
+                { es: 'el búho', en: 'owl' },
+                { es: 'la lechuza', en: 'barn owl' },
+                { es: 'el cuervo', en: 'crow/raven' },
+                { es: 'la paloma', en: 'dove/pigeon' },
+                { es: 'el gorrión', en: 'sparrow' },
+                { es: 'el colibrí', en: 'hummingbird' },
+                { es: 'el tucán', en: 'toucan' },
+                { es: 'el pavo real', en: 'peacock' },
+                { es: 'el flamenco', en: 'flamingo' },
+                { es: 'el pelícano', en: 'pelican' },
+                { es: 'la cigüeña', en: 'stork' },
+                { es: 'la gaviota', en: 'seagull' },
+                { es: 'el pingüino', en: 'penguin' },
+                { es: 'el avestruz', en: 'ostrich' },
+                { es: 'el cisne', en: 'swan' },
+                { es: 'el pato', en: 'duck' },
+                { es: 'el cóndor', en: 'condor' },
+                { es: 'el buitre', en: 'vulture' },
+                { es: 'el petirrojo', en: 'robin' },
+                { es: 'el cardenal', en: 'cardinal' },
+                { es: 'el ruiseñor', en: 'nightingale' },
+            ]},
+            'Reptiles': { color: '#22C55E', words: [
+                { es: 'el reptil', en: 'reptile' },
+                { es: 'la serpiente', en: 'snake' },
+                { es: 'la culebra', en: 'snake (non-venomous)' },
+                { es: 'la víbora', en: 'viper' },
+                { es: 'la cobra', en: 'cobra' },
+                { es: 'la pitón', en: 'python' },
+                { es: 'la boa', en: 'boa' },
+                { es: 'el cocodrilo', en: 'crocodile' },
+                { es: 'el caimán', en: 'caiman/alligator' },
+                { es: 'el lagarto', en: 'lizard' },
+                { es: 'la lagartija', en: 'small lizard' },
+                { es: 'la iguana', en: 'iguana' },
+                { es: 'el camaleón', en: 'chameleon' },
+                { es: 'el gecko', en: 'gecko' },
+                { es: 'la salamandra', en: 'salamander' },
+                { es: 'la tortuga', en: 'turtle/tortoise' },
+                { es: 'la tortuga marina', en: 'sea turtle' },
+            ]},
+            'Amphibians': { color: '#14B8A6', words: [
+                { es: 'el anfibio', en: 'amphibian' },
+                { es: 'la rana', en: 'frog' },
+                { es: 'el sapo', en: 'toad' },
+                { es: 'el renacuajo', en: 'tadpole' },
+                { es: 'el tritón', en: 'newt' },
+                { es: 'el ajolote', en: 'axolotl' },
+            ]},
+            'Insects & Bugs': { color: '#EF4444', words: [
+                { es: 'el insecto', en: 'insect' },
+                { es: 'el bicho', en: 'bug' },
+                { es: 'la hormiga', en: 'ant' },
+                { es: 'la abeja', en: 'bee' },
+                { es: 'la avispa', en: 'wasp' },
+                { es: 'la mosca', en: 'fly' },
+                { es: 'el mosquito', en: 'mosquito' },
+                { es: 'la mariposa', en: 'butterfly' },
+                { es: 'la polilla', en: 'moth' },
+                { es: 'la oruga', en: 'caterpillar' },
+                { es: 'el gusano', en: 'worm' },
+                { es: 'la lombriz', en: 'earthworm' },
+                { es: 'la araña', en: 'spider' },
+                { es: 'la tarántula', en: 'tarantula' },
+                { es: 'el escorpión', en: 'scorpion' },
+                { es: 'el alacrán', en: 'scorpion (Latin Am)' },
+                { es: 'el escarabajo', en: 'beetle' },
+                { es: 'la mariquita', en: 'ladybug' },
+                { es: 'la cucaracha', en: 'cockroach' },
+                { es: 'el grillo', en: 'cricket' },
+                { es: 'el saltamontes', en: 'grasshopper' },
+                { es: 'la langosta', en: 'locust' },
+                { es: 'la mantis religiosa', en: 'praying mantis' },
+                { es: 'la libélula', en: 'dragonfly' },
+                { es: 'la luciérnaga', en: 'firefly' },
+                { es: 'la pulga', en: 'flea' },
+                { es: 'el piojo', en: 'louse' },
+                { es: 'la garrapata', en: 'tick' },
+                { es: 'el ciempiés', en: 'centipede' },
+                { es: 'el milpiés', en: 'millipede' },
+                { es: 'el caracol', en: 'snail' },
+                { es: 'la babosa', en: 'slug' },
+            ]},
+            'Rodents': { color: '#A855F7', words: [
+                { es: 'el roedor', en: 'rodent' },
+                { es: 'el ratón', en: 'mouse' },
+                { es: 'la rata', en: 'rat' },
+                { es: 'la ardilla', en: 'squirrel' },
+                { es: 'el hámster', en: 'hamster' },
+                { es: 'el castor', en: 'beaver' },
+                { es: 'el jerbo', en: 'gerbil' },
+                { es: 'el capibara', en: 'capybara' },
+                { es: 'la chinchilla', en: 'chinchilla' },
+                { es: 'la marmota', en: 'groundhog' },
+            ]},
+        };
+
+        const allWords = [];
+        Object.entries(categories).forEach(([cat, data]) => {
+            data.words.forEach(word => {
+                allWords.push({ ...word, category: cat, color: data.color });
+            });
+        });
+
+        const svg = document.getElementById('wordCloud');
+        const translationBox = document.getElementById('translationBox');
+        const spanishWord = document.getElementById('spanishWord');
+        const englishWord = document.getElementById('englishWord');
+        const categoryTag = document.getElementById('categoryTag');
+        const legend = document.getElementById('legend');
+        const countEl = document.getElementById('count');
+        let activeWord = null;
+        let activeCategory = null;
+
+        Object.entries(categories).forEach(([cat, data]) => {
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.dataset.category = cat;
+            item.innerHTML = `<div class="legend-dot" style="background:${data.color}"></div><span class="legend-label">${cat}</span>`;
+
+            item.addEventListener('click', () => {
+                if (activeCategory === cat) {
+                    activeCategory = null;
+                    item.classList.remove('active');
+                    document.querySelectorAll('.word').forEach(w => w.classList.remove('dimmed'));
+                } else {
+                    document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active'));
+                    activeCategory = cat;
+                    item.classList.add('active');
+                    document.querySelectorAll('.word').forEach(w => {
+                        if (w.dataset.category === cat) {
+                            w.classList.remove('dimmed');
+                        } else {
+                            w.classList.add('dimmed');
+                        }
+                    });
+                }
+            });
+
+            legend.appendChild(item);
+        });
+
+        countEl.textContent = `${allWords.length} animals`;
+
+        function renderWords() {
+            svg.innerHTML = '';
+            translationBox.classList.remove('visible');
+            activeWord = null;
+            activeCategory = null;
+            document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active'));
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const shuffled = [...allWords].sort(() => Math.random() - 0.5);
+            const placed = [];
+            const padding = 10;
+
+            function checkOverlap(x, y, w, h) {
+                for (const p of placed) {
+                    if (x < p.x + p.w + padding && x + w + padding > p.x &&
+                        y - h < p.y + padding && y + padding > p.y - p.h) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            shuffled.forEach((word) => {
+                const fontSize = 12 + Math.random() * 16;
+                const approxWidth = word.es.length * fontSize * 0.5;
+                const approxHeight = fontSize;
+
+                let x, y, attempts = 0;
+                do {
+                    x = 60 + Math.random() * (width - 180);
+                    y = 80 + Math.random() * (height - 180);
+                    attempts++;
+                } while (checkOverlap(x, y, approxWidth, approxHeight) && attempts < 150);
+
+                if (attempts < 150) {
+                    placed.push({ x, y, w: approxWidth, h: approxHeight });
+
+                    const opacity = 0.5 + Math.random() * 0.5;
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', x);
+                    text.setAttribute('y', y);
+                    text.setAttribute('font-size', fontSize);
+                    text.setAttribute('fill', word.color);
+                    text.setAttribute('fill-opacity', opacity);
+                    text.setAttribute('class', 'word');
+                    text.setAttribute('font-family', '-apple-system, BlinkMacSystemFont, sans-serif');
+                    text.dataset.category = word.category;
+                    text.textContent = word.es;
+
+                    text.addEventListener('click', () => {
+                        if (activeWord) activeWord.classList.remove('active');
+                        text.classList.add('active');
+                        activeWord = text;
+                        spanishWord.textContent = word.es;
+                        englishWord.textContent = word.en;
+                        categoryTag.textContent = word.category;
+                        translationBox.classList.add('visible');
+                    });
+
+                    svg.appendChild(text);
+                }
+            });
+        }
+
+        document.getElementById('refreshBtn').addEventListener('click', renderWords);
+        renderWords();
+    </script>
+</body>
+</html>

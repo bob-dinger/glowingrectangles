@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Adjectives by Category</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #category-view, #cloud-view {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #cloud-view {
+            display: none;
+        }
+
+        #back-to-categories {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: 1px solid #333;
+            color: #666;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 100;
+            display: none;
+        }
+        #back-to-categories:hover {
+            border-color: #666;
+            color: #fff;
+        }
+
+        #category-title {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .translation-box {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px 40px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .translation-box.visible {
+            opacity: 1;
+        }
+
+        .spanish-word {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .english-word {
+            font-size: 20px;
+            color: #888;
+        }
+
+        .instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #333;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .category-bubble {
+            cursor: pointer;
+        }
+
+        .category-bubble circle {
+            transition: all 0.2s;
+        }
+
+        .category-bubble:hover circle {
+            filter: brightness(1.3);
+        }
+
+        .word {
+            cursor: pointer;
+            transition: fill 0.2s;
+        }
+
+        .word:hover {
+            fill: #fff !important;
+        }
+
+        .word.active {
+            fill: #22C55E !important;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+    <div class="title">Spanish Adjectives</div>
+
+    <button id="back-to-categories">← Categories</button>
+    <div id="category-title"></div>
+
+    <div id="category-view">
+        <svg id="category-svg"></svg>
+    </div>
+
+    <div id="cloud-view">
+        <svg id="cloud-svg"></svg>
+    </div>
+
+    <div class="translation-box" id="translationBox">
+        <div class="spanish-word" id="spanishWord"></div>
+        <div class="english-word" id="englishWord"></div>
+    </div>
+
+    <div class="instructions" id="instructions">Click a category</div>
+
+    <script>
+        // Category definitions with colors
+        const categories = {
+            'Size & Shape': { color: '#3B82F6', words: [] },
+            'Colors': { color: '#EC4899', words: [] },
+            'Personality': { color: '#8B5CF6', words: [] },
+            'Emotions': { color: '#EF4444', words: [] },
+            'Physical States': { color: '#F59E0B', words: [] },
+            'Quality & Value': { color: '#22C55E', words: [] },
+            'Time & Speed': { color: '#06B6D4', words: [] },
+            'Taste & Texture': { color: '#F97316', words: [] },
+            'Weather & Nature': { color: '#10B981', words: [] },
+            'Body & Health': { color: '#E11D48', words: [] },
+            'Quantity': { color: '#6366F1', words: [] },
+            'General': { color: '#64748B', words: [] }
+        };
+
+        // Adjective data organized by category
+        const adjectiveData = {
+            'Size & Shape': [
+                { es: "grande", en: "big, large" },
+                { es: "pequeño", en: "small" },
+                { es: "alto", en: "tall, high" },
+                { es: "bajo", en: "short, low" },
+                { es: "largo", en: "long" },
+                { es: "corto", en: "short" },
+                { es: "ancho", en: "wide" },
+                { es: "estrecho", en: "narrow" },
+                { es: "gordo", en: "fat" },
+                { es: "delgado", en: "thin" },
+                { es: "pesado", en: "heavy" },
+                { es: "ligero", en: "light (weight)" },
+                { es: "enorme", en: "enormous" },
+                { es: "diminuto", en: "tiny" },
+                { es: "gigante", en: "giant" },
+                { es: "minúsculo", en: "minuscule" },
+                { es: "mediano", en: "medium" },
+                { es: "grueso", en: "thick" },
+                { es: "fino", en: "fine, thin" },
+                { es: "redondo", en: "round" },
+                { es: "cuadrado", en: "square" },
+                { es: "triangular", en: "triangular" },
+                { es: "ovalado", en: "oval" },
+                { es: "plano", en: "flat" },
+                { es: "profundo", en: "deep" },
+                { es: "superficial", en: "shallow" },
+                { es: "hueco", en: "hollow" },
+                { es: "sólido", en: "solid" },
+                { es: "espacioso", en: "spacious" },
+                { es: "compacto", en: "compact" }
+            ],
+            'Colors': [
+                { es: "rojo", en: "red" },
+                { es: "azul", en: "blue" },
+                { es: "verde", en: "green" },
+                { es: "amarillo", en: "yellow" },
+                { es: "negro", en: "black" },
+                { es: "blanco", en: "white" },
+                { es: "gris", en: "gray" },
+                { es: "marrón", en: "brown" },
+                { es: "rosa", en: "pink" },
+                { es: "morado", en: "purple" },
+                { es: "naranja", en: "orange" },
+                { es: "dorado", en: "golden" },
+                { es: "plateado", en: "silver" },
+                { es: "oscuro", en: "dark" },
+                { es: "claro", en: "light, clear" },
+                { es: "brillante", en: "bright, shiny" },
+                { es: "opaco", en: "opaque" },
+                { es: "transparente", en: "transparent" },
+                { es: "colorido", en: "colorful" },
+                { es: "pálido", en: "pale" },
+                { es: "vivo", en: "vivid" },
+                { es: "celeste", en: "sky blue" },
+                { es: "turquesa", en: "turquoise" },
+                { es: "violeta", en: "violet" },
+                { es: "beige", en: "beige" },
+                { es: "crema", en: "cream" }
+            ],
+            'Personality': [
+                { es: "amable", en: "kind" },
+                { es: "simpático", en: "nice, friendly" },
+                { es: "antipático", en: "unpleasant" },
+                { es: "tímido", en: "shy" },
+                { es: "valiente", en: "brave" },
+                { es: "cobarde", en: "cowardly" },
+                { es: "generoso", en: "generous" },
+                { es: "tacaño", en: "stingy" },
+                { es: "honesto", en: "honest" },
+                { es: "mentiroso", en: "lying, liar" },
+                { es: "inteligente", en: "intelligent" },
+                { es: "tonto", en: "silly, dumb" },
+                { es: "listo", en: "clever, ready" },
+                { es: "perezoso", en: "lazy" },
+                { es: "trabajador", en: "hardworking" },
+                { es: "serio", en: "serious" },
+                { es: "gracioso", en: "funny" },
+                { es: "curioso", en: "curious" },
+                { es: "orgulloso", en: "proud" },
+                { es: "humilde", en: "humble" },
+                { es: "loco", en: "crazy" },
+                { es: "sabio", en: "wise" },
+                { es: "ingenuo", en: "naive" },
+                { es: "astuto", en: "cunning" },
+                { es: "torpe", en: "clumsy" },
+                { es: "ágil", en: "agile" },
+                { es: "terco", en: "stubborn" },
+                { es: "educado", en: "polite" },
+                { es: "maleducado", en: "rude" },
+                { es: "sociable", en: "sociable" },
+                { es: "reservado", en: "reserved" },
+                { es: "optimista", en: "optimistic" },
+                { es: "pesimista", en: "pessimistic" },
+                { es: "paciente", en: "patient" },
+                { es: "impaciente", en: "impatient" },
+                { es: "responsable", en: "responsible" },
+                { es: "sincero", en: "sincere" },
+                { es: "arrogante", en: "arrogant" },
+                { es: "egoísta", en: "selfish" },
+                { es: "ambicioso", en: "ambitious" },
+                { es: "rebelde", en: "rebellious" },
+                { es: "obediente", en: "obedient" },
+                { es: "atrevido", en: "daring" },
+                { es: "prudente", en: "prudent" },
+                { es: "cariñoso", en: "affectionate" },
+                { es: "apasionado", en: "passionate" },
+                { es: "creativo", en: "creative" }
+            ],
+            'Emotions': [
+                { es: "feliz", en: "happy" },
+                { es: "triste", en: "sad" },
+                { es: "enojado", en: "angry" },
+                { es: "tranquilo", en: "calm" },
+                { es: "nervioso", en: "nervous" },
+                { es: "emocionado", en: "excited" },
+                { es: "asustado", en: "scared" },
+                { es: "preocupado", en: "worried" },
+                { es: "sorprendido", en: "surprised" },
+                { es: "confundido", en: "confused" },
+                { es: "celoso", en: "jealous" },
+                { es: "enamorado", en: "in love" },
+                { es: "contento", en: "content, happy" },
+                { es: "alegre", en: "cheerful" },
+                { es: "deprimido", en: "depressed" },
+                { es: "ansioso", en: "anxious" },
+                { es: "relajado", en: "relaxed" },
+                { es: "estresado", en: "stressed" },
+                { es: "frustrado", en: "frustrated" },
+                { es: "decepcionado", en: "disappointed" },
+                { es: "satisfecho", en: "satisfied" },
+                { es: "entusiasmado", en: "enthusiastic" },
+                { es: "esperanzado", en: "hopeful" },
+                { es: "desesperado", en: "desperate" },
+                { es: "agradecido", en: "grateful" },
+                { es: "avergonzado", en: "embarrassed" },
+                { es: "culpable", en: "guilty" },
+                { es: "inspirado", en: "inspired" },
+                { es: "motivado", en: "motivated" },
+                { es: "desanimado", en: "discouraged" },
+                { es: "nostálgico", en: "nostalgic" },
+                { es: "sereno", en: "serene" },
+                { es: "agitado", en: "agitated" },
+                { es: "aliviado", en: "relieved" },
+                { es: "tenso", en: "tense" },
+                { es: "furioso", en: "furious" },
+                { es: "irritado", en: "irritated" },
+                { es: "molesto", en: "annoyed" },
+                { es: "encantado", en: "delighted" },
+                { es: "fascinado", en: "fascinated" },
+                { es: "aburrido", en: "bored" }
+            ],
+            'Physical States': [
+                { es: "cansado", en: "tired" },
+                { es: "enfermo", en: "sick" },
+                { es: "sano", en: "healthy" },
+                { es: "fuerte", en: "strong" },
+                { es: "débil", en: "weak" },
+                { es: "joven", en: "young" },
+                { es: "viejo", en: "old" },
+                { es: "vivo", en: "alive" },
+                { es: "muerto", en: "dead" },
+                { es: "lleno", en: "full" },
+                { es: "vacío", en: "empty" },
+                { es: "limpio", en: "clean" },
+                { es: "sucio", en: "dirty" },
+                { es: "mojado", en: "wet" },
+                { es: "seco", en: "dry" },
+                { es: "caliente", en: "hot" },
+                { es: "frío", en: "cold" },
+                { es: "tibio", en: "warm, lukewarm" },
+                { es: "helado", en: "frozen, icy" },
+                { es: "agotado", en: "exhausted" },
+                { es: "descansado", en: "rested" },
+                { es: "dormido", en: "asleep" },
+                { es: "despierto", en: "awake" },
+                { es: "hambriento", en: "hungry" },
+                { es: "sediento", en: "thirsty" },
+                { es: "mareado", en: "dizzy" },
+                { es: "borracho", en: "drunk" },
+                { es: "sobrio", en: "sober" },
+                { es: "herido", en: "injured" },
+                { es: "roto", en: "broken" },
+                { es: "desnudo", en: "naked" },
+                { es: "vestido", en: "dressed" },
+                { es: "descalzo", en: "barefoot" }
+            ],
+            'Quality & Value': [
+                { es: "bueno", en: "good" },
+                { es: "malo", en: "bad" },
+                { es: "mejor", en: "better" },
+                { es: "peor", en: "worse" },
+                { es: "perfecto", en: "perfect" },
+                { es: "hermoso", en: "beautiful" },
+                { es: "feo", en: "ugly" },
+                { es: "bonito", en: "pretty" },
+                { es: "lindo", en: "cute" },
+                { es: "guapo", en: "handsome" },
+                { es: "rico", en: "rich, delicious" },
+                { es: "pobre", en: "poor" },
+                { es: "barato", en: "cheap" },
+                { es: "caro", en: "expensive" },
+                { es: "gratis", en: "free" },
+                { es: "fácil", en: "easy" },
+                { es: "difícil", en: "difficult" },
+                { es: "simple", en: "simple" },
+                { es: "complicado", en: "complicated" },
+                { es: "posible", en: "possible" },
+                { es: "imposible", en: "impossible" },
+                { es: "necesario", en: "necessary" },
+                { es: "importante", en: "important" },
+                { es: "útil", en: "useful" },
+                { es: "inútil", en: "useless" },
+                { es: "valioso", en: "valuable" },
+                { es: "excelente", en: "excellent" },
+                { es: "terrible", en: "terrible" },
+                { es: "maravilloso", en: "wonderful" },
+                { es: "fantástico", en: "fantastic" },
+                { es: "increíble", en: "incredible" },
+                { es: "elegante", en: "elegant" },
+                { es: "interesante", en: "interesting" }
+            ],
+            'Time & Speed': [
+                { es: "rápido", en: "fast" },
+                { es: "lento", en: "slow" },
+                { es: "temprano", en: "early" },
+                { es: "tarde", en: "late" },
+                { es: "próximo", en: "next" },
+                { es: "último", en: "last" },
+                { es: "primero", en: "first" },
+                { es: "segundo", en: "second" },
+                { es: "frecuente", en: "frequent" },
+                { es: "raro", en: "rare, strange" },
+                { es: "inmediato", en: "immediate" },
+                { es: "repentino", en: "sudden" },
+                { es: "constante", en: "constant" },
+                { es: "permanente", en: "permanent" },
+                { es: "temporal", en: "temporary" },
+                { es: "eterno", en: "eternal" },
+                { es: "breve", en: "brief" },
+                { es: "puntual", en: "punctual" },
+                { es: "actual", en: "current" },
+                { es: "pasado", en: "past" },
+                { es: "futuro", en: "future" },
+                { es: "reciente", en: "recent" },
+                { es: "antiguo", en: "old, ancient" },
+                { es: "moderno", en: "modern" },
+                { es: "nuevo", en: "new" },
+                { es: "diario", en: "daily" },
+                { es: "semanal", en: "weekly" },
+                { es: "mensual", en: "monthly" },
+                { es: "anual", en: "annual" }
+            ],
+            'Taste & Texture': [
+                { es: "dulce", en: "sweet" },
+                { es: "salado", en: "salty" },
+                { es: "amargo", en: "bitter" },
+                { es: "ácido", en: "sour" },
+                { es: "picante", en: "spicy" },
+                { es: "sabroso", en: "tasty" },
+                { es: "delicioso", en: "delicious" },
+                { es: "asqueroso", en: "disgusting" },
+                { es: "suave", en: "soft, smooth" },
+                { es: "duro", en: "hard" },
+                { es: "áspero", en: "rough" },
+                { es: "blando", en: "soft" },
+                { es: "crujiente", en: "crunchy" },
+                { es: "cremoso", en: "creamy" },
+                { es: "jugoso", en: "juicy" },
+                { es: "húmedo", en: "humid, moist" },
+                { es: "pegajoso", en: "sticky" },
+                { es: "resbaladizo", en: "slippery" },
+                { es: "esponjoso", en: "spongy" },
+                { es: "elástico", en: "elastic" },
+                { es: "rígido", en: "rigid" },
+                { es: "crudo", en: "raw" },
+                { es: "cocido", en: "cooked" },
+                { es: "asado", en: "roasted" },
+                { es: "frito", en: "fried" },
+                { es: "fresco", en: "fresh" },
+                { es: "podrido", en: "rotten" },
+                { es: "maduro", en: "ripe" },
+                { es: "tierno", en: "tender" },
+                { es: "grasoso", en: "greasy" }
+            ],
+            'Weather & Nature': [
+                { es: "soleado", en: "sunny" },
+                { es: "nublado", en: "cloudy" },
+                { es: "lluvioso", en: "rainy" },
+                { es: "tormentoso", en: "stormy" },
+                { es: "nevado", en: "snowy" },
+                { es: "ventoso", en: "windy" },
+                { es: "húmedo", en: "humid" },
+                { es: "árido", en: "arid" },
+                { es: "tropical", en: "tropical" },
+                { es: "templado", en: "temperate" },
+                { es: "desértico", en: "desert-like" },
+                { es: "montañoso", en: "mountainous" },
+                { es: "costero", en: "coastal" },
+                { es: "marino", en: "marine" },
+                { es: "terrestre", en: "terrestrial" },
+                { es: "acuático", en: "aquatic" },
+                { es: "volcánico", en: "volcanic" },
+                { es: "florido", en: "flowery" },
+                { es: "frondoso", en: "leafy" },
+                { es: "silvestre", en: "wild" },
+                { es: "cultivado", en: "cultivated" },
+                { es: "natural", en: "natural" },
+                { es: "artificial", en: "artificial" }
+            ],
+            'Body & Health': [
+                { es: "musculoso", en: "muscular" },
+                { es: "atlético", en: "athletic" },
+                { es: "esbelto", en: "slender" },
+                { es: "corpulento", en: "corpulent" },
+                { es: "bronceado", en: "tanned" },
+                { es: "juvenil", en: "youthful" },
+                { es: "fértil", en: "fertile" },
+                { es: "estéril", en: "sterile" },
+                { es: "contagioso", en: "contagious" },
+                { es: "crónico", en: "chronic" },
+                { es: "agudo", en: "acute" },
+                { es: "benigno", en: "benign" },
+                { es: "maligno", en: "malignant" },
+                { es: "hereditario", en: "hereditary" },
+                { es: "genético", en: "genetic" },
+                { es: "alérgico", en: "allergic" },
+                { es: "diabético", en: "diabetic" },
+                { es: "robusto", en: "robust" },
+                { es: "frágil", en: "fragile" },
+                { es: "resistente", en: "resistant" },
+                { es: "vulnerable", en: "vulnerable" },
+                { es: "inmune", en: "immune" },
+                { es: "sensible", en: "sensitive" },
+                { es: "delicado", en: "delicate" }
+            ],
+            'Quantity': [
+                { es: "mucho", en: "much, a lot" },
+                { es: "poco", en: "little, few" },
+                { es: "bastante", en: "enough, quite" },
+                { es: "demasiado", en: "too much" },
+                { es: "suficiente", en: "sufficient" },
+                { es: "varios", en: "several" },
+                { es: "todo", en: "all, every" },
+                { es: "ninguno", en: "none" },
+                { es: "alguno", en: "some" },
+                { es: "otro", en: "other, another" },
+                { es: "mismo", en: "same" },
+                { es: "diferente", en: "different" },
+                { es: "igual", en: "equal, same" },
+                { es: "solo", en: "alone, only" },
+                { es: "único", en: "unique, only" },
+                { es: "doble", en: "double" },
+                { es: "triple", en: "triple" },
+                { es: "múltiple", en: "multiple" },
+                { es: "escaso", en: "scarce" },
+                { es: "abundante", en: "abundant" },
+                { es: "numeroso", en: "numerous" },
+                { es: "completo", en: "complete" },
+                { es: "parcial", en: "partial" },
+                { es: "total", en: "total" },
+                { es: "entero", en: "whole" },
+                { es: "medio", en: "half" },
+                { es: "máximo", en: "maximum" },
+                { es: "mínimo", en: "minimum" }
+            ],
+            'General': [
+                { es: "cierto", en: "certain, true" },
+                { es: "falso", en: "false" },
+                { es: "verdadero", en: "true" },
+                { es: "real", en: "real" },
+                { es: "normal", en: "normal" },
+                { es: "extraño", en: "strange" },
+                { es: "especial", en: "special" },
+                { es: "común", en: "common" },
+                { es: "popular", en: "popular" },
+                { es: "famoso", en: "famous" },
+                { es: "secreto", en: "secret" },
+                { es: "público", en: "public" },
+                { es: "privado", en: "private" },
+                { es: "abierto", en: "open" },
+                { es: "cerrado", en: "closed" },
+                { es: "libre", en: "free" },
+                { es: "ocupado", en: "busy, occupied" },
+                { es: "disponible", en: "available" },
+                { es: "preparado", en: "prepared" },
+                { es: "correcto", en: "correct" },
+                { es: "incorrecto", en: "incorrect" },
+                { es: "justo", en: "fair, just" },
+                { es: "típico", en: "typical" },
+                { es: "obvio", en: "obvious" },
+                { es: "peligroso", en: "dangerous" },
+                { es: "seguro", en: "sure, safe" },
+                { es: "favorito", en: "favorite" },
+                { es: "principal", en: "main" },
+                { es: "esencial", en: "essential" },
+                { es: "obvio", en: "obvious" }
+            ]
+        };
+
+        // State
+        let currentCategory = null;
+        let activeWord = null;
+
+        // DOM elements
+        const categoryView = document.getElementById('category-view');
+        const cloudView = document.getElementById('cloud-view');
+        const categorySvg = d3.select('#category-svg');
+        const cloudSvg = d3.select('#cloud-svg');
+        const backBtn = document.getElementById('back-to-categories');
+        const categoryTitle = document.getElementById('category-title');
+        const translationBox = document.getElementById('translationBox');
+        const spanishWord = document.getElementById('spanishWord');
+        const englishWord = document.getElementById('englishWord');
+        const instructions = document.getElementById('instructions');
+
+        // Initialize category view
+        function initCategoryView() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            categorySvg.attr('width', width).attr('height', height);
+
+            const categoryNames = Object.keys(categories);
+            const nodes = categoryNames.map((name, i) => ({
+                id: name,
+                color: categories[name].color,
+                count: adjectiveData[name].length,
+                radius: 45 + adjectiveData[name].length * 0.3
+            }));
+
+            const simulation = d3.forceSimulation(nodes)
+                .force('charge', d3.forceManyBody().strength(150))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 15));
+
+            const nodeGroups = categorySvg.selectAll('.category-bubble')
+                .data(nodes)
+                .enter()
+                .append('g')
+                .attr('class', 'category-bubble')
+                .on('click', (event, d) => showCategory(d.id))
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+            nodeGroups.append('circle')
+                .attr('r', d => d.radius)
+                .attr('fill', d => d.color)
+                .attr('fill-opacity', 0.15)
+                .attr('stroke', d => d.color)
+                .attr('stroke-width', 2);
+
+            nodeGroups.append('text')
+                .text(d => d.id)
+                .attr('text-anchor', 'middle')
+                .attr('dy', '-0.2em')
+                .attr('fill', d => d.color)
+                .attr('font-size', '13px')
+                .attr('font-weight', '600')
+                .attr('pointer-events', 'none');
+
+            nodeGroups.append('text')
+                .text(d => `${d.count} words`)
+                .attr('text-anchor', 'middle')
+                .attr('dy', '1.2em')
+                .attr('fill', '#666')
+                .attr('font-size', '11px')
+                .attr('pointer-events', 'none');
+
+            simulation.on('tick', () => {
+                nodeGroups.attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }
+
+        // Show word cloud for a category
+        function showCategory(categoryName) {
+            currentCategory = categoryName;
+            const words = adjectiveData[categoryName];
+            const color = categories[categoryName].color;
+
+            // Hide category view, show cloud view
+            categoryView.style.display = 'none';
+            cloudView.style.display = 'block';
+            backBtn.style.display = 'block';
+            categoryTitle.style.display = 'block';
+            categoryTitle.textContent = categoryName;
+            categoryTitle.style.color = color;
+            instructions.textContent = 'Click any word';
+            translationBox.classList.remove('visible');
+            activeWord = null;
+
+            renderWordCloud(words, color);
+        }
+
+        // Render word cloud
+        function renderWordCloud(words, color) {
+            cloudSvg.selectAll('*').remove();
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            cloudSvg.attr('width', width).attr('height', height);
+
+            // Shuffle words
+            const shuffled = [...words].sort(() => Math.random() - 0.5);
+
+            // Place words avoiding overlap
+            const placed = [];
+            const padding = 12;
+
+            function checkOverlap(x, y, w, h) {
+                for (const p of placed) {
+                    if (x < p.x + p.w + padding &&
+                        x + w + padding > p.x &&
+                        y - h < p.y + padding &&
+                        y + padding > p.y - p.h) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            shuffled.forEach((adj, i) => {
+                const fontSize = 16 + Math.random() * 20;
+                const approxWidth = adj.es.length * fontSize * 0.6;
+                const approxHeight = fontSize;
+
+                let x, y, attempts = 0;
+                do {
+                    x = 80 + Math.random() * (width - 200);
+                    y = 120 + Math.random() * (height - 200);
+                    attempts++;
+                } while (checkOverlap(x, y, approxWidth, approxHeight) && attempts < 100);
+
+                if (attempts < 100) {
+                    placed.push({ x, y, w: approxWidth, h: approxHeight });
+
+                    // Vary opacity for visual interest
+                    const opacity = 0.5 + Math.random() * 0.5;
+
+                    const text = cloudSvg.append('text')
+                        .attr('x', x)
+                        .attr('y', y)
+                        .attr('font-size', fontSize)
+                        .attr('fill', color)
+                        .attr('fill-opacity', opacity)
+                        .attr('class', 'word')
+                        .attr('font-family', '-apple-system, BlinkMacSystemFont, sans-serif')
+                        .text(adj.es)
+                        .on('click', function() {
+                            if (activeWord) {
+                                activeWord.classed('active', false);
+                            }
+                            d3.select(this).classed('active', true);
+                            activeWord = d3.select(this);
+
+                            spanishWord.textContent = adj.es;
+                            spanishWord.style.color = color;
+                            englishWord.textContent = adj.en;
+                            translationBox.classList.add('visible');
+                        });
+                }
+            });
+        }
+
+        // Back to categories
+        backBtn.addEventListener('click', () => {
+            currentCategory = null;
+            cloudView.style.display = 'none';
+            categoryView.style.display = 'block';
+            backBtn.style.display = 'none';
+            categoryTitle.style.display = 'none';
+            translationBox.classList.remove('visible');
+            instructions.textContent = 'Click a category';
+        });
+
+        // Initialize
+        initCategoryView();
+    </script>
+</body>
+</html>

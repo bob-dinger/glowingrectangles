@@ -1,0 +1,111 @@
+Session Transcript - January 2, 2026
+=====================================
+
+Context from previous session:
+- Added over-explorers pages, grifters page, scroll page, comfort visualization
+- Fixed DNS issues with glowingrectangles.io
+- Set up www subdomain (still pointing to Gandi redirect, needs fixing later)
+
+---
+
+USER: (checking www.glowingrectangles.io status)
+
+CLAUDE: Let me verify that www.glowingrectangles.io is fully working now.
+[Tested - main domain working (200), www still not connecting]
+[DNS check showed www still pointing to webredir.vip.gandi.net instead of GitHub Pages]
+
+The www subdomain is still pointing to Gandi's web redirect service instead of GitHub Pages. The existing record is overriding the CNAME you added.
+
+In Gandi's DNS settings, look for an existing www record and delete it. Then make sure your CNAME record is:
+- Name: www
+- Type: CNAME
+- Hostname: bob-dinger.github.io.
+
+---
+
+USER: ok I'm not worried about it yet
+
+CLAUDE: No problem. The main site at https://glowingrectangles.io/ is working fine. You can sort out the www subdomain whenever you feel like it.
+
+---
+
+USER: yes. we'll worry about it later
+
+CLAUDE: Sounds good. What's next?
+
+---
+
+USER: hmm. invisible gorilla>
+
+CLAUDE: The famous inattentional blindness experiment - people so focused on counting basketball passes that they completely miss a gorilla walking through the scene.
+
+Are you thinking of making a page about this? Could be a powerful visualization about what we miss when we're focused on the wrong things.
+
+---
+
+USER: yes. a page. throw the ball around. ask them to count. the randomly put the gorilla in there...
+
+CLAUDE: Love it. Let me create an interactive version of the experiment.
+
+[Created gorilla.html with:]
+- Canvas animation with white and black team players
+- Ball passing between players
+- User asked to count passes by white team
+- Gorilla walks through at 6-9 second mark
+- Modal asks how many passes counted and if they saw gorilla
+- Reveals inattentional blindness concept
+
+[Created images/gorilla.svg for home page thumbnail]
+[Added to index.html]
+
+---
+
+USER: ok. add to the front page. I'm gonna have to check a lot of what we did tomorrow
+
+CLAUDE: Already added to the home page. Let me push everything so you can check it tomorrow.
+
+[Committed and pushed: "Add Invisible Gorilla interactive experiment"]
+
+Pushed. It'll be live at https://glowingrectangles.io in a minute. See you tomorrow.
+
+---
+
+USER: yeah. I don't think it works that well. I want to do a joke scene that links to the video. but again..let's worry about it later
+
+CLAUDE: Got it. We can rework it later - maybe a simple setup that builds anticipation then links to the actual Simons & Chabris video. That might land better than trying to recreate it.
+
+---
+
+USER: hmm. yeah that gorilla is very obvious here
+
+CLAUDE: Yeah, the real experiment works because you're watching actual people in a chaotic scene and the gorilla blends in more. In a simple animation with 6 circles, a big black shape walking through is impossible to miss.
+
+Linking to the real video is the right call. We'll fix it later.
+
+---
+
+USER: right. but still. we can do better. the gorilla is too obvious. but still. whatever I just saw was waaaay too obvious. so it needs to be refined
+
+CLAUDE: Agreed. The gorilla needs to be way more subtle - maybe smaller, more similar colors to the players, or have more visual chaos happening so there's actually something to miss. Right now it's like a billboard walking through.
+
+We'll refine it when you're ready.
+
+---
+
+USER: ok I'm gonna restart. let's write this entire session to a transcript .txt file in this folder
+
+---
+
+TODO for next session:
+
+**Priority:**
+1. Review all changes made in previous sessions
+
+**To Fix:**
+2. Refine invisible gorilla page - make gorilla more subtle or link to actual video
+3. Fix www.glowingrectangles.io subdomain (remove old redirect record in Gandi)
+
+**Later:**
+- [ ] Run `node fetch-noun-icons.js` to continue fetching Freepik icons (hit daily rate limit at 271/1356)
+- [ ] Update spanish-nouns-launch.html to use Freepik PNGs with emoji fallback
+

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>French Body Parts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #refreshBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #3B82F6;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #refreshBtn:hover { background: #2563EB; }
+
+        svg {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .word {
+            cursor: pointer;
+            transition: fill 0.2s;
+        }
+        .word:hover {
+            fill: #fff !important;
+        }
+        .word.active {
+            fill: #3B82F6 !important;
+        }
+
+        .translation-box {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px 40px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .translation-box.visible { opacity: 1; }
+
+        .french-word {
+            font-size: 32px;
+            font-weight: 600;
+            color: #3B82F6;
+            margin-bottom: 8px;
+        }
+        .english-word {
+            font-size: 22px;
+            color: #888;
+        }
+        .category-tag {
+            font-size: 11px;
+            color: #555;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            max-width: 400px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .legend-item:hover {
+            background: #222;
+        }
+        .legend-item.active {
+            background: #333;
+        }
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .legend-label { color: #555; }
+
+        .word.dimmed {
+            fill-opacity: 0.15 !important;
+        }
+
+        .count {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 11px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <a href="french.html" class="back-link">← Back</a>
+    <div class="title">Le Corps Humain</div>
+    <button id="refreshBtn">Shuffle</button>
+
+    <svg id="wordCloud"></svg>
+
+    <div class="translation-box" id="translationBox">
+        <div class="french-word" id="frenchWord"></div>
+        <div class="english-word" id="englishWord"></div>
+        <div class="category-tag" id="categoryTag"></div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+    <div class="count" id="count"></div>
+
+    <script>
+        const categories = {
+            'La Tête': { color: '#EC4899', words: [
+                { fr: 'la tête', en: 'head' },
+                { fr: 'le visage', en: 'face' },
+                { fr: 'le front', en: 'forehead' },
+                { fr: 'la tempe', en: 'temple' },
+                { fr: 'le crâne', en: 'skull' },
+                { fr: 'le cerveau', en: 'brain' },
+                { fr: 'les cheveux', en: 'hair' },
+                { fr: 'le cuir chevelu', en: 'scalp' },
+                { fr: 'la calvitie', en: 'baldness' },
+            ]},
+            'Les Yeux': { color: '#8B5CF6', words: [
+                { fr: "l'œil", en: 'eye' },
+                { fr: 'les yeux', en: 'eyes' },
+                { fr: 'le sourcil', en: 'eyebrow' },
+                { fr: 'le cil', en: 'eyelash' },
+                { fr: 'la paupière', en: 'eyelid' },
+                { fr: 'la pupille', en: 'pupil' },
+                { fr: "l'iris", en: 'iris' },
+                { fr: 'la rétine', en: 'retina' },
+                { fr: 'la cornée', en: 'cornea' },
+                { fr: 'la larme', en: 'tear' },
+                { fr: 'le regard', en: 'gaze' },
+            ]},
+            'Oreilles & Nez': { color: '#3B82F6', words: [
+                { fr: "l'oreille", en: 'ear' },
+                { fr: 'le lobe', en: 'earlobe' },
+                { fr: 'le tympan', en: 'eardrum' },
+                { fr: 'le nez', en: 'nose' },
+                { fr: 'la narine', en: 'nostril' },
+                { fr: 'la cloison nasale', en: 'septum' },
+            ]},
+            'La Bouche': { color: '#EF4444', words: [
+                { fr: 'la bouche', en: 'mouth' },
+                { fr: 'la lèvre', en: 'lip' },
+                { fr: 'la langue', en: 'tongue' },
+                { fr: 'la dent', en: 'tooth' },
+                { fr: 'les dents', en: 'teeth' },
+                { fr: 'la molaire', en: 'molar' },
+                { fr: 'la canine', en: 'canine tooth' },
+                { fr: 'la gencive', en: 'gum' },
+                { fr: 'le palais', en: 'palate' },
+                { fr: 'la luette', en: 'uvula' },
+                { fr: 'la salive', en: 'saliva' },
+                { fr: 'la mâchoire', en: 'jaw' },
+                { fr: 'la joue', en: 'cheek' },
+                { fr: 'le menton', en: 'chin' },
+                { fr: 'la barbe', en: 'beard' },
+                { fr: 'la moustache', en: 'mustache' },
+            ]},
+            'Cou & Gorge': { color: '#F59E0B', words: [
+                { fr: 'le cou', en: 'neck' },
+                { fr: 'la nuque', en: 'nape' },
+                { fr: 'la gorge', en: 'throat' },
+                { fr: 'le larynx', en: 'larynx' },
+                { fr: 'la trachée', en: 'trachea' },
+                { fr: "l'amygdale", en: 'tonsil' },
+                { fr: "la pomme d'Adam", en: "Adam's apple" },
+                { fr: 'la thyroïde', en: 'thyroid' },
+            ]},
+            'Le Torse': { color: '#10B981', words: [
+                { fr: 'le torse', en: 'torso' },
+                { fr: 'le tronc', en: 'trunk' },
+                { fr: 'la poitrine', en: 'chest' },
+                { fr: 'le sein', en: 'breast' },
+                { fr: 'le mamelon', en: 'nipple' },
+                { fr: 'le sternum', en: 'sternum' },
+                { fr: 'la côte', en: 'rib' },
+                { fr: "l'abdomen", en: 'abdomen' },
+                { fr: 'le ventre', en: 'belly' },
+                { fr: 'le nombril', en: 'belly button' },
+                { fr: 'la taille', en: 'waist' },
+                { fr: 'la hanche', en: 'hip' },
+                { fr: 'le bassin', en: 'pelvis' },
+                { fr: "l'aine", en: 'groin' },
+                { fr: 'le dos', en: 'back' },
+                { fr: 'la colonne vertébrale', en: 'spine' },
+                { fr: 'la vertèbre', en: 'vertebra' },
+                { fr: "l'omoplate", en: 'shoulder blade' },
+                { fr: 'la fesse', en: 'buttock' },
+                { fr: 'les fesses', en: 'butt' },
+            ]},
+            'Les Bras': { color: '#06B6D4', words: [
+                { fr: 'le bras', en: 'arm' },
+                { fr: "l'épaule", en: 'shoulder' },
+                { fr: "l'aisselle", en: 'armpit' },
+                { fr: 'le biceps', en: 'biceps' },
+                { fr: 'le triceps', en: 'triceps' },
+                { fr: 'le coude', en: 'elbow' },
+                { fr: "l'avant-bras", en: 'forearm' },
+                { fr: 'le poignet', en: 'wrist' },
+            ]},
+            'Les Mains': { color: '#6366F1', words: [
+                { fr: 'la main', en: 'hand' },
+                { fr: 'la paume', en: 'palm' },
+                { fr: 'le dos de la main', en: 'back of hand' },
+                { fr: 'le doigt', en: 'finger' },
+                { fr: 'le pouce', en: 'thumb' },
+                { fr: "l'index", en: 'index finger' },
+                { fr: 'le majeur', en: 'middle finger' },
+                { fr: "l'annulaire", en: 'ring finger' },
+                { fr: "l'auriculaire", en: 'pinky' },
+                { fr: 'le petit doigt', en: 'little finger' },
+                { fr: "l'ongle", en: 'fingernail' },
+                { fr: 'la cuticule', en: 'cuticle' },
+                { fr: "l'articulation", en: 'knuckle' },
+                { fr: 'le poing', en: 'fist' },
+            ]},
+            'Les Jambes': { color: '#F97316', words: [
+                { fr: 'la jambe', en: 'leg' },
+                { fr: 'la cuisse', en: 'thigh' },
+                { fr: 'le quadriceps', en: 'quadriceps' },
+                { fr: 'le genou', en: 'knee' },
+                { fr: 'la rotule', en: 'kneecap' },
+                { fr: 'le mollet', en: 'calf' },
+                { fr: 'le tibia', en: 'shin' },
+                { fr: 'la cheville', en: 'ankle' },
+                { fr: "le tendon d'Achille", en: 'Achilles tendon' },
+            ]},
+            'Les Pieds': { color: '#A855F7', words: [
+                { fr: 'le pied', en: 'foot' },
+                { fr: 'la plante du pied', en: 'sole' },
+                { fr: 'le cou-de-pied', en: 'instep' },
+                { fr: 'la voûte plantaire', en: 'arch' },
+                { fr: 'le talon', en: 'heel' },
+                { fr: "l'orteil", en: 'toe' },
+                { fr: 'le gros orteil', en: 'big toe' },
+                { fr: 'le petit orteil', en: 'little toe' },
+                { fr: "l'ongle de pied", en: 'toenail' },
+            ]},
+            'Les Organes': { color: '#EF4444', words: [
+                { fr: 'le cœur', en: 'heart' },
+                { fr: 'le poumon', en: 'lung' },
+                { fr: 'le foie', en: 'liver' },
+                { fr: 'le rein', en: 'kidney' },
+                { fr: "l'estomac", en: 'stomach' },
+                { fr: "l'intestin", en: 'intestine' },
+                { fr: "l'intestin grêle", en: 'small intestine' },
+                { fr: 'le gros intestin', en: 'large intestine' },
+                { fr: 'le côlon', en: 'colon' },
+                { fr: 'le pancréas', en: 'pancreas' },
+                { fr: 'la rate', en: 'spleen' },
+                { fr: 'la vésicule biliaire', en: 'gallbladder' },
+                { fr: "l'appendice", en: 'appendix' },
+                { fr: 'la vessie', en: 'bladder' },
+                { fr: "l'utérus", en: 'uterus' },
+                { fr: "l'ovaire", en: 'ovary' },
+                { fr: 'la prostate', en: 'prostate' },
+            ]},
+            'Os & Articulations': { color: '#78716C', words: [
+                { fr: "l'os", en: 'bone' },
+                { fr: 'le squelette', en: 'skeleton' },
+                { fr: "l'articulation", en: 'joint' },
+                { fr: 'le cartilage', en: 'cartilage' },
+                { fr: 'la moelle', en: 'marrow' },
+                { fr: 'le fémur', en: 'femur' },
+                { fr: 'le tibia', en: 'tibia' },
+                { fr: 'le péroné', en: 'fibula' },
+                { fr: "l'humérus", en: 'humerus' },
+                { fr: 'le radius', en: 'radius' },
+                { fr: 'le cubitus', en: 'ulna' },
+                { fr: 'la clavicule', en: 'collarbone' },
+                { fr: "l'omoplate", en: 'scapula' },
+            ]},
+            'Muscles & Tissus': { color: '#DC2626', words: [
+                { fr: 'le muscle', en: 'muscle' },
+                { fr: 'le tendon', en: 'tendon' },
+                { fr: 'le ligament', en: 'ligament' },
+                { fr: 'le nerf', en: 'nerve' },
+                { fr: 'la peau', en: 'skin' },
+                { fr: "l'épiderme", en: 'epidermis' },
+                { fr: 'le derme', en: 'dermis' },
+                { fr: 'le pore', en: 'pore' },
+                { fr: 'le poil', en: 'body hair' },
+                { fr: 'le grain de beauté', en: 'mole' },
+                { fr: 'la tache de rousseur', en: 'freckle' },
+                { fr: 'la ride', en: 'wrinkle' },
+                { fr: 'la cicatrice', en: 'scar' },
+                { fr: 'la verrue', en: 'wart' },
+            ]},
+            'Circulation': { color: '#B91C1C', words: [
+                { fr: 'le sang', en: 'blood' },
+                { fr: 'la veine', en: 'vein' },
+                { fr: "l'artère", en: 'artery' },
+                { fr: 'le capillaire', en: 'capillary' },
+                { fr: 'le globule rouge', en: 'red blood cell' },
+                { fr: 'le globule blanc', en: 'white blood cell' },
+                { fr: 'la plaquette', en: 'platelet' },
+                { fr: 'le plasma', en: 'plasma' },
+                { fr: 'le pouls', en: 'pulse' },
+            ]},
+        };
+
+        // Flatten all words with category info
+        const allWords = [];
+        Object.entries(categories).forEach(([cat, data]) => {
+            data.words.forEach(word => {
+                allWords.push({ ...word, category: cat, color: data.color });
+            });
+        });
+
+        const svg = document.getElementById('wordCloud');
+        const translationBox = document.getElementById('translationBox');
+        const frenchWord = document.getElementById('frenchWord');
+        const englishWord = document.getElementById('englishWord');
+        const categoryTag = document.getElementById('categoryTag');
+        const legend = document.getElementById('legend');
+        const countEl = document.getElementById('count');
+        let activeWord = null;
+
+        // Build legend
+        let activeCategory = null;
+
+        Object.entries(categories).forEach(([cat, data]) => {
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.dataset.category = cat;
+            item.innerHTML = `<div class="legend-dot" style="background:${data.color}"></div><span class="legend-label">${cat}</span>`;
+
+            item.addEventListener('click', () => {
+                if (activeCategory === cat) {
+                    activeCategory = null;
+                    item.classList.remove('active');
+                    document.querySelectorAll('.word').forEach(w => w.classList.remove('dimmed'));
+                } else {
+                    document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active'));
+                    activeCategory = cat;
+                    item.classList.add('active');
+                    document.querySelectorAll('.word').forEach(w => {
+                        if (w.dataset.category === cat) {
+                            w.classList.remove('dimmed');
+                        } else {
+                            w.classList.add('dimmed');
+                        }
+                    });
+                }
+            });
+
+            legend.appendChild(item);
+        });
+
+        countEl.textContent = `${allWords.length} parties du corps`;
+
+        function renderWords() {
+            svg.innerHTML = '';
+            translationBox.classList.remove('visible');
+            activeWord = null;
+            activeCategory = null;
+            document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active'));
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // Shuffle
+            const shuffled = [...allWords].sort(() => Math.random() - 0.5);
+
+            const placed = [];
+            const padding = 12;
+
+            function checkOverlap(x, y, w, h) {
+                for (const p of placed) {
+                    if (x < p.x + p.w + padding && x + w + padding > p.x &&
+                        y - h < p.y + padding && y + padding > p.y - p.h) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            shuffled.forEach((word) => {
+                const fontSize = 14 + Math.random() * 20;
+                const approxWidth = word.fr.length * fontSize * 0.5;
+                const approxHeight = fontSize;
+
+                let x, y, attempts = 0;
+                do {
+                    x = 60 + Math.random() * (width - 180);
+                    y = 80 + Math.random() * (height - 180);
+                    attempts++;
+                } while (checkOverlap(x, y, approxWidth, approxHeight) && attempts < 150);
+
+                if (attempts < 150) {
+                    placed.push({ x, y, w: approxWidth, h: approxHeight });
+
+                    const opacity = 0.5 + Math.random() * 0.5;
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', x);
+                    text.setAttribute('y', y);
+                    text.setAttribute('font-size', fontSize);
+                    text.setAttribute('fill', word.color);
+                    text.setAttribute('fill-opacity', opacity);
+                    text.setAttribute('class', 'word');
+                    text.setAttribute('font-family', '-apple-system, BlinkMacSystemFont, sans-serif');
+                    text.dataset.category = word.category;
+                    text.textContent = word.fr;
+
+                    text.addEventListener('click', () => {
+                        if (activeWord) activeWord.classList.remove('active');
+                        text.classList.add('active');
+                        activeWord = text;
+                        frenchWord.textContent = word.fr;
+                        englishWord.textContent = word.en;
+                        categoryTag.textContent = word.category;
+                        translationBox.classList.add('visible');
+                    });
+
+                    svg.appendChild(text);
+                }
+            });
+        }
+
+        document.getElementById('refreshBtn').addEventListener('click', renderWords);
+        renderWords();
+    </script>
+</body>
+</html>

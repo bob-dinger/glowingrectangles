@@ -1,0 +1,7576 @@
+{
+  "mujer": {
+    "en": "woman",
+    "icon": {
+      "id": 15675894,
+      "name": "Black",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/15675/15675894.png"
+    }
+  },
+  "padre": {
+    "en": "father",
+    "icon": {
+      "id": 2970084,
+      "name": "Dad",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2970/2970084.png"
+    }
+  },
+  "niño": {
+    "en": "child, boy",
+    "icon": {
+      "id": 8972123,
+      "name": "Girl",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/8972/8972123.png"
+    }
+  },
+  "hombre": {
+    "en": "man",
+    "icon": {
+      "id": 4086624,
+      "name": "Man",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/4086/4086624.png"
+    }
+  },
+  "niña": {
+    "en": "girl",
+    "icon": {
+      "id": 9702934,
+      "name": "Cancan",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/9702/9702934.png"
+    }
+  },
+  "hijo": {
+    "en": "son",
+    "icon": {
+      "id": 3088384,
+      "name": "Son",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/3088/3088384.png"
+    }
+  },
+  "hermano": {
+    "en": "brother",
+    "icon": {
+      "id": 1312511,
+      "name": "Youth",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1312/1312511.png"
+    }
+  },
+  "madre": {
+    "en": "mother",
+    "icon": {
+      "id": 4167376,
+      "name": "Mother",
+      "style": "SBTS2018 Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/4167/4167376.png"
+    }
+  },
+  "hija": {
+    "en": "daughter",
+    "icon": {
+      "id": 3886659,
+      "name": "Motherhood",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/3886/3886659.png"
+    }
+  },
+  "hermana": {
+    "en": "sister",
+    "icon": {
+      "id": 1075177,
+      "name": "Shopkeeper",
+      "style": "Kawaii Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/1075/1075177.png"
+    }
+  },
+  "primo": {
+    "en": "cousin",
+    "icon": {
+      "id": 7223679,
+      "name": "Cousin",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/7223/7223679.png"
+    }
+  },
+  "tía": {
+    "en": "aunt",
+    "icon": {
+      "id": 9047643,
+      "name": "Man",
+      "style": "Kawaii Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/9047/9047643.png"
+    }
+  },
+  "tío": {
+    "en": "uncle",
+    "icon": {
+      "id": 2349413,
+      "name": "Gentleman",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2349/2349413.png"
+    }
+  },
+  "abuela": {
+    "en": "grandmother",
+    "icon": {
+      "id": 3554643,
+      "name": "Old woman",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/3554/3554643.png"
+    }
+  },
+  "abuelo": {
+    "en": "grandfather",
+    "icon": {
+      "id": 3544681,
+      "name": "Old man",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/3544/3544681.png"
+    }
+  },
+  "esposa": {
+    "en": "wife",
+    "icon": {
+      "id": 2072429,
+      "name": "Dart",
+      "style": "Amethys Design Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/2072/2072429.png"
+    }
+  },
+  "sobrina": {
+    "en": "niece",
+    "icon": {
+      "id": 4871230,
+      "name": "Girl",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/4871/4871230.png"
+    }
+  },
+  "esposo": {
+    "en": "husband",
+    "icon": {
+      "id": 5438982,
+      "name": "Husband",
+      "style": "Meticulous Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/5438/5438982.png"
+    }
+  },
+  "novio": {
+    "en": "boyfriend",
+    "icon": {
+      "id": 1176680,
+      "name": "Boyfriend",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1176/1176680.png"
+    }
+  },
+  "sobrino": {
+    "en": "nephew",
+    "icon": {
+      "id": 4184872,
+      "name": "Baby",
+      "style": "Basic Straight Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/4184/4184872.png"
+    }
+  },
+  "bebé": {
+    "en": "baby",
+    "icon": {
+      "id": 4417023,
+      "name": "Baby",
+      "style": "Basic Miscellany Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/4417/4417023.png"
+    }
+  },
+  "novia": {
+    "en": "girlfriend",
+    "icon": {
+      "id": 1176669,
+      "name": "Girlfriend",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1176/1176669.png"
+    }
+  },
+  "amigo": {
+    "en": "friend",
+    "icon": {
+      "id": 3220788,
+      "name": "Friendship",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/3220/3220788.png"
+    }
+  },
+  "persona": {
+    "en": "person",
+    "icon": {
+      "id": 17903336,
+      "name": "Sweating",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/17903/17903336.png"
+    }
+  },
+  "vecino": {
+    "en": "neighbor",
+    "icon": {
+      "id": 16445654,
+      "name": "Neighborhood",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/16445/16445654.png"
+    }
+  },
+  "marido": {
+    "en": "husband",
+    "icon": {
+      "id": 5438982,
+      "name": "Husband",
+      "style": "Meticulous Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/5438/5438982.png"
+    }
+  },
+  "pareja": {
+    "en": "couple, partner",
+    "icon": {
+      "id": 4463761,
+      "name": "Couple",
+      "style": "Basic Rounded Filled",
+      "url": "https://cdn-icons-png.freepik.com/128/4463/4463761.png"
+    }
+  },
+  "familia": {
+    "en": "family",
+    "icon": {
+      "id": 11261670,
+      "name": "Family",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/11261/11261670.png"
+    }
+  },
+  "suegro": {
+    "en": "father-in-law",
+    "icon": {
+      "id": 14860501,
+      "name": "Man",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/14860/14860501.png"
+    }
+  },
+  "gente": {
+    "en": "people",
+    "icon": {
+      "id": 10524049,
+      "name": "Unity",
+      "style": "Basic Gradient Gradient",
+      "url": "https://cdn-icons-png.freepik.com/128/10524/10524049.png"
+    }
+  },
+  "suegra": {
+    "en": "mother-in-law",
+    "icon": {
+      "id": 9998932,
+      "name": "Market",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/9998/9998932.png"
+    }
+  },
+  "nuera": {
+    "en": "daughter-in-law",
+    "icon": {
+      "id": 9998889,
+      "name": "Sex",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/9998/9998889.png"
+    }
+  },
+  "yerno": {
+    "en": "son-in-law",
+    "icon": {
+      "id": 1083528,
+      "name": "Law",
+      "style": "Flat Circular Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1083/1083528.png"
+    }
+  },
+  "bisabuelo": {
+    "en": "great-grandfather",
+    "icon": {
+      "id": 3544993,
+      "name": "Old man",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/3544/3544993.png"
+    }
+  },
+  "cuñado": {
+    "en": "brother-in-law",
+    "icon": {
+      "id": 13752871,
+      "name": "Vintage",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/13752/13752871.png"
+    }
+  },
+  "tataranieto": {
+    "en": "great-great-grandchild",
+    "icon": {
+      "id": 9220531,
+      "name": "Melchor",
+      "style": "Kawaii Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/9220/9220531.png"
+    }
+  },
+  "viudo": {
+    "en": "widower",
+    "icon": {
+      "id": 17707963,
+      "name": "Courier",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/17707/17707963.png"
+    }
+  },
+  "huérfano": {
+    "en": "orphan",
+    "icon": {
+      "id": 5894048,
+      "name": "Adoption",
+      "style": "Detailed Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/5894/5894048.png"
+    }
+  },
+  "gemelo": {
+    "en": "twin",
+    "icon": {
+      "id": 3011790,
+      "name": "Twins",
+      "style": "Basic Straight Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/3011/3011790.png"
+    }
+  },
+  "cabeza": {
+    "en": "head",
+    "icon": {
+      "id": 1051584,
+      "name": "Mind",
+      "style": "Voysla Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/1051/1051584.png"
+    }
+  },
+  "cara": {
+    "en": "face",
+    "icon": {
+      "id": 11848055,
+      "name": "Woman",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/11848/11848055.png"
+    }
+  },
+  "oreja": {
+    "en": "ear",
+    "icon": {
+      "id": 508740,
+      "name": "Ear",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/508/508740.png"
+    }
+  },
+  "boca": {
+    "en": "mouth",
+    "icon": {
+      "id": 5727766,
+      "name": "Mouth",
+      "style": "Flat Circular Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/5727/5727766.png"
+    }
+  },
+  "nariz": {
+    "en": "nose",
+    "icon": {
+      "id": 5220843,
+      "name": "Blackhead",
+      "style": "Vitaliy Gorbachev Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/5220/5220843.png"
+    }
+  },
+  "ojo": {
+    "en": "eye",
+    "icon": {
+      "id": 15140042,
+      "name": "Eye",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/15140/15140042.png"
+    }
+  },
+  "dedo": {
+    "en": "finger",
+    "icon": {
+      "id": 6224402,
+      "name": "Foam hand",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/6224/6224402.png"
+    }
+  },
+  "pierna": {
+    "en": "leg",
+    "icon": {
+      "id": 7924788,
+      "name": "Leg",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/7924/7924788.png"
+    }
+  },
+  "brazo": {
+    "en": "arm",
+    "icon": {
+      "id": 9172477,
+      "name": "Arm",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/9172/9172477.png"
+    }
+  },
+  "mano": {
+    "en": "hand",
+    "icon": {
+      "id": 636052,
+      "name": "Hold",
+      "style": "Pixel Perfect Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/636/636052.png"
+    }
+  },
+  "pelo": {
+    "en": "hair",
+    "icon": {
+      "id": 3465265,
+      "name": "Hairdresser",
+      "style": "dDara Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3465/3465265.png"
+    }
+  },
+  "cuello": {
+    "en": "neck",
+    "icon": {
+      "id": 4097008,
+      "name": "Neck",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/4097/4097008.png"
+    }
+  },
+  "pie": {
+    "en": "foot",
+    "icon": {
+      "id": 16668525,
+      "name": "Fashion",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/16668/16668525.png"
+    }
+  },
+  "estómago": {
+    "en": "stomach",
+    "icon": {
+      "id": 18281798,
+      "name": "Stomach",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/18281/18281798.png"
+    }
+  },
+  "corazón": {
+    "en": "heart",
+    "icon": {
+      "id": 8229779,
+      "name": "Heart",
+      "style": "Detailed Mixed Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/8229/8229779.png"
+    }
+  },
+  "espalda": {
+    "en": "back",
+    "icon": {
+      "id": 753333,
+      "name": "Back",
+      "style": "Flat Color Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/753/753333.png"
+    }
+  },
+  "codo": {
+    "en": "elbow",
+    "icon": null
+  },
+  "tobillo": {
+    "en": "ankle",
+    "icon": null
+  },
+  "muñeca": {
+    "en": "wrist",
+    "icon": null
+  },
+  "hombro": {
+    "en": "shoulder",
+    "icon": {
+      "id": 5877961,
+      "name": "Shoulder",
+      "style": "Vitaliy Gorbachev Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/5877/5877961.png"
+    }
+  },
+  "rodilla": {
+    "en": "knee",
+    "icon": null
+  },
+  "labio": {
+    "en": "lip",
+    "icon": {
+      "id": 2357434,
+      "name": "Lips",
+      "style": "Detailed Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/2357/2357434.png"
+    }
+  },
+  "diente": {
+    "en": "tooth",
+    "icon": {
+      "id": 1225421,
+      "name": "Tooth",
+      "style": "Wanicon Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/1225/1225421.png"
+    }
+  },
+  "pecho": {
+    "en": "chest",
+    "icon": {
+      "id": 909482,
+      "name": "Chest",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/909/909482.png"
+    }
+  },
+  "lengua": {
+    "en": "tongue",
+    "icon": {
+      "id": 10509987,
+      "name": "Tongue",
+      "style": "Detailed Straight Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/10509/10509987.png"
+    }
+  },
+  "ceja": {
+    "en": "eyebrow",
+    "icon": {
+      "id": 4071141,
+      "name": "Eyebrow",
+      "style": "Basic Miscellany Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/4071/4071141.png"
+    }
+  },
+  "cerebro": {
+    "en": "brain",
+    "icon": {
+      "id": 15557942,
+      "name": "Creativity",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/15557/15557942.png"
+    }
+  },
+  "barbilla": {
+    "en": "chin",
+    "icon": {
+      "id": 8897176,
+      "name": "Chin",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/8897/8897176.png"
+    }
+  },
+  "pestaña": {
+    "en": "eyelash",
+    "icon": {
+      "id": 223929,
+      "name": "Eyelashes",
+      "style": "Basic Miscellany Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/223/223929.png"
+    }
+  },
+  "mejilla": {
+    "en": "cheek",
+    "icon": {
+      "id": 15621508,
+      "name": "Facial",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/15621/15621508.png"
+    }
+  },
+  "frente": {
+    "en": "front",
+    "icon": null
+  },
+  "riñón": {
+    "en": "kidney",
+    "icon": {
+      "id": 2864524,
+      "name": "Kidney",
+      "style": "Justicon Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/2864/2864524.png"
+    }
+  },
+  "hígado": {
+    "en": "liver",
+    "icon": {
+      "id": 16330144,
+      "name": "Liver",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/16330/16330144.png"
+    }
+  },
+  "pulmón": {
+    "en": "lung",
+    "icon": {
+      "id": 1881195,
+      "name": "Lungs",
+      "style": "Kawaii Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/1881/1881195.png"
+    }
+  },
+  "hueso": {
+    "en": "bone",
+    "icon": {
+      "id": 3744770,
+      "name": "Bone",
+      "style": "Detailed Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/3744/3744770.png"
+    }
+  },
+  "músculo": {
+    "en": "muscle",
+    "icon": null
+  },
+  "piel": {
+    "en": "skin",
+    "icon": {
+      "id": 2269004,
+      "name": "Skin",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2269/2269004.png"
+    }
+  },
+  "uña": {
+    "en": "nail",
+    "icon": {
+      "id": 2437898,
+      "name": "Nail",
+      "style": "Detailed Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/2437/2437898.png"
+    }
+  },
+  "cadera": {
+    "en": "hip",
+    "icon": {
+      "id": 4701839,
+      "name": "Pelvis",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/4701/4701839.png"
+    }
+  },
+  "sangre": {
+    "en": "blood",
+    "icon": null
+  },
+  "cintura": {
+    "en": "waist",
+    "icon": {
+      "id": 755348,
+      "name": "Fitness",
+      "style": "Aphiradee (monkik) Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/755/755348.png"
+    }
+  },
+  "cocina": {
+    "en": "kitchen",
+    "icon": {
+      "id": 13910888,
+      "name": "Kitchen table",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/13910/13910888.png"
+    }
+  },
+  "apartamento": {
+    "en": "apartment",
+    "icon": {
+      "id": 5808390,
+      "name": "City",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/5808/5808390.png"
+    }
+  },
+  "casa": {
+    "en": "house",
+    "icon": {
+      "id": 2163350,
+      "name": "House",
+      "style": "Basic Rounded Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/2163/2163350.png"
+    }
+  },
+  "habitación": {
+    "en": "room",
+    "icon": {
+      "id": 7185583,
+      "name": "Waiting room",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/7185/7185583.png"
+    }
+  },
+  "baño": {
+    "en": "bathroom",
+    "icon": {
+      "id": 1606212,
+      "name": "Bathroom",
+      "style": "Basic Miscellany Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/1606/1606212.png"
+    }
+  },
+  "dormitorio": {
+    "en": "bedroom",
+    "icon": null
+  },
+  "sala": {
+    "en": "living room",
+    "icon": null
+  },
+  "ventana": {
+    "en": "window",
+    "icon": null
+  },
+  "comedor": {
+    "en": "dining room",
+    "icon": null
+  },
+  "puerta": {
+    "en": "door",
+    "icon": null
+  },
+  "suelo": {
+    "en": "floor",
+    "icon": {
+      "id": 12326985,
+      "name": "Hardwood",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/12326/12326985.png"
+    }
+  },
+  "techo": {
+    "en": "ceiling, roof",
+    "icon": {
+      "id": 6911880,
+      "name": "Ceiling",
+      "style": "Basic Straight Filled",
+      "url": "https://cdn-icons-png.freepik.com/128/6911/6911880.png"
+    }
+  },
+  "pared": {
+    "en": "wall",
+    "icon": {
+      "id": 9846415,
+      "name": "Wall",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/9846/9846415.png"
+    }
+  },
+  "escalera": {
+    "en": "stairs",
+    "icon": {
+      "id": 5164987,
+      "name": "Stairs",
+      "style": "Generic Basic Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/5164/5164987.png"
+    }
+  },
+  "jardín": {
+    "en": "garden",
+    "icon": {
+      "id": 2541917,
+      "name": "Tulips",
+      "style": "Detailed Straight Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2541/2541917.png"
+    }
+  },
+  "cama": {
+    "en": "bed",
+    "icon": {
+      "id": 4783058,
+      "name": "Double bed",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/4783/4783058.png"
+    }
+  },
+  "sofá": {
+    "en": "sofa",
+    "icon": {
+      "id": 1698720,
+      "name": "Seater sofa",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1698/1698720.png"
+    }
+  },
+  "mesa": {
+    "en": "table",
+    "icon": {
+      "id": 3100519,
+      "name": "Table",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/3100/3100519.png"
+    }
+  },
+  "silla": {
+    "en": "chair",
+    "icon": {
+      "id": 4888430,
+      "name": "Desk chair",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/4888/4888430.png"
+    }
+  },
+  "garaje": {
+    "en": "garage",
+    "icon": {
+      "id": 2053996,
+      "name": "Mechanics",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2053/2053996.png"
+    }
+  },
+  "estante": {
+    "en": "shelf",
+    "icon": {
+      "id": 9188528,
+      "name": "Shelf",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/9188/9188528.png"
+    }
+  },
+  "armario": {
+    "en": "closet, wardrobe",
+    "icon": {
+      "id": 17972203,
+      "name": "Wardrobe",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/17972/17972203.png"
+    }
+  },
+  "alfombra": {
+    "en": "carpet, rug",
+    "icon": {
+      "id": 10636605,
+      "name": "Carpets",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/10636/10636605.png"
+    }
+  },
+  "espejo": {
+    "en": "mirror",
+    "icon": {
+      "id": 4176408,
+      "name": "Mirror",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/4176/4176408.png"
+    }
+  },
+  "lámpara": {
+    "en": "lamp",
+    "icon": {
+      "id": 10508811,
+      "name": "Lamp",
+      "style": "Basic Miscellany Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/10508/10508811.png"
+    }
+  },
+  "cortina": {
+    "en": "curtain",
+    "icon": null
+  },
+  "sábana": {
+    "en": "sheet",
+    "icon": null
+  },
+  "colchón": {
+    "en": "mattress",
+    "icon": null
+  },
+  "manta": {
+    "en": "blanket",
+    "icon": null
+  },
+  "almohada": {
+    "en": "pillow",
+    "icon": null
+  },
+  "refrigerador": {
+    "en": "refrigerator",
+    "icon": {
+      "id": 13721735,
+      "name": "Fridge",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/13721/13721735.png"
+    }
+  },
+  "escritorio": {
+    "en": "desk",
+    "icon": {
+      "id": 17155111,
+      "name": "Office desk",
+      "style": "Generic gradient fill",
+      "url": "https://cdn-icons-png.freepik.com/128/17155/17155111.png"
+    }
+  },
+  "cajón": {
+    "en": "drawer",
+    "icon": {
+      "id": 13542736,
+      "name": "Living",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/13542/13542736.png"
+    }
+  },
+  "horno": {
+    "en": "oven",
+    "icon": {
+      "id": 11482644,
+      "name": "Technology",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/11482/11482644.png"
+    }
+  },
+  "televisor": {
+    "en": "television",
+    "icon": {
+      "id": 13450156,
+      "name": "Tv",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/13450/13450156.png"
+    }
+  },
+  "microondas": {
+    "en": "microwave",
+    "icon": {
+      "id": 12666321,
+      "name": "Microwave",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/12666/12666321.png"
+    }
+  },
+  "bañera": {
+    "en": "bathtub",
+    "icon": {
+      "id": 6217163,
+      "name": "Bathtub",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/6217/6217163.png"
+    }
+  },
+  "secadora": {
+    "en": "dryer",
+    "icon": {
+      "id": 2260721,
+      "name": "Tumble dryer",
+      "style": "Vitaliy Gorbachev Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/2260/2260721.png"
+    }
+  },
+  "ducha": {
+    "en": "shower",
+    "icon": {
+      "id": 10772580,
+      "name": "Shower",
+      "style": "Vitaliy Gorbachev Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/10772/10772580.png"
+    }
+  },
+  "lavadora": {
+    "en": "washing machine",
+    "icon": {
+      "id": 10693742,
+      "name": "Washing machine",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/10693/10693742.png"
+    }
+  },
+  "inodoro": {
+    "en": "toilet",
+    "icon": {
+      "id": 5685835,
+      "name": "Toilet",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/5685/5685835.png"
+    }
+  },
+  "llave": {
+    "en": "key",
+    "icon": {
+      "id": 9027971,
+      "name": "Key",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/9027/9027971.png"
+    }
+  },
+  "lavabo": {
+    "en": "sink",
+    "icon": {
+      "id": 441913,
+      "name": "Sink",
+      "style": "Dreamstale Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/441/441913.png"
+    }
+  },
+  "cerradura": {
+    "en": "lock",
+    "icon": {
+      "id": 1180303,
+      "name": "Padlock",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1180/1180303.png"
+    }
+  },
+  "grifo": {
+    "en": "faucet",
+    "icon": {
+      "id": 966897,
+      "name": "Faucet",
+      "style": "srip Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/966/966897.png"
+    }
+  },
+  "timbre": {
+    "en": "doorbell",
+    "icon": null
+  },
+  "buzón": {
+    "en": "mailbox",
+    "icon": null
+  },
+  "sótano": {
+    "en": "basement",
+    "icon": null
+  },
+  "terraza": {
+    "en": "terrace",
+    "icon": null
+  },
+  "balcón": {
+    "en": "balcony",
+    "icon": null
+  },
+  "agua": {
+    "en": "water",
+    "icon": {
+      "id": 4633402,
+      "name": "Drop",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/4633/4633402.png"
+    }
+  },
+  "leche": {
+    "en": "milk",
+    "icon": {
+      "id": 5125422,
+      "name": "Milk",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/5125/5125422.png"
+    }
+  },
+  "ático": {
+    "en": "attic",
+    "icon": {
+      "id": 1370810,
+      "name": "Roof",
+      "style": "Detailed Straight Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/1370/1370810.png"
+    }
+  },
+  "comida": {
+    "en": "food",
+    "icon": {
+      "id": 3300664,
+      "name": "Pizza",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/3300/3300664.png"
+    }
+  },
+  "bebida": {
+    "en": "drink",
+    "icon": {
+      "id": 2390931,
+      "name": "Cocktail",
+      "style": "SBTS2018 Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/2390/2390931.png"
+    }
+  },
+  "cerveza": {
+    "en": "beer",
+    "icon": {
+      "id": 3314667,
+      "name": "Beer",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/3314/3314667.png"
+    }
+  },
+  "vino": {
+    "en": "wine",
+    "icon": {
+      "id": 5821090,
+      "name": "Wine",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/5821/5821090.png"
+    }
+  },
+  "café": {
+    "en": "coffee",
+    "icon": {
+      "id": 12396961,
+      "name": "Coffee",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/12396/12396961.png"
+    }
+  },
+  "té": {
+    "en": "tea",
+    "icon": {
+      "id": 701057,
+      "name": "Tea",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/701/701057.png"
+    }
+  },
+  "jugo": {
+    "en": "juice",
+    "icon": {
+      "id": 2442019,
+      "name": "Orange juice",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/2442/2442019.png"
+    }
+  },
+  "pollo": {
+    "en": "chicken",
+    "icon": {
+      "id": 4868143,
+      "name": "Chicken",
+      "style": "Detailed Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/4868/4868143.png"
+    }
+  },
+  "arroz": {
+    "en": "rice",
+    "icon": {
+      "id": 9873609,
+      "name": "Rice",
+      "style": "Detailed Straight Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/9873/9873609.png"
+    }
+  },
+  "pasta": {
+    "en": "pasta",
+    "icon": {
+      "id": 5409327,
+      "name": "Farfalle",
+      "style": "Basic Rounded Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/5409/5409327.png"
+    }
+  },
+  "pan": {
+    "en": "bread",
+    "icon": {
+      "id": 9341844,
+      "name": "Bread",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/9341/9341844.png"
+    }
+  },
+  "carne": {
+    "en": "meat",
+    "icon": {
+      "id": 13768914,
+      "name": "Meat",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/13768/13768914.png"
+    }
+  },
+  "pescado": {
+    "en": "fish",
+    "icon": null
+  },
+  "queso": {
+    "en": "cheese",
+    "icon": null
+  },
+  "azúcar": {
+    "en": "sugar",
+    "icon": null
+  },
+  "huevo": {
+    "en": "egg",
+    "icon": null
+  },
+  "mantequilla": {
+    "en": "butter",
+    "icon": null
+  },
+  "sal": {
+    "en": "salt",
+    "icon": {
+      "id": 8080408,
+      "name": "Salt",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/8080/8080408.png"
+    }
+  },
+  "vinagre": {
+    "en": "vinegar",
+    "icon": {
+      "id": 6122459,
+      "name": "Apple cider vinegar",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/6122/6122459.png"
+    }
+  },
+  "fruta": {
+    "en": "fruit",
+    "icon": {
+      "id": 933279,
+      "name": "Tomato",
+      "style": "Detailed Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/933/933279.png"
+    }
+  },
+  "aceite": {
+    "en": "oil",
+    "icon": {
+      "id": 10021092,
+      "name": "Petroleum",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/10021/10021092.png"
+    }
+  },
+  "pimienta": {
+    "en": "pepper",
+    "icon": {
+      "id": 1728834,
+      "name": "Bell pepper",
+      "style": "Aphiradee (monkik) Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/1728/1728834.png"
+    }
+  },
+  "fresa": {
+    "en": "strawberry",
+    "icon": {
+      "id": 6091685,
+      "name": "Strawberry",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/6091/6091685.png"
+    }
+  },
+  "uva": {
+    "en": "grape",
+    "icon": {
+      "id": 1412542,
+      "name": "Grape",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1412/1412542.png"
+    }
+  },
+  "naranja": {
+    "en": "orange",
+    "icon": null
+  },
+  "plátano": {
+    "en": "banana",
+    "icon": {
+      "id": 433682,
+      "name": "Banana",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/433/433682.png"
+    }
+  },
+  "manzana": {
+    "en": "apple",
+    "icon": {
+      "id": 1046290,
+      "name": "Apple",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1046/1046290.png"
+    }
+  },
+  "melón": {
+    "en": "melon",
+    "icon": {
+      "id": 1514969,
+      "name": "Melon",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1514/1514969.png"
+    }
+  },
+  "limón": {
+    "en": "lemon",
+    "icon": {
+      "id": 15676773,
+      "name": "Fruit",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/15676/15676773.png"
+    }
+  },
+  "durazno": {
+    "en": "peach",
+    "icon": {
+      "id": 19025042,
+      "name": "Fruit",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/19025/19025042.png"
+    }
+  },
+  "sandía": {
+    "en": "watermelon",
+    "icon": {
+      "id": 15677084,
+      "name": "Fruit",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/15677/15677084.png"
+    }
+  },
+  "pera": {
+    "en": "pear",
+    "icon": {
+      "id": 3137092,
+      "name": "Pear",
+      "style": "Basic Miscellany Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3137/3137092.png"
+    }
+  },
+  "piña": {
+    "en": "pineapple",
+    "icon": null
+  },
+  "cereza": {
+    "en": "cherry",
+    "icon": null
+  },
+  "verdura": {
+    "en": "vegetable",
+    "icon": null
+  },
+  "coco": {
+    "en": "coconut",
+    "icon": null
+  },
+  "mango": {
+    "en": "mango",
+    "icon": null
+  },
+  "tomate": {
+    "en": "tomato",
+    "icon": {
+      "id": 413374,
+      "name": "Tomato",
+      "style": "Detailed Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/413/413374.png"
+    }
+  },
+  "zanahoria": {
+    "en": "carrot",
+    "icon": {
+      "id": 8311288,
+      "name": "Carrot",
+      "style": "Detailed Mixed Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/8311/8311288.png"
+    }
+  },
+  "ajo": {
+    "en": "garlic",
+    "icon": {
+      "id": 18873039,
+      "name": "Garlic",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/18873/18873039.png"
+    }
+  },
+  "cebolla": {
+    "en": "onion",
+    "icon": {
+      "id": 4050594,
+      "name": "Onion",
+      "style": "Basic Straight Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/4050/4050594.png"
+    }
+  },
+  "papa": {
+    "en": "pope",
+    "icon": null
+  },
+  "frijol": {
+    "en": "bean",
+    "icon": null
+  },
+  "brócoli": {
+    "en": "broccoli",
+    "icon": {
+      "id": 15685533,
+      "name": "Food",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/15685/15685533.png"
+    }
+  },
+  "maíz": {
+    "en": "corn",
+    "icon": {
+      "id": 1357868,
+      "name": "Corn",
+      "style": "Basic Miscellany Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1357/1357868.png"
+    }
+  },
+  "espinaca": {
+    "en": "spinach",
+    "icon": {
+      "id": 3072999,
+      "name": "Spinach",
+      "style": "Good Ware Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3072/3072999.png"
+    }
+  },
+  "lechuga": {
+    "en": "lettuce",
+    "icon": {
+      "id": 8886161,
+      "name": "Lettuce",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/8886/8886161.png"
+    }
+  },
+  "calabaza": {
+    "en": "pumpkin, squash",
+    "icon": {
+      "id": 8534262,
+      "name": "Relax",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/8534/8534262.png"
+    }
+  },
+  "champiñón": {
+    "en": "mushroom",
+    "icon": {
+      "id": 903725,
+      "name": "Mushrooms",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/903/903725.png"
+    }
+  },
+  "pepino": {
+    "en": "cucumber",
+    "icon": {
+      "id": 15307655,
+      "name": "Food",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/15307/15307655.png"
+    }
+  },
+  "pimiento": {
+    "en": "bell pepper",
+    "icon": {
+      "id": 4311508,
+      "name": "Paprika",
+      "style": "Surang Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/4311/4311508.png"
+    }
+  },
+  "guisante": {
+    "en": "pea",
+    "icon": {
+      "id": 1202114,
+      "name": "Pea",
+      "style": "Pixel Perfect Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/1202/1202114.png"
+    }
+  },
+  "ensalada": {
+    "en": "salad",
+    "icon": null
+  },
+  "helado": {
+    "en": "ice cream",
+    "icon": null
+  },
+  "pastel": {
+    "en": "cake",
+    "icon": {
+      "id": 3373374,
+      "name": "Cake",
+      "style": "Vitaliy Gorbachev Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/3373/3373374.png"
+    }
+  },
+  "sopa": {
+    "en": "soup",
+    "icon": null
+  },
+  "postre": {
+    "en": "dessert",
+    "icon": null
+  },
+  "hamburguesa": {
+    "en": "hamburger",
+    "icon": {
+      "id": 1857924,
+      "name": "Burger",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1857/1857924.png"
+    }
+  },
+  "galleta": {
+    "en": "cookie",
+    "icon": {
+      "id": 2913890,
+      "name": "Cookie",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2913/2913890.png"
+    }
+  },
+  "pizza": {
+    "en": "pizza",
+    "icon": {
+      "id": 8994413,
+      "name": "Pizza",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/8994/8994413.png"
+    }
+  },
+  "caramelo": {
+    "en": "candy",
+    "icon": {
+      "id": 873340,
+      "name": "Candy",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/873/873340.png"
+    }
+  },
+  "chocolate": {
+    "en": "chocolate",
+    "icon": {
+      "id": 2000084,
+      "name": "Chocolate",
+      "style": "Basic Rounded Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/2000/2000084.png"
+    }
+  },
+  "sándwich": {
+    "en": "sandwich",
+    "icon": {
+      "id": 1973449,
+      "name": "Sandwich",
+      "style": "Basic Miscellany Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1973/1973449.png"
+    }
+  },
+  "taco": {
+    "en": "taco",
+    "icon": {
+      "id": 1691201,
+      "name": "Taco",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1691/1691201.png"
+    }
+  },
+  "cena": {
+    "en": "dinner",
+    "icon": null
+  },
+  "almuerzo": {
+    "en": "lunch",
+    "icon": {
+      "id": 7329790,
+      "name": "Lunch time",
+      "style": "Basic Rounded Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/7329/7329790.png"
+    }
+  },
+  "desayuno": {
+    "en": "breakfast",
+    "icon": {
+      "id": 3480823,
+      "name": "English breakfast",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/3480/3480823.png"
+    }
+  },
+  "merienda": {
+    "en": "snack",
+    "icon": {
+      "id": 5029259,
+      "name": "Snack",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/5029/5029259.png"
+    }
+  },
+  "animal": {
+    "en": "animal",
+    "icon": {
+      "id": 456030,
+      "name": "Seal",
+      "style": "Basic Rounded Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/456/456030.png"
+    }
+  },
+  "receta": {
+    "en": "prescription",
+    "icon": null
+  },
+  "ingrediente": {
+    "en": "ingredient",
+    "icon": {
+      "id": 1474268,
+      "name": "Medical",
+      "style": "photo3idea_studio Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/1474/1474268.png"
+    }
+  },
+  "perro": {
+    "en": "dog",
+    "icon": {
+      "id": 2454302,
+      "name": "Puppy",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2454/2454302.png"
+    }
+  },
+  "vaca": {
+    "en": "cow",
+    "icon": {
+      "id": 9951830,
+      "name": "Cow",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/9951/9951830.png"
+    }
+  },
+  "gato": {
+    "en": "cat",
+    "icon": null
+  },
+  "caballo": {
+    "en": "horse",
+    "icon": {
+      "id": 5671715,
+      "name": "Horse",
+      "style": "Detailed color Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/5671/5671715.png"
+    }
+  },
+  "pájaro": {
+    "en": "bird",
+    "icon": null
+  },
+  "pez": {
+    "en": "fish",
+    "icon": null
+  },
+  "oveja": {
+    "en": "sheep",
+    "icon": {
+      "id": 17799443,
+      "name": "Sheep",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/17799/17799443.png"
+    }
+  },
+  "cabra": {
+    "en": "goat",
+    "icon": {
+      "id": 10736504,
+      "name": "Goat",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/10736/10736504.png"
+    }
+  },
+  "gallo": {
+    "en": "rooster",
+    "icon": {
+      "id": 14773054,
+      "name": "Rooster",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/14773/14773054.png"
+    }
+  },
+  "gallina": {
+    "en": "hen",
+    "icon": {
+      "id": 4958898,
+      "name": "Chicken",
+      "style": "Amethys Design Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/4958/4958898.png"
+    }
+  },
+  "cerdo": {
+    "en": "pig",
+    "icon": {
+      "id": 15868672,
+      "name": "Pig",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/15868/15868672.png"
+    }
+  },
+  "león": {
+    "en": "lion",
+    "icon": {
+      "id": 3975233,
+      "name": "Lion",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/3975/3975233.png"
+    }
+  },
+  "rata": {
+    "en": "rat",
+    "icon": {
+      "id": 616735,
+      "name": "Rat",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/616/616735.png"
+    }
+  },
+  "conejo": {
+    "en": "rabbit",
+    "icon": {
+      "id": 71769,
+      "name": "Rabbit",
+      "style": null,
+      "url": "https://cdn-icons-png.freepik.com/128/71/71769.png"
+    }
+  },
+  "pato": {
+    "en": "duck",
+    "icon": {
+      "id": 4584566,
+      "name": "Duck",
+      "style": "Icongeek26 Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/4584/4584566.png"
+    }
+  },
+  "ratón": {
+    "en": "mouse",
+    "icon": null
+  },
+  "mono": {
+    "en": "monkey",
+    "icon": null
+  },
+  "tigre": {
+    "en": "tiger",
+    "icon": {
+      "id": 4953690,
+      "name": "Mask",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/4953/4953690.png"
+    }
+  },
+  "serpiente": {
+    "en": "snake",
+    "icon": {
+      "id": 12170977,
+      "name": "Animals",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/12170/12170977.png"
+    }
+  },
+  "elefante": {
+    "en": "elephant",
+    "icon": null
+  },
+  "oso": {
+    "en": "bear",
+    "icon": {
+      "id": 26103,
+      "name": "Bear side view silhouette",
+      "style": null,
+      "url": "https://cdn-icons-png.freepik.com/128/26/26103.png"
+    }
+  },
+  "mosca": {
+    "en": "fly",
+    "icon": {
+      "id": 3157595,
+      "name": "Fly",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/3157/3157595.png"
+    }
+  },
+  "araña": {
+    "en": "spider",
+    "icon": {
+      "id": 8558038,
+      "name": "Spider",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/8558/8558038.png"
+    }
+  },
+  "mariposa": {
+    "en": "butterfly",
+    "icon": {
+      "id": 5511643,
+      "name": "Butterfly",
+      "style": "Basic Miscellany Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/5511/5511643.png"
+    }
+  },
+  "abeja": {
+    "en": "bee",
+    "icon": {
+      "id": 809052,
+      "name": "Bee",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/809/809052.png"
+    }
+  },
+  "tortuga": {
+    "en": "turtle",
+    "icon": {
+      "id": 1953636,
+      "name": "Turtle",
+      "style": "SBTS2018 Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/1953/1953636.png"
+    }
+  },
+  "zorro": {
+    "en": "fox",
+    "icon": {
+      "id": 489994,
+      "name": "Fox",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/489/489994.png"
+    }
+  },
+  "mosquito": {
+    "en": "mosquito",
+    "icon": null
+  },
+  "lobo": {
+    "en": "wolf",
+    "icon": null
+  },
+  "ciervo": {
+    "en": "deer",
+    "icon": {
+      "id": 1327206,
+      "name": "Reindeer",
+      "style": "Detailed Flat Circular Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1327/1327206.png"
+    }
+  },
+  "hormiga": {
+    "en": "ant",
+    "icon": null
+  },
+  "águila": {
+    "en": "eagle",
+    "icon": {
+      "id": 4600517,
+      "name": "Eagle",
+      "style": "Smalllikeart Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/4600/4600517.png"
+    }
+  },
+  "tiburón": {
+    "en": "shark",
+    "icon": {
+      "id": 16020140,
+      "name": "Sea",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/16020/16020140.png"
+    }
+  },
+  "ballena": {
+    "en": "whale",
+    "icon": {
+      "id": 5594358,
+      "name": "Whale",
+      "style": "Detailed color Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/5594/5594358.png"
+    }
+  },
+  "búho": {
+    "en": "owl",
+    "icon": {
+      "id": 244352,
+      "name": "Owl",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/244/244352.png"
+    }
+  },
+  "delfín": {
+    "en": "dolphin",
+    "icon": {
+      "id": 11913771,
+      "name": "Dolphin",
+      "style": "Generic gradient fill",
+      "url": "https://cdn-icons-png.freepik.com/128/11913/11913771.png"
+    }
+  },
+  "langosta": {
+    "en": "lobster",
+    "icon": {
+      "id": 12239680,
+      "name": "Lobster",
+      "style": "Basic Rounded Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/12239/12239680.png"
+    }
+  },
+  "cangrejo": {
+    "en": "crab",
+    "icon": {
+      "id": 8713760,
+      "name": "Crab",
+      "style": "Kawaii Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/8713/8713760.png"
+    }
+  },
+  "cocodrilo": {
+    "en": "crocodile",
+    "icon": {
+      "id": 3831051,
+      "name": "Crocodile",
+      "style": "Smalllikeart Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/3831/3831051.png"
+    }
+  },
+  "pulpo": {
+    "en": "octopus",
+    "icon": {
+      "id": 11565998,
+      "name": "Cute octopus",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/11565/11565998.png"
+    }
+  },
+  "camarón": {
+    "en": "shrimp",
+    "icon": {
+      "id": 18763827,
+      "name": "Prawn",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/18763/18763827.png"
+    }
+  },
+  "rinoceronte": {
+    "en": "rhinoceros",
+    "icon": {
+      "id": 292727,
+      "name": "Rhinoceros",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/292/292727.png"
+    }
+  },
+  "cebra": {
+    "en": "zebra",
+    "icon": {
+      "id": 14754325,
+      "name": "Animals",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/14754/14754325.png"
+    }
+  },
+  "jirafa": {
+    "en": "giraffe",
+    "icon": {
+      "id": 109106,
+      "name": "Giraffe",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/109/109106.png"
+    }
+  },
+  "hipopótamo": {
+    "en": "hippopotamus",
+    "icon": {
+      "id": 3359640,
+      "name": "Hippopotamus",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3359/3359640.png"
+    }
+  },
+  "camello": {
+    "en": "camel",
+    "icon": {
+      "id": 2301400,
+      "name": "Camel",
+      "style": "Vitaliy Gorbachev Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/2301/2301400.png"
+    }
+  },
+  "gorila": {
+    "en": "gorilla",
+    "icon": {
+      "id": 334928,
+      "name": "Gorilla",
+      "style": "Basic Straight Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/334/334928.png"
+    }
+  },
+  "loro": {
+    "en": "parrot",
+    "icon": {
+      "id": 8334312,
+      "name": "Parrot",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/8334/8334312.png"
+    }
+  },
+  "paloma": {
+    "en": "dove, pigeon",
+    "icon": {
+      "id": 2591296,
+      "name": "Dove",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/2591/2591296.png"
+    }
+  },
+  "pingüino": {
+    "en": "penguin",
+    "icon": {
+      "id": 15000679,
+      "name": "Animal",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/15000/15000679.png"
+    }
+  },
+  "canguro": {
+    "en": "kangaroo",
+    "icon": {
+      "id": 2646402,
+      "name": "Kangaroo",
+      "style": "Ultimatearm Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/2646/2646402.png"
+    }
+  },
+  "murciélago": {
+    "en": "bat",
+    "icon": {
+      "id": 17923472,
+      "name": "Bat",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/17923/17923472.png"
+    }
+  },
+  "naturaleza": {
+    "en": "nature",
+    "icon": {
+      "id": 1675929,
+      "name": "Sun",
+      "style": "Detailed Flat Circular Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1675/1675929.png"
+    }
+  },
+  "tierra": {
+    "en": "earth, land",
+    "icon": {
+      "id": 13757282,
+      "name": "Globe",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/13757/13757282.png"
+    }
+  },
+  "mascota": {
+    "en": "pet",
+    "icon": {
+      "id": 7303059,
+      "name": "Pet carrier",
+      "style": "Detailed Mixed Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/7303/7303059.png"
+    }
+  },
+  "insecto": {
+    "en": "insect",
+    "icon": {
+      "id": 10850415,
+      "name": "Lady bug",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/10850/10850415.png"
+    }
+  },
+  "sol": {
+    "en": "sun",
+    "icon": {
+      "id": 4753952,
+      "name": "Sun",
+      "style": "Vitaliy Gorbachev Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/4753/4753952.png"
+    }
+  },
+  "cielo": {
+    "en": "heaven",
+    "icon": null
+  },
+  "luna": {
+    "en": "moon",
+    "icon": {
+      "id": 3590251,
+      "name": "Moon",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/3590/3590251.png"
+    }
+  },
+  "nube": {
+    "en": "cloud",
+    "icon": {
+      "id": 1518001,
+      "name": "Cloud storage",
+      "style": "Basic Straight Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1518/1518001.png"
+    }
+  },
+  "estrella": {
+    "en": "star",
+    "icon": null
+  },
+  "viento": {
+    "en": "wind",
+    "icon": null
+  },
+  "tormenta": {
+    "en": "storm",
+    "icon": null
+  },
+  "lluvia": {
+    "en": "rain",
+    "icon": {
+      "id": 7654543,
+      "name": "Umbrella",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/7654/7654543.png"
+    }
+  },
+  "nieve": {
+    "en": "snow",
+    "icon": null
+  },
+  "rayo": {
+    "en": "lightning",
+    "icon": null
+  },
+  "arcoíris": {
+    "en": "rainbow",
+    "icon": {
+      "id": 357282,
+      "name": "Rainbow",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/357/357282.png"
+    }
+  },
+  "planta": {
+    "en": "plant",
+    "icon": {
+      "id": 6609059,
+      "name": "Strelitzia",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/6609/6609059.png"
+    }
+  },
+  "flor": {
+    "en": "flower",
+    "icon": {
+      "id": 16035439,
+      "name": "Flower",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/16035/16035439.png"
+    }
+  },
+  "árbol": {
+    "en": "tree",
+    "icon": {
+      "id": 4591875,
+      "name": "Tree",
+      "style": "Vitaliy Gorbachev Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/4591/4591875.png"
+    }
+  },
+  "trueno": {
+    "en": "thunder",
+    "icon": {
+      "id": 13539150,
+      "name": "Flash",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/13539/13539150.png"
+    }
+  },
+  "hoja": {
+    "en": "leaf",
+    "icon": {
+      "id": 692090,
+      "name": "Leaf",
+      "style": "Good Ware Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/692/692090.png"
+    }
+  },
+  "raíz": {
+    "en": "root",
+    "icon": {
+      "id": 8053617,
+      "name": "Root",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/8053/8053617.png"
+    }
+  },
+  "hierba": {
+    "en": "grass",
+    "icon": {
+      "id": 2841138,
+      "name": "Grass leaves",
+      "style": "Flatart Icons Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/2841/2841138.png"
+    }
+  },
+  "rama": {
+    "en": "branch",
+    "icon": {
+      "id": 9023307,
+      "name": "Tree branch",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/9023/9023307.png"
+    }
+  },
+  "bosque": {
+    "en": "forest",
+    "icon": {
+      "id": 2009277,
+      "name": "Camping",
+      "style": "PMICON Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2009/2009277.png"
+    }
+  },
+  "río": {
+    "en": "river",
+    "icon": {
+      "id": 12069540,
+      "name": "River",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/12069/12069540.png"
+    }
+  },
+  "lago": {
+    "en": "lake",
+    "icon": {
+      "id": 10415397,
+      "name": "Lake",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/10415/10415397.png"
+    }
+  },
+  "selva": {
+    "en": "jungle",
+    "icon": {
+      "id": 13517416,
+      "name": "Forest",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/13517/13517416.png"
+    }
+  },
+  "mar": {
+    "en": "sea",
+    "icon": {
+      "id": 3810973,
+      "name": "Beach",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3810/3810973.png"
+    }
+  },
+  "montaña": {
+    "en": "mountain",
+    "icon": {
+      "id": 4135908,
+      "name": "Mountain",
+      "style": "Basic Straight Filled",
+      "url": "https://cdn-icons-png.freepik.com/128/4135/4135908.png"
+    }
+  },
+  "isla": {
+    "en": "island",
+    "icon": null
+  },
+  "océano": {
+    "en": "ocean",
+    "icon": null
+  },
+  "ola": {
+    "en": "wave",
+    "icon": null
+  },
+  "desierto": {
+    "en": "desert",
+    "icon": null
+  },
+  "playa": {
+    "en": "beach",
+    "icon": null
+  },
+  "valle": {
+    "en": "valley",
+    "icon": {
+      "id": 6859092,
+      "name": "Valley",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/6859/6859092.png"
+    }
+  },
+  "colina": {
+    "en": "hill",
+    "icon": {
+      "id": 3901430,
+      "name": "Hills",
+      "style": "Vitaliy Gorbachev Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/3901/3901430.png"
+    }
+  },
+  "piedra": {
+    "en": "stone, rock",
+    "icon": {
+      "id": 16329967,
+      "name": "Stone",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/16329/16329967.png"
+    }
+  },
+  "arena": {
+    "en": "sand",
+    "icon": {
+      "id": 8583084,
+      "name": "Desert",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/8583/8583084.png"
+    }
+  },
+  "campo": {
+    "en": "field, countryside",
+    "icon": {
+      "id": 5137609,
+      "name": "Field",
+      "style": "Basic Rounded Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/5137/5137609.png"
+    }
+  },
+  "humo": {
+    "en": "smoke",
+    "icon": {
+      "id": 3920055,
+      "name": "Smoke",
+      "style": "Flatart Icons Solid",
+      "url": "https://cdn-icons-png.freepik.com/128/3920/3920055.png"
+    }
+  },
+  "ceniza": {
+    "en": "ash",
+    "icon": {
+      "id": 17880942,
+      "name": "Burn",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/17880/17880942.png"
+    }
+  },
+  "fuego": {
+    "en": "fire",
+    "icon": {
+      "id": 6705910,
+      "name": "Campfire",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/6705/6705910.png"
+    }
+  },
+  "terremoto": {
+    "en": "earthquake",
+    "icon": {
+      "id": 6348359,
+      "name": "Earthquake",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/6348/6348359.png"
+    }
+  },
+  "volcán": {
+    "en": "volcano",
+    "icon": {
+      "id": 8080367,
+      "name": "Volcano",
+      "style": "Detailed Straight Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/8080/8080367.png"
+    }
+  },
+  "cascada": {
+    "en": "waterfall",
+    "icon": {
+      "id": 3901118,
+      "name": "Waterfall",
+      "style": "Vitaliy Gorbachev Blue",
+      "url": "https://cdn-icons-png.freepik.com/128/3901/3901118.png"
+    }
+  },
+  "cueva": {
+    "en": "cave",
+    "icon": {
+      "id": 5808431,
+      "name": "Cave",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/5808/5808431.png"
+    }
+  },
+  "temperatura": {
+    "en": "temperature",
+    "icon": {
+      "id": 6420947,
+      "name": "Thermometer",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/6420/6420947.png"
+    }
+  },
+  "calor": {
+    "en": "heat",
+    "icon": {
+      "id": 11996203,
+      "name": "Heat",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/11996/11996203.png"
+    }
+  },
+  "clima": {
+    "en": "climate, weather",
+    "icon": {
+      "id": 17927202,
+      "name": "Climate",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/17927/17927202.png"
+    }
+  },
+  "humedad": {
+    "en": "humidity",
+    "icon": null
+  },
+  "sequía": {
+    "en": "drought",
+    "icon": null
+  },
+  "niebla": {
+    "en": "fog",
+    "icon": null
+  },
+  "inundación": {
+    "en": "flood",
+    "icon": null
+  },
+  "frío": {
+    "en": "cold",
+    "icon": null
+  },
+  "amanecer": {
+    "en": "sunrise",
+    "icon": {
+      "id": 5324887,
+      "name": "Sunrise",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/5324/5324887.png"
+    }
+  },
+  "rocío": {
+    "en": "dew",
+    "icon": {
+      "id": 2446070,
+      "name": "Dew",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2446/2446070.png"
+    }
+  },
+  "atardecer": {
+    "en": "sunset",
+    "icon": {
+      "id": 3226463,
+      "name": "Sunset",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/3226/3226463.png"
+    }
+  },
+  "granizo": {
+    "en": "hail",
+    "icon": {
+      "id": 9369554,
+      "name": "Hail",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/9369/9369554.png"
+    }
+  },
+  "escarcha": {
+    "en": "frost",
+    "icon": {
+      "id": 6543580,
+      "name": "Snowflake",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/6543/6543580.png"
+    }
+  },
+  "horizonte": {
+    "en": "horizon",
+    "icon": {
+      "id": 227001,
+      "name": "Sunset",
+      "style": "Basic Rounded Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/227/227001.png"
+    }
+  },
+  "hora": {
+    "en": "hour",
+    "icon": {
+      "id": 6582129,
+      "name": "1 hour",
+      "style": "Detailed Straight Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/6582/6582129.png"
+    }
+  },
+  "minuto": {
+    "en": "minute",
+    "icon": {
+      "id": 16464647,
+      "name": "Clock",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/16464/16464647.png"
+    }
+  },
+  "segundo": {
+    "en": "second",
+    "icon": {
+      "id": 540737,
+      "name": "Silver medal",
+      "style": "Basic Miscellany Yellow",
+      "url": "https://cdn-icons-png.freepik.com/128/540/540737.png"
+    }
+  },
+  "tiempo": {
+    "en": "time",
+    "icon": {
+      "id": 16718649,
+      "name": "Clock",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/16718/16718649.png"
+    }
+  },
+  "tarde": {
+    "en": "afternoon",
+    "icon": {
+      "id": 13425079,
+      "name": "Sun",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/13425/13425079.png"
+    }
+  },
+  "mañana": {
+    "en": "morning, tomorrow",
+    "icon": {
+      "id": 7678203,
+      "name": "Sunrise",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/7678/7678203.png"
+    }
+  },
+  "semana": {
+    "en": "week",
+    "icon": {
+      "id": 10755360,
+      "name": "Week",
+      "style": "Flaticons Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/10755/10755360.png"
+    }
+  },
+  "día": {
+    "en": "day",
+    "icon": {
+      "id": 13313897,
+      "name": "Sunday",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/13313/13313897.png"
+    }
+  },
+  "noche": {
+    "en": "night",
+    "icon": {
+      "id": 2106149,
+      "name": "Moon",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2106/2106149.png"
+    }
+  },
+  "fecha": {
+    "en": "date",
+    "icon": null
+  },
+  "año": {
+    "en": "year",
+    "icon": null
+  },
+  "siglo": {
+    "en": "century",
+    "icon": null
+  },
+  "momento": {
+    "en": "moment",
+    "icon": null
+  },
+  "mes": {
+    "en": "month",
+    "icon": null
+  },
+  "presente": {
+    "en": "present",
+    "icon": {
+      "id": 808639,
+      "name": "Gift box",
+      "style": "mynamepong Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/808/808639.png"
+    }
+  },
+  "reloj": {
+    "en": "watch",
+    "icon": null
+  },
+  "futuro": {
+    "en": "future",
+    "icon": {
+      "id": 745828,
+      "name": "Magic",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/745/745828.png"
+    }
+  },
+  "pasado": {
+    "en": "past",
+    "icon": {
+      "id": 12480292,
+      "name": "Clock",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/12480/12480292.png"
+    }
+  },
+  "calendario": {
+    "en": "calendar",
+    "icon": {
+      "id": 11717079,
+      "name": "Calendar",
+      "style": "Generic gradient outline",
+      "url": "https://cdn-icons-png.freepik.com/128/11717/11717079.png"
+    }
+  },
+  "estación": {
+    "en": "station",
+    "icon": null
+  },
+  "época": {
+    "en": "era",
+    "icon": null
+  },
+  "verano": {
+    "en": "summer",
+    "icon": {
+      "id": 1375195,
+      "name": "Ice cream",
+      "style": "3D Color",
+      "url": "https://cdn-icons-png.freepik.com/128/1375/1375195.png"
+    }
+  },
+  "otoño": {
+    "en": "autumn, fall",
+    "icon": null
+  },
+  "primavera": {
+    "en": "spring",
+    "icon": {
+      "id": 14950590,
+      "name": "Spring",
+      "style": "Detailed Flat Circular Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/14950/14950590.png"
+    }
+  },
+  "martes": {
+    "en": "Tuesday",
+    "icon": {
+      "id": 10755334,
+      "name": "Tuesday",
+      "style": "Flaticons Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/10755/10755334.png"
+    }
+  },
+  "jueves": {
+    "en": "Thursday",
+    "icon": {
+      "id": 7123361,
+      "name": "Thursday",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/7123/7123361.png"
+    }
+  },
+  "invierno": {
+    "en": "winter",
+    "icon": {
+      "id": 6363004,
+      "name": "Knit hat",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/6363/6363004.png"
+    }
+  },
+  "lunes": {
+    "en": "Monday",
+    "icon": {
+      "id": 9202273,
+      "name": "Monday",
+      "style": "Generic Mixed",
+      "url": "https://cdn-icons-png.freepik.com/128/9202/9202273.png"
+    }
+  },
+  "miércoles": {
+    "en": "Wednesday",
+    "icon": {
+      "id": 9600119,
+      "name": "Wednesday",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/9600/9600119.png"
+    }
+  },
+  "sábado": {
+    "en": "Saturday",
+    "icon": null
+  },
+  "enero": {
+    "en": "January",
+    "icon": null
+  },
+  "domingo": {
+    "en": "Sunday",
+    "icon": null
+  },
+  "febrero": {
+    "en": "February",
+    "icon": {
+      "id": 332954,
+      "name": "Valentines day",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/332/332954.png"
+    }
+  },
+  "viernes": {
+    "en": "Friday",
+    "icon": null
+  },
+  "mayo": {
+    "en": "May",
+    "icon": {
+      "id": 9600097,
+      "name": "May",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/9600/9600097.png"
+    }
+  },
+  "abril": {
+    "en": "April",
+    "icon": {
+      "id": 11221070,
+      "name": "April",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/11221/11221070.png"
+    }
+  },
+  "julio": {
+    "en": "July",
+    "icon": {
+      "id": 3119067,
+      "name": "4th of july",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3119/3119067.png"
+    }
+  },
+  "marzo": {
+    "en": "March",
+    "icon": {
+      "id": 12337022,
+      "name": "March",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/12337/12337022.png"
+    }
+  },
+  "junio": {
+    "en": "June",
+    "icon": {
+      "id": 7123495,
+      "name": "June",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/7123/7123495.png"
+    }
+  },
+  "octubre": {
+    "en": "October",
+    "icon": {
+      "id": 6744701,
+      "name": "October",
+      "style": "Flaticons Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/6744/6744701.png"
+    }
+  },
+  "septiembre": {
+    "en": "September",
+    "icon": {
+      "id": 13885532,
+      "name": "Twenty nine",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/13885/13885532.png"
+    }
+  },
+  "diciembre": {
+    "en": "December",
+    "icon": null
+  },
+  "agosto": {
+    "en": "August",
+    "icon": {
+      "id": 11221086,
+      "name": "August",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/11221/11221086.png"
+    }
+  },
+  "noviembre": {
+    "en": "November",
+    "icon": {
+      "id": 6146841,
+      "name": "November",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/6146/6146841.png"
+    }
+  },
+  "aniversario": {
+    "en": "anniversary",
+    "icon": {
+      "id": 8712041,
+      "name": "Anniversary",
+      "style": "Detailed Straight Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/8712/8712041.png"
+    }
+  },
+  "vacaciones": {
+    "en": "vacation",
+    "icon": {
+      "id": 18010143,
+      "name": "Holiday trip",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/18010/18010143.png"
+    }
+  },
+  "fin de semana": {
+    "en": "weekend",
+    "icon": {
+      "id": 6520521,
+      "name": "Weekend",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/6520/6520521.png"
+    }
+  },
+  "cumpleaños": {
+    "en": "birthday",
+    "icon": {
+      "id": 5284774,
+      "name": "Banner",
+      "style": "Meticulous Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/5284/5284774.png"
+    }
+  },
+  "feriado": {
+    "en": "holiday",
+    "icon": {
+      "id": 2738419,
+      "name": "Calendar",
+      "style": "Basic Miscellany Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/2738/2738419.png"
+    }
+  },
+  "década": {
+    "en": "decade",
+    "icon": null
+  },
+  "milenio": {
+    "en": "millennium",
+    "icon": {
+      "id": 15843329,
+      "name": "Coin",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/15843/15843329.png"
+    }
+  },
+  "medianoche": {
+    "en": "midnight",
+    "icon": null
+  },
+  "mediodía": {
+    "en": "noon",
+    "icon": null
+  },
+  "madrugada": {
+    "en": "early morning",
+    "icon": null
+  },
+  "pueblo": {
+    "en": "people, town",
+    "icon": null
+  },
+  "lugar": {
+    "en": "place",
+    "icon": {
+      "id": 14164004,
+      "name": "Location",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/14164/14164004.png"
+    }
+  },
+  "nación": {
+    "en": "nation",
+    "icon": {
+      "id": 4021673,
+      "name": "Flag",
+      "style": "Detailed Mixed Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/4021/4021673.png"
+    }
+  },
+  "ciudad": {
+    "en": "city",
+    "icon": {
+      "id": 17359653,
+      "name": "Cityscape",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/17359/17359653.png"
+    }
+  },
+  "país": {
+    "en": "country",
+    "icon": {
+      "id": 659142,
+      "name": "Greece",
+      "style": "Meticulous Line",
+      "url": "https://cdn-icons-png.freepik.com/128/659/659142.png"
+    }
+  },
+  "calle": {
+    "en": "street",
+    "icon": null
+  },
+  "mundo": {
+    "en": "world",
+    "icon": null
+  },
+  "estado": {
+    "en": "state, condition",
+    "icon": null
+  },
+  "continente": {
+    "en": "continent",
+    "icon": {
+      "id": 18004603,
+      "name": "Continent",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/18004/18004603.png"
+    }
+  },
+  "región": {
+    "en": "region",
+    "icon": {
+      "id": 3467926,
+      "name": "World",
+      "style": "Basic Straight Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/3467/3467926.png"
+    }
+  },
+  "carretera": {
+    "en": "highway, road",
+    "icon": {
+      "id": 1341960,
+      "name": "Road",
+      "style": "Basic Rounded Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1341/1341960.png"
+    }
+  },
+  "camino": {
+    "en": "path, road",
+    "icon": null
+  },
+  "puente": {
+    "en": "bridge",
+    "icon": {
+      "id": 1996163,
+      "name": "Bridge",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1996/1996163.png"
+    }
+  },
+  "avenida": {
+    "en": "avenue",
+    "icon": {
+      "id": 16493200,
+      "name": "Road",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/16493/16493200.png"
+    }
+  },
+  "túnel": {
+    "en": "tunnel",
+    "icon": {
+      "id": 17075332,
+      "name": "Tunnel",
+      "style": "Generic black fill",
+      "url": "https://cdn-icons-png.freepik.com/128/17075/17075332.png"
+    }
+  },
+  "iglesia": {
+    "en": "church",
+    "icon": null
+  },
+  "plaza": {
+    "en": "plaza, square",
+    "icon": null
+  },
+  "edificio": {
+    "en": "building",
+    "icon": {
+      "id": 15493596,
+      "name": "Office",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/15493/15493596.png"
+    }
+  },
+  "parque": {
+    "en": "park",
+    "icon": null
+  },
+  "torre": {
+    "en": "tower",
+    "icon": {
+      "id": 15182333,
+      "name": "Tower",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/15182/15182333.png"
+    }
+  },
+  "mezquita": {
+    "en": "mosque",
+    "icon": null
+  },
+  "catedral": {
+    "en": "cathedral",
+    "icon": null
+  },
+  "hospital": {
+    "en": "hospital",
+    "icon": {
+      "id": 13298007,
+      "name": "Hospital",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/13298/13298007.png"
+    }
+  },
+  "templo": {
+    "en": "temple",
+    "icon": null
+  },
+  "escuela": {
+    "en": "school",
+    "icon": {
+      "id": 3164143,
+      "name": "School bag",
+      "style": "Inipagistudio Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3164/3164143.png"
+    }
+  },
+  "cine": {
+    "en": "cinema",
+    "icon": null
+  },
+  "museo": {
+    "en": "museum",
+    "icon": null
+  },
+  "universidad": {
+    "en": "university",
+    "icon": null
+  },
+  "biblioteca": {
+    "en": "library",
+    "icon": null
+  },
+  "teatro": {
+    "en": "theater",
+    "icon": null
+  },
+  "supermercado": {
+    "en": "supermarket",
+    "icon": {
+      "id": 14859373,
+      "name": "Market",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/14859/14859373.png"
+    }
+  },
+  "mercado": {
+    "en": "market",
+    "icon": null
+  },
+  "hotel": {
+    "en": "hotel",
+    "icon": {
+      "id": 2984082,
+      "name": "Hotel",
+      "style": "Detailed Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/2984/2984082.png"
+    }
+  },
+  "tienda": {
+    "en": "store, shop",
+    "icon": {
+      "id": 12960224,
+      "name": "Groceries",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/12960/12960224.png"
+    }
+  },
+  "restaurante": {
+    "en": "restaurant",
+    "icon": {
+      "id": 16112129,
+      "name": "Signboard",
+      "style": "Generic gradient fill",
+      "url": "https://cdn-icons-png.freepik.com/128/16112/16112129.png"
+    }
+  },
+  "banco": {
+    "en": "bank",
+    "icon": null
+  },
+  "oficina": {
+    "en": "office",
+    "icon": {
+      "id": 17876651,
+      "name": "Business",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/17876/17876651.png"
+    }
+  },
+  "aeropuerto": {
+    "en": "airport",
+    "icon": null
+  },
+  "fábrica": {
+    "en": "factory",
+    "icon": {
+      "id": 4429939,
+      "name": "Robotic arm",
+      "style": "Flaticons Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/4429/4429939.png"
+    }
+  },
+  "frontera": {
+    "en": "border",
+    "icon": {
+      "id": 9040339,
+      "name": "Border design",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/9040/9040339.png"
+    }
+  },
+  "capital": {
+    "en": "capital",
+    "icon": {
+      "id": 2973433,
+      "name": "Loan",
+      "style": "Meticulous Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/2973/2973433.png"
+    }
+  },
+  "centro": {
+    "en": "center",
+    "icon": null
+  },
+  "puerto": {
+    "en": "port",
+    "icon": {
+      "id": 14995530,
+      "name": "Port",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/14995/14995530.png"
+    }
+  },
+  "barrio": {
+    "en": "neighborhood",
+    "icon": {
+      "id": 1648590,
+      "name": "Village",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1648/1648590.png"
+    }
+  },
+  "rancho": {
+    "en": "ranch",
+    "icon": {
+      "id": 15871743,
+      "name": "Fields",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/15871/15871743.png"
+    }
+  },
+  "suburbio": {
+    "en": "suburb",
+    "icon": null
+  },
+  "prisión": {
+    "en": "prison",
+    "icon": {
+      "id": 5442537,
+      "name": "Prison",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/5442/5442537.png"
+    }
+  },
+  "cementerio": {
+    "en": "cemetery",
+    "icon": {
+      "id": 3720534,
+      "name": "Graveyard",
+      "style": "Basic Rounded Filled",
+      "url": "https://cdn-icons-png.freepik.com/128/3720/3720534.png"
+    }
+  },
+  "granja": {
+    "en": "farm",
+    "icon": null
+  },
+  "castillo": {
+    "en": "castle",
+    "icon": {
+      "id": 90411,
+      "name": "castle",
+      "style": null,
+      "url": "https://cdn-icons-png.freepik.com/128/90/90411.png"
+    }
+  },
+  "piscina": {
+    "en": "pool",
+    "icon": null
+  },
+  "palacio": {
+    "en": "palace",
+    "icon": {
+      "id": 7167603,
+      "name": "Historic site",
+      "style": "Generic Gradient",
+      "url": "https://cdn-icons-png.freepik.com/128/7167/7167603.png"
+    }
+  },
+  "estadio": {
+    "en": "stadium",
+    "icon": null
+  },
+  "gimnasio": {
+    "en": "gym",
+    "icon": null
+  },
+  "gasolinera": {
+    "en": "gas station",
+    "icon": null
+  },
+  "panadería": {
+    "en": "bakery",
+    "icon": {
+      "id": 1669059,
+      "name": "Bakery",
+      "style": "Detailed Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/1669/1669059.png"
+    }
+  },
+  "farmacia": {
+    "en": "pharmacy",
+    "icon": {
+      "id": 1145910,
+      "name": "Pills bottle",
+      "style": "Basic Straight Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/1145/1145910.png"
+    }
+  },
+  "peluquería": {
+    "en": "hair salon",
+    "icon": {
+      "id": 3035807,
+      "name": "Hairdryer",
+      "style": "Inipagistudio Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3035/3035807.png"
+    }
+  },
+  "carnicería": {
+    "en": "butcher shop",
+    "icon": {
+      "id": 7845620,
+      "name": "Steak",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/7845/7845620.png"
+    }
+  },
+  "dirección": {
+    "en": "direction",
+    "icon": null
+  },
+  "mapa": {
+    "en": "map",
+    "icon": {
+      "id": 475438,
+      "name": "Treasure map",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/475/475438.png"
+    }
+  },
+  "estacionamiento": {
+    "en": "parking lot",
+    "icon": {
+      "id": 12510431,
+      "name": "Parking area",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/12510/12510431.png"
+    }
+  },
+  "acera": {
+    "en": "sidewalk",
+    "icon": {
+      "id": 5866563,
+      "name": "Sidewalk",
+      "style": "Generic Basic Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/5866/5866563.png"
+    }
+  },
+  "esquina": {
+    "en": "corner",
+    "icon": null
+  },
+  "sur": {
+    "en": "south",
+    "icon": null
+  },
+  "norte": {
+    "en": "north",
+    "icon": null
+  },
+  "este": {
+    "en": "east",
+    "icon": {
+      "id": 6628861,
+      "name": "East",
+      "style": "Basic Miscellany Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/6628/6628861.png"
+    }
+  },
+  "coche": {
+    "en": "car",
+    "icon": {
+      "id": 3517381,
+      "name": "Car",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3517/3517381.png"
+    }
+  },
+  "oeste": {
+    "en": "west",
+    "icon": {
+      "id": 6628849,
+      "name": "West",
+      "style": "Basic Miscellany Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/6628/6628849.png"
+    }
+  },
+  "auto": {
+    "en": "car",
+    "icon": {
+      "id": 3517381,
+      "name": "Car",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3517/3517381.png"
+    }
+  },
+  "carro": {
+    "en": "car",
+    "icon": {
+      "id": 3517381,
+      "name": "Car",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3517/3517381.png"
+    }
+  },
+  "camión": {
+    "en": "truck",
+    "icon": {
+      "id": 213153,
+      "name": "Truck",
+      "style": "Swifticons Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/213/213153.png"
+    }
+  },
+  "taxi": {
+    "en": "taxi",
+    "icon": {
+      "id": 3485518,
+      "name": "Taxi",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/3485/3485518.png"
+    }
+  },
+  "autobús": {
+    "en": "bus",
+    "icon": {
+      "id": 382430,
+      "name": "Bus",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/382/382430.png"
+    }
+  },
+  "barco": {
+    "en": "boat, ship",
+    "icon": null
+  },
+  "tren": {
+    "en": "train",
+    "icon": {
+      "id": 3570367,
+      "name": "Locomotive",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/3570/3570367.png"
+    }
+  },
+  "helicóptero": {
+    "en": "helicopter",
+    "icon": null
+  },
+  "avión": {
+    "en": "airplane",
+    "icon": null
+  },
+  "metro": {
+    "en": "meter",
+    "icon": null
+  },
+  "motocicleta": {
+    "en": "motorcycle",
+    "icon": {
+      "id": 1022856,
+      "name": "Motor sports",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1022/1022856.png"
+    }
+  },
+  "bicicleta": {
+    "en": "bicycle",
+    "icon": {
+      "id": 4213622,
+      "name": "Bicycle",
+      "style": "Detailed Flat Circular Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/4213/4213622.png"
+    }
+  },
+  "rueda": {
+    "en": "wheel",
+    "icon": {
+      "id": 871036,
+      "name": "Wheel",
+      "style": "Basic Straight Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/871/871036.png"
+    }
+  },
+  "gasolina": {
+    "en": "gasoline",
+    "icon": {
+      "id": 7050617,
+      "name": "Gas station",
+      "style": "Nhor Phai Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/7050/7050617.png"
+    }
+  },
+  "motor": {
+    "en": "engine, motor",
+    "icon": {
+      "id": 14551238,
+      "name": "Car",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/14551/14551238.png"
+    }
+  },
+  "freno": {
+    "en": "brake",
+    "icon": null
+  },
+  "parabrisas": {
+    "en": "windshield",
+    "icon": {
+      "id": 12253527,
+      "name": "Windshield",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/12253/12253527.png"
+    }
+  },
+  "asiento": {
+    "en": "seat",
+    "icon": {
+      "id": 15592686,
+      "name": "Dining chair",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/15592/15592686.png"
+    }
+  },
+  "volante": {
+    "en": "steering wheel",
+    "icon": null
+  },
+  "cinturón": {
+    "en": "belt",
+    "icon": null
+  },
+  "llanta": {
+    "en": "tire",
+    "icon": {
+      "id": 3682805,
+      "name": "Tyre",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/3682/3682805.png"
+    }
+  },
+  "maletero": {
+    "en": "trunk",
+    "icon": {
+      "id": 14972557,
+      "name": "Cut",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/14972/14972557.png"
+    }
+  },
+  "boleto": {
+    "en": "ticket",
+    "icon": {
+      "id": 3697758,
+      "name": "Validating ticket",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/3697/3697758.png"
+    }
+  },
+  "pasaje": {
+    "en": "fare, passage",
+    "icon": {
+      "id": 3456079,
+      "name": "Boarding pass",
+      "style": "Super Basic Orbit Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/3456/3456079.png"
+    }
+  },
+  "piloto": {
+    "en": "pilot",
+    "icon": null
+  },
+  "vuelo": {
+    "en": "flight",
+    "icon": null
+  },
+  "conductor": {
+    "en": "driver",
+    "icon": {
+      "id": 1535813,
+      "name": "Driver",
+      "style": "Detailed Flat Circular Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1535/1535813.png"
+    }
+  },
+  "pasajero": {
+    "en": "passenger",
+    "icon": {
+      "id": 1042311,
+      "name": "Passenger",
+      "style": "Detailed Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/1042/1042311.png"
+    }
+  },
+  "viaje": {
+    "en": "trip, journey",
+    "icon": null
+  },
+  "mochila": {
+    "en": "backpack",
+    "icon": null
+  },
+  "semáforo": {
+    "en": "traffic light",
+    "icon": {
+      "id": 1946345,
+      "name": "Traffic light",
+      "style": "Basic Rounded Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1946/1946345.png"
+    }
+  },
+  "tráfico": {
+    "en": "traffic",
+    "icon": {
+      "id": 1034515,
+      "name": "Increase",
+      "style": "Basic Miscellany Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1034/1034515.png"
+    }
+  },
+  "maleta": {
+    "en": "suitcase",
+    "icon": {
+      "id": 9221264,
+      "name": "Travel bag",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/9221/9221264.png"
+    }
+  },
+  "equipaje": {
+    "en": "luggage",
+    "icon": {
+      "id": 9039284,
+      "name": "Suitcase",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/9039/9039284.png"
+    }
+  },
+  "patrulla": {
+    "en": "patrol car",
+    "icon": {
+      "id": 5374915,
+      "name": "Police car",
+      "style": "Smalllikeart Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/5374/5374915.png"
+    }
+  },
+  "rescate": {
+    "en": "rescue",
+    "icon": {
+      "id": 5870328,
+      "name": "Life saver",
+      "style": "Basic Straight Filled",
+      "url": "https://cdn-icons-png.freepik.com/128/5870/5870328.png"
+    }
+  },
+  "bombero": {
+    "en": "firefighter",
+    "icon": {
+      "id": 1395260,
+      "name": "Firefighter",
+      "style": "Detailed Straight Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1395/1395260.png"
+    }
+  },
+  "accidente": {
+    "en": "accident",
+    "icon": null
+  },
+  "ambulancia": {
+    "en": "ambulance",
+    "icon": {
+      "id": 13590538,
+      "name": "Healthy",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/13590/13590538.png"
+    }
+  },
+  "oficio": {
+    "en": "trade, craft",
+    "icon": {
+      "id": 14956849,
+      "name": "Trade",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/14956/14956849.png"
+    }
+  },
+  "trabajo": {
+    "en": "work",
+    "icon": null
+  },
+  "profesión": {
+    "en": "profession",
+    "icon": {
+      "id": 530033,
+      "name": "Mortarboard",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/530/530033.png"
+    }
+  },
+  "empleo": {
+    "en": "employment",
+    "icon": {
+      "id": 17197538,
+      "name": "Employment",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/17197/17197538.png"
+    }
+  },
+  "carrera": {
+    "en": "race",
+    "icon": null
+  },
+  "doctor": {
+    "en": "doctor",
+    "icon": {
+      "id": 2785482,
+      "name": "Doctor",
+      "style": "Amethys Design Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/2785/2785482.png"
+    }
+  },
+  "trabajador": {
+    "en": "worker",
+    "icon": {
+      "id": 13787259,
+      "name": "Hat",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/13787/13787259.png"
+    }
+  },
+  "jefe": {
+    "en": "boss",
+    "icon": {
+      "id": 2830593,
+      "name": "Boss",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2830/2830593.png"
+    }
+  },
+  "empleado": {
+    "en": "employee",
+    "icon": {
+      "id": 18097002,
+      "name": "Staff",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/18097/18097002.png"
+    }
+  },
+  "médico": {
+    "en": "physician",
+    "icon": {
+      "id": 4246527,
+      "name": "Medical doctor",
+      "style": "Wanicon Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/4246/4246527.png"
+    }
+  },
+  "enfermera": {
+    "en": "nurse",
+    "icon": null
+  },
+  "juez": {
+    "en": "judge",
+    "icon": null
+  },
+  "policía": {
+    "en": "police",
+    "icon": null
+  },
+  "abogado": {
+    "en": "lawyer",
+    "icon": null
+  },
+  "soldado": {
+    "en": "soldier",
+    "icon": {
+      "id": 5836971,
+      "name": "Pilot",
+      "style": "Juicy Fish Soft-fill",
+      "url": "https://cdn-icons-png.freepik.com/128/5836/5836971.png"
+    }
+  },
+  "estudiante": {
+    "en": "student",
+    "icon": {
+      "id": 948256,
+      "name": "Reading",
+      "style": "Meticulous Line",
+      "url": "https://cdn-icons-png.freepik.com/128/948/948256.png"
+    }
+  },
+  "arquitecto": {
+    "en": "architect",
+    "icon": {
+      "id": 5739142,
+      "name": "Architect",
+      "style": "Basic Straight Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/5739/5739142.png"
+    }
+  },
+  "ingeniero": {
+    "en": "engineer",
+    "icon": {
+      "id": 4191057,
+      "name": "Software engineering",
+      "style": "itim2101 Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/4191/4191057.png"
+    }
+  },
+  "maestro": {
+    "en": "teacher",
+    "icon": {
+      "id": 13558546,
+      "name": "School",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/13558/13558546.png"
+    }
+  },
+  "profesor": {
+    "en": "professor",
+    "icon": {
+      "id": 11256737,
+      "name": "Professor",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/11256/11256737.png"
+    }
+  },
+  "músico": {
+    "en": "musician",
+    "icon": {
+      "id": 18887090,
+      "name": "Musician",
+      "style": "Generic black fill",
+      "url": "https://cdn-icons-png.freepik.com/128/18887/18887090.png"
+    }
+  },
+  "científico": {
+    "en": "scientist",
+    "icon": {
+      "id": 7265945,
+      "name": "Scientist",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/7265/7265945.png"
+    }
+  },
+  "actriz": {
+    "en": "actress",
+    "icon": null
+  },
+  "actor": {
+    "en": "actor",
+    "icon": null
+  },
+  "artista": {
+    "en": "artist",
+    "icon": null
+  },
+  "periodista": {
+    "en": "journalist",
+    "icon": {
+      "id": 7403591,
+      "name": "Interview",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/7403/7403591.png"
+    }
+  },
+  "mesero": {
+    "en": "waiter",
+    "icon": {
+      "id": 11638922,
+      "name": "Waiter",
+      "style": "Basic Straight Filled",
+      "url": "https://cdn-icons-png.freepik.com/128/11638/11638922.png"
+    }
+  },
+  "cocinero": {
+    "en": "cook, chef",
+    "icon": {
+      "id": 1830839,
+      "name": "Cooking",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1830/1830839.png"
+    }
+  },
+  "fotógrafo": {
+    "en": "photographer",
+    "icon": {
+      "id": 18372463,
+      "name": "Cameraman",
+      "style": "Generic gradient fill",
+      "url": "https://cdn-icons-png.freepik.com/128/18372/18372463.png"
+    }
+  },
+  "escritor": {
+    "en": "writer",
+    "icon": null
+  },
+  "plomero": {
+    "en": "plumber",
+    "icon": null
+  },
+  "carpintero": {
+    "en": "carpenter",
+    "icon": null
+  },
+  "mecánico": {
+    "en": "mechanic",
+    "icon": {
+      "id": 1995470,
+      "name": "Mechanic",
+      "style": "Aphiradee (monkik) Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/1995/1995470.png"
+    }
+  },
+  "electricista": {
+    "en": "electrician",
+    "icon": {
+      "id": 8734801,
+      "name": "Electrician",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/8734/8734801.png"
+    }
+  },
+  "peluquero": {
+    "en": "hairdresser",
+    "icon": {
+      "id": 1960986,
+      "name": "Hairdresser",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1960/1960986.png"
+    }
+  },
+  "agricultor": {
+    "en": "farmer",
+    "icon": {
+      "id": 7417717,
+      "name": "Farmer",
+      "style": "Amethys Design Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/7417/7417717.png"
+    }
+  },
+  "contador": {
+    "en": "accountant",
+    "icon": {
+      "id": 2607142,
+      "name": "Accountant",
+      "style": "Flatart Icons Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/2607/2607142.png"
+    }
+  },
+  "vendedor": {
+    "en": "seller",
+    "icon": null
+  },
+  "empresario": {
+    "en": "businessman",
+    "icon": {
+      "id": 606587,
+      "name": "Businessman",
+      "style": "Flat Color Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/606/606587.png"
+    }
+  },
+  "pintor": {
+    "en": "painter",
+    "icon": {
+      "id": 18629718,
+      "name": "Painter",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/18629/18629718.png"
+    }
+  },
+  "presidente": {
+    "en": "president",
+    "icon": {
+      "id": 5608065,
+      "name": "Government",
+      "style": "Wichai.wi Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/5608/5608065.png"
+    }
+  },
+  "gerente": {
+    "en": "manager",
+    "icon": null
+  },
+  "director": {
+    "en": "director",
+    "icon": null
+  },
+  "secretario": {
+    "en": "secretary",
+    "icon": null
+  },
+  "dueño": {
+    "en": "owner",
+    "icon": {
+      "id": 6823097,
+      "name": "Opportunity",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/6823/6823097.png"
+    }
+  },
+  "reunión": {
+    "en": "meeting",
+    "icon": {
+      "id": 14950573,
+      "name": "Users meeting",
+      "style": "Super Basic Omission Gradient",
+      "url": "https://cdn-icons-png.freepik.com/128/14950/14950573.png"
+    }
+  },
+  "cliente": {
+    "en": "customer",
+    "icon": null
+  },
+  "colega": {
+    "en": "colleague",
+    "icon": {
+      "id": 8131403,
+      "name": "Office",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/8131/8131403.png"
+    }
+  },
+  "competidor": {
+    "en": "competitor",
+    "icon": {
+      "id": 2503599,
+      "name": "Competition",
+      "style": "Aphiradee (monkik) Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/2503/2503599.png"
+    }
+  },
+  "socio": {
+    "en": "partner",
+    "icon": {
+      "id": 15404412,
+      "name": "Business",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/15404/15404412.png"
+    }
+  },
+  "desempleo": {
+    "en": "unemployment",
+    "icon": null
+  },
+  "salario": {
+    "en": "salary",
+    "icon": null
+  },
+  "sueldo": {
+    "en": "wage",
+    "icon": null
+  },
+  "jubilación": {
+    "en": "retirement",
+    "icon": null
+  },
+  "contrato": {
+    "en": "contract",
+    "icon": {
+      "id": 2666523,
+      "name": "Contract",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/2666/2666523.png"
+    }
+  },
+  "colegio": {
+    "en": "college, school",
+    "icon": {
+      "id": 4345672,
+      "name": "College",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/4345/4345672.png"
+    }
+  },
+  "educación": {
+    "en": "education",
+    "icon": {
+      "id": 18448227,
+      "name": "Certificate",
+      "style": "Generic gradient fill",
+      "url": "https://cdn-icons-png.freepik.com/128/18448/18448227.png"
+    }
+  },
+  "sindicato": {
+    "en": "union",
+    "icon": {
+      "id": 567583,
+      "name": "Teamwork",
+      "style": "Detailed Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/567/567583.png"
+    }
+  },
+  "huelga": {
+    "en": "strike",
+    "icon": null
+  },
+  "lección": {
+    "en": "lesson",
+    "icon": {
+      "id": 7341987,
+      "name": "Video lesson",
+      "style": "Generic Lineal Color Gradient",
+      "url": "https://cdn-icons-png.freepik.com/128/7341/7341987.png"
+    }
+  },
+  "examen": {
+    "en": "exam",
+    "icon": {
+      "id": 17030185,
+      "name": "Exam",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/17030/17030185.png"
+    }
+  },
+  "tarea": {
+    "en": "homework, task",
+    "icon": {
+      "id": 1607090,
+      "name": "Homework",
+      "style": "Basic Miscellany Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1607/1607090.png"
+    }
+  },
+  "curso": {
+    "en": "course",
+    "icon": {
+      "id": 13972594,
+      "name": "Educational video",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/13972/13972594.png"
+    }
+  },
+  "clase": {
+    "en": "class, kind",
+    "icon": null
+  },
+  "prueba": {
+    "en": "test",
+    "icon": {
+      "id": 18289665,
+      "name": "Testing",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/18289/18289665.png"
+    }
+  },
+  "diploma": {
+    "en": "diploma",
+    "icon": {
+      "id": 7231644,
+      "name": "Certificate",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/7231/7231644.png"
+    }
+  },
+  "calificación": {
+    "en": "grade, qualification",
+    "icon": {
+      "id": 14963869,
+      "name": "Ribbon",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/14963/14963869.png"
+    }
+  },
+  "nota": {
+    "en": "grade, note",
+    "icon": {
+      "id": 14963869,
+      "name": "Ribbon",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/14963/14963869.png"
+    }
+  },
+  "título": {
+    "en": "title",
+    "icon": null
+  },
+  "beca": {
+    "en": "scholarship",
+    "icon": null
+  },
+  "matrícula": {
+    "en": "tuition, enrollment",
+    "icon": null
+  },
+  "certificado": {
+    "en": "certificate",
+    "icon": null
+  },
+  "cuaderno": {
+    "en": "notebook",
+    "icon": {
+      "id": 1056235,
+      "name": "Notebook",
+      "style": "Detailed Flat Circular Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1056/1056235.png"
+    }
+  },
+  "libro": {
+    "en": "book",
+    "icon": null
+  },
+  "pluma": {
+    "en": "pen",
+    "icon": {
+      "id": 1378356,
+      "name": "Signature",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1378/1378356.png"
+    }
+  },
+  "regla": {
+    "en": "rule",
+    "icon": null
+  },
+  "lápiz": {
+    "en": "pencil",
+    "icon": {
+      "id": 5641178,
+      "name": "Pencil case",
+      "style": "Kawaii Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/5641/5641178.png"
+    }
+  },
+  "bolígrafo": {
+    "en": "ballpoint pen",
+    "icon": {
+      "id": 6891719,
+      "name": "Ballpoint",
+      "style": "Generic Glyph",
+      "url": "https://cdn-icons-png.freepik.com/128/6891/6891719.png"
+    }
+  },
+  "borrador": {
+    "en": "eraser",
+    "icon": {
+      "id": 8352687,
+      "name": "Eraser",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/8352/8352687.png"
+    }
+  },
+  "tijeras": {
+    "en": "scissors",
+    "icon": {
+      "id": 541957,
+      "name": "Scissors",
+      "style": "Tomas Knop Fill",
+      "url": "https://cdn-icons-png.freepik.com/128/541/541957.png"
+    }
+  },
+  "pizarra": {
+    "en": "blackboard",
+    "icon": null
+  },
+  "tiza": {
+    "en": "chalk",
+    "icon": null
+  },
+  "papel": {
+    "en": "paper",
+    "icon": {
+      "id": 15346175,
+      "name": "Copy document",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/15346/15346175.png"
+    }
+  },
+  "pegamento": {
+    "en": "glue",
+    "icon": {
+      "id": 8788288,
+      "name": "Glue",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/8788/8788288.png"
+    }
+  },
+  "enciclopedia": {
+    "en": "encyclopedia",
+    "icon": null
+  },
+  "página": {
+    "en": "page",
+    "icon": {
+      "id": 3825944,
+      "name": "File",
+      "style": "Juicy Fish Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/3825/3825944.png"
+    }
+  },
+  "diccionario": {
+    "en": "dictionary",
+    "icon": null
+  },
+  "capítulo": {
+    "en": "chapter",
+    "icon": {
+      "id": 3251758,
+      "name": "Videos",
+      "style": "Basic Miscellany Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/3251/3251758.png"
+    }
+  },
+  "párrafo": {
+    "en": "paragraph",
+    "icon": {
+      "id": 7660308,
+      "name": "Paragraph",
+      "style": "Detailed Mixed Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/7660/7660308.png"
+    }
+  },
+  "palabra": {
+    "en": "word",
+    "icon": {
+      "id": 2912873,
+      "name": "Doc",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/2912/2912873.png"
+    }
+  },
+  "alfabeto": {
+    "en": "alphabet",
+    "icon": null
+  },
+  "letra": {
+    "en": "letter",
+    "icon": null
+  },
+  "oración": {
+    "en": "prayer",
+    "icon": null
+  },
+  "número": {
+    "en": "number",
+    "icon": null
+  },
+  "historia": {
+    "en": "history, story",
+    "icon": null
+  },
+  "geografía": {
+    "en": "geography",
+    "icon": {
+      "id": 17354739,
+      "name": "Globe",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/17354/17354739.png"
+    }
+  },
+  "matemáticas": {
+    "en": "mathematics",
+    "icon": null
+  },
+  "ciencia": {
+    "en": "science",
+    "icon": null
+  },
+  "pronunciación": {
+    "en": "pronunciation",
+    "icon": null
+  },
+  "idioma": {
+    "en": "language",
+    "icon": {
+      "id": 484633,
+      "name": "Language",
+      "style": "Basic Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/484/484633.png"
+    }
+  },
+  "vocabulario": {
+    "en": "vocabulary",
+    "icon": null
+  },
+  "gramática": {
+    "en": "grammar",
+    "icon": {
+      "id": 6091150,
+      "name": "Grammar",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/6091/6091150.png"
+    }
+  },
+  "literatura": {
+    "en": "literature",
+    "icon": {
+      "id": 5029059,
+      "name": "Books",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/5029/5029059.png"
+    }
+  },
+  "química": {
+    "en": "chemistry",
+    "icon": null
+  },
+  "filosofía": {
+    "en": "philosophy",
+    "icon": {
+      "id": 15907405,
+      "name": "Visionary",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/15907/15907405.png"
+    }
+  },
+  "traducción": {
+    "en": "translation",
+    "icon": null
+  },
+  "física": {
+    "en": "physics",
+    "icon": null
+  },
+  "biología": {
+    "en": "biology",
+    "icon": {
+      "id": 4833027,
+      "name": "Magnifying glass",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/4833/4833027.png"
+    }
+  },
+  "derecho": {
+    "en": "right, law",
+    "icon": null
+  },
+  "psicología": {
+    "en": "psychology",
+    "icon": {
+      "id": 13073618,
+      "name": "Emotional intelligence",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/13073/13073618.png"
+    }
+  },
+  "ingeniería": {
+    "en": "engineering",
+    "icon": null
+  },
+  "medicina": {
+    "en": "medicine",
+    "icon": null
+  },
+  "economía": {
+    "en": "economy",
+    "icon": null
+  },
+  "deporte": {
+    "en": "sport",
+    "icon": null
+  },
+  "tecnología": {
+    "en": "technology",
+    "icon": {
+      "id": 5205106,
+      "name": "Laptop",
+      "style": "Detailed Flat Circular Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/5205/5205106.png"
+    }
+  },
+  "arte": {
+    "en": "art",
+    "icon": null
+  },
+  "música": {
+    "en": "music",
+    "icon": {
+      "id": 3339179,
+      "name": "Headset",
+      "style": "Flaticons Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3339/3339179.png"
+    }
+  },
+  "computadora": {
+    "en": "computer",
+    "icon": {
+      "id": 1535031,
+      "name": "Chat",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1535/1535031.png"
+    }
+  },
+  "teléfono": {
+    "en": "telephone",
+    "icon": {
+      "id": 17302537,
+      "name": "Telephone",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/17302/17302537.png"
+    }
+  },
+  "móvil": {
+    "en": "mobile phone",
+    "icon": null
+  },
+  "ordenador": {
+    "en": "computer",
+    "icon": {
+      "id": 1535031,
+      "name": "Chat",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1535/1535031.png"
+    }
+  },
+  "internet": {
+    "en": "internet",
+    "icon": null
+  },
+  "celular": {
+    "en": "cell phone",
+    "icon": {
+      "id": 11386053,
+      "name": "Mobile",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/11386/11386053.png"
+    }
+  },
+  "correo": {
+    "en": "email, mail",
+    "icon": {
+      "id": 10505798,
+      "name": "Send mail",
+      "style": "Generic gradient outline",
+      "url": "https://cdn-icons-png.freepik.com/128/10505/10505798.png"
+    }
+  },
+  "página web": {
+    "en": "web page",
+    "icon": null
+  },
+  "red": {
+    "en": "net",
+    "icon": null
+  },
+  "sitio web": {
+    "en": "website",
+    "icon": null
+  },
+  "mensaje": {
+    "en": "message",
+    "icon": {
+      "id": 1464349,
+      "name": "Message",
+      "style": "Flaticons.com Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/1464/1464349.png"
+    }
+  },
+  "software": {
+    "en": "software",
+    "icon": {
+      "id": 1163412,
+      "name": "Software",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1163/1163412.png"
+    }
+  },
+  "hardware": {
+    "en": "hardware",
+    "icon": null
+  },
+  "aplicación": {
+    "en": "application, app",
+    "icon": {
+      "id": 3732687,
+      "name": "Smartphone",
+      "style": "Meticulous Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3732/3732687.png"
+    }
+  },
+  "pantalla": {
+    "en": "screen",
+    "icon": null
+  },
+  "programa": {
+    "en": "program, show",
+    "icon": null
+  },
+  "video": {
+    "en": "video",
+    "icon": {
+      "id": 2696537,
+      "name": "Video marketing",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/2696/2696537.png"
+    }
+  },
+  "impresora": {
+    "en": "printer",
+    "icon": null
+  },
+  "cámara": {
+    "en": "camera",
+    "icon": {
+      "id": 16020692,
+      "name": "Camera",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/16020/16020692.png"
+    }
+  },
+  "teclado": {
+    "en": "keyboard",
+    "icon": null
+  },
+  "imagen": {
+    "en": "image",
+    "icon": {
+      "id": 9520116,
+      "name": "Gallery",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/9520/9520116.png"
+    }
+  },
+  "foto": {
+    "en": "photo",
+    "icon": {
+      "id": 1647501,
+      "name": "Photo camera",
+      "style": "Super Basic Straight Circular",
+      "url": "https://cdn-icons-png.freepik.com/128/1647/1647501.png"
+    }
+  },
+  "archivo": {
+    "en": "file",
+    "icon": {
+      "id": 7901420,
+      "name": "Zip",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/7901/7901420.png"
+    }
+  },
+  "carpeta": {
+    "en": "folder",
+    "icon": null
+  },
+  "documento": {
+    "en": "document",
+    "icon": null
+  },
+  "batería": {
+    "en": "drums",
+    "icon": null
+  },
+  "contraseña": {
+    "en": "password",
+    "icon": null
+  },
+  "usuario": {
+    "en": "user",
+    "icon": null
+  },
+  "perfil": {
+    "en": "profile",
+    "icon": {
+      "id": 2194311,
+      "name": "Personal profile",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2194/2194311.png"
+    }
+  },
+  "cuenta": {
+    "en": "account, bill",
+    "icon": null
+  },
+  "energía": {
+    "en": "energy",
+    "icon": null
+  },
+  "cable": {
+    "en": "cable",
+    "icon": {
+      "id": 8356002,
+      "name": "Rca cable",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/8356/8356002.png"
+    }
+  },
+  "enchufe": {
+    "en": "plug, outlet",
+    "icon": {
+      "id": 11924900,
+      "name": "Plug in",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/11924/11924900.png"
+    }
+  },
+  "cargador": {
+    "en": "charger",
+    "icon": {
+      "id": 9960440,
+      "name": "Adapter",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/9960/9960440.png"
+    }
+  },
+  "electricidad": {
+    "en": "electricity",
+    "icon": null
+  },
+  "invento": {
+    "en": "invention",
+    "icon": {
+      "id": 2192378,
+      "name": "Idea",
+      "style": "Catkuro Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/2192/2192378.png"
+    }
+  },
+  "máquina": {
+    "en": "machine",
+    "icon": null
+  },
+  "robot": {
+    "en": "robot",
+    "icon": null
+  },
+  "herramienta": {
+    "en": "tool",
+    "icon": null
+  },
+  "aparato": {
+    "en": "device, appliance",
+    "icon": {
+      "id": 5062836,
+      "name": "Device",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/5062/5062836.png"
+    }
+  },
+  "descubrimiento": {
+    "en": "discovery",
+    "icon": {
+      "id": 11751768,
+      "name": "Discovery",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/11751/11751768.png"
+    }
+  },
+  "dato": {
+    "en": "data, fact",
+    "icon": null
+  },
+  "información": {
+    "en": "information",
+    "icon": null
+  },
+  "experimento": {
+    "en": "experiment",
+    "icon": {
+      "id": 10929946,
+      "name": "Experiment",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/10929/10929946.png"
+    }
+  },
+  "investigación": {
+    "en": "research",
+    "icon": {
+      "id": 18366254,
+      "name": "Research",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/18366/18366254.png"
+    }
+  },
+  "señal": {
+    "en": "signal",
+    "icon": null
+  },
+  "salud": {
+    "en": "health",
+    "icon": {
+      "id": 15341171,
+      "name": "Health insurance",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/15341/15341171.png"
+    }
+  },
+  "satélite": {
+    "en": "satellite",
+    "icon": null
+  },
+  "antena": {
+    "en": "antenna",
+    "icon": null
+  },
+  "enfermedad": {
+    "en": "disease, illness",
+    "icon": {
+      "id": 3494313,
+      "name": "Magnifying glass",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/3494/3494313.png"
+    }
+  },
+  "resfriado": {
+    "en": "cold",
+    "icon": null
+  },
+  "dolor": {
+    "en": "pain",
+    "icon": {
+      "id": 11355217,
+      "name": "Area",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/11355/11355217.png"
+    }
+  },
+  "gripe": {
+    "en": "flu",
+    "icon": {
+      "id": 16780071,
+      "name": "Flu",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/16780/16780071.png"
+    }
+  },
+  "fiebre": {
+    "en": "fever",
+    "icon": {
+      "id": 8808088,
+      "name": "Flu",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/8808/8808088.png"
+    }
+  },
+  "tos": {
+    "en": "cough",
+    "icon": null
+  },
+  "estornudo": {
+    "en": "sneeze",
+    "icon": null
+  },
+  "herida": {
+    "en": "wound",
+    "icon": null
+  },
+  "fractura": {
+    "en": "fracture",
+    "icon": null
+  },
+  "infección": {
+    "en": "infection",
+    "icon": {
+      "id": 16532248,
+      "name": "Spread",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/16532/16532248.png"
+    }
+  },
+  "alergia": {
+    "en": "allergy",
+    "icon": {
+      "id": 5388723,
+      "name": "Anaphylaxis",
+      "style": "Amethys Design Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/5388/5388723.png"
+    }
+  },
+  "síntoma": {
+    "en": "symptom",
+    "icon": {
+      "id": 7850934,
+      "name": "Symptom",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/7850/7850934.png"
+    }
+  },
+  "cura": {
+    "en": "cure",
+    "icon": null
+  },
+  "tratamiento": {
+    "en": "treatment",
+    "icon": {
+      "id": 3035485,
+      "name": "Chemotherapy",
+      "style": "Phatplus Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/3035/3035485.png"
+    }
+  },
+  "diagnóstico": {
+    "en": "diagnosis",
+    "icon": {
+      "id": 17085094,
+      "name": "Diagnosis",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/17085/17085094.png"
+    }
+  },
+  "cirugía": {
+    "en": "surgery",
+    "icon": {
+      "id": 17774355,
+      "name": "Surgery room",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/17774/17774355.png"
+    }
+  },
+  "pastilla": {
+    "en": "pill",
+    "icon": null
+  },
+  "vacuna": {
+    "en": "vaccine",
+    "icon": null
+  },
+  "operación": {
+    "en": "operation",
+    "icon": {
+      "id": 4149660,
+      "name": "Operation",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/4149/4149660.png"
+    }
+  },
+  "inyección": {
+    "en": "injection",
+    "icon": null
+  },
+  "clínica": {
+    "en": "clinic",
+    "icon": {
+      "id": 7643772,
+      "name": "Clinic",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/7643/7643772.png"
+    }
+  },
+  "emergencia": {
+    "en": "emergency",
+    "icon": {
+      "id": 18664457,
+      "name": "Emergency services",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/18664/18664457.png"
+    }
+  },
+  "consultorio": {
+    "en": "doctor's office",
+    "icon": {
+      "id": 3595963,
+      "name": "Reception",
+      "style": "Linector Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/3595/3595963.png"
+    }
+  },
+  "cita": {
+    "en": "appointment",
+    "icon": null
+  },
+  "radiografía": {
+    "en": "x-ray",
+    "icon": null
+  },
+  "vendaje": {
+    "en": "bandage",
+    "icon": null
+  },
+  "yeso": {
+    "en": "cast",
+    "icon": {
+      "id": 8669390,
+      "name": "Cast",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/8669/8669390.png"
+    }
+  },
+  "muleta": {
+    "en": "crutch",
+    "icon": {
+      "id": 12487315,
+      "name": "Amputation",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/12487/12487315.png"
+    }
+  },
+  "análisis": {
+    "en": "analysis, test",
+    "icon": null
+  },
+  "silla de ruedas": {
+    "en": "wheelchair",
+    "icon": {
+      "id": 7091584,
+      "name": "Wheelchair",
+      "style": "Kawaii Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/7091/7091584.png"
+    }
+  },
+  "oxígeno": {
+    "en": "oxygen",
+    "icon": null
+  },
+  "camilla": {
+    "en": "stretcher",
+    "icon": {
+      "id": 3127128,
+      "name": "Stretcher",
+      "style": "Basic Straight Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/3127/3127128.png"
+    }
+  },
+  "cáncer": {
+    "en": "cancer",
+    "icon": {
+      "id": 16652025,
+      "name": "Ribbon",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/16652/16652025.png"
+    }
+  },
+  "transfusión": {
+    "en": "transfusion",
+    "icon": null
+  },
+  "trasplante": {
+    "en": "transplant",
+    "icon": {
+      "id": 5436835,
+      "name": "Transplant",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/5436/5436835.png"
+    }
+  },
+  "donante": {
+    "en": "donor",
+    "icon": null
+  },
+  "órgano": {
+    "en": "organ",
+    "icon": null
+  },
+  "presión": {
+    "en": "pressure",
+    "icon": {
+      "id": 11330461,
+      "name": "Pressure sensor",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/11330/11330461.png"
+    }
+  },
+  "colesterol": {
+    "en": "cholesterol",
+    "icon": {
+      "id": 9956941,
+      "name": "Ldl",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/9956/9956941.png"
+    }
+  },
+  "proteína": {
+    "en": "protein",
+    "icon": null
+  },
+  "vitamina": {
+    "en": "vitamin",
+    "icon": null
+  },
+  "diabetes": {
+    "en": "diabetes",
+    "icon": {
+      "id": 3209174,
+      "name": "Sugar blood level",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/3209/3209174.png"
+    }
+  },
+  "dieta": {
+    "en": "diet",
+    "icon": null
+  },
+  "ejercicio": {
+    "en": "exercise",
+    "icon": null
+  },
+  "odio": {
+    "en": "hate",
+    "icon": {
+      "id": 3587105,
+      "name": "Hate",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/3587/3587105.png"
+    }
+  },
+  "caloría": {
+    "en": "calorie",
+    "icon": null
+  },
+  "amor": {
+    "en": "love",
+    "icon": {
+      "id": 6653522,
+      "name": "Love",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/6653/6653522.png"
+    }
+  },
+  "felicidad": {
+    "en": "happiness",
+    "icon": {
+      "id": 291577,
+      "name": "Stick man",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/291/291577.png"
+    }
+  },
+  "alegría": {
+    "en": "joy",
+    "icon": {
+      "id": 8540945,
+      "name": "Happiness",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/8540/8540945.png"
+    }
+  },
+  "tristeza": {
+    "en": "sadness",
+    "icon": {
+      "id": 2420974,
+      "name": "Sad",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/2420/2420974.png"
+    }
+  },
+  "miedo": {
+    "en": "fear",
+    "icon": null
+  },
+  "esperanza": {
+    "en": "hope",
+    "icon": null
+  },
+  "libertad": {
+    "en": "freedom",
+    "icon": {
+      "id": 18611371,
+      "name": "Liberation",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/18611/18611371.png"
+    }
+  },
+  "justicia": {
+    "en": "justice",
+    "icon": null
+  },
+  "paz": {
+    "en": "peace",
+    "icon": null
+  },
+  "verdad": {
+    "en": "truth",
+    "icon": null
+  },
+  "guerra": {
+    "en": "war",
+    "icon": null
+  },
+  "mentira": {
+    "en": "lie",
+    "icon": null
+  },
+  "deseo": {
+    "en": "wish",
+    "icon": null
+  },
+  "sueño": {
+    "en": "dream",
+    "icon": null
+  },
+  "necesidad": {
+    "en": "need",
+    "icon": null
+  },
+  "pesadilla": {
+    "en": "nightmare",
+    "icon": {
+      "id": 3512867,
+      "name": "Storm",
+      "style": "Justicon Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/3512/3512867.png"
+    }
+  },
+  "problema": {
+    "en": "problem",
+    "icon": null
+  },
+  "suerte": {
+    "en": "luck",
+    "icon": {
+      "id": 4522131,
+      "name": "Good luck",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/4522/4522131.png"
+    }
+  },
+  "solución": {
+    "en": "solution",
+    "icon": null
+  },
+  "fracaso": {
+    "en": "failure",
+    "icon": {
+      "id": 1774893,
+      "name": "Cancel",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1774/1774893.png"
+    }
+  },
+  "éxito": {
+    "en": "success",
+    "icon": null
+  },
+  "muerte": {
+    "en": "death",
+    "icon": {
+      "id": 2851866,
+      "name": "Grave",
+      "style": "Basic Miscellany Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/2851/2851866.png"
+    }
+  },
+  "vida": {
+    "en": "life",
+    "icon": {
+      "id": 1518841,
+      "name": "Life insurance",
+      "style": "Basic Miscellany Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/1518/1518841.png"
+    }
+  },
+  "nacimiento": {
+    "en": "birth",
+    "icon": null
+  },
+  "destino": {
+    "en": "destination, destiny",
+    "icon": null
+  },
+  "crecimiento": {
+    "en": "growth",
+    "icon": null
+  },
+  "razón": {
+    "en": "reason",
+    "icon": null
+  },
+  "desarrollo": {
+    "en": "development",
+    "icon": null
+  },
+  "progreso": {
+    "en": "progress",
+    "icon": null
+  },
+  "pensamiento": {
+    "en": "thought",
+    "icon": {
+      "id": 1871489,
+      "name": "Thinking",
+      "style": "Basic Straight Filled",
+      "url": "https://cdn-icons-png.freepik.com/128/1871/1871489.png"
+    }
+  },
+  "cambio": {
+    "en": "change",
+    "icon": null
+  },
+  "idea": {
+    "en": "idea",
+    "icon": {
+      "id": 1253702,
+      "name": "Idea",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1253/1253702.png"
+    }
+  },
+  "duda": {
+    "en": "doubt",
+    "icon": null
+  },
+  "creencia": {
+    "en": "belief",
+    "icon": {
+      "id": 6270871,
+      "name": "Judaism",
+      "style": "Basic Rounded Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/6270/6270871.png"
+    }
+  },
+  "opinión": {
+    "en": "opinion",
+    "icon": {
+      "id": 1622763,
+      "name": "Opinion",
+      "style": "Noomtah Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/1622/1622763.png"
+    }
+  },
+  "fe": {
+    "en": "faith",
+    "icon": null
+  },
+  "conocimiento": {
+    "en": "knowledge",
+    "icon": null
+  },
+  "sabiduría": {
+    "en": "wisdom",
+    "icon": {
+      "id": 16504182,
+      "name": "Intellectuality",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/16504/16504182.png"
+    }
+  },
+  "ignorancia": {
+    "en": "ignorance",
+    "icon": null
+  },
+  "certeza": {
+    "en": "certainty",
+    "icon": null
+  },
+  "memoria": {
+    "en": "memory",
+    "icon": {
+      "id": 8192426,
+      "name": "Memory",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/8192/8192426.png"
+    }
+  },
+  "imaginación": {
+    "en": "imagination",
+    "icon": null
+  },
+  "concentración": {
+    "en": "concentration",
+    "icon": null
+  },
+  "olvido": {
+    "en": "forgetfulness",
+    "icon": {
+      "id": 993509,
+      "name": "Thinking",
+      "style": "geotatah Lineal Color",
+      "url": "https://cdn-icons-png.freepik.com/128/993/993509.png"
+    }
+  },
+  "atención": {
+    "en": "attention",
+    "icon": {
+      "id": 15096928,
+      "name": "Threat",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/15096/15096928.png"
+    }
+  },
+  "recuerdo": {
+    "en": "memory, remembrance",
+    "icon": {
+      "id": 8192426,
+      "name": "Memory",
+      "style": "Generic Outline Color",
+      "url": "https://cdn-icons-png.freepik.com/128/8192/8192426.png"
+    }
+  },
+  "capacidad": {
+    "en": "capacity",
+    "icon": {
+      "id": 10206090,
+      "name": "User",
+      "style": "Generic outline",
+      "url": "https://cdn-icons-png.freepik.com/128/10206/10206090.png"
+    }
+  },
+  "talento": {
+    "en": "talent",
+    "icon": null
+  },
+  "habilidad": {
+    "en": "ability, skill",
+    "icon": {
+      "id": 12669222,
+      "name": "Empowerment",
+      "style": "Generic black outline",
+      "url": "https://cdn-icons-png.freepik.com/128/12669/12669222.png"
+    }
+  },
+  "creatividad": {
+    "en": "creativity",
+    "icon": null
+  },
+  "inteligencia": {
+    "en": "intelligence",
+    "icon": null
+  },
+  "valor": {
+    "en": "courage, value",
+    "icon": {
+      "id": 1389837,
+      "name": "Leader",
+      "style": "Coloring Color",
+      "url": "https://cdn-icons-png.freepik.com/128/1389/1389837.png"
+    }
+  },
+  "fuerza": {
+    "en": "force, strength",
+    "icon": null
+  },
+  "orgullo": {
+    "en": "pride",
+    "icon": null
+  },
+  "cobardía": {
+    "en": "cowardice",
+    "icon": null
+  },
+  "debilidad": {
+    "en": "weakness",
+    "icon": {
+      "id": 4753389,
+      "name": "Weakness",
+      "style": "Basic Rounded Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/4753/4753389.png"
+    }
+  },
+  "humildad": {
+    "en": "humility",
+    "icon": null
+  },
+  "paciencia": {
+    "en": "patience",
+    "icon": null
+  },
+  "sociedad": {
+    "en": "society",
+    "icon": null
+  },
+  "respeto": {
+    "en": "respect",
+    "icon": null
+  },
+  "confianza": {
+    "en": "trust, confidence",
+    "icon": {
+      "id": 14488543,
+      "name": "Trust",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/14488/14488543.png"
+    }
+  },
+  "gobierno": {
+    "en": "government",
+    "icon": {
+      "id": 1582292,
+      "name": "Government",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/1582/1582292.png"
+    }
+  },
+  "política": {
+    "en": "politics",
+    "icon": {
+      "id": 6705249,
+      "name": "Democracy",
+      "style": "Special Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/6705/6705249.png"
+    }
+  },
+  "democracia": {
+    "en": "democracy",
+    "icon": {
+      "id": 18617639,
+      "name": "Democracy",
+      "style": "Generic black fill",
+      "url": "https://cdn-icons-png.freepik.com/128/18617/18617639.png"
+    }
+  },
+  "dictadura": {
+    "en": "dictatorship",
+    "icon": null
+  },
+  "ley": {
+    "en": "law",
+    "icon": null
+  },
+  "deber": {
+    "en": "duty",
+    "icon": null
+  },
+  "ciudadano": {
+    "en": "citizen",
+    "icon": {
+      "id": 2110488,
+      "name": "Nation",
+      "style": "Noomtah Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/2110/2110488.png"
+    }
+  },
+  "voto": {
+    "en": "vote",
+    "icon": {
+      "id": 3669035,
+      "name": "Ballot box",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/3669/3669035.png"
+    }
+  },
+  "constitución": {
+    "en": "constitution",
+    "icon": null
+  },
+  "partido": {
+    "en": "game, match",
+    "icon": null
+  },
+  "senador": {
+    "en": "senator",
+    "icon": null
+  },
+  "diputado": {
+    "en": "deputy",
+    "icon": null
+  },
+  "candidato": {
+    "en": "candidate",
+    "icon": {
+      "id": 10998266,
+      "name": "CV",
+      "style": "Generic color fill",
+      "url": "https://cdn-icons-png.freepik.com/128/10998/10998266.png"
+    }
+  },
+  "elección": {
+    "en": "election",
+    "icon": {
+      "id": 3669035,
+      "name": "Ballot box",
+      "style": "Generic Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/3669/3669035.png"
+    }
+  },
+  "alcalde": {
+    "en": "mayor",
+    "icon": null
+  },
+  "reina": {
+    "en": "queen",
+    "icon": {
+      "id": 506974,
+      "name": "Queen",
+      "style": "Special Lineal",
+      "url": "https://cdn-icons-png.freepik.com/128/506/506974.png"
+    }
+  },
+  "ministro": {
+    "en": "minister",
+    "icon": null
+  },
+  "rey": {
+    "en": "king",
+    "icon": {
+      "id": 2701700,
+      "name": "King",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/2701/2701700.png"
+    }
+  },
+  "gobernador": {
+    "en": "governor",
+    "icon": null
+  },
+  "príncipe": {
+    "en": "prince",
+    "icon": {
+      "id": 5427001,
+      "name": "King",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/5427/5427001.png"
+    }
+  },
+  "princesa": {
+    "en": "princess",
+    "icon": {
+      "id": 6521505,
+      "name": "Party",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/6521/6521505.png"
+    }
+  },
+  "fuerza aérea": {
+    "en": "air force",
+    "icon": null
+  },
+  "ejército": {
+    "en": "army",
+    "icon": {
+      "id": 2646743,
+      "name": "Badge",
+      "style": "Ultimatearm Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/2646/2646743.png"
+    }
+  },
+  "marina": {
+    "en": "navy",
+    "icon": null
+  },
+  "alianza": {
+    "en": "alliance",
+    "icon": {
+      "id": 15188282,
+      "name": "Alliance",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/15188/15188282.png"
+    }
+  },
+  "enemigo": {
+    "en": "enemy",
+    "icon": {
+      "id": 18292703,
+      "name": "Target",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/18292/18292703.png"
+    }
+  },
+  "tratado": {
+    "en": "treaty",
+    "icon": null
+  },
+  "protesta": {
+    "en": "protest",
+    "icon": null
+  },
+  "derrota": {
+    "en": "defeat",
+    "icon": null
+  },
+  "aliado": {
+    "en": "ally",
+    "icon": {
+      "id": 4220257,
+      "name": "Handshake",
+      "style": "Geometric Flat Circular Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/4220/4220257.png"
+    }
+  },
+  "revolución": {
+    "en": "revolution",
+    "icon": null
+  },
+  "victoria": {
+    "en": "victory",
+    "icon": null
+  },
+  "robo": {
+    "en": "robbery, theft",
+    "icon": {
+      "id": 5493347,
+      "name": "Thief",
+      "style": "Meticulous Line",
+      "url": "https://cdn-icons-png.freepik.com/128/5493/5493347.png"
+    }
+  },
+  "manifestación": {
+    "en": "demonstration",
+    "icon": null
+  },
+  "crimen": {
+    "en": "crime",
+    "icon": null
+  },
+  "delito": {
+    "en": "offense, crime",
+    "icon": {
+      "id": 9930101,
+      "name": "People",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/9930/9930101.png"
+    }
+  },
+  "corrupción": {
+    "en": "corruption",
+    "icon": {
+      "id": 17353901,
+      "name": "Corruption",
+      "style": "Generic gradient fill",
+      "url": "https://cdn-icons-png.freepik.com/128/17353/17353901.png"
+    }
+  },
+  "tribunal": {
+    "en": "court",
+    "icon": null
+  },
+  "asesinato": {
+    "en": "murder",
+    "icon": {
+      "id": 6795637,
+      "name": "Stick man",
+      "style": "Generic Glyph",
+      "url": "https://cdn-icons-png.freepik.com/128/6795/6795637.png"
+    }
+  },
+  "violencia": {
+    "en": "violence",
+    "icon": {
+      "id": 7194785,
+      "name": "Nonviolence",
+      "style": "Generic Detailed Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/7194/7194785.png"
+    }
+  },
+  "condena": {
+    "en": "conviction",
+    "icon": null
+  },
+  "juicio": {
+    "en": "trial",
+    "icon": null
+  },
+  "sentencia": {
+    "en": "sentence",
+    "icon": null
+  },
+  "presupuesto": {
+    "en": "budget",
+    "icon": {
+      "id": 16507147,
+      "name": "Monetary",
+      "style": "Generic Others",
+      "url": "https://cdn-icons-png.freepik.com/128/16507/16507147.png"
+    }
+  },
+  "impuesto": {
+    "en": "tax",
+    "icon": null
+  },
+  "deuda": {
+    "en": "debt",
+    "icon": null
+  },
+  "inflación": {
+    "en": "inflation",
+    "icon": null
+  },
+  "igualdad": {
+    "en": "equality",
+    "icon": {
+      "id": 8303393,
+      "name": "Equality",
+      "style": "Special Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/8303/8303393.png"
+    }
+  },
+  "pobreza": {
+    "en": "poverty",
+    "icon": null
+  },
+  "riqueza": {
+    "en": "wealth",
+    "icon": null
+  },
+  "inmigración": {
+    "en": "immigration",
+    "icon": {
+      "id": 17162250,
+      "name": "Passport",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/17162/17162250.png"
+    }
+  },
+  "racismo": {
+    "en": "racism",
+    "icon": {
+      "id": 6726779,
+      "name": "Rock paper scissors",
+      "style": "Basic Rounded Flat",
+      "url": "https://cdn-icons-png.freepik.com/128/6726/6726779.png"
+    }
+  },
+  "discriminación": {
+    "en": "discrimination",
+    "icon": {
+      "id": 7439822,
+      "name": "Discrimination",
+      "style": "Kawaii Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/7439/7439822.png"
+    }
+  },
+  "refugiado": {
+    "en": "refugee",
+    "icon": null
+  },
+  "pintura": {
+    "en": "painting",
+    "icon": null
+  },
+  "dibujo": {
+    "en": "drawing",
+    "icon": {
+      "id": 10856253,
+      "name": "Sketch",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/10856/10856253.png"
+    }
+  },
+  "escultura": {
+    "en": "sculpture",
+    "icon": null
+  },
+  "fotografía": {
+    "en": "photography",
+    "icon": {
+      "id": 1423902,
+      "name": "Camera",
+      "style": "Ultimatearm Outline",
+      "url": "https://cdn-icons-png.freepik.com/128/1423/1423902.png"
+    }
+  },
+  "instrumento": {
+    "en": "instrument",
+    "icon": null
+  },
+  "canción": {
+    "en": "song",
+    "icon": {
+      "id": 470399,
+      "name": "Romantic music",
+      "style": "Detailed Rounded Lineal color",
+      "url": "https://cdn-icons-png.freepik.com/128/470/470399.png"
+    }
+  },
+  "melodía": {
+    "en": "melody",
+    "icon": {
+      "id": 13224894,
+      "name": "Music",
+      "style": "Generic color lineal-color",
+      "url": "https://cdn-icons-png.freepik.com/128/13224/13224894.png"
+    }
+  },
+  "ritmo": {
+    "en": "rhythm, pace",
+    "icon": null
+  },
+  "flauta": {
+    "en": "flute",
+    "icon": null
+  },
+  "guitarra": {
+    "en": "guitar",
+    "icon": null
+  },
+  "violín": {
+    "en": "violin",
+    "icon": null
+  },
+  "piano": {
+    "en": "piano",
+    "icon": null
+  },
+  "orquesta": {
+    "en": "orchestra",
+    "icon": null
+  },
+  "ópera": {
+    "en": "opera",
+    "icon": null
+  },
+  "concierto": {
+    "en": "concert",
+    "icon": null
+  },
+  "ballet": {
+    "en": "ballet",
+    "icon": null
+  },
+  "trompeta": {
+    "en": "trumpet",
+    "icon": null
+  },
+  "danza": {
+    "en": "dance",
+    "icon": null
+  },
+  "obra": {
+    "en": "play, work",
+    "icon": null
+  },
+  "escenario": {
+    "en": "stage",
+    "icon": null
+  },
+  "guion": {
+    "en": "script",
+    "icon": null
+  },
+  "película": {
+    "en": "movie, film",
+    "icon": null
+  },
+  "novela": {
+    "en": "novel",
+    "icon": null
+  },
+  "cuento": {
+    "en": "story, tale",
+    "icon": null
+  },
+  "poema": {
+    "en": "poem",
+    "icon": null
+  },
+  "escena": {
+    "en": "scene",
+    "icon": null
+  },
+  "personaje": {
+    "en": "character",
+    "icon": null
+  },
+  "poesía": {
+    "en": "poetry",
+    "icon": null
+  },
+  "autor": {
+    "en": "author",
+    "icon": null
+  },
+  "revista": {
+    "en": "magazine",
+    "icon": null
+  },
+  "televisión": {
+    "en": "television",
+    "icon": null
+  },
+  "artículo": {
+    "en": "article",
+    "icon": null
+  },
+  "noticia": {
+    "en": "news",
+    "icon": null
+  },
+  "periódico": {
+    "en": "newspaper",
+    "icon": null
+  },
+  "radio": {
+    "en": "radio",
+    "icon": null
+  },
+  "episodio": {
+    "en": "episode",
+    "icon": null
+  },
+  "documental": {
+    "en": "documentary",
+    "icon": null
+  },
+  "comedia": {
+    "en": "comedy",
+    "icon": null
+  },
+  "serie": {
+    "en": "series",
+    "icon": null
+  },
+  "ciencia ficción": {
+    "en": "science fiction",
+    "icon": null
+  },
+  "terror": {
+    "en": "horror",
+    "icon": null
+  },
+  "romance": {
+    "en": "romance",
+    "icon": null
+  },
+  "drama": {
+    "en": "drama",
+    "icon": null
+  },
+  "acción": {
+    "en": "stock, action",
+    "icon": null
+  },
+  "celebridad": {
+    "en": "celebrity",
+    "icon": null
+  },
+  "premio": {
+    "en": "prize, award",
+    "icon": null
+  },
+  "fama": {
+    "en": "fame",
+    "icon": null
+  },
+  "aventura": {
+    "en": "adventure",
+    "icon": null
+  },
+  "misterio": {
+    "en": "mystery",
+    "icon": null
+  },
+  "entretenimiento": {
+    "en": "entertainment",
+    "icon": null
+  },
+  "diversión": {
+    "en": "fun",
+    "icon": null
+  },
+  "público": {
+    "en": "audience, public",
+    "icon": null
+  },
+  "fan": {
+    "en": "fan",
+    "icon": null
+  },
+  "baloncesto": {
+    "en": "basketball",
+    "icon": null
+  },
+  "juguete": {
+    "en": "toy",
+    "icon": null
+  },
+  "fútbol": {
+    "en": "soccer, football",
+    "icon": null
+  },
+  "juego": {
+    "en": "game",
+    "icon": null
+  },
+  "atletismo": {
+    "en": "athletics",
+    "icon": null
+  },
+  "tenis": {
+    "en": "tennis",
+    "icon": null
+  },
+  "natación": {
+    "en": "swimming",
+    "icon": null
+  },
+  "golf": {
+    "en": "golf",
+    "icon": null
+  },
+  "béisbol": {
+    "en": "baseball",
+    "icon": null
+  },
+  "ciclismo": {
+    "en": "cycling",
+    "icon": null
+  },
+  "patinaje": {
+    "en": "skating",
+    "icon": null
+  },
+  "boxeo": {
+    "en": "boxing",
+    "icon": null
+  },
+  "esquí": {
+    "en": "skiing",
+    "icon": null
+  },
+  "lucha": {
+    "en": "wrestling",
+    "icon": null
+  },
+  "árbitro": {
+    "en": "referee",
+    "icon": null
+  },
+  "equipo": {
+    "en": "team",
+    "icon": null
+  },
+  "jugador": {
+    "en": "player",
+    "icon": null
+  },
+  "entrenador": {
+    "en": "coach, trainer",
+    "icon": null
+  },
+  "campeonato": {
+    "en": "championship",
+    "icon": null
+  },
+  "torneo": {
+    "en": "tournament",
+    "icon": null
+  },
+  "medalla": {
+    "en": "medal",
+    "icon": null
+  },
+  "competencia": {
+    "en": "competition",
+    "icon": null
+  },
+  "olimpiadas": {
+    "en": "Olympics",
+    "icon": null
+  },
+  "gol": {
+    "en": "goal",
+    "icon": null
+  },
+  "marcador": {
+    "en": "score",
+    "icon": null
+  },
+  "campeón": {
+    "en": "champion",
+    "icon": null
+  },
+  "trofeo": {
+    "en": "trophy",
+    "icon": null
+  },
+  "punto": {
+    "en": "point, dot",
+    "icon": null
+  },
+  "balón": {
+    "en": "ball",
+    "icon": null
+  },
+  "pelota": {
+    "en": "ball",
+    "icon": null
+  },
+  "empate": {
+    "en": "tie, draw",
+    "icon": null
+  },
+  "cancha": {
+    "en": "court, field",
+    "icon": null
+  },
+  "raqueta": {
+    "en": "racket",
+    "icon": null
+  },
+  "pista": {
+    "en": "track",
+    "icon": null
+  },
+  "récord": {
+    "en": "record",
+    "icon": null
+  },
+  "maratón": {
+    "en": "marathon",
+    "icon": null
+  },
+  "calentamiento": {
+    "en": "warm-up",
+    "icon": null
+  },
+  "entrenamiento": {
+    "en": "training",
+    "icon": null
+  },
+  "lesión": {
+    "en": "injury",
+    "icon": null
+  },
+  "estiramiento": {
+    "en": "stretching",
+    "icon": null
+  },
+  "ropa": {
+    "en": "clothing",
+    "icon": null
+  },
+  "resistencia": {
+    "en": "endurance",
+    "icon": null
+  },
+  "velocidad": {
+    "en": "speed",
+    "icon": null
+  },
+  "agilidad": {
+    "en": "agility",
+    "icon": null
+  },
+  "jeans": {
+    "en": "jeans",
+    "icon": null
+  },
+  "camiseta": {
+    "en": "t-shirt",
+    "icon": null
+  },
+  "blusa": {
+    "en": "blouse",
+    "icon": null
+  },
+  "camisa": {
+    "en": "shirt",
+    "icon": null
+  },
+  "pantalón": {
+    "en": "pants",
+    "icon": null
+  },
+  "falda": {
+    "en": "skirt",
+    "icon": null
+  },
+  "abrigo": {
+    "en": "coat",
+    "icon": null
+  },
+  "traje": {
+    "en": "suit",
+    "icon": null
+  },
+  "chaqueta": {
+    "en": "jacket",
+    "icon": null
+  },
+  "vestido": {
+    "en": "dress",
+    "icon": null
+  },
+  "corbata": {
+    "en": "tie",
+    "icon": null
+  },
+  "suéter": {
+    "en": "sweater",
+    "icon": null
+  },
+  "sudadera": {
+    "en": "sweatshirt",
+    "icon": null
+  },
+  "bufanda": {
+    "en": "scarf",
+    "icon": null
+  },
+  "chaleco": {
+    "en": "vest",
+    "icon": null
+  },
+  "sombrero": {
+    "en": "hat",
+    "icon": null
+  },
+  "bota": {
+    "en": "boot",
+    "icon": null
+  },
+  "gorra": {
+    "en": "cap",
+    "icon": null
+  },
+  "guantes": {
+    "en": "gloves",
+    "icon": null
+  },
+  "zapato": {
+    "en": "shoe",
+    "icon": null
+  },
+  "sandalia": {
+    "en": "sandal",
+    "icon": null
+  },
+  "calcetín": {
+    "en": "sock",
+    "icon": null
+  },
+  "tacón": {
+    "en": "heel",
+    "icon": null
+  },
+  "zapatilla": {
+    "en": "sneaker, slipper",
+    "icon": null
+  },
+  "media": {
+    "en": "stocking",
+    "icon": null
+  },
+  "ropa interior": {
+    "en": "underwear",
+    "icon": null
+  },
+  "pijama": {
+    "en": "pajamas",
+    "icon": null
+  },
+  "sostén": {
+    "en": "bra",
+    "icon": null
+  },
+  "bañador": {
+    "en": "swimsuit",
+    "icon": null
+  },
+  "calzoncillo": {
+    "en": "underwear (men)",
+    "icon": null
+  },
+  "cartera": {
+    "en": "wallet",
+    "icon": null
+  },
+  "bolso": {
+    "en": "purse, bag",
+    "icon": null
+  },
+  "bikini": {
+    "en": "bikini",
+    "icon": null
+  },
+  "gafas": {
+    "en": "glasses",
+    "icon": null
+  },
+  "lentes": {
+    "en": "lenses, glasses",
+    "icon": null
+  },
+  "anillo": {
+    "en": "ring",
+    "icon": null
+  },
+  "paraguas": {
+    "en": "umbrella",
+    "icon": null
+  },
+  "oro": {
+    "en": "gold",
+    "icon": null
+  },
+  "joya": {
+    "en": "jewelry",
+    "icon": null
+  },
+  "pulsera": {
+    "en": "bracelet",
+    "icon": null
+  },
+  "collar": {
+    "en": "necklace",
+    "icon": null
+  },
+  "pendiente": {
+    "en": "earring",
+    "icon": null
+  },
+  "diamante": {
+    "en": "diamond",
+    "icon": null
+  },
+  "perla": {
+    "en": "pearl",
+    "icon": null
+  },
+  "moda": {
+    "en": "fashion",
+    "icon": null
+  },
+  "talla": {
+    "en": "size",
+    "icon": null
+  },
+  "plata": {
+    "en": "silver",
+    "icon": null
+  },
+  "estilo": {
+    "en": "style",
+    "icon": null
+  },
+  "modelo": {
+    "en": "model",
+    "icon": null
+  },
+  "diseñador": {
+    "en": "designer",
+    "icon": null
+  },
+  "tela": {
+    "en": "fabric",
+    "icon": null
+  },
+  "pasarela": {
+    "en": "runway",
+    "icon": null
+  },
+  "cuero": {
+    "en": "leather",
+    "icon": null
+  },
+  "seda": {
+    "en": "silk",
+    "icon": null
+  },
+  "lana": {
+    "en": "wool",
+    "icon": null
+  },
+  "algodón": {
+    "en": "cotton",
+    "icon": null
+  },
+  "dinero": {
+    "en": "money",
+    "icon": null
+  },
+  "euro": {
+    "en": "euro",
+    "icon": null
+  },
+  "peso": {
+    "en": "weight",
+    "icon": null
+  },
+  "dólar": {
+    "en": "dollar",
+    "icon": null
+  },
+  "billete": {
+    "en": "bill, ticket",
+    "icon": null
+  },
+  "moneda": {
+    "en": "coin, currency",
+    "icon": null
+  },
+  "precio": {
+    "en": "price",
+    "icon": null
+  },
+  "inversión": {
+    "en": "investment",
+    "icon": null
+  },
+  "gasto": {
+    "en": "expense",
+    "icon": null
+  },
+  "costo": {
+    "en": "cost",
+    "icon": null
+  },
+  "ahorro": {
+    "en": "savings",
+    "icon": null
+  },
+  "ganancia": {
+    "en": "profit",
+    "icon": null
+  },
+  "interés": {
+    "en": "interest",
+    "icon": null
+  },
+  "préstamo": {
+    "en": "loan",
+    "icon": null
+  },
+  "pérdida": {
+    "en": "loss",
+    "icon": null
+  },
+  "cheque": {
+    "en": "check",
+    "icon": null
+  },
+  "tarjeta": {
+    "en": "card",
+    "icon": null
+  },
+  "recibo": {
+    "en": "receipt",
+    "icon": null
+  },
+  "factura": {
+    "en": "invoice, bill",
+    "icon": null
+  },
+  "hipoteca": {
+    "en": "mortgage",
+    "icon": null
+  },
+  "cajero": {
+    "en": "cashier, ATM",
+    "icon": null
+  },
+  "compra": {
+    "en": "purchase",
+    "icon": null
+  },
+  "caja": {
+    "en": "cash register, box",
+    "icon": null
+  },
+  "descuento": {
+    "en": "discount",
+    "icon": null
+  },
+  "venta": {
+    "en": "sale",
+    "icon": null
+  },
+  "rebaja": {
+    "en": "discount, reduction",
+    "icon": null
+  },
+  "oferta": {
+    "en": "offer, sale",
+    "icon": null
+  },
+  "comercio": {
+    "en": "commerce, trade",
+    "icon": null
+  },
+  "industria": {
+    "en": "industry",
+    "icon": null
+  },
+  "empresa": {
+    "en": "company",
+    "icon": null
+  },
+  "negocio": {
+    "en": "business",
+    "icon": null
+  },
+  "producto": {
+    "en": "product",
+    "icon": null
+  },
+  "calidad": {
+    "en": "quality",
+    "icon": null
+  },
+  "devolución": {
+    "en": "return",
+    "icon": null
+  },
+  "garantía": {
+    "en": "warranty",
+    "icon": null
+  },
+  "servicio": {
+    "en": "service",
+    "icon": null
+  },
+  "marca": {
+    "en": "brand",
+    "icon": null
+  },
+  "proveedor": {
+    "en": "supplier",
+    "icon": null
+  },
+  "consumidor": {
+    "en": "consumer",
+    "icon": null
+  },
+  "comprador": {
+    "en": "buyer",
+    "icon": null
+  },
+  "exportación": {
+    "en": "export",
+    "icon": null
+  },
+  "bolsa": {
+    "en": "stock market, bag",
+    "icon": null
+  },
+  "importación": {
+    "en": "import",
+    "icon": null
+  },
+  "aduana": {
+    "en": "customs",
+    "icon": null
+  },
+  "religión": {
+    "en": "religion",
+    "icon": null
+  },
+  "dios": {
+    "en": "god",
+    "icon": null
+  },
+  "bono": {
+    "en": "bond",
+    "icon": null
+  },
+  "diosa": {
+    "en": "goddess",
+    "icon": null
+  },
+  "monasterio": {
+    "en": "monastery",
+    "icon": null
+  },
+  "capilla": {
+    "en": "chapel",
+    "icon": null
+  },
+  "convento": {
+    "en": "convent",
+    "icon": null
+  },
+  "sinagoga": {
+    "en": "synagogue",
+    "icon": null
+  },
+  "monja": {
+    "en": "nun",
+    "icon": null
+  },
+  "monje": {
+    "en": "monk",
+    "icon": null
+  },
+  "sacerdote": {
+    "en": "priest",
+    "icon": null
+  },
+  "obispo": {
+    "en": "bishop",
+    "icon": null
+  },
+  "rabino": {
+    "en": "rabbi",
+    "icon": null
+  },
+  "pastor": {
+    "en": "pastor",
+    "icon": null
+  },
+  "corán": {
+    "en": "Quran",
+    "icon": null
+  },
+  "biblia": {
+    "en": "bible",
+    "icon": null
+  },
+  "imán": {
+    "en": "imam",
+    "icon": null
+  },
+  "demonio": {
+    "en": "demon",
+    "icon": null
+  },
+  "ángel": {
+    "en": "angel",
+    "icon": null
+  },
+  "alma": {
+    "en": "soul",
+    "icon": null
+  },
+  "espíritu": {
+    "en": "spirit",
+    "icon": null
+  },
+  "infierno": {
+    "en": "hell",
+    "icon": null
+  },
+  "milagro": {
+    "en": "miracle",
+    "icon": null
+  },
+  "bendición": {
+    "en": "blessing",
+    "icon": null
+  },
+  "perdón": {
+    "en": "forgiveness",
+    "icon": null
+  },
+  "pecado": {
+    "en": "sin",
+    "icon": null
+  },
+  "comunión": {
+    "en": "communion",
+    "icon": null
+  },
+  "bautismo": {
+    "en": "baptism",
+    "icon": null
+  },
+  "sermón": {
+    "en": "sermon",
+    "icon": null
+  },
+  "misa": {
+    "en": "mass",
+    "icon": null
+  },
+  "confesión": {
+    "en": "confession",
+    "icon": null
+  },
+  "matrimonio": {
+    "en": "marriage",
+    "icon": null
+  },
+  "santo": {
+    "en": "saint",
+    "icon": null
+  },
+  "funeral": {
+    "en": "funeral",
+    "icon": null
+  },
+  "rosario": {
+    "en": "rosary",
+    "icon": null
+  },
+  "cruz": {
+    "en": "cross",
+    "icon": null
+  },
+  "discípulo": {
+    "en": "disciple",
+    "icon": null
+  },
+  "virgen": {
+    "en": "virgin",
+    "icon": null
+  },
+  "apóstol": {
+    "en": "apostle",
+    "icon": null
+  },
+  "profeta": {
+    "en": "prophet",
+    "icon": null
+  },
+  "creyente": {
+    "en": "believer",
+    "icon": null
+  },
+  "uno": {
+    "en": "one",
+    "icon": null
+  },
+  "agnóstico": {
+    "en": "agnostic",
+    "icon": null
+  },
+  "ateo": {
+    "en": "atheist",
+    "icon": null
+  },
+  "cero": {
+    "en": "zero",
+    "icon": null
+  },
+  "cinco": {
+    "en": "five",
+    "icon": null
+  },
+  "cuatro": {
+    "en": "four",
+    "icon": null
+  },
+  "dos": {
+    "en": "two",
+    "icon": null
+  },
+  "seis": {
+    "en": "six",
+    "icon": null
+  },
+  "tres": {
+    "en": "three",
+    "icon": null
+  },
+  "siete": {
+    "en": "seven",
+    "icon": null
+  },
+  "ocho": {
+    "en": "eight",
+    "icon": null
+  },
+  "cien": {
+    "en": "hundred",
+    "icon": null
+  },
+  "diez": {
+    "en": "ten",
+    "icon": null
+  },
+  "nueve": {
+    "en": "nine",
+    "icon": null
+  },
+  "mitad": {
+    "en": "half",
+    "icon": null
+  },
+  "mil": {
+    "en": "thousand",
+    "icon": null
+  },
+  "millón": {
+    "en": "million",
+    "icon": null
+  },
+  "tercio": {
+    "en": "third",
+    "icon": null
+  },
+  "cuarto": {
+    "en": "quarter, fourth",
+    "icon": null
+  },
+  "fracción": {
+    "en": "fraction",
+    "icon": null
+  },
+  "porcentaje": {
+    "en": "percentage",
+    "icon": null
+  },
+  "decimal": {
+    "en": "decimal",
+    "icon": null
+  },
+  "resta": {
+    "en": "subtraction",
+    "icon": null
+  },
+  "suma": {
+    "en": "sum, addition",
+    "icon": null
+  },
+  "resultado": {
+    "en": "result",
+    "icon": null
+  },
+  "fórmula": {
+    "en": "formula",
+    "icon": null
+  },
+  "ecuación": {
+    "en": "equation",
+    "icon": null
+  },
+  "división": {
+    "en": "division",
+    "icon": null
+  },
+  "multiplicación": {
+    "en": "multiplication",
+    "icon": null
+  },
+  "estadística": {
+    "en": "statistics",
+    "icon": null
+  },
+  "cálculo": {
+    "en": "calculation",
+    "icon": null
+  },
+  "promedio": {
+    "en": "average",
+    "icon": null
+  },
+  "longitud": {
+    "en": "length",
+    "icon": null
+  },
+  "total": {
+    "en": "total",
+    "icon": null
+  },
+  "medida": {
+    "en": "measure",
+    "icon": null
+  },
+  "cantidad": {
+    "en": "quantity, amount",
+    "icon": null
+  },
+  "ancho": {
+    "en": "width",
+    "icon": null
+  },
+  "volumen": {
+    "en": "volume",
+    "icon": null
+  },
+  "altura": {
+    "en": "height",
+    "icon": null
+  },
+  "área": {
+    "en": "area",
+    "icon": null
+  },
+  "profundidad": {
+    "en": "depth",
+    "icon": null
+  },
+  "distancia": {
+    "en": "distance",
+    "icon": null
+  },
+  "centímetro": {
+    "en": "centimeter",
+    "icon": null
+  },
+  "kilómetro": {
+    "en": "kilometer",
+    "icon": null
+  },
+  "milímetro": {
+    "en": "millimeter",
+    "icon": null
+  },
+  "litro": {
+    "en": "liter",
+    "icon": null
+  },
+  "tonelada": {
+    "en": "ton",
+    "icon": null
+  },
+  "gramo": {
+    "en": "gram",
+    "icon": null
+  },
+  "kilogramo": {
+    "en": "kilogram",
+    "icon": null
+  },
+  "círculo": {
+    "en": "circle",
+    "icon": null
+  },
+  "grado": {
+    "en": "degree, grade",
+    "icon": null
+  },
+  "triángulo": {
+    "en": "triangle",
+    "icon": null
+  },
+  "cuadrado": {
+    "en": "square",
+    "icon": null
+  },
+  "ángulo": {
+    "en": "angle",
+    "icon": null
+  },
+  "esfera": {
+    "en": "sphere",
+    "icon": null
+  },
+  "línea": {
+    "en": "line",
+    "icon": null
+  },
+  "rectángulo": {
+    "en": "rectangle",
+    "icon": null
+  },
+  "cubo": {
+    "en": "cube",
+    "icon": null
+  },
+  "rojo": {
+    "en": "red",
+    "icon": null
+  },
+  "verde": {
+    "en": "green",
+    "icon": null
+  },
+  "color": {
+    "en": "color",
+    "icon": null
+  },
+  "amarillo": {
+    "en": "yellow",
+    "icon": null
+  },
+  "azul": {
+    "en": "blue",
+    "icon": null
+  },
+  "morado": {
+    "en": "purple",
+    "icon": null
+  },
+  "rosa": {
+    "en": "pink",
+    "icon": null
+  },
+  "negro": {
+    "en": "black",
+    "icon": null
+  },
+  "marrón": {
+    "en": "brown",
+    "icon": null
+  },
+  "dorado": {
+    "en": "gold, golden",
+    "icon": null
+  },
+  "cosa": {
+    "en": "thing",
+    "icon": null
+  },
+  "plateado": {
+    "en": "silver",
+    "icon": null
+  },
+  "gris": {
+    "en": "gray",
+    "icon": null
+  },
+  "blanco": {
+    "en": "white",
+    "icon": null
+  },
+  "nada": {
+    "en": "nothing",
+    "icon": null
+  },
+  "todo": {
+    "en": "everything, all",
+    "icon": null
+  },
+  "parte": {
+    "en": "part",
+    "icon": null
+  },
+  "algo": {
+    "en": "something",
+    "icon": null
+  },
+  "objeto": {
+    "en": "object",
+    "icon": null
+  },
+  "forma": {
+    "en": "form, shape",
+    "icon": null
+  },
+  "nadie": {
+    "en": "nobody",
+    "icon": null
+  },
+  "manera": {
+    "en": "way, manner",
+    "icon": null
+  },
+  "vez": {
+    "en": "time (occurrence)",
+    "icon": null
+  },
+  "alguien": {
+    "en": "someone",
+    "icon": null
+  },
+  "grupo": {
+    "en": "group",
+    "icon": null
+  },
+  "lista": {
+    "en": "list",
+    "icon": null
+  },
+  "tipo": {
+    "en": "type, kind",
+    "icon": null
+  },
+  "condición": {
+    "en": "condition",
+    "icon": null
+  },
+  "ejemplo": {
+    "en": "example",
+    "icon": null
+  },
+  "hecho": {
+    "en": "fact",
+    "icon": null
+  },
+  "situación": {
+    "en": "situation",
+    "icon": null
+  },
+  "caso": {
+    "en": "case",
+    "icon": null
+  },
+  "proceso": {
+    "en": "process",
+    "icon": null
+  },
+  "sistema": {
+    "en": "system",
+    "icon": null
+  },
+  "método": {
+    "en": "method",
+    "icon": null
+  },
+  "norma": {
+    "en": "norm",
+    "icon": null
+  },
+  "principio": {
+    "en": "principle, beginning",
+    "icon": null
+  },
+  "final": {
+    "en": "end, final",
+    "icon": null
+  },
+  "comienzo": {
+    "en": "beginning",
+    "icon": null
+  },
+  "fin": {
+    "en": "end",
+    "icon": null
+  },
+  "dentro": {
+    "en": "inside",
+    "icon": null
+  },
+  "lado": {
+    "en": "side",
+    "icon": null
+  },
+  "abajo": {
+    "en": "bottom, below",
+    "icon": null
+  },
+  "arriba": {
+    "en": "top, above",
+    "icon": null
+  },
+  "cerca": {
+    "en": "near",
+    "icon": null
+  },
+  "derecha": {
+    "en": "right",
+    "icon": null
+  },
+  "lejos": {
+    "en": "far",
+    "icon": null
+  },
+  "izquierda": {
+    "en": "left",
+    "icon": null
+  },
+  "fuera": {
+    "en": "outside",
+    "icon": null
+  },
+  "atrás": {
+    "en": "back, behind",
+    "icon": null
+  },
+  "apellido": {
+    "en": "surname, last name",
+    "icon": null
+  },
+  "nombre": {
+    "en": "name",
+    "icon": null
+  },
+  "tema": {
+    "en": "topic, theme",
+    "icon": null
+  },
+  "asunto": {
+    "en": "matter, issue",
+    "icon": null
+  },
+  "pregunta": {
+    "en": "question",
+    "icon": null
+  },
+  "respuesta": {
+    "en": "answer",
+    "icon": null
+  },
+  "causa": {
+    "en": "cause",
+    "icon": null
+  },
+  "efecto": {
+    "en": "effect",
+    "icon": null
+  },
+  "diferencia": {
+    "en": "difference",
+    "icon": null
+  },
+  "orden": {
+    "en": "order",
+    "icon": null
+  },
+  "similitud": {
+    "en": "similarity",
+    "icon": null
+  },
+  "desorden": {
+    "en": "disorder",
+    "icon": null
+  },
+  "conexión": {
+    "en": "connection",
+    "icon": null
+  },
+  "relación": {
+    "en": "relationship",
+    "icon": null
+  },
+  "ruido": {
+    "en": "noise",
+    "icon": null
+  },
+  "silencio": {
+    "en": "silence",
+    "icon": null
+  },
+  "voz": {
+    "en": "voice",
+    "icon": null
+  },
+  "grito": {
+    "en": "shout, scream",
+    "icon": null
+  },
+  "sonido": {
+    "en": "sound",
+    "icon": null
+  },
+  "susurro": {
+    "en": "whisper",
+    "icon": null
+  },
+  "sabor": {
+    "en": "taste, flavor",
+    "icon": null
+  },
+  "superficie": {
+    "en": "surface",
+    "icon": null
+  },
+  "olor": {
+    "en": "smell",
+    "icon": null
+  },
+  "textura": {
+    "en": "texture",
+    "icon": null
+  },
+  "agujero": {
+    "en": "hole",
+    "icon": null
+  },
+  "fondo": {
+    "en": "bottom, background",
+    "icon": null
+  },
+  "borde": {
+    "en": "edge",
+    "icon": null
+  },
+  "espacio": {
+    "en": "space",
+    "icon": null
+  },
+  "edad": {
+    "en": "age",
+    "icon": null
+  },
+  "tamaño": {
+    "en": "size",
+    "icon": null
+  },
+  "vacío": {
+    "en": "void, empty",
+    "icon": null
+  },
+  "lleno": {
+    "en": "full",
+    "icon": null
+  },
+  "paso": {
+    "en": "step",
+    "icon": null
+  },
+  "movimiento": {
+    "en": "movement",
+    "icon": null
+  },
+  "ruta": {
+    "en": "route",
+    "icon": null
+  },
+  "fuente": {
+    "en": "source, fountain",
+    "icon": null
+  },
+  "base": {
+    "en": "base",
+    "icon": null
+  },
+  "origen": {
+    "en": "origin",
+    "icon": null
+  },
+  "patrón": {
+    "en": "pattern",
+    "icon": null
+  },
+  "nivel": {
+    "en": "level",
+    "icon": null
+  },
+  "error": {
+    "en": "error",
+    "icon": null
+  },
+  "acierto": {
+    "en": "success, correct answer",
+    "icon": null
+  },
+  "copia": {
+    "en": "copy",
+    "icon": null
+  },
+  "original": {
+    "en": "original",
+    "icon": null
+  },
+  "versión": {
+    "en": "version",
+    "icon": null
+  },
+  "intento": {
+    "en": "attempt",
+    "icon": null
+  },
+  "esfuerzo": {
+    "en": "effort",
+    "icon": null
+  },
+  "descanso": {
+    "en": "rest",
+    "icon": null
+  },
+  "sed": {
+    "en": "thirst",
+    "icon": null
+  },
+  "cansancio": {
+    "en": "tiredness",
+    "icon": null
+  },
+  "hambre": {
+    "en": "hunger",
+    "icon": null
+  },
+  "control": {
+    "en": "control",
+    "icon": null
+  },
+  "límite": {
+    "en": "limit",
+    "icon": null
+  },
+  "oportunidad": {
+    "en": "opportunity",
+    "icon": null
+  },
+  "poder": {
+    "en": "power",
+    "icon": null
+  },
+  "posibilidad": {
+    "en": "possibility",
+    "icon": null
+  },
+  "seguridad": {
+    "en": "security, safety",
+    "icon": null
+  },
+  "peligro": {
+    "en": "danger",
+    "icon": null
+  },
+  "ayuda": {
+    "en": "help",
+    "icon": null
+  },
+  "riesgo": {
+    "en": "risk",
+    "icon": null
+  },
+  "protección": {
+    "en": "protection",
+    "icon": null
+  },
+  "plan": {
+    "en": "plan",
+    "icon": null
+  },
+  "consejo": {
+    "en": "advice",
+    "icon": null
+  },
+  "apoyo": {
+    "en": "support",
+    "icon": null
+  },
+  "sugerencia": {
+    "en": "suggestion",
+    "icon": null
+  },
+  "propuesta": {
+    "en": "proposal",
+    "icon": null
+  },
+  "proyecto": {
+    "en": "project",
+    "icon": null
+  },
+  "objetivo": {
+    "en": "objective, goal",
+    "icon": null
+  },
+  "meta": {
+    "en": "goal",
+    "icon": null
+  },
+  "ilusión": {
+    "en": "illusion, hope",
+    "icon": null
+  },
+  "realidad": {
+    "en": "reality",
+    "icon": null
+  },
+  "fantasía": {
+    "en": "fantasy",
+    "icon": null
+  },
+  "inspiración": {
+    "en": "inspiration",
+    "icon": null
+  },
+  "motivación": {
+    "en": "motivation",
+    "icon": null
+  },
+  "curiosidad": {
+    "en": "curiosity",
+    "icon": null
+  },
+  "secreto": {
+    "en": "secret",
+    "icon": null
+  },
+  "sorpresa": {
+    "en": "surprise",
+    "icon": null
+  },
+  "juramento": {
+    "en": "oath",
+    "icon": null
+  },
+  "responsabilidad": {
+    "en": "responsibility",
+    "icon": null
+  },
+  "compromiso": {
+    "en": "commitment",
+    "icon": null
+  },
+  "promesa": {
+    "en": "promise",
+    "icon": null
+  },
+  "permiso": {
+    "en": "permission",
+    "icon": null
+  },
+  "excepción": {
+    "en": "exception",
+    "icon": null
+  },
+  "obligación": {
+    "en": "obligation",
+    "icon": null
+  },
+  "prohibición": {
+    "en": "prohibition",
+    "icon": null
+  },
+  "costumbre": {
+    "en": "custom, habit",
+    "icon": null
+  },
+  "comunidad": {
+    "en": "community",
+    "icon": null
+  },
+  "tradición": {
+    "en": "tradition",
+    "icon": null
+  },
+  "cultura": {
+    "en": "culture",
+    "icon": null
+  },
+  "población": {
+    "en": "population",
+    "icon": null
+  },
+  "civilización": {
+    "en": "civilization",
+    "icon": null
+  },
+  "humanidad": {
+    "en": "humanity",
+    "icon": null
+  },
+  "generación": {
+    "en": "generation",
+    "icon": null
+  },
+  "instante": {
+    "en": "instant",
+    "icon": null
+  },
+  "eternidad": {
+    "en": "eternity",
+    "icon": null
+  }
+}

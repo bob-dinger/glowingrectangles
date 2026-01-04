@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>French Learning Tools - Glowing Gardens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            margin-bottom: 30px;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        h1 {
+            font-size: 42px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #3B82F6 0%, #EC4899 50%, #EF4444 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tagline {
+            font-size: 16px;
+            color: #888;
+        }
+        .flag {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .card:hover {
+            border-color: #3B82F6;
+            transform: translateY(-2px);
+        }
+        .card-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .card-description {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        .card-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 11px;
+            color: #555;
+        }
+        .badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #3B82F6;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge.new {
+            background: #22C55E;
+        }
+        .badge.coming {
+            background: #666;
+        }
+
+        .coming-soon {
+            opacity: 0.5;
+            cursor: default;
+        }
+        .coming-soon:hover {
+            border-color: #333;
+            transform: none;
+        }
+
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 12px;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Glowing Gardens</a>
+
+        <header>
+            <div class="flag">🇫🇷</div>
+            <h1>Apprendre le Français</h1>
+            <p class="tagline">Visual French learning tools</p>
+        </header>
+
+        <div class="grid">
+            <div class="card" onclick="window.location.href='french-body-parts.html'">
+                <span class="badge new">New</span>
+                <div class="card-icon">🫀</div>
+                <div class="card-title">Le Corps Humain</div>
+                <div class="card-description">Head to toe! Every body part from la tête to le talon. Color-coded by region with articles (le/la/l').</div>
+                <div class="card-meta">
+                    <span>150+ parts</span>
+                    <span>14 categories</span>
+                </div>
+            </div>
+
+            <div class="card coming-soon">
+                <span class="badge coming">Coming</span>
+                <div class="card-icon">🎨</div>
+                <div class="card-title">Les Adjectifs</div>
+                <div class="card-description">Adjectives by category - colors, emotions, personality, size, and more.</div>
+                <div class="card-meta">
+                    <span>Coming soon</span>
+                </div>
+            </div>
+
+            <div class="card coming-soon">
+                <span class="badge coming">Coming</span>
+                <div class="card-icon">⚡</div>
+                <div class="card-title">Les Verbes</div>
+                <div class="card-description">Common French verbs with conjugation patterns.</div>
+                <div class="card-meta">
+                    <span>Coming soon</span>
+                </div>
+            </div>
+
+            <div class="card coming-soon">
+                <span class="badge coming">Coming</span>
+                <div class="card-icon">🏷️</div>
+                <div class="card-title">Les Noms</div>
+                <div class="card-description">Nouns with gender (le/la) - a crucial French skill.</div>
+                <div class="card-meta">
+                    <span>Coming soon</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            More French tools coming soon!
+        </footer>
+    </div>
+</body>
+</html>

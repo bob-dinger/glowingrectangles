@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Nouns - Launch!</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        #wordCloud {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .word {
+            cursor: pointer;
+            transition: fill 0.2s;
+        }
+
+        .word:hover {
+            fill: #F59E0B;
+        }
+
+        .word.active {
+            fill: #22C55E;
+        }
+
+        .translation-box {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px 40px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .translation-box.visible {
+            opacity: 1;
+        }
+
+        .spanish-word {
+            font-size: 28px;
+            font-weight: 600;
+            color: #22C55E;
+            margin-bottom: 8px;
+        }
+
+        .english-word {
+            font-size: 20px;
+            color: #888;
+        }
+
+        .instructions {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 12px;
+            color: #444;
+        }
+
+        #refreshBtn {
+            position: fixed;
+            top: 20px;
+            right: 120px;
+            background: #22C55E;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #refreshBtn:hover {
+            background: #16A34A;
+        }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-gradient {
+            width: 100px;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(to right, #F97316, #555);
+        }
+        .legend-label {
+            color: #666;
+        }
+
+        /* Launched emoji */
+        .launched-emoji {
+            position: fixed;
+            font-size: 48px;
+            pointer-events: none;
+            z-index: 1000;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <a href="spanish.html" class="back-link">← Back</a>
+    <div class="instructions">Click any word</div>
+    <button id="refreshBtn">Refresh</button>
+
+    <svg id="wordCloud"></svg>
+
+    <div class="translation-box" id="translationBox">
+        <div class="spanish-word" id="spanishWord"></div>
+        <div class="english-word" id="englishWord"></div>
+    </div>
+
+    <div class="legend">
+        <span class="legend-label">Harder</span>
+        <div class="legend-gradient"></div>
+        <span class="legend-label">Easier</span>
+    </div>
+
+    <script>
+        // Emoji mappings for nouns
+        const emojiMap = {
+            // People & Family
+            "hombre": "👨", "mujer": "👩", "niño": "👦", "niña": "👧",
+            "padre": "👨", "madre": "👩", "hijo": "👦", "hija": "👧",
+            "hermano": "👦", "hermana": "👧", "abuelo": "👴", "abuela": "👵",
+            "tío": "👨", "tía": "👩", "primo": "🧑", "bebé": "👶",
+            "persona": "🧑", "familia": "👨‍👩‍👧‍👦", "amigo": "🤝", "vecino": "🏠",
+            "esposo": "💑", "esposa": "💑", "novio": "💏", "novia": "💏",
+            "gemelo": "👯", "gente": "👥", "pareja": "💑", "sobrino": "👦",
+            "sobrina": "👧", "suegro": "👴", "suegra": "👵", "huérfano": "🧒",
+            "viudo": "🧓",
+
+            // Body parts
+            "cabeza": "🗣️", "cara": "😊", "ojo": "👁️", "nariz": "👃",
+            "boca": "👄", "oreja": "👂", "pelo": "💇", "mano": "✋",
+            "dedo": "👆", "brazo": "💪", "pierna": "🦵", "pie": "🦶",
+            "corazón": "❤️", "cerebro": "🧠", "hueso": "🦴", "diente": "🦷",
+            "lengua": "👅", "músculo": "💪", "labio": "👄", "ceja": "🤨",
+            "mejilla": "😊", "barbilla": "🗣️", "frente": "🧠", "pulmón": "🫁",
+            "piel": "🖐️", "sangre": "🩸", "uña": "💅", "estómago": "🫃",
+            "espalda": "🧍", "cuello": "🦒", "hombro": "💪", "rodilla": "🦵",
+            "codo": "💪", "muñeca": "✋", "tobillo": "🦶", "pecho": "🫁",
+
+            // Home & Furniture
+            "casa": "🏠", "apartamento": "🏢", "puerta": "🚪", "ventana": "🪟",
+            "cocina": "🍳", "baño": "🚿", "cama": "🛏️", "silla": "🪑",
+            "mesa": "🪑", "sofá": "🛋️", "lámpara": "💡", "espejo": "🪞",
+            "televisor": "📺", "refrigerador": "🧊", "horno": "🔥",
+            "llave": "🔑", "escalera": "🪜", "jardín": "🌳", "habitación": "🚪",
+            "dormitorio": "🛏️", "sala": "🛋️", "comedor": "🍽️", "pared": "🧱",
+            "techo": "🏠", "suelo": "🟫", "garaje": "🚗", "armario": "🚪",
+            "estante": "📚", "alfombra": "🟫", "cortina": "🪟", "almohada": "🛏️",
+            "manta": "🛏️", "sábana": "🛏️", "colchón": "🛏️", "cajón": "🗄️",
+            "escritorio": "🖥️", "microondas": "📺", "lavadora": "🌀",
+            "secadora": "🌀", "ducha": "🚿", "bañera": "🛁", "lavabo": "🚰",
+            "inodoro": "🚽", "grifo": "🚰", "cerradura": "🔐", "timbre": "🔔",
+            "buzón": "📬", "balcón": "🏠", "terraza": "🏠", "sótano": "🏠",
+            "ático": "🏠",
+
+            // Food & Drink
+            "comida": "🍽️", "agua": "💧", "leche": "🥛", "café": "☕",
+            "té": "🍵", "jugo": "🧃", "vino": "🍷", "cerveza": "🍺",
+            "pan": "🍞", "arroz": "🍚", "pasta": "🍝", "carne": "🥩",
+            "pollo": "🍗", "pescado": "🐟", "huevo": "🥚", "queso": "🧀",
+            "mantequilla": "🧈", "azúcar": "🍬", "sal": "🧂", "aceite": "🫒",
+            "vinagre": "🍶", "pimienta": "🌶️", "bebida": "🥤",
+            "fruta": "🍎", "manzana": "🍎", "naranja": "🍊", "plátano": "🍌",
+            "uva": "🍇", "fresa": "🍓", "limón": "🍋", "sandía": "🍉",
+            "pera": "🍐", "durazno": "🍑", "cereza": "🍒", "piña": "🍍",
+            "mango": "🥭", "coco": "🥥", "verdura": "🥬", "tomate": "🍅",
+            "cebolla": "🧅", "ajo": "🧄", "zanahoria": "🥕", "papa": "🥔",
+            "lechuga": "🥬", "brócoli": "🥦", "maíz": "🌽", "pepino": "🥒",
+            "calabaza": "🎃", "pimiento": "🫑", "champiñón": "🍄", "melón": "🍈",
+            "espinaca": "🥬", "frijol": "🫘", "guisante": "🫛",
+            "ensalada": "🥗", "sopa": "🍜", "helado": "🍦", "pastel": "🎂",
+            "galleta": "🍪", "chocolate": "🍫", "caramelo": "🍬", "postre": "🍰",
+            "hamburguesa": "🍔", "pizza": "🍕", "sándwich": "🥪", "taco": "🌮",
+            "desayuno": "🍳", "almuerzo": "🍱", "cena": "🍽️", "merienda": "🥪",
+            "receta": "📝", "ingrediente": "🥘",
+
+            // Animals
+            "animal": "🐾", "perro": "🐕", "gato": "🐈", "pájaro": "🐦",
+            "pez": "🐟", "caballo": "🐴", "vaca": "🐄", "cerdo": "🐷",
+            "oveja": "🐑", "cabra": "🐐", "gallina": "🐔", "gallo": "🐓",
+            "pato": "🦆", "conejo": "🐰", "ratón": "🐭", "rata": "🐀",
+            "león": "🦁", "tigre": "🐯", "oso": "🐻", "elefante": "🐘",
+            "mono": "🐵", "serpiente": "🐍", "tortuga": "🐢", "araña": "🕷️",
+            "mosca": "🪰", "abeja": "🐝", "mariposa": "🦋", "hormiga": "🐜",
+            "mosquito": "🦟", "lobo": "🐺", "zorro": "🦊", "ciervo": "🦌",
+            "águila": "🦅", "búho": "🦉", "tiburón": "🦈", "ballena": "🐋",
+            "delfín": "🐬", "pulpo": "🐙", "cangrejo": "🦀", "langosta": "🦞",
+            "camarón": "🦐", "cocodrilo": "🐊", "jirafa": "🦒", "cebra": "🦓",
+            "rinoceronte": "🦏", "hipopótamo": "🦛", "camello": "🐫",
+            "gorila": "🦍", "canguro": "🦘", "pingüino": "🐧", "loro": "🦜",
+            "paloma": "🕊️", "murciélago": "🦇", "insecto": "🐛", "mascota": "🐾",
+
+            // Nature & Weather
+            "naturaleza": "🌿", "tierra": "🌍", "cielo": "🌌", "sol": "☀️",
+            "luna": "🌙", "estrella": "⭐", "nube": "☁️", "lluvia": "🌧️",
+            "nieve": "❄️", "viento": "💨", "tormenta": "⛈️", "rayo": "⚡",
+            "trueno": "🌩️", "arcoíris": "🌈", "árbol": "🌳", "flor": "🌸",
+            "planta": "🌱", "hoja": "🍃", "hierba": "🌿", "bosque": "🌲",
+            "selva": "🌴", "montaña": "⛰️", "río": "🏞️", "lago": "🏞️",
+            "mar": "🌊", "océano": "🌊", "playa": "🏖️", "ola": "🌊",
+            "isla": "🏝️", "desierto": "🏜️", "volcán": "🌋", "fuego": "🔥",
+            "humo": "💨", "cascada": "💦", "campo": "🌾", "valle": "🏞️",
+            "colina": "⛰️", "piedra": "🪨", "arena": "🏖️", "ceniza": "ite",
+            "terremoto": "🌋", "cueva": "🕳️", "clima": "🌤️", "temperatura": "🌡️",
+            "calor": "🥵", "frío": "🥶", "humedad": "💧", "sequía": "🏜️",
+            "inundación": "🌊", "niebla": "🌫️", "rocío": "💧", "escarcha": "❄️",
+            "granizo": "🌨️", "amanecer": "🌅", "atardecer": "🌇", "horizonte": "🌅",
+            "rama": "🌿", "raíz": "🌱",
+
+            // Time
+            "tiempo": "⏰", "hora": "🕐", "minuto": "⏱️", "segundo": "⏱️",
+            "día": "☀️", "noche": "🌙", "mañana": "🌅", "tarde": "🌇",
+            "semana": "📅", "mes": "📅", "año": "📆", "siglo": "📜",
+            "momento": "⏰", "fecha": "📅", "calendario": "📅", "reloj": "⏰",
+            "pasado": "⏪", "presente": "▶️", "futuro": "⏩", "época": "📜",
+            "estación": "🍂", "primavera": "🌸", "verano": "☀️", "otoño": "🍂",
+            "invierno": "❄️", "lunes": "1️⃣", "martes": "2️⃣", "miércoles": "3️⃣",
+            "jueves": "4️⃣", "viernes": "5️⃣", "sábado": "6️⃣", "domingo": "7️⃣",
+            "enero": "📅", "febrero": "💝", "marzo": "🌷", "abril": "🌧️",
+            "mayo": "🌺", "junio": "☀️", "julio": "🏖️", "agosto": "🌻",
+            "septiembre": "🍂", "octubre": "🎃", "noviembre": "🍁", "diciembre": "🎄",
+            "cumpleaños": "🎂", "aniversario": "💍", "vacaciones": "🏖️",
+            "feriado": "🎉", "fin de semana": "🎉", "madrugada": "🌙",
+            "mediodía": "☀️", "medianoche": "🌙", "década": "📆", "milenio": "📜",
+
+            // Transportation
+            "coche": "🚗", "carro": "🚗", "auto": "🚗", "autobús": "🚌",
+            "camión": "🚚", "taxi": "🚕", "tren": "🚂", "metro": "🚇",
+            "avión": "✈️", "helicóptero": "🚁", "barco": "🚢", "bicicleta": "🚲",
+            "motocicleta": "🏍️", "cohete": "🚀", "ambulancia": "🚑",
+            "rueda": "🛞", "motor": "⚙️", "gasolina": "⛽", "freno": "🛑",
+            "volante": "🎮", "asiento": "💺", "cinturón": "🔗", "parabrisas": "🪟",
+            "maletero": "🧳", "llanta": "🛞", "boleto": "🎫", "pasaje": "🎫",
+            "pasajero": "🧑", "conductor": "🧑‍✈️", "piloto": "👨‍✈️", "vuelo": "✈️",
+            "viaje": "🧳", "equipaje": "🧳", "maleta": "🧳", "mochila": "🎒",
+            "tráfico": "🚦", "semáforo": "🚦", "accidente": "💥", "patrulla": "🚔",
+            "bombero": "🧑‍🚒", "rescate": "🚑",
+
+            // Places & Geography
+            "lugar": "📍", "ciudad": "🏙️", "pueblo": "🏘️", "país": "🗺️",
+            "nación": "🏳️", "estado": "🗺️", "región": "🗺️", "continente": "🌍",
+            "mundo": "🌍", "calle": "🛣️", "avenida": "🛣️", "carretera": "🛣️",
+            "camino": "🛤️", "puente": "🌉", "túnel": "🚇", "plaza": "🏛️",
+            "parque": "🌳", "edificio": "🏢", "torre": "🗼", "iglesia": "⛪",
+            "catedral": "⛪", "templo": "🛕", "mezquita": "🕌", "hospital": "🏥",
+            "escuela": "🏫", "universidad": "🎓", "biblioteca": "📚", "museo": "🏛️",
+            "teatro": "🎭", "cine": "🎬", "restaurante": "🍽️", "hotel": "🏨",
+            "tienda": "🏪", "supermercado": "🛒", "mercado": "🏪", "banco": "🏦",
+            "oficina": "🏢", "fábrica": "🏭", "aeropuerto": "✈️", "estación": "🚉",
+            "puerto": "⚓", "frontera": "🛂", "capital": "🏛️", "barrio": "🏘️",
+            "centro": "🏙️", "suburbio": "🏘️", "granja": "🌾", "rancho": "🤠",
+            "cementerio": "🪦", "prisión": "🔒", "palacio": "🏰", "castillo": "🏰",
+            "estadio": "🏟️", "gimnasio": "🏋️", "piscina": "🏊", "farmacia": "💊",
+            "panadería": "🥖", "carnicería": "🥩", "peluquería": "💇",
+            "gasolinera": "⛽", "estacionamiento": "🅿️", "acera": "🚶",
+            "esquina": "📍", "mapa": "🗺️", "dirección": "📍", "norte": "⬆️",
+            "sur": "⬇️", "este": "➡️", "oeste": "⬅️",
+
+            // Work & Professions
+            "trabajo": "💼", "empleo": "💼", "carrera": "📈", "profesión": "👔",
+            "oficio": "🔧", "jefe": "👔", "empleado": "🧑‍💼", "trabajador": "👷",
+            "doctor": "👨‍⚕️", "médico": "👨‍⚕️", "enfermera": "👩‍⚕️", "abogado": "⚖️",
+            "juez": "⚖️", "policía": "👮", "soldado": "🪖", "maestro": "👨‍🏫",
+            "profesor": "👨‍🏫", "estudiante": "🧑‍🎓", "ingeniero": "👷",
+            "arquitecto": "📐", "científico": "🧑‍🔬", "artista": "🧑‍🎨",
+            "músico": "🧑‍🎤", "actor": "🎭", "actriz": "🎭", "escritor": "✍️",
+            "periodista": "📰", "fotógrafo": "📷", "cocinero": "👨‍🍳",
+            "mesero": "🍽️", "peluquero": "💇", "mecánico": "🔧",
+            "electricista": "⚡", "plomero": "🔧", "carpintero": "🪚",
+            "pintor": "🖌️", "agricultor": "👨‍🌾", "vendedor": "🧑‍💼",
+            "empresario": "💼", "contador": "🧮", "secretario": "📝",
+            "gerente": "👔", "presidente": "🏛️", "director": "🎬",
+            "dueño": "🔑", "cliente": "🛒", "socio": "🤝", "competidor": "🏃",
+            "colega": "👥", "reunión": "👥", "contrato": "📝", "salario": "💰",
+            "sueldo": "💵", "jubilación": "🧓", "desempleo": "📉",
+            "huelga": "✊", "sindicato": "👥",
+
+            // Education
+            "educación": "📚", "clase": "🏫", "curso": "📖", "lección": "📝",
+            "tarea": "📝", "examen": "📝", "prueba": "✅", "nota": "📝",
+            "calificación": "💯", "diploma": "📜", "título": "🎓",
+            "certificado": "📜", "beca": "🎓", "matrícula": "📝",
+            "libro": "📚", "cuaderno": "📓", "lápiz": "✏️", "pluma": "🖊️",
+            "bolígrafo": "🖊️", "borrador": "🧽", "regla": "📏", "tijeras": "✂️",
+            "pegamento": "🧴", "papel": "📄", "pizarra": "📋", "tiza": "🖍️",
+            "diccionario": "📖", "enciclopedia": "📚", "capítulo": "📖",
+            "página": "📄", "párrafo": "📝", "oración": "📝", "palabra": "💬",
+            "letra": "🔤", "alfabeto": "🔤", "número": "🔢",
+            "matemáticas": "➕", "ciencia": "🔬", "historia": "📜",
+            "geografía": "🌍", "literatura": "📖", "idioma": "🗣️",
+            "gramática": "📝", "vocabulario": "📚", "pronunciación": "🗣️",
+            "traducción": "🌐", "física": "⚛️", "química": "🧪", "biología": "🧬",
+            "filosofía": "🤔", "psicología": "🧠", "economía": "📊",
+            "derecho": "⚖️", "medicina": "⚕️", "ingeniería": "⚙️",
+            "arte": "🎨", "deporte": "⚽",
+
+            // Technology
+            "tecnología": "💻", "computadora": "💻", "ordenador": "💻",
+            "teléfono": "📱", "celular": "📱", "móvil": "📱", "internet": "🌐",
+            "red": "🌐", "página web": "🌐", "sitio web": "🌐", "correo": "📧",
+            "mensaje": "💬", "aplicación": "📱", "programa": "💻",
+            "software": "💿", "hardware": "🖥️", "pantalla": "🖥️",
+            "teclado": "⌨️", "ratón": "🖱️", "impresora": "🖨️", "cámara": "📷",
+            "video": "📹", "foto": "📸", "imagen": "🖼️", "archivo": "📁",
+            "carpeta": "📂", "documento": "📄", "contraseña": "🔐",
+            "usuario": "👤", "cuenta": "👤", "perfil": "👤", "batería": "🔋",
+            "cargador": "🔌", "cable": "🔌", "enchufe": "🔌",
+            "electricidad": "⚡", "energía": "⚡", "robot": "🤖",
+            "máquina": "⚙️", "herramienta": "🔧", "aparato": "📱",
+            "invento": "💡", "descubrimiento": "🔍", "experimento": "🧪",
+            "investigación": "🔬", "dato": "📊", "información": "ℹ️",
+            "señal": "📶", "antena": "📡", "satélite": "🛰️", "televisión": "📺",
+            "radio": "📻",
+
+            // Health & Medicine
+            "salud": "💪", "enfermedad": "🤒", "dolor": "😣", "fiebre": "🤒",
+            "gripe": "🤧", "resfriado": "🤧", "tos": "😷", "estornudo": "🤧",
+            "herida": "🩹", "fractura": "🦴", "infección": "🦠", "alergia": "🤧",
+            "síntoma": "🩺", "diagnóstico": "🩺", "tratamiento": "💊",
+            "cura": "💊", "medicina": "💊", "pastilla": "💊", "inyección": "💉",
+            "vacuna": "💉", "cirugía": "🏥", "operación": "🏥",
+            "emergencia": "🚨", "consultorio": "🏥", "clínica": "🏥",
+            "receta": "📝", "cita": "📅", "análisis": "🔬", "radiografía": "🩻",
+            "vendaje": "🩹", "yeso": "🦴", "muleta": "🩼",
+            "silla de ruedas": "🦽", "camilla": "🛏️", "oxígeno": "💨",
+            "transfusión": "🩸", "donante": "❤️", "órgano": "🫀",
+            "trasplante": "🏥", "cáncer": "🎗️", "diabetes": "💉",
+            "presión": "❤️", "colesterol": "🩸", "vitamina": "💊",
+            "proteína": "🥩", "caloría": "🔥", "dieta": "🥗", "ejercicio": "🏃",
+
+            // Sports
+            "fútbol": "⚽", "baloncesto": "🏀", "béisbol": "⚾", "tenis": "🎾",
+            "golf": "⛳", "natación": "🏊", "atletismo": "🏃", "boxeo": "🥊",
+            "lucha": "🤼", "ciclismo": "🚴", "esquí": "⛷️", "patinaje": "⛸️",
+            "equipo": "👥", "jugador": "🏃", "entrenador": "👨‍🏫",
+            "árbitro": "🧑‍⚖️", "partido": "🏆", "competencia": "🏆",
+            "torneo": "🏆", "campeonato": "🏆", "olimpiadas": "🏅",
+            "medalla": "🏅", "trofeo": "🏆", "campeón": "🥇", "gol": "⚽",
+            "punto": "💯", "marcador": "📊", "victoria": "🏆", "derrota": "😞",
+            "empate": "🤝", "pelota": "⚽", "balón": "🏈", "raqueta": "🏸",
+            "red": "🥅", "cancha": "🏟️", "pista": "🏃", "maratón": "🏃",
+            "carrera": "🏃", "récord": "🏆", "lesión": "🩹",
+            "entrenamiento": "💪", "calentamiento": "🔥", "estiramiento": "🧘",
+            "resistencia": "💪", "fuerza": "💪", "velocidad": "⚡", "agilidad": "🏃",
+
+            // Music & Arts
+            "música": "🎵", "canción": "🎶", "melodía": "🎼", "ritmo": "🥁",
+            "instrumento": "🎸", "guitarra": "🎸", "piano": "🎹",
+            "violín": "🎻", "batería": "🥁", "flauta": "🪈", "trompeta": "🎺",
+            "orquesta": "🎻", "concierto": "🎤", "ópera": "🎭", "ballet": "🩰",
+            "danza": "💃", "película": "🎬", "obra": "🎭", "escenario": "🎭",
+            "personaje": "🎭", "novela": "📖", "cuento": "📖", "poema": "📝",
+            "poesía": "📝", "autor": "✍️", "revista": "📰", "periódico": "📰",
+            "noticia": "📰", "artículo": "📝", "serie": "📺", "episodio": "📺",
+            "documental": "🎥", "comedia": "😂", "drama": "🎭", "acción": "💥",
+            "ciencia ficción": "🚀", "terror": "👻", "romance": "💕",
+            "aventura": "🗺️", "misterio": "🔍", "premio": "🏆", "fama": "⭐",
+            "celebridad": "⭐", "fan": "❤️", "público": "👥",
+            "entretenimiento": "🎉", "diversión": "🎉", "juego": "🎮",
+            "juguete": "🧸", "pintura": "🖼️", "escultura": "🗿", "dibujo": "✏️",
+            "fotografía": "📷",
+
+            // Clothing
+            "ropa": "👕", "camisa": "👔", "camiseta": "👕", "blusa": "👚",
+            "pantalón": "👖", "jeans": "👖", "falda": "👗", "vestido": "👗",
+            "traje": "🤵", "chaqueta": "🧥", "abrigo": "🧥", "suéter": "🧶",
+            "sudadera": "👕", "chaleco": "🦺", "corbata": "👔", "bufanda": "🧣",
+            "guantes": "🧤", "sombrero": "🎩", "gorra": "🧢", "zapato": "👟",
+            "bota": "👢", "sandalia": "👡", "zapatilla": "👟", "tacón": "👠",
+            "calcetín": "🧦", "media": "🧦", "ropa interior": "🩲",
+            "pijama": "🛏️", "bañador": "🩱", "bikini": "👙", "cinturón": "🔗",
+            "bolso": "👜", "cartera": "👛", "paraguas": "☂️", "gafas": "👓",
+            "lentes": "👓", "anillo": "💍", "collar": "📿", "pulsera": "📿",
+            "pendiente": "💎", "joya": "💎", "oro": "🥇", "plata": "🥈",
+            "diamante": "💎", "perla": "🦪", "talla": "📏", "moda": "👗",
+            "estilo": "✨", "diseñador": "✂️", "modelo": "🧑", "pasarela": "👗",
+            "tela": "🧵", "algodón": "☁️", "lana": "🐑", "seda": "🪱",
+            "cuero": "🐄",
+
+            // Money & Commerce
+            "dinero": "💰", "moneda": "🪙", "billete": "💵", "dólar": "💵",
+            "euro": "💶", "peso": "💵", "precio": "🏷️", "costo": "💰",
+            "gasto": "💸", "ahorro": "🐷", "inversión": "📈", "ganancia": "📈",
+            "pérdida": "📉", "deuda": "💸", "préstamo": "🏦", "interés": "💹",
+            "hipoteca": "🏠", "tarjeta": "💳", "cheque": "💵",
+            "factura": "🧾", "recibo": "🧾", "cuenta": "💳",
+            "cajero": "🏧", "caja": "🗃️", "compra": "🛒", "venta": "💰",
+            "oferta": "🏷️", "descuento": "🏷️", "rebaja": "📉",
+            "mercado": "🏪", "negocio": "💼", "empresa": "🏢",
+            "comercio": "🏪", "industria": "🏭", "producto": "📦",
+            "servicio": "🛎️", "marca": "™️", "calidad": "⭐",
+            "garantía": "✅", "devolución": "↩️", "comprador": "🛒",
+            "consumidor": "🛒", "proveedor": "📦", "exportación": "📤",
+            "importación": "📥", "aduana": "🛂", "impuesto": "💰",
+            "bolsa": "📈", "acción": "📊", "bono": "📜",
+
+            // Religion
+            "religión": "🙏", "dios": "✨", "diosa": "✨", "fe": "🙏",
+            "oración": "🙏", "iglesia": "⛪", "templo": "🛕", "mezquita": "🕌",
+            "sinagoga": "🕍", "catedral": "⛪", "capilla": "⛪",
+            "monasterio": "🏛️", "convento": "🏛️", "sacerdote": "👨‍⚖️",
+            "monje": "🧘", "monja": "👩‍⚖️", "papa": "⛪", "obispo": "⛪",
+            "pastor": "⛪", "rabino": "✡️", "imán": "🕌", "biblia": "📖",
+            "corán": "📖", "alma": "👻", "espíritu": "👻", "ángel": "👼",
+            "demonio": "😈", "infierno": "🔥", "pecado": "❌",
+            "perdón": "🙏", "bendición": "✨", "milagro": "✨", "misa": "⛪",
+            "sermón": "📖", "bautismo": "💧", "comunión": "🍞",
+            "confesión": "🙏", "matrimonio": "💒", "funeral": "⚰️",
+            "cruz": "✝️", "rosario": "📿", "santo": "😇", "virgen": "👼",
+            "profeta": "📜", "apóstol": "📖", "discípulo": "📖",
+            "creyente": "🙏", "ateo": "🚫", "agnóstico": "❓",
+
+            // Emotions & Abstract
+            "amor": "❤️", "odio": "😠", "felicidad": "😊", "tristeza": "😢",
+            "alegría": "😄", "miedo": "😨", "esperanza": "🌟", "paz": "☮️",
+            "guerra": "⚔️", "libertad": "🗽", "justicia": "⚖️",
+            "verdad": "✅", "mentira": "❌", "sueño": "💭",
+            "pesadilla": "😱", "deseo": "💫", "necesidad": "❗",
+            "problema": "❓", "solución": "💡", "éxito": "🏆",
+            "fracaso": "😞", "suerte": "🍀", "destino": "🌟", "vida": "💚",
+            "muerte": "💀", "nacimiento": "👶", "crecimiento": "📈",
+            "cambio": "🔄", "progreso": "📈", "desarrollo": "📈",
+            "razón": "🧠", "pensamiento": "💭", "idea": "💡",
+            "opinión": "💬", "creencia": "🙏", "duda": "❓",
+            "certeza": "✅", "conocimiento": "📚", "ignorancia": "❓",
+            "sabiduría": "🧠", "memoria": "🧠", "recuerdo": "💭",
+            "olvido": "❓", "atención": "👁️", "concentración": "🎯",
+            "imaginación": "💭", "creatividad": "🎨", "inteligencia": "🧠",
+            "talento": "⭐", "habilidad": "💪", "capacidad": "💪",
+            "debilidad": "😔", "valor": "💪", "cobardía": "😨",
+            "orgullo": "😤", "humildad": "🙏", "paciencia": "⏳",
+            "respeto": "🤝", "confianza": "🤝",
+
+            // Society & Government
+            "sociedad": "👥", "gobierno": "🏛️", "política": "🗳️",
+            "democracia": "🗳️", "dictadura": "👊", "ley": "⚖️",
+            "constitución": "📜", "deber": "✊", "ciudadano": "🧑",
+            "voto": "🗳️", "elección": "🗳️", "partido": "🏛️",
+            "candidato": "🧑", "senador": "🏛️", "diputado": "🏛️",
+            "ministro": "🏛️", "gobernador": "🏛️", "alcalde": "🏛️",
+            "rey": "👑", "reina": "👑", "príncipe": "🤴", "princesa": "👸",
+            "ejército": "🪖", "marina": "⚓", "fuerza aérea": "✈️",
+            "tratado": "📜", "alianza": "🤝", "enemigo": "⚔️",
+            "aliado": "🤝", "revolución": "✊", "protesta": "✊",
+            "manifestación": "📢", "crimen": "🚔", "delito": "🚔",
+            "robo": "💰", "asesinato": "💀", "violencia": "👊",
+            "corrupción": "💰", "tribunal": "⚖️", "juicio": "⚖️",
+            "sentencia": "⚖️", "condena": "⛓️", "presupuesto": "💰",
+            "inflación": "📈", "pobreza": "😔", "riqueza": "💰",
+            "igualdad": "⚖️", "discriminación": "🚫", "racismo": "🚫",
+            "inmigración": "✈️", "refugiado": "🏃",
+
+            // Numbers & Math
+            "cero": "0️⃣", "uno": "1️⃣", "dos": "2️⃣", "tres": "3️⃣",
+            "cuatro": "4️⃣", "cinco": "5️⃣", "seis": "6️⃣", "siete": "7️⃣",
+            "ocho": "8️⃣", "nueve": "9️⃣", "diez": "🔟", "cien": "💯",
+            "mil": "🔢", "millón": "🔢", "mitad": "½", "tercio": "⅓",
+            "cuarto": "¼", "porcentaje": "💯", "fracción": "➗",
+            "suma": "➕", "resta": "➖", "multiplicación": "✖️",
+            "división": "➗", "resultado": "🟰", "ecuación": "🧮",
+            "fórmula": "📐", "cálculo": "🧮", "estadística": "📊",
+            "promedio": "📊", "total": "🔢", "cantidad": "🔢",
+            "medida": "📏", "longitud": "📏", "altura": "📐",
+            "ancho": "📐", "profundidad": "📐", "área": "📐",
+            "volumen": "📦", "distancia": "📏", "metro": "📏",
+            "kilómetro": "🛣️", "centímetro": "📏", "litro": "🥛",
+            "gramo": "⚖️", "kilogramo": "⚖️", "tonelada": "🏋️",
+            "grado": "🌡️", "ángulo": "📐", "círculo": "⭕",
+            "cuadrado": "⬜", "triángulo": "🔺", "rectángulo": "▬",
+            "esfera": "🔮", "cubo": "🧊", "línea": "➖", "punto": "•",
+
+            // Colors
+            "color": "🎨", "rojo": "🔴", "azul": "🔵", "verde": "🟢",
+            "amarillo": "🟡", "naranja": "🟠", "morado": "🟣",
+            "rosa": "🩷", "marrón": "🟤", "negro": "⚫", "blanco": "⚪",
+            "gris": "🔘", "dorado": "🥇", "plateado": "🥈",
+
+            // Misc
+            "cosa": "📦", "objeto": "📦", "parte": "🧩", "todo": "🌐",
+            "nada": "🚫", "algo": "❓", "alguien": "🧑", "nadie": "🚫",
+            "vez": "🔄", "manera": "➡️", "forma": "🔷", "tipo": "📝",
+            "grupo": "👥", "lista": "📝", "ejemplo": "📌", "caso": "📁",
+            "hecho": "✅", "situación": "📍", "condición": "📋",
+            "proceso": "⚙️", "sistema": "⚙️", "método": "📐",
+            "norma": "📜", "principio": "▶️", "fin": "🏁",
+            "comienzo": "▶️", "final": "🏁", "lado": "➡️",
+            "arriba": "⬆️", "abajo": "⬇️", "dentro": "📥", "fuera": "📤",
+            "cerca": "📍", "lejos": "🛣️", "derecha": "➡️", "izquierda": "⬅️",
+            "frente": "⏩", "atrás": "⏪", "nombre": "📛", "apellido": "📛",
+            "tema": "📝", "asunto": "📋", "pregunta": "❓", "respuesta": "✅",
+            "causa": "🔍", "efecto": "💥", "diferencia": "↔️",
+            "relación": "🔗", "conexión": "🔗", "orden": "📋",
+            "desorden": "🌀", "ruido": "🔊", "silencio": "🤫",
+            "sonido": "🔉", "voz": "🗣️", "grito": "📢", "susurro": "🤫",
+            "olor": "👃", "sabor": "👅", "textura": "✋", "superficie": "📐",
+            "fondo": "⬇️", "borde": "📐", "agujero": "🕳️", "espacio": "🌌",
+            "vacío": "⬜", "lleno": "📦", "tamaño": "📏", "edad": "📅",
+            "paso": "👣", "movimiento": "🏃", "ruta": "🗺️",
+            "origen": "📍", "fuente": "⛲", "base": "🧱", "nivel": "📊",
+            "patrón": "🔷", "copia": "📋", "original": "📜",
+            "versión": "📝", "error": "❌", "acierto": "✅",
+            "intento": "💪", "esfuerzo": "💪", "descanso": "😴",
+            "hambre": "🍽️", "sed": "💧", "cansancio": "😴",
+            "poder": "💪", "control": "🎮", "límite": "🚧",
+            "posibilidad": "💫", "oportunidad": "🌟", "riesgo": "⚠️",
+            "peligro": "⚠️", "seguridad": "🔒", "protección": "🛡️",
+            "ayuda": "🆘", "apoyo": "🤝", "consejo": "💬",
+            "sugerencia": "💡", "propuesta": "📝", "plan": "📋",
+            "proyecto": "📊", "objetivo": "🎯", "meta": "🏁",
+            "ilusión": "✨", "realidad": "🌍", "fantasía": "🦄",
+            "inspiración": "💡", "motivación": "🔥", "interés": "👀",
+            "curiosidad": "🔍", "sorpresa": "😲", "secreto": "🤫",
+            "promesa": "🤞", "compromiso": "🤝", "responsabilidad": "✊",
+            "obligación": "📋", "permiso": "✅", "prohibición": "🚫",
+            "excepción": "⚠️", "costumbre": "🔄", "tradición": "📜",
+            "cultura": "🎭", "comunidad": "👥", "población": "👥",
+            "humanidad": "🌍", "civilización": "🏛️", "generación": "👥",
+            "instante": "⚡", "eternidad": "♾️",
+            "regalo": "🎁", "fiesta": "🎉", "globo": "🎈", "vela": "🕯️",
+            "campana": "🔔", "candado": "🔒", "caja": "📦",
+            "bolsa": "🛍️", "basura": "🗑️", "bombilla": "💡", "bandera": "🚩",
+        };
+
+        // Default emoji for words without mapping
+        const defaultEmoji = "✨";
+
+        const allNouns = [
+            // People & Family
+            { es: "hombre", en: "man" },
+            { es: "mujer", en: "woman" },
+            { es: "niño", en: "child, boy" },
+            { es: "niña", en: "girl" },
+            { es: "padre", en: "father" },
+            { es: "madre", en: "mother" },
+            { es: "hijo", en: "son" },
+            { es: "hija", en: "daughter" },
+            { es: "hermano", en: "brother" },
+            { es: "hermana", en: "sister" },
+            { es: "abuelo", en: "grandfather" },
+            { es: "abuela", en: "grandmother" },
+            { es: "bebé", en: "baby" },
+            { es: "familia", en: "family" },
+            { es: "amigo", en: "friend" },
+
+            // Body parts
+            { es: "cabeza", en: "head" },
+            { es: "ojo", en: "eye" },
+            { es: "nariz", en: "nose" },
+            { es: "boca", en: "mouth" },
+            { es: "oreja", en: "ear" },
+            { es: "mano", en: "hand" },
+            { es: "dedo", en: "finger" },
+            { es: "brazo", en: "arm" },
+            { es: "pierna", en: "leg" },
+            { es: "pie", en: "foot" },
+            { es: "corazón", en: "heart" },
+            { es: "cerebro", en: "brain" },
+            { es: "diente", en: "tooth" },
+            { es: "lengua", en: "tongue" },
+
+            // Home
+            { es: "casa", en: "house" },
+            { es: "puerta", en: "door" },
+            { es: "ventana", en: "window" },
+            { es: "cocina", en: "kitchen" },
+            { es: "cama", en: "bed" },
+            { es: "silla", en: "chair" },
+            { es: "mesa", en: "table" },
+            { es: "lámpara", en: "lamp" },
+            { es: "espejo", en: "mirror" },
+            { es: "televisor", en: "television" },
+            { es: "llave", en: "key" },
+            { es: "jardín", en: "garden" },
+
+            // Food & Drink
+            { es: "comida", en: "food" },
+            { es: "agua", en: "water" },
+            { es: "leche", en: "milk" },
+            { es: "café", en: "coffee" },
+            { es: "té", en: "tea" },
+            { es: "pan", en: "bread" },
+            { es: "arroz", en: "rice" },
+            { es: "carne", en: "meat" },
+            { es: "pollo", en: "chicken" },
+            { es: "pescado", en: "fish" },
+            { es: "huevo", en: "egg" },
+            { es: "queso", en: "cheese" },
+            { es: "fruta", en: "fruit" },
+            { es: "manzana", en: "apple" },
+            { es: "naranja", en: "orange" },
+            { es: "plátano", en: "banana" },
+            { es: "uva", en: "grape" },
+            { es: "fresa", en: "strawberry" },
+            { es: "limón", en: "lemon" },
+            { es: "sandía", en: "watermelon" },
+            { es: "tomate", en: "tomato" },
+            { es: "cebolla", en: "onion" },
+            { es: "zanahoria", en: "carrot" },
+            { es: "papa", en: "potato" },
+            { es: "lechuga", en: "lettuce" },
+            { es: "helado", en: "ice cream" },
+            { es: "pastel", en: "cake" },
+            { es: "galleta", en: "cookie" },
+            { es: "chocolate", en: "chocolate" },
+            { es: "pizza", en: "pizza" },
+            { es: "hamburguesa", en: "hamburger" },
+            { es: "taco", en: "taco" },
+
+            // Animals
+            { es: "perro", en: "dog" },
+            { es: "gato", en: "cat" },
+            { es: "pájaro", en: "bird" },
+            { es: "pez", en: "fish" },
+            { es: "caballo", en: "horse" },
+            { es: "vaca", en: "cow" },
+            { es: "cerdo", en: "pig" },
+            { es: "oveja", en: "sheep" },
+            { es: "gallina", en: "hen" },
+            { es: "conejo", en: "rabbit" },
+            { es: "ratón", en: "mouse" },
+            { es: "león", en: "lion" },
+            { es: "tigre", en: "tiger" },
+            { es: "oso", en: "bear" },
+            { es: "elefante", en: "elephant" },
+            { es: "mono", en: "monkey" },
+            { es: "serpiente", en: "snake" },
+            { es: "tortuga", en: "turtle" },
+            { es: "araña", en: "spider" },
+            { es: "abeja", en: "bee" },
+            { es: "mariposa", en: "butterfly" },
+            { es: "lobo", en: "wolf" },
+            { es: "zorro", en: "fox" },
+            { es: "águila", en: "eagle" },
+            { es: "tiburón", en: "shark" },
+            { es: "ballena", en: "whale" },
+            { es: "delfín", en: "dolphin" },
+            { es: "pulpo", en: "octopus" },
+            { es: "cangrejo", en: "crab" },
+            { es: "pingüino", en: "penguin" },
+
+            // Nature
+            { es: "sol", en: "sun" },
+            { es: "luna", en: "moon" },
+            { es: "estrella", en: "star" },
+            { es: "nube", en: "cloud" },
+            { es: "lluvia", en: "rain" },
+            { es: "nieve", en: "snow" },
+            { es: "viento", en: "wind" },
+            { es: "arcoíris", en: "rainbow" },
+            { es: "árbol", en: "tree" },
+            { es: "flor", en: "flower" },
+            { es: "hoja", en: "leaf" },
+            { es: "montaña", en: "mountain" },
+            { es: "río", en: "river" },
+            { es: "mar", en: "sea" },
+            { es: "playa", en: "beach" },
+            { es: "isla", en: "island" },
+            { es: "volcán", en: "volcano" },
+            { es: "fuego", en: "fire" },
+
+            // Transportation
+            { es: "coche", en: "car" },
+            { es: "autobús", en: "bus" },
+            { es: "tren", en: "train" },
+            { es: "avión", en: "airplane" },
+            { es: "barco", en: "boat" },
+            { es: "bicicleta", en: "bicycle" },
+            { es: "helicóptero", en: "helicopter" },
+
+            // Technology
+            { es: "teléfono", en: "telephone" },
+            { es: "computadora", en: "computer" },
+            { es: "cámara", en: "camera" },
+            { es: "televisión", en: "television" },
+            { es: "robot", en: "robot" },
+
+            // Music & Arts
+            { es: "música", en: "music" },
+            { es: "guitarra", en: "guitar" },
+            { es: "piano", en: "piano" },
+            { es: "libro", en: "book" },
+            { es: "película", en: "movie" },
+
+            // Sports
+            { es: "fútbol", en: "soccer" },
+            { es: "baloncesto", en: "basketball" },
+            { es: "tenis", en: "tennis" },
+            { es: "pelota", en: "ball" },
+            { es: "medalla", en: "medal" },
+            { es: "trofeo", en: "trophy" },
+
+            // Clothing
+            { es: "camisa", en: "shirt" },
+            { es: "pantalón", en: "pants" },
+            { es: "zapato", en: "shoe" },
+            { es: "sombrero", en: "hat" },
+            { es: "vestido", en: "dress" },
+            { es: "gafas", en: "glasses" },
+            { es: "reloj", en: "watch" },
+            { es: "anillo", en: "ring" },
+            { es: "paraguas", en: "umbrella" },
+
+            // Money
+            { es: "dinero", en: "money" },
+            { es: "banco", en: "bank" },
+
+            // Abstract
+            { es: "amor", en: "love" },
+            { es: "felicidad", en: "happiness" },
+            { es: "sueño", en: "dream" },
+            { es: "idea", en: "idea" },
+
+            // Misc
+            { es: "regalo", en: "gift" },
+            { es: "fiesta", en: "party" },
+            { es: "mundo", en: "world" },
+        ];
+
+        const WORDS_TO_SHOW = 100;
+
+        function levenshtein(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        function getSimilarity(spanish, english) {
+            const englishFirst = english.split(',')[0].trim().toLowerCase();
+            const spanishLower = spanish.toLowerCase()
+                .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
+                .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ñ/g, 'n');
+            const distance = levenshtein(spanishLower, englishFirst);
+            const maxLen = Math.max(spanishLower.length, englishFirst.length);
+            return 1 - (distance / maxLen);
+        }
+
+        function getDifficultyColor(similarity) {
+            const s = Math.max(0, Math.min(1, similarity));
+            const r = Math.round(249 + s * (85 - 249));
+            const g = Math.round(115 + s * (85 - 115));
+            const b = Math.round(22 + s * (85 - 22));
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        const svg = document.getElementById('wordCloud');
+        const translationBox = document.getElementById('translationBox');
+        const spanishWord = document.getElementById('spanishWord');
+        const englishWord = document.getElementById('englishWord');
+        const refreshBtn = document.getElementById('refreshBtn');
+        let activeWord = null;
+
+        // Launch emoji animation
+        function launchEmoji(emoji) {
+            const el = document.createElement('div');
+            el.className = 'launched-emoji';
+            el.textContent = emoji;
+            document.body.appendChild(el);
+
+            // Start position: center bottom (above translation box)
+            const startX = window.innerWidth / 2;
+            const startY = window.innerHeight - 120;
+
+            // Physics
+            let x = startX;
+            let y = startY;
+            let vx = (Math.random() - 0.5) * 7; // Random horizontal velocity
+            let vy = -18 - Math.random() * 6;   // Medium upward velocity
+            const gravity = 0.6;
+            const bounce = 0.5;
+            const friction = 0.99;
+
+            // Size animation
+            let scale = 0.5;
+            let targetScale = 1.2;
+            let rotation = 0;
+            let rotationSpeed = (Math.random() - 0.5) * 15;
+
+            function animate() {
+                // Apply physics
+                vy += gravity;
+                x += vx;
+                y += vy;
+                vx *= friction;
+                rotation += rotationSpeed;
+
+                // Scale up quickly at start
+                if (scale < targetScale) {
+                    scale += 0.1;
+                }
+
+                // Bounce off bottom
+                if (y > window.innerHeight - 60) {
+                    y = window.innerHeight - 60;
+                    vy *= -bounce;
+                    vx *= 0.8;
+                    rotationSpeed *= 0.7;
+                    targetScale *= 0.8; // Shrink on bounce
+                }
+
+                // Bounce off sides
+                if (x < 30 || x > window.innerWidth - 30) {
+                    vx *= -0.8;
+                    x = Math.max(30, Math.min(window.innerWidth - 30, x));
+                }
+
+                // Update position
+                el.style.left = (x - 24) + 'px';
+                el.style.top = (y - 24) + 'px';
+                el.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
+                el.style.opacity = Math.min(1, scale);
+
+                // Continue or remove
+                if (Math.abs(vy) > 0.5 || y < window.innerHeight - 65) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Fade out
+                    el.style.transition = 'opacity 0.5s';
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 500);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function renderWords() {
+            svg.innerHTML = '';
+            translationBox.classList.remove('visible');
+            activeWord = null;
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const shuffled = [...allNouns].sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, WORDS_TO_SHOW);
+            const placed = [];
+            const padding = 15;
+
+            function checkOverlap(x, y, w, h) {
+                for (const p of placed) {
+                    if (x < p.x + p.w + padding && x + w + padding > p.x &&
+                        y - h < p.y + padding && y + padding > p.y - p.h) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            selected.forEach((noun) => {
+                const fontSize = 14 + Math.random() * 18;
+                const approxWidth = noun.es.length * fontSize * 0.6;
+                const approxHeight = fontSize;
+
+                let x, y, attempts = 0;
+                do {
+                    x = 60 + Math.random() * (width - 150);
+                    y = 80 + Math.random() * (height - 200);
+                    attempts++;
+                } while (checkOverlap(x, y, approxWidth, approxHeight) && attempts < 100);
+
+                if (attempts < 100) {
+                    placed.push({ x, y, w: approxWidth, h: approxHeight });
+                    const similarity = getSimilarity(noun.es, noun.en);
+                    const color = getDifficultyColor(similarity);
+
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', x);
+                    text.setAttribute('y', y);
+                    text.setAttribute('font-size', fontSize);
+                    text.setAttribute('fill', color);
+                    text.setAttribute('class', 'word');
+                    text.setAttribute('font-family', '-apple-system, BlinkMacSystemFont, sans-serif');
+                    text.textContent = noun.es;
+
+                    text.addEventListener('click', () => {
+                        if (activeWord) activeWord.classList.remove('active');
+                        text.classList.add('active');
+                        activeWord = text;
+                        spanishWord.textContent = noun.es;
+                        englishWord.textContent = noun.en;
+                        translationBox.classList.add('visible');
+
+                        // Launch the emoji!
+                        const emoji = emojiMap[noun.es] || defaultEmoji;
+                        launchEmoji(emoji);
+                    });
+
+                    svg.appendChild(text);
+                }
+            });
+        }
+
+        refreshBtn.addEventListener('click', renderWords);
+        renderWords();
+    </script>
+</body>
+</html>

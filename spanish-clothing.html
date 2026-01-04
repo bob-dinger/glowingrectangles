@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Clothing</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #refreshBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #8B5CF6;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #refreshBtn:hover { background: #7C3AED; }
+
+        svg {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .word {
+            cursor: pointer;
+            transition: fill 0.2s;
+        }
+        .word:hover {
+            fill: #fff !important;
+        }
+        .word.active {
+            fill: #8B5CF6 !important;
+        }
+        .word.dimmed {
+            fill-opacity: 0.15 !important;
+        }
+
+        .translation-box {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px 40px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .translation-box.visible { opacity: 1; }
+
+        .spanish-word {
+            font-size: 32px;
+            font-weight: 600;
+            color: #8B5CF6;
+            margin-bottom: 8px;
+        }
+        .english-word {
+            font-size: 22px;
+            color: #888;
+        }
+        .category-tag {
+            font-size: 11px;
+            color: #555;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-width: 500px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .legend-item:hover {
+            background: #222;
+        }
+        .legend-item.active {
+            background: #333;
+        }
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .legend-label { color: #555; }
+
+        .count {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 11px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <a href="spanish.html" class="back-link">← Back</a>
+    <div class="title">La Ropa</div>
+    <button id="refreshBtn">Shuffle</button>
+
+    <svg id="wordCloud"></svg>
+
+    <div class="translation-box" id="translationBox">
+        <div class="spanish-word" id="spanishWord"></div>
+        <div class="english-word" id="englishWord"></div>
+        <div class="category-tag" id="categoryTag"></div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+    <div class="count" id="count"></div>
+
+    <script>
+        const categories = {
+            'Tops': { color: '#3B82F6', words: [
+                { es: 'la camisa', en: 'shirt' },
+                { es: 'la camiseta', en: 't-shirt' },
+                { es: 'la blusa', en: 'blouse' },
+                { es: 'el suéter', en: 'sweater' },
+                { es: 'la sudadera', en: 'sweatshirt/hoodie' },
+                { es: 'el jersey', en: 'sweater/jumper' },
+                { es: 'la camiseta sin mangas', en: 'tank top' },
+                { es: 'el polo', en: 'polo shirt' },
+                { es: 'la camiseta de tirantes', en: 'camisole' },
+                { es: 'el top', en: 'crop top' },
+                { es: 'el cuello alto', en: 'turtleneck' },
+                { es: 'la manga', en: 'sleeve' },
+                { es: 'el cuello', en: 'collar' },
+                { es: 'el bolsillo', en: 'pocket' },
+                { es: 'el botón', en: 'button' },
+            ]},
+            'Bottoms': { color: '#10B981', words: [
+                { es: 'el pantalón', en: 'pants/trousers' },
+                { es: 'los pantalones', en: 'pants (plural)' },
+                { es: 'los jeans', en: 'jeans' },
+                { es: 'los vaqueros', en: 'jeans (Spain)' },
+                { es: 'la falda', en: 'skirt' },
+                { es: 'la minifalda', en: 'miniskirt' },
+                { es: 'los pantalones cortos', en: 'shorts' },
+                { es: 'los bermudas', en: 'bermuda shorts' },
+                { es: 'los leggings', en: 'leggings' },
+                { es: 'las mallas', en: 'leggings/tights' },
+                { es: 'el pantalón de chándal', en: 'sweatpants' },
+                { es: 'la cremallera', en: 'zipper' },
+            ]},
+            'Dresses & Suits': { color: '#EC4899', words: [
+                { es: 'el vestido', en: 'dress' },
+                { es: 'el vestido de noche', en: 'evening gown' },
+                { es: 'el vestido de cóctel', en: 'cocktail dress' },
+                { es: 'el traje', en: 'suit' },
+                { es: 'el esmoquin', en: 'tuxedo' },
+                { es: 'el mono', en: 'jumpsuit' },
+                { es: 'el overol', en: 'overalls' },
+                { es: 'el uniforme', en: 'uniform' },
+                { es: 'el disfraz', en: 'costume' },
+            ]},
+            'Outerwear': { color: '#F59E0B', words: [
+                { es: 'la chaqueta', en: 'jacket' },
+                { es: 'el abrigo', en: 'coat' },
+                { es: 'la cazadora', en: 'bomber jacket' },
+                { es: 'el chaleco', en: 'vest' },
+                { es: 'el impermeable', en: 'raincoat' },
+                { es: 'la gabardina', en: 'trench coat' },
+                { es: 'el chubasquero', en: 'rain jacket' },
+                { es: 'el anorak', en: 'anorak/parka' },
+                { es: 'la parka', en: 'parka' },
+                { es: 'el blazer', en: 'blazer' },
+                { es: 'la capucha', en: 'hood' },
+            ]},
+            'Footwear': { color: '#EF4444', words: [
+                { es: 'el zapato', en: 'shoe' },
+                { es: 'los zapatos', en: 'shoes' },
+                { es: 'la bota', en: 'boot' },
+                { es: 'las botas', en: 'boots' },
+                { es: 'la sandalia', en: 'sandal' },
+                { es: 'la zapatilla', en: 'sneaker/slipper' },
+                { es: 'las zapatillas de deporte', en: 'sneakers/trainers' },
+                { es: 'el tacón', en: 'heel (shoe)' },
+                { es: 'los tacones altos', en: 'high heels' },
+                { es: 'las chanclas', en: 'flip-flops' },
+                { es: 'las chancletas', en: 'flip-flops' },
+                { es: 'los mocasines', en: 'loafers' },
+                { es: 'las alpargatas', en: 'espadrilles' },
+                { es: 'el cordón', en: 'shoelace' },
+                { es: 'la suela', en: 'sole (shoe)' },
+            ]},
+            'Accessories': { color: '#06B6D4', words: [
+                { es: 'el sombrero', en: 'hat' },
+                { es: 'la gorra', en: 'cap' },
+                { es: 'el gorro', en: 'beanie' },
+                { es: 'la boina', en: 'beret' },
+                { es: 'la bufanda', en: 'scarf' },
+                { es: 'la corbata', en: 'tie' },
+                { es: 'la pajarita', en: 'bow tie' },
+                { es: 'el cinturón', en: 'belt' },
+                { es: 'los guantes', en: 'gloves' },
+                { es: 'las gafas', en: 'glasses' },
+                { es: 'las gafas de sol', en: 'sunglasses' },
+                { es: 'el paraguas', en: 'umbrella' },
+                { es: 'el bolso', en: 'purse/handbag' },
+                { es: 'la cartera', en: 'wallet' },
+                { es: 'la mochila', en: 'backpack' },
+                { es: 'el pañuelo', en: 'handkerchief/bandana' },
+            ]},
+            'Jewelry': { color: '#A855F7', words: [
+                { es: 'la joya', en: 'jewel' },
+                { es: 'las joyas', en: 'jewelry' },
+                { es: 'el anillo', en: 'ring' },
+                { es: 'el collar', en: 'necklace' },
+                { es: 'la pulsera', en: 'bracelet' },
+                { es: 'el brazalete', en: 'bangle' },
+                { es: 'los pendientes', en: 'earrings' },
+                { es: 'los aretes', en: 'earrings (Latin Am)' },
+                { es: 'el reloj', en: 'watch' },
+                { es: 'el broche', en: 'brooch' },
+                { es: 'la cadena', en: 'chain' },
+                { es: 'el piercing', en: 'piercing' },
+                { es: 'el oro', en: 'gold' },
+                { es: 'la plata', en: 'silver' },
+                { es: 'el diamante', en: 'diamond' },
+                { es: 'la perla', en: 'pearl' },
+            ]},
+            'Underwear & Sleepwear': { color: '#F97316', words: [
+                { es: 'la ropa interior', en: 'underwear' },
+                { es: 'los calzoncillos', en: 'underwear (men)' },
+                { es: 'las bragas', en: 'underwear (women)' },
+                { es: 'el sujetador', en: 'bra' },
+                { es: 'el sostén', en: 'bra (Latin Am)' },
+                { es: 'los calcetines', en: 'socks' },
+                { es: 'las medias', en: 'stockings/tights' },
+                { es: 'el pijama', en: 'pajamas' },
+                { es: 'la bata', en: 'robe/bathrobe' },
+                { es: 'el camisón', en: 'nightgown' },
+                { es: 'las pantuflas', en: 'slippers' },
+                { es: 'las zapatillas de casa', en: 'house slippers' },
+            ]},
+            'Swimwear': { color: '#0EA5E9', words: [
+                { es: 'el traje de baño', en: 'swimsuit' },
+                { es: 'el bañador', en: 'swimsuit (Spain)' },
+                { es: 'el bikini', en: 'bikini' },
+                { es: 'el trikini', en: 'monokini' },
+                { es: 'las bermudas de baño', en: 'swim trunks' },
+                { es: 'el gorro de baño', en: 'swim cap' },
+                { es: 'las gafas de natación', en: 'swim goggles' },
+            ]},
+            'Fabrics & Materials': { color: '#78716C', words: [
+                { es: 'la tela', en: 'fabric' },
+                { es: 'el algodón', en: 'cotton' },
+                { es: 'la lana', en: 'wool' },
+                { es: 'la seda', en: 'silk' },
+                { es: 'el lino', en: 'linen' },
+                { es: 'el cuero', en: 'leather' },
+                { es: 'la piel', en: 'leather/fur' },
+                { es: 'el terciopelo', en: 'velvet' },
+                { es: 'el poliéster', en: 'polyester' },
+                { es: 'el nylon', en: 'nylon' },
+                { es: 'el encaje', en: 'lace' },
+                { es: 'el denim', en: 'denim' },
+                { es: 'la mezclilla', en: 'denim (Latin Am)' },
+                { es: 'el estampado', en: 'print/pattern' },
+                { es: 'las rayas', en: 'stripes' },
+                { es: 'los lunares', en: 'polka dots' },
+                { es: 'el cuadro', en: 'plaid/check' },
+            ]},
+        };
+
+        const allWords = [];
+        Object.entries(categories).forEach(([cat, data]) => {
+            data.words.forEach(word => {
+                allWords.push({ ...word, category: cat, color: data.color });
+            });
+        });
+
+        const svg = document.getElementById('wordCloud');
+        const translationBox = document.getElementById('translationBox');
+        const spanishWord = document.getElementById('spanishWord');
+        const englishWord = document.getElementById('englishWord');
+        const categoryTag = document.getElementById('categoryTag');
+        const legend = document.getElementById('legend');
+        const countEl = document.getElementById('count');
+        let activeWord = null;
+        let activeCategory = null;
+
+        Object.entries(categories).forEach(([cat, data]) => {
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.dataset.category = cat;
+            item.innerHTML = `<div class="legend-dot" style="background:${data.color}"></div><span class="legend-label">${cat}</span>`;
+
+            item.addEventListener('click', () => {
+                if (activeCategory === cat) {
+                    activeCategory = null;
+                    item.classList.remove('active');
+                    document.querySelectorAll('.word').forEach(w => w.classList.remove('dimmed'));
+                } else {
+                    document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active'));
+                    activeCategory = cat;
+                    item.classList.add('active');
+                    document.querySelectorAll('.word').forEach(w => {
+                        if (w.dataset.category === cat) {
+                            w.classList.remove('dimmed');
+                        } else {
+                            w.classList.add('dimmed');
+                        }
+                    });
+                }
+            });
+
+            legend.appendChild(item);
+        });
+
+        countEl.textContent = `${allWords.length} clothing items`;
+
+        function renderWords() {
+            svg.innerHTML = '';
+            translationBox.classList.remove('visible');
+            activeWord = null;
+            activeCategory = null;
+            document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active'));
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const shuffled = [...allWords].sort(() => Math.random() - 0.5);
+            const placed = [];
+            const padding = 10;
+
+            function checkOverlap(x, y, w, h) {
+                for (const p of placed) {
+                    if (x < p.x + p.w + padding && x + w + padding > p.x &&
+                        y - h < p.y + padding && y + padding > p.y - p.h) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            shuffled.forEach((word) => {
+                const fontSize = 13 + Math.random() * 18;
+                const approxWidth = word.es.length * fontSize * 0.5;
+                const approxHeight = fontSize;
+
+                let x, y, attempts = 0;
+                do {
+                    x = 60 + Math.random() * (width - 180);
+                    y = 80 + Math.random() * (height - 180);
+                    attempts++;
+                } while (checkOverlap(x, y, approxWidth, approxHeight) && attempts < 150);
+
+                if (attempts < 150) {
+                    placed.push({ x, y, w: approxWidth, h: approxHeight });
+
+                    const opacity = 0.5 + Math.random() * 0.5;
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', x);
+                    text.setAttribute('y', y);
+                    text.setAttribute('font-size', fontSize);
+                    text.setAttribute('fill', word.color);
+                    text.setAttribute('fill-opacity', opacity);
+                    text.setAttribute('class', 'word');
+                    text.setAttribute('font-family', '-apple-system, BlinkMacSystemFont, sans-serif');
+                    text.dataset.category = word.category;
+                    text.textContent = word.es;
+
+                    text.addEventListener('click', () => {
+                        if (activeWord) activeWord.classList.remove('active');
+                        text.classList.add('active');
+                        activeWord = text;
+                        spanishWord.textContent = word.es;
+                        englishWord.textContent = word.en;
+                        categoryTag.textContent = word.category;
+                        translationBox.classList.add('visible');
+                    });
+
+                    svg.appendChild(text);
+                }
+            });
+        }
+
+        document.getElementById('refreshBtn').addEventListener('click', renderWords);
+        renderWords();
+    </script>
+</body>
+</html>

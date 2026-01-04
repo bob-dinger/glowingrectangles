@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Body Parts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #refreshBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #EC4899;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #refreshBtn:hover { background: #DB2777; }
+
+        svg {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .word {
+            cursor: pointer;
+            transition: fill 0.2s;
+        }
+        .word:hover {
+            fill: #fff !important;
+        }
+        .word.active {
+            fill: #EC4899 !important;
+        }
+
+        .translation-box {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px 40px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .translation-box.visible { opacity: 1; }
+
+        .spanish-word {
+            font-size: 32px;
+            font-weight: 600;
+            color: #EC4899;
+            margin-bottom: 8px;
+        }
+        .english-word {
+            font-size: 22px;
+            color: #888;
+        }
+        .category-tag {
+            font-size: 11px;
+            color: #555;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            max-width: 400px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .legend-item:hover {
+            background: #222;
+        }
+        .legend-item.active {
+            background: #333;
+        }
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .legend-label { color: #555; }
+
+        .word.dimmed {
+            fill-opacity: 0.15 !important;
+        }
+
+        .count {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 11px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <a href="spanish.html" class="back-link">← Back</a>
+    <div class="title">El Cuerpo Humano</div>
+    <button id="refreshBtn">Shuffle</button>
+
+    <svg id="wordCloud"></svg>
+
+    <div class="translation-box" id="translationBox">
+        <div class="spanish-word" id="spanishWord"></div>
+        <div class="english-word" id="englishWord"></div>
+        <div class="category-tag" id="categoryTag"></div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+    <div class="count" id="count"></div>
+
+    <script>
+        const categories = {
+            'Head': { color: '#EC4899', words: [
+                { es: 'cabeza', en: 'head' },
+                { es: 'cara', en: 'face' },
+                { es: 'frente', en: 'forehead' },
+                { es: 'sien', en: 'temple' },
+                { es: 'cráneo', en: 'skull' },
+                { es: 'cerebro', en: 'brain' },
+                { es: 'pelo', en: 'hair' },
+                { es: 'cabello', en: 'hair (formal)' },
+                { es: 'cuero cabelludo', en: 'scalp' },
+                { es: 'calva', en: 'bald spot' },
+            ]},
+            'Eyes': { color: '#8B5CF6', words: [
+                { es: 'ojo', en: 'eye' },
+                { es: 'ceja', en: 'eyebrow' },
+                { es: 'pestaña', en: 'eyelash' },
+                { es: 'párpado', en: 'eyelid' },
+                { es: 'pupila', en: 'pupil' },
+                { es: 'iris', en: 'iris' },
+                { es: 'retina', en: 'retina' },
+                { es: 'córnea', en: 'cornea' },
+                { es: 'lágrima', en: 'tear' },
+                { es: 'ojera', en: 'dark circle (under eye)' },
+            ]},
+            'Ears & Nose': { color: '#3B82F6', words: [
+                { es: 'oreja', en: 'ear (outer)' },
+                { es: 'oído', en: 'ear (inner)/hearing' },
+                { es: 'lóbulo', en: 'earlobe' },
+                { es: 'tímpano', en: 'eardrum' },
+                { es: 'nariz', en: 'nose' },
+                { es: 'fosa nasal', en: 'nostril' },
+                { es: 'tabique', en: 'septum' },
+                { es: 'moco', en: 'mucus' },
+            ]},
+            'Mouth': { color: '#EF4444', words: [
+                { es: 'boca', en: 'mouth' },
+                { es: 'labio', en: 'lip' },
+                { es: 'lengua', en: 'tongue' },
+                { es: 'diente', en: 'tooth' },
+                { es: 'muela', en: 'molar' },
+                { es: 'colmillo', en: 'canine tooth/fang' },
+                { es: 'encía', en: 'gum' },
+                { es: 'paladar', en: 'palate' },
+                { es: 'úvula', en: 'uvula' },
+                { es: 'saliva', en: 'saliva' },
+                { es: 'mandíbula', en: 'jaw' },
+                { es: 'mejilla', en: 'cheek' },
+                { es: 'barbilla', en: 'chin' },
+                { es: 'mentón', en: 'chin (formal)' },
+                { es: 'barba', en: 'beard' },
+                { es: 'bigote', en: 'mustache' },
+            ]},
+            'Neck & Throat': { color: '#F59E0B', words: [
+                { es: 'cuello', en: 'neck' },
+                { es: 'nuca', en: 'nape' },
+                { es: 'garganta', en: 'throat' },
+                { es: 'laringe', en: 'larynx' },
+                { es: 'tráquea', en: 'trachea' },
+                { es: 'amígdala', en: 'tonsil' },
+                { es: 'nuez', en: "Adam's apple" },
+                { es: 'tiroides', en: 'thyroid' },
+            ]},
+            'Torso': { color: '#10B981', words: [
+                { es: 'torso', en: 'torso' },
+                { es: 'tronco', en: 'trunk' },
+                { es: 'pecho', en: 'chest' },
+                { es: 'seno', en: 'breast' },
+                { es: 'pezón', en: 'nipple' },
+                { es: 'esternón', en: 'sternum' },
+                { es: 'costilla', en: 'rib' },
+                { es: 'abdomen', en: 'abdomen' },
+                { es: 'vientre', en: 'belly' },
+                { es: 'ombligo', en: 'belly button' },
+                { es: 'cintura', en: 'waist' },
+                { es: 'cadera', en: 'hip' },
+                { es: 'pelvis', en: 'pelvis' },
+                { es: 'ingle', en: 'groin' },
+                { es: 'espalda', en: 'back' },
+                { es: 'columna', en: 'spine' },
+                { es: 'vértebra', en: 'vertebra' },
+                { es: 'omóplato', en: 'shoulder blade' },
+                { es: 'nalga', en: 'buttock' },
+                { es: 'trasero', en: 'butt' },
+            ]},
+            'Arms': { color: '#06B6D4', words: [
+                { es: 'brazo', en: 'arm' },
+                { es: 'hombro', en: 'shoulder' },
+                { es: 'axila', en: 'armpit' },
+                { es: 'sobaco', en: 'armpit (informal)' },
+                { es: 'bíceps', en: 'biceps' },
+                { es: 'tríceps', en: 'triceps' },
+                { es: 'codo', en: 'elbow' },
+                { es: 'antebrazo', en: 'forearm' },
+                { es: 'muñeca', en: 'wrist' },
+            ]},
+            'Hands': { color: '#6366F1', words: [
+                { es: 'mano', en: 'hand' },
+                { es: 'palma', en: 'palm' },
+                { es: 'dorso', en: 'back of hand' },
+                { es: 'dedo', en: 'finger' },
+                { es: 'pulgar', en: 'thumb' },
+                { es: 'índice', en: 'index finger' },
+                { es: 'corazón', en: 'middle finger' },
+                { es: 'anular', en: 'ring finger' },
+                { es: 'meñique', en: 'pinky' },
+                { es: 'uña', en: 'fingernail' },
+                { es: 'cutícula', en: 'cuticle' },
+                { es: 'nudillo', en: 'knuckle' },
+                { es: 'puño', en: 'fist' },
+            ]},
+            'Legs': { color: '#F97316', words: [
+                { es: 'pierna', en: 'leg' },
+                { es: 'muslo', en: 'thigh' },
+                { es: 'cuádriceps', en: 'quadriceps' },
+                { es: 'rodilla', en: 'knee' },
+                { es: 'rótula', en: 'kneecap' },
+                { es: 'pantorrilla', en: 'calf' },
+                { es: 'espinilla', en: 'shin' },
+                { es: 'tobillo', en: 'ankle' },
+                { es: 'tendón de Aquiles', en: 'Achilles tendon' },
+            ]},
+            'Feet': { color: '#A855F7', words: [
+                { es: 'pie', en: 'foot' },
+                { es: 'planta', en: 'sole' },
+                { es: 'empeine', en: 'instep' },
+                { es: 'arco', en: 'arch' },
+                { es: 'talón', en: 'heel' },
+                { es: 'dedo del pie', en: 'toe' },
+                { es: 'dedo gordo', en: 'big toe' },
+                { es: 'meñique del pie', en: 'little toe' },
+                { es: 'uña del pie', en: 'toenail' },
+            ]},
+            'Organs': { color: '#EF4444', words: [
+                { es: 'corazón', en: 'heart' },
+                { es: 'pulmón', en: 'lung' },
+                { es: 'hígado', en: 'liver' },
+                { es: 'riñón', en: 'kidney' },
+                { es: 'estómago', en: 'stomach' },
+                { es: 'intestino', en: 'intestine' },
+                { es: 'intestino delgado', en: 'small intestine' },
+                { es: 'intestino grueso', en: 'large intestine' },
+                { es: 'colon', en: 'colon' },
+                { es: 'páncreas', en: 'pancreas' },
+                { es: 'bazo', en: 'spleen' },
+                { es: 'vesícula', en: 'gallbladder' },
+                { es: 'apéndice', en: 'appendix' },
+                { es: 'vejiga', en: 'bladder' },
+                { es: 'útero', en: 'uterus' },
+                { es: 'ovario', en: 'ovary' },
+                { es: 'próstata', en: 'prostate' },
+            ]},
+            'Bones & Joints': { color: '#78716C', words: [
+                { es: 'hueso', en: 'bone' },
+                { es: 'esqueleto', en: 'skeleton' },
+                { es: 'articulación', en: 'joint' },
+                { es: 'cartílago', en: 'cartilage' },
+                { es: 'médula', en: 'marrow' },
+                { es: 'fémur', en: 'femur' },
+                { es: 'tibia', en: 'tibia' },
+                { es: 'peroné', en: 'fibula' },
+                { es: 'húmero', en: 'humerus' },
+                { es: 'radio', en: 'radius' },
+                { es: 'cúbito', en: 'ulna' },
+                { es: 'clavícula', en: 'collarbone' },
+                { es: 'escápula', en: 'scapula' },
+            ]},
+            'Muscles & Tissue': { color: '#DC2626', words: [
+                { es: 'músculo', en: 'muscle' },
+                { es: 'tendón', en: 'tendon' },
+                { es: 'ligamento', en: 'ligament' },
+                { es: 'nervio', en: 'nerve' },
+                { es: 'piel', en: 'skin' },
+                { es: 'epidermis', en: 'epidermis' },
+                { es: 'dermis', en: 'dermis' },
+                { es: 'poro', en: 'pore' },
+                { es: 'vello', en: 'body hair' },
+                { es: 'lunar', en: 'mole' },
+                { es: 'peca', en: 'freckle' },
+                { es: 'arruga', en: 'wrinkle' },
+                { es: 'cicatriz', en: 'scar' },
+                { es: 'verruga', en: 'wart' },
+            ]},
+            'Circulatory': { color: '#B91C1C', words: [
+                { es: 'sangre', en: 'blood' },
+                { es: 'vena', en: 'vein' },
+                { es: 'arteria', en: 'artery' },
+                { es: 'capilar', en: 'capillary' },
+                { es: 'glóbulo rojo', en: 'red blood cell' },
+                { es: 'glóbulo blanco', en: 'white blood cell' },
+                { es: 'plaqueta', en: 'platelet' },
+                { es: 'plasma', en: 'plasma' },
+                { es: 'pulso', en: 'pulse' },
+            ]},
+        };
+
+        // Flatten all words with category info
+        const allWords = [];
+        Object.entries(categories).forEach(([cat, data]) => {
+            data.words.forEach(word => {
+                allWords.push({ ...word, category: cat, color: data.color });
+            });
+        });
+
+        const svg = document.getElementById('wordCloud');
+        const translationBox = document.getElementById('translationBox');
+        const spanishWord = document.getElementById('spanishWord');
+        const englishWord = document.getElementById('englishWord');
+        const categoryTag = document.getElementById('categoryTag');
+        const legend = document.getElementById('legend');
+        const countEl = document.getElementById('count');
+        let activeWord = null;
+
+        // Build legend
+        let activeCategory = null;
+
+        Object.entries(categories).forEach(([cat, data]) => {
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.dataset.category = cat;
+            item.innerHTML = `<div class="legend-dot" style="background:${data.color}"></div><span class="legend-label">${cat}</span>`;
+
+            item.addEventListener('click', () => {
+                // Toggle active state
+                if (activeCategory === cat) {
+                    activeCategory = null;
+                    item.classList.remove('active');
+                    // Show all words
+                    document.querySelectorAll('.word').forEach(w => w.classList.remove('dimmed'));
+                } else {
+                    // Remove active from previous
+                    document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active'));
+                    activeCategory = cat;
+                    item.classList.add('active');
+                    // Dim non-matching words
+                    document.querySelectorAll('.word').forEach(w => {
+                        if (w.dataset.category === cat) {
+                            w.classList.remove('dimmed');
+                        } else {
+                            w.classList.add('dimmed');
+                        }
+                    });
+                }
+            });
+
+            legend.appendChild(item);
+        });
+
+        countEl.textContent = `${allWords.length} body parts`;
+
+        function renderWords() {
+            svg.innerHTML = '';
+            translationBox.classList.remove('visible');
+            activeWord = null;
+            activeCategory = null;
+            document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active'));
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // Shuffle
+            const shuffled = [...allWords].sort(() => Math.random() - 0.5);
+
+            const placed = [];
+            const padding = 12;
+
+            function checkOverlap(x, y, w, h) {
+                for (const p of placed) {
+                    if (x < p.x + p.w + padding && x + w + padding > p.x &&
+                        y - h < p.y + padding && y + padding > p.y - p.h) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            shuffled.forEach((word) => {
+                const fontSize = 14 + Math.random() * 20;
+                const approxWidth = word.es.length * fontSize * 0.55;
+                const approxHeight = fontSize;
+
+                let x, y, attempts = 0;
+                do {
+                    x = 60 + Math.random() * (width - 180);
+                    y = 80 + Math.random() * (height - 180);
+                    attempts++;
+                } while (checkOverlap(x, y, approxWidth, approxHeight) && attempts < 150);
+
+                if (attempts < 150) {
+                    placed.push({ x, y, w: approxWidth, h: approxHeight });
+
+                    const opacity = 0.5 + Math.random() * 0.5;
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', x);
+                    text.setAttribute('y', y);
+                    text.setAttribute('font-size', fontSize);
+                    text.setAttribute('fill', word.color);
+                    text.setAttribute('fill-opacity', opacity);
+                    text.setAttribute('class', 'word');
+                    text.setAttribute('font-family', '-apple-system, BlinkMacSystemFont, sans-serif');
+                    text.dataset.category = word.category;
+                    text.textContent = word.es;
+
+                    text.addEventListener('click', () => {
+                        if (activeWord) activeWord.classList.remove('active');
+                        text.classList.add('active');
+                        activeWord = text;
+                        spanishWord.textContent = word.es;
+                        englishWord.textContent = word.en;
+                        categoryTag.textContent = word.category;
+                        translationBox.classList.add('visible');
+                    });
+
+                    svg.appendChild(text);
+                }
+            });
+        }
+
+        document.getElementById('refreshBtn').addEventListener('click', renderWords);
+        renderWords();
+    </script>
+</body>
+</html>
