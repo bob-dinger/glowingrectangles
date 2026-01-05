@@ -16,6 +16,10 @@
             flex-direction: column;
         }
 
+        @media (min-width: 1400px) {
+            body { padding-right: 340px; }
+        }
+
         .back-link {
             position: fixed;
             top: 20px;
@@ -190,6 +194,105 @@
             border-top: 1px solid #222;
         }
         footer a { color: #22C55E; text-decoration: none; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 25px;
+            z-index: 50;
+            display: none;
+        }
+
+        @media (min-width: 1400px) {
+            .sidebar { display: block; }
+        }
+
+        .sidebar h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #22C55E;
+        }
+
+        .sidebar .source {
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #222;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .sidebar .source a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+
+        .sidebar .source a:hover {
+            text-decoration: underline;
+        }
+
+        .sidebar .source strong {
+            color: #999;
+        }
+
+        .sidebar p {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .sidebar strong {
+            color: #fff;
+        }
+
+        .sidebar em {
+            color: #22C55E;
+            font-style: normal;
+        }
+
+        .sidebar .video-link {
+            display: block;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .sidebar .video-link:hover {
+            border-color: #22C55E;
+            background: #1f1f1f;
+        }
+
+        .sidebar .video-link .video-title {
+            color: #fff;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .sidebar .video-link .video-views {
+            color: #666;
+            font-size: 11px;
+        }
+
+        .sidebar .quote {
+            border-left: 2px solid #22C55E;
+            padding-left: 15px;
+            margin: 15px 0;
+            font-style: italic;
+            color: #999;
+            font-size: 13px;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -232,8 +335,55 @@
 
     <footer>
         Data from <a href="https://www.gapminder.org/" target="_blank">Gapminder</a> |
-        Part of <a href="index.html">Glowing Gardens</a>
+        Part of <a href="index.html">Glowing Rectangles</a>
     </footer>
+
+    <div class="sidebar">
+        <h2>Hans Rosling (1948–2017)</h2>
+
+        <p>Swedish physician, academic, and public speaker. Co-founder of the Gapminder Foundation, which developed this visualization to fight global misconceptions with data.</p>
+
+        <div class="quote">
+            "The world cannot be understood without numbers. But the world cannot be understood with numbers alone."
+        </div>
+
+        <h2 style="margin-top: 25px;">The Book</h2>
+
+        <div class="source">
+            <a href="https://www.amazon.com/Factfulness-Reasons-World-Things-Better/dp/1250107814" target="_blank">
+                <strong>Factfulness: Ten Reasons We're Wrong About the World</strong>
+            </a>
+            <br>Hans Rosling (2018)
+        </div>
+
+        <p>Rosling's final book, completed by his son and daughter-in-law after his death. It reveals the <em>ten instincts</em> that distort our perspective—and shows why the world is in better shape than you think.</p>
+
+        <h2 style="margin-top: 25px;">TED Talks</h2>
+
+        <a href="https://www.youtube.com/watch?v=hVimVzgtD6w" target="_blank" class="video-link">
+            <div class="video-title">The best stats you've ever seen</div>
+            <div class="video-views">15M+ views • His famous debut (2006)</div>
+        </a>
+
+        <a href="https://www.youtube.com/watch?v=Sm5xF-UYgdg" target="_blank" class="video-link">
+            <div class="video-title">New insights on poverty</div>
+            <div class="video-views">4M+ views • Washing machines & development</div>
+        </a>
+
+        <a href="https://www.youtube.com/watch?v=FACK2knC08E" target="_blank" class="video-link">
+            <div class="video-title">Global population growth, box by box</div>
+            <div class="video-views">3M+ views • IKEA boxes as data viz</div>
+        </a>
+
+        <a href="https://www.youtube.com/watch?v=jbkSRLYSojo" target="_blank" class="video-link">
+            <div class="video-title">200 years in 4 minutes</div>
+            <div class="video-views">10M+ views • BBC documentary clip</div>
+        </a>
+
+        <div class="source" style="margin-top: 20px; border-bottom: none;">
+            <a href="https://www.gapminder.org/tools/" target="_blank">Explore more at Gapminder.org →</a>
+        </div>
+    </div>
 
     <script src="gapminder-data.js"></script>
     <script>
@@ -344,10 +494,13 @@
             return prevData.map(d => {
                 const next = nextData.find(n => n.code === d.code);
                 if (!next) return d;
+                // Use linear interpolation for lifeExp, log interpolation for GDP
+                const interpolatedLifeExp = d.lifeExp + (next.lifeExp - d.lifeExp) * t;
+                const interpolatedGdp = d.gdpPerCap * Math.pow(next.gdpPerCap / d.gdpPerCap, t);
                 return {
                     ...d,
-                    lifeExp: d.lifeExp + (next.lifeExp - d.lifeExp) * t,
-                    gdpPerCap: d.gdpPerCap * Math.pow(next.gdpPerCap / d.gdpPerCap, t),
+                    lifeExp: Math.max(20, interpolatedLifeExp),
+                    gdpPerCap: Math.max(200, interpolatedGdp),
                     pop: Math.round(d.pop + (next.pop - d.pop) * t)
                 };
             });
@@ -373,7 +526,7 @@
                 .attr('fill', d => colors[d.continent])
                 .attr('fill-opacity', 0.7)
                 .attr('cx', d => xScale(Math.max(200, d.gdpPerCap)))
-                .attr('cy', d => yScale(d.lifeExp))
+                .attr('cy', d => yScale(Math.max(20, d.lifeExp)))
                 .attr('r', 0)
                 .on('mouseover', showTooltip)
                 .on('mouseout', hideTooltip)
@@ -381,11 +534,12 @@
                 .duration(300)
                 .attr('r', d => rScale(d.pop));
 
-            // Update
+            // Update - use linear easing when playing for smooth animation
             bubbles.transition()
-                .duration(playing ? 150 : 300)
+                .duration(playing ? parseInt(speedSelect.value) : 300)
+                .ease(playing ? d3.easeLinear : d3.easeCubicOut)
                 .attr('cx', d => xScale(Math.max(200, d.gdpPerCap)))
-                .attr('cy', d => yScale(d.lifeExp))
+                .attr('cy', d => yScale(Math.max(20, d.lifeExp)))
                 .attr('r', d => rScale(d.pop));
 
             // Exit
