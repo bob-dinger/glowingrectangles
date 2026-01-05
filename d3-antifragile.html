@@ -15,6 +15,10 @@
             flex-direction: column;
             align-items: center;
         }
+
+        @media (min-width: 1400px) {
+            body { padding-right: 340px; }
+        }
         h1 {
             color: #ffffff;
             margin: 0 0 5px 0;
@@ -77,6 +81,106 @@
             margin-top: 8px;
             height: 18px;
         }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #333;
+            overflow-y: auto;
+            padding: 25px;
+            z-index: 50;
+            display: none;
+        }
+
+        @media (min-width: 1400px) {
+            .sidebar { display: block; }
+        }
+
+        .sidebar h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #805AD5;
+        }
+
+        .sidebar .source {
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #333;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .sidebar .source a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+
+        .sidebar .source a:hover {
+            text-decoration: underline;
+        }
+
+        .sidebar .source strong {
+            color: #999;
+        }
+
+        .sidebar p {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .sidebar strong {
+            color: #fff;
+        }
+
+        .sidebar em {
+            color: #805AD5;
+            font-style: normal;
+        }
+
+        .sidebar .quote {
+            border-left: 2px solid #805AD5;
+            padding-left: 15px;
+            margin: 15px 0;
+            font-style: italic;
+            color: #999;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .sidebar .triad {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
+
+        .sidebar .triad-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .sidebar .triad-item .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar .triad-item .label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .sidebar .triad-item.fragile .label { color: #E53E3E; }
+        .sidebar .triad-item.resilient .label { color: #38A169; }
+        .sidebar .triad-item.antifragile .label { color: #805AD5; }
     </style>
 </head>
 <body>
@@ -109,6 +213,56 @@
             <canvas id="antifragile" width="300" height="400"></canvas>
             <button id="antifragile-btn">Drop It</button>
             <div class="status" id="antifragile-status">Drops: 0</div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>The Concept</h2>
+
+        <div class="source">
+            From: <a href="https://www.amazon.com/Coddling-American-Mind-Intentions-Generation/dp/0735224897" target="_blank">
+                <strong>The Coddling of the American Mind</strong>
+            </a>
+            <br>Greg Lukianoff & Jonathan Haidt (2018)
+        </div>
+
+        <p>No one has done a better job of explaining the harm of avoiding stressors, risks, and small doses of pain than <strong>Nassim Nicholas Taleb</strong>, the Lebanese-born statistician, stock trader, and polymath who is now a professor of risk engineering at New York University.</p>
+
+        <p>In his 2007 best seller, <em>The Black Swan</em>, Taleb argued that most of us think about risk in the wrong way. In complex systems, it is virtually inevitable that unforeseen problems will arise, yet we persist in trying to calculate risk based on past experiences.</p>
+
+        <div class="quote">
+            Life has a way of creating completely unexpected events—events Taleb likens to the appearance of a black swan when, based on your past experience, you assumed that all swans were white.
+        </div>
+
+        <p>In his later book <em>Antifragile</em>, Taleb explains how systems and people can survive the inevitable black swans of life and, like the immune system, <strong>grow stronger in response</strong>.</p>
+
+        <div class="triad">
+            <div class="triad-item fragile">
+                <div class="icon">🫖</div>
+                <div class="label">Fragile</div>
+            </div>
+            <div class="triad-item resilient">
+                <div class="icon">🥤</div>
+                <div class="label">Resilient</div>
+            </div>
+            <div class="triad-item antifragile">
+                <div class="icon">💪</div>
+                <div class="label">Antifragile</div>
+            </div>
+        </div>
+
+        <p>Taleb asks us to distinguish three kinds of things. Some, like <strong>china teacups</strong>, are <em>fragile</em>: they break easily and cannot heal themselves.</p>
+
+        <p>Other things are <em>resilient</em>: they can withstand shocks. Parents usually give their toddlers <strong>plastic cups</strong> precisely because plastic can survive repeated falls.</p>
+
+        <p>But Taleb asks us to look beyond "resilience" and recognize that some things are <em>antifragile</em>. Many important systems in our economic and political life are like our immune systems: they require stressors and challenges in order to learn, adapt, and grow.</p>
+
+        <div class="quote">
+            Systems that are antifragile become rigid, weak, and inefficient when nothing challenges them or pushes them to respond vigorously.
+        </div>
+
+        <div class="source" style="margin-top: 20px; border-bottom: none;">
+            See also: <a href="https://en.wikipedia.org/wiki/Antifragility" target="_blank">Wikipedia: Antifragility</a>
         </div>
     </div>
 
