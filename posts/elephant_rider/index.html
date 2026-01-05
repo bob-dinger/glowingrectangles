@@ -13,6 +13,10 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
+
+        @media (min-width: 1300px) {
+            body { padding-right: 340px; }
+        }
         .back-link {
             position: fixed;
             top: 20px;
@@ -342,6 +346,87 @@
 
         .scale-item.elephant .scale-percent { color: #9CA3AF; }
         .scale-item.rider .scale-percent { color: #3B82F6; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 25px;
+            z-index: 50;
+            display: none;
+        }
+
+        @media (min-width: 1300px) {
+            .sidebar { display: block; }
+        }
+
+        .sidebar h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #F59E0B;
+        }
+
+        .sidebar .source {
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #222;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .sidebar .source a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+
+        .sidebar .source a:hover {
+            text-decoration: underline;
+        }
+
+        .sidebar .source strong {
+            color: #999;
+        }
+
+        .sidebar p {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .sidebar strong {
+            color: #fff;
+        }
+
+        .sidebar em {
+            color: #F59E0B;
+            font-style: normal;
+        }
+
+        .sidebar .quote {
+            border-left: 2px solid #F59E0B;
+            padding-left: 15px;
+            margin: 15px 0;
+            font-style: italic;
+            color: #999;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .sidebar .highlight {
+            background: rgba(245, 158, 11, 0.1);
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #ccc;
+        }
     </style>
 </head>
 <body>
@@ -461,6 +546,45 @@
                 <strong style="color: #22C55E;">Shrink the change</strong> — Make it so small the elephant doesn't resist.
                 Not "go to the gym" — just "put on workout clothes." The elephant will often keep going.
             </p>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>The Source</h2>
+
+        <div class="source">
+            From: <a href="https://www.amazon.com/Righteous-Mind-Divided-Politics-Religion/dp/0307455777" target="_blank">
+                <strong>The Righteous Mind</strong>
+            </a>
+            <br>Jonathan Haidt (2012)
+        </div>
+
+        <div class="highlight">
+            <strong>Intuitions come first, strategic reasoning second.</strong>
+        </div>
+
+        <p>Moral intuitions arise automatically and almost instantaneously, long before moral reasoning has a chance to get started, and those first intuitions tend to drive our later reasoning.</p>
+
+        <p>If you think that moral reasoning is something we do to figure out the truth, you'll be constantly frustrated by how foolish, biased, and illogical people become when they disagree with you.</p>
+
+        <p>But if you think about moral reasoning as a skill we humans evolved to <em>further our social agendas</em>—to justify our own actions and to defend the teams we belong to—then things will make a lot more sense.</p>
+
+        <div class="quote">
+            Keep your eye on the intuitions, and don't take people's moral arguments at face value. They're mostly post hoc constructions made up on the fly, crafted to advance one or more strategic objectives.
+        </div>
+
+        <h2 style="margin-top: 25px;">The Metaphor</h2>
+
+        <p>The central metaphor is that <strong>the mind is divided, like a rider on an elephant</strong>, and the rider's job is to serve the elephant.</p>
+
+        <p><strong style="color: #3B82F6;">The rider</strong> is our conscious reasoning—the stream of words and images of which we are fully aware.</p>
+
+        <p><strong style="color: #9CA3AF;">The elephant</strong> is the other 99 percent of mental processes—the ones that occur outside of awareness but that actually govern most of our behavior.</p>
+
+        <p>I'll use this metaphor to solve puzzles such as why it seems like everyone (else) is a hypocrite and why political partisans are so willing to believe outrageous lies and conspiracy theories.</p>
+
+        <div class="source" style="margin-top: 20px; border-bottom: none;">
+            See also: <a href="https://en.wikipedia.org/wiki/The_Righteous_Mind" target="_blank">Wikipedia: The Righteous Mind</a>
         </div>
     </div>
 </body>
