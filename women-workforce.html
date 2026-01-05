@@ -15,6 +15,10 @@
             overflow: hidden;
         }
 
+        @media (min-width: 1200px) {
+            body { padding-right: 320px; }
+        }
+
         .back-link {
             position: fixed;
             top: 15px;
@@ -62,7 +66,13 @@
             flex-direction: column;
             align-items: center;
             height: 100%;
-            max-width: 400px;
+            flex: 1;
+            transition: flex 0.3s ease;
+        }
+        .scenario.fear {
+            flex: 1;
+        }
+        .scenario.reality {
             flex: 1;
         }
 
@@ -167,6 +177,100 @@
             height: 10px;
             border-radius: 50%;
         }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 25px;
+            z-index: 50;
+            display: none;
+        }
+
+        @media (min-width: 1200px) {
+            .sidebar { display: block; }
+        }
+
+        .sidebar h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #EC4899;
+        }
+
+        .sidebar .source {
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #222;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .sidebar .source a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+
+        .sidebar .source a:hover {
+            text-decoration: underline;
+        }
+
+        .sidebar .source strong {
+            color: #999;
+        }
+
+        .sidebar p {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .sidebar strong {
+            color: #fff;
+        }
+
+        .sidebar em {
+            color: #EC4899;
+            font-style: normal;
+        }
+
+        .sidebar .stat-box {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .sidebar .stat-box .label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .sidebar .stat-box .numbers {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .sidebar .stat-box .year {
+            color: #666;
+        }
+
+        .sidebar .stat-box .value {
+            font-weight: 600;
+        }
+
+        .sidebar .stat-box .value.blue { color: #3B82F6; }
+        .sidebar .stat-box .value.pink { color: #EC4899; }
+        .sidebar .stat-box .value.green { color: #22C55E; }
     </style>
 </head>
 <body>
@@ -176,6 +280,7 @@
         <header>
             <h1>Women Entering the Workforce</h1>
             <p class="subtitle">What men feared vs. what actually happened</p>
+            <button class="play-btn" id="playBtn" style="margin-top: 15px;">Play 1950 → 2020</button>
         </header>
 
         <div class="main">
@@ -241,8 +346,70 @@
                     Women
                 </div>
             </div>
-            <button class="play-btn" id="playBtn">Play 1950 → 2020</button>
             <div class="year-indicator" id="yearDisplay">1950</div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>The Data</h2>
+
+        <div class="stat-box">
+            <div class="label">1950 Labor Force</div>
+            <div class="numbers">
+                <span class="year">Men</span>
+                <span class="value blue">~44 million</span>
+            </div>
+            <div class="numbers">
+                <span class="year">Women</span>
+                <span class="value pink">18.4 million</span>
+            </div>
+            <div class="numbers">
+                <span class="year">Total</span>
+                <span class="value">~62 million</span>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="label">2000 Labor Force</div>
+            <div class="numbers">
+                <span class="year">Men</span>
+                <span class="value blue">~77 million</span>
+            </div>
+            <div class="numbers">
+                <span class="year">Women</span>
+                <span class="value pink">66.3 million</span>
+            </div>
+            <div class="numbers">
+                <span class="year">Total</span>
+                <span class="value green">~143 million</span>
+            </div>
+        </div>
+
+        <p>The economy <em>more than doubled</em>. Men's employment grew from ~44M to ~77M while women's grew from 18M to 66M.</p>
+
+        <p>Women entering the workforce was <strong>not zero-sum</strong>. The pie grew.</p>
+
+        <h2 style="margin-top: 20px;">Sources</h2>
+
+        <div class="source">
+            <a href="https://www.bls.gov/opub/mlr/2002/05/art2full.pdf" target="_blank">
+                <strong>A Century of Change: The U.S. Labor Force, 1950–2050</strong>
+            </a>
+            <br>U.S. Bureau of Labor Statistics (2002)
+        </div>
+
+        <div class="source">
+            <a href="https://www.brookings.edu/articles/the-history-of-womens-work-and-wages-and-how-it-has-created-success-for-us-all/" target="_blank">
+                <strong>The History of Women's Work and Wages</strong>
+            </a>
+            <br>Janet Yellen, Brookings Institution
+        </div>
+
+        <div class="source">
+            <a href="https://www.bls.gov/opub/ted/2007/jan/wk2/art03.htm" target="_blank">
+                <strong>Changes in Men's and Women's Labor Force Participation Rates</strong>
+            </a>
+            <br>U.S. Bureau of Labor Statistics
         </div>
     </div>
 
@@ -251,86 +418,117 @@
         const FEMALE_COLOR = '#EC4899';
         const START_YEAR = 1950;
         const END_YEAR = 2020;
+        const RADIUS = 8;
 
-        function createBubbles(count, gender) {
-            return Array.from({ length: count }, (_, i) => ({
-                id: `${gender}-${i}`,
-                gender,
-                r: 10
-            }));
+        // Store persistent data with positions
+        let fearDataMap = new Map();
+        let realityDataMap = new Map();
+
+        function createOrUpdateData(dataMap, menCount, womenCount, width, height) {
+            const newMap = new Map();
+
+            // Add/keep men
+            for (let i = 0; i < menCount; i++) {
+                const id = `male-${i}`;
+                if (dataMap.has(id)) {
+                    newMap.set(id, dataMap.get(id));
+                } else {
+                    // New male - enter from left
+                    newMap.set(id, {
+                        id,
+                        gender: 'male',
+                        r: RADIUS,
+                        x: RADIUS + Math.random() * 30,
+                        y: height / 2 + (Math.random() - 0.5) * height * 0.5
+                    });
+                }
+            }
+
+            // Add/keep women
+            for (let i = 0; i < womenCount; i++) {
+                const id = `female-${i}`;
+                if (dataMap.has(id)) {
+                    newMap.set(id, dataMap.get(id));
+                } else {
+                    // New woman - enter from right
+                    newMap.set(id, {
+                        id,
+                        gender: 'female',
+                        r: RADIUS,
+                        x: width - RADIUS - Math.random() * 30,
+                        y: height / 2 + (Math.random() - 0.5) * height * 0.5
+                    });
+                }
+            }
+
+            return newMap;
         }
 
-        function initSimulation(svg, data, width, height) {
-            const simulation = d3.forceSimulation(data)
-                .force('charge', d3.forceManyBody().strength(2))
-                .force('center', d3.forceCenter(width / 2, height / 2))
-                .force('collision', d3.forceCollide().radius(d => d.r + 1.5))
-                .force('x', d3.forceX(width / 2).strength(0.05))
-                .force('y', d3.forceY(height / 2).strength(0.05));
+        function runSimulation(svg, dataMap, width, height) {
+            const data = Array.from(dataMap.values());
 
+            const simulation = d3.forceSimulation(data)
+                .force('charge', d3.forceManyBody().strength(-3))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(d => d.r + 2).strength(1))
+                .force('x', d3.forceX(width / 2).strength(0.08))
+                .force('y', d3.forceY(height / 2).strength(0.08))
+                .alphaDecay(0.02)
+                .velocityDecay(0.3);
+
+            // Update circles
             const bubbles = svg.selectAll('circle')
-                .data(data, d => d.id)
-                .join('circle')
-                .attr('r', d => d.r)
+                .data(data, d => d.id);
+
+            // Remove exiting
+            bubbles.exit()
+                .transition()
+                .duration(300)
+                .attr('r', 0)
+                .attr('opacity', 0)
+                .remove();
+
+            // Add entering
+            const entering = bubbles.enter()
+                .append('circle')
+                .attr('r', 0)
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
                 .attr('fill', d => d.gender === 'male' ? MALE_COLOR : FEMALE_COLOR)
-                .attr('opacity', 0.8);
+                .attr('opacity', 0.85);
+
+            entering.transition()
+                .duration(300)
+                .attr('r', d => d.r);
+
+            // Merge for updates
+            const allBubbles = entering.merge(bubbles);
 
             simulation.on('tick', () => {
-                bubbles
-                    .attr('cx', d => Math.max(d.r, Math.min(width - d.r, d.x)))
-                    .attr('cy', d => Math.max(d.r, Math.min(height - d.r, d.y)));
+                allBubbles
+                    .attr('cx', d => {
+                        d.x = Math.max(d.r + 2, Math.min(width - d.r - 2, d.x));
+                        return d.x;
+                    })
+                    .attr('cy', d => {
+                        d.y = Math.max(d.r + 2, Math.min(height - d.r - 2, d.y));
+                        return d.y;
+                    });
             });
 
             return simulation;
         }
 
-        function updateSimulation(svg, simulation, data, width, height) {
-            const bubbles = svg.selectAll('circle')
-                .data(data, d => d.id);
-
-            bubbles.exit()
-                .transition()
-                .duration(200)
-                .attr('r', 0)
-                .remove();
-
-            bubbles.enter()
-                .append('circle')
-                .attr('r', 0)
-                .attr('cx', width / 2 + (Math.random() - 0.5) * 30)
-                .attr('cy', height / 2 + (Math.random() - 0.5) * 30)
-                .attr('fill', d => d.gender === 'male' ? MALE_COLOR : FEMALE_COLOR)
-                .attr('opacity', 0.8)
-                .transition()
-                .duration(200)
-                .attr('r', d => d.r);
-
-            simulation.nodes(data);
-            simulation.alpha(0.3).restart();
-        }
-
-        // Get actual container dimensions
-        const fearContainer = document.querySelector('#chart-fear').parentElement;
-        const realityContainer = document.querySelector('#chart-reality').parentElement;
-
-        function getSize() {
-            const rect = fearContainer.getBoundingClientRect();
-            return { width: rect.width, height: rect.height };
-        }
-
+        const fearScenario = document.querySelector('.scenario.fear');
+        const realityScenario = document.querySelector('.scenario.reality');
         const fearSvg = d3.select('#chart-fear');
         const realitySvg = d3.select('#chart-reality');
-
-        let size = getSize();
-        let fearData = createBubbles(100, 'male');
-        let realityData = createBubbles(100, 'male');
-
-        const fearSim = initSimulation(fearSvg, fearData, size.width, size.height);
-        const realitySim = initSimulation(realitySvg, realityData, size.width, size.height);
 
         let currentYear = START_YEAR;
         let animating = false;
         let animationInterval = null;
+        let fearSim = null;
+        let realitySim = null;
 
         function getStateForYear(year) {
             const progress = (year - START_YEAR) / (END_YEAR - START_YEAR);
@@ -343,20 +541,35 @@
 
         function updateForYear(year) {
             const state = getStateForYear(year);
-            const size = getSize();
 
-            fearData = [
-                ...createBubbles(state.fearMen, 'male'),
-                ...createBubbles(state.fearWomen, 'female')
-            ];
-            updateSimulation(fearSvg, fearSim, fearData, size.width, size.height);
+            // Calculate flex ratio: reality grows to ~1.8x at end
+            const fearTotal = state.fearMen + state.fearWomen;
+            const realityTotal = state.realityMen + state.realityWomen;
+            const ratio = realityTotal / fearTotal;
 
-            realityData = [
-                ...createBubbles(state.realityMen, 'male'),
-                ...createBubbles(state.realityWomen, 'female')
-            ];
-            updateSimulation(realitySvg, realitySim, realityData, size.width, size.height);
+            // Update flex to make right side grow
+            fearScenario.style.flex = '1';
+            realityScenario.style.flex = String(ratio);
 
+            // Wait a tick for layout to update, then update simulations
+            requestAnimationFrame(() => {
+                const fearRect = fearSvg.node().parentElement.getBoundingClientRect();
+                const realityRect = realitySvg.node().parentElement.getBoundingClientRect();
+
+                // Stop old simulations
+                if (fearSim) fearSim.stop();
+                if (realitySim) realitySim.stop();
+
+                // Update data maps (preserves positions of existing nodes)
+                fearDataMap = createOrUpdateData(fearDataMap, state.fearMen, state.fearWomen, fearRect.width, fearRect.height);
+                realityDataMap = createOrUpdateData(realityDataMap, state.realityMen, state.realityWomen, realityRect.width, realityRect.height);
+
+                // Run new simulations
+                fearSim = runSimulation(fearSvg, fearDataMap, fearRect.width, fearRect.height);
+                realitySim = runSimulation(realitySvg, realityDataMap, realityRect.width, realityRect.height);
+            });
+
+            // Update stats
             document.getElementById('fear-men').textContent = state.fearMen;
             document.getElementById('fear-women').textContent = state.fearWomen;
             document.getElementById('fear-total').textContent = state.fearMen + state.fearWomen;
@@ -381,6 +594,9 @@
 
             if (currentYear >= END_YEAR) {
                 currentYear = START_YEAR;
+                // Reset data maps for replay
+                fearDataMap = new Map();
+                realityDataMap = new Map();
             }
 
             animationInterval = setInterval(() => {
@@ -392,7 +608,7 @@
                     document.getElementById('playBtn').textContent = 'Replay';
                 }
                 updateForYear(currentYear);
-            }, 120);
+            }, 150);
         });
 
         // Initial render after layout settles

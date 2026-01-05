@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cooking Verbs & Tools - Spanish - Glowing Gardens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 220px;
+            background: #111;
+            border-right: 1px solid #222;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .back-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 20px;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+        h1 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tagline {
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .category-label {
+            font-size: 10px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            padding-left: 12px;
+        }
+        .word-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #888;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .word-item:hover {
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .word-item.active {
+            background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(239,68,68,0.2));
+            color: #fff;
+        }
+        .word-item .en {
+            font-size: 10px;
+            color: #555;
+        }
+        .word-item.active .en {
+            color: #888;
+        }
+        .stage {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(ellipse at center, #1a1a1a 0%, #0a0a0a 100%);
+        }
+        .tool-display {
+            font-size: 180px;
+            line-height: 1;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+        }
+        .tool-display:hover {
+            transform: scale(1.05);
+        }
+        .current-word {
+            text-align: center;
+            z-index: 100;
+        }
+        .current-word .es {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #F59E0B, #EF4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .current-word .en {
+            font-size: 20px;
+            color: #666;
+            margin-top: 8px;
+        }
+        .tool-name {
+            font-size: 16px;
+            color: #F59E0B;
+            margin-top: 25px;
+        }
+        .tool-name .es-tool {
+            font-weight: bold;
+        }
+        .tool-name .en-tool {
+            color: #666;
+            margin-left: 10px;
+        }
+        .instructions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 11px;
+            color: #444;
+            text-align: right;
+            z-index: 100;
+        }
+        .link-3d {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 12px;
+            color: #8B5CF6;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #8B5CF6;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+        .link-3d:hover {
+            background: #8B5CF6;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <a href="spanish.html" class="back-link">← Spanish Tools</a>
+            <h1>Verbs & Tools</h1>
+            <p class="tagline">The tool makes the action</p>
+
+            <div id="wordList"></div>
+        </div>
+
+        <div class="stage">
+            <div class="tool-display" id="toolDisplay">🔪</div>
+            <div class="current-word" id="currentWord">
+                <div class="es">Click a verb</div>
+                <div class="en">to see the tool</div>
+            </div>
+            <div class="tool-name" id="toolName"></div>
+            <div class="instructions">
+                ↑↓ to cycle verbs<br>
+                Click to hear pronunciation
+            </div>
+            <a href="spanish-physics-3d.html" class="link-3d">View in 3D →</a>
+        </div>
+    </div>
+
+    <script>
+        const verbs = [
+            // Cutting Tools
+            { category: "Cutting", es: "cortar", en: "cut", tool: "🔪", toolEs: "cuchillo", toolEn: "knife" },
+            { es: "rebanar", en: "slice", tool: "🍞", toolEs: "cuchillo de pan", toolEn: "bread knife" },
+            { es: "picar", en: "chop", tool: "🪓", toolEs: "cuchilla", toolEn: "cleaver" },
+            { es: "cortar en cubitos", en: "dice", tool: "🔪", toolEs: "cuchillo de chef", toolEn: "chef's knife" },
+            { es: "pelar", en: "peel", tool: "🥔", toolEs: "pelador", toolEn: "peeler" },
+            { es: "rallar", en: "grate", tool: "🧀", toolEs: "rallador", toolEn: "grater" },
+            { es: "deshuesar", en: "debone", tool: "🦴", toolEs: "cuchillo deshuesador", toolEn: "boning knife" },
+            { es: "filetear", en: "fillet", tool: "🐟", toolEs: "cuchillo fileteador", toolEn: "fillet knife" },
+
+            // Mixing Tools
+            { category: "Mixing", es: "mezclar", en: "mix", tool: "🥄", toolEs: "cuchara", toolEn: "spoon" },
+            { es: "batir", en: "whisk", tool: "🥢", toolEs: "batidor", toolEn: "whisk" },
+            { es: "revolver", en: "stir", tool: "🥄", toolEs: "cuchara de palo", toolEn: "wooden spoon" },
+            { es: "amasar", en: "knead", tool: "🤲", toolEs: "las manos", toolEn: "hands" },
+            { es: "tamizar", en: "sift", tool: "🕳️", toolEs: "tamiz", toolEn: "sieve" },
+            { es: "incorporar", en: "fold in", tool: "🥄", toolEs: "espátula", toolEn: "spatula" },
+
+            // Heat Tools
+            { category: "Heat", es: "freír", en: "fry", tool: "🍳", toolEs: "sartén", toolEn: "frying pan" },
+            { es: "hervir", en: "boil", tool: "🫕", toolEs: "olla", toolEn: "pot" },
+            { es: "hornear", en: "bake", tool: "🧁", toolEs: "horno", toolEn: "oven" },
+            { es: "asar", en: "roast", tool: "🍖", toolEs: "asador", toolEn: "roasting pan" },
+            { es: "tostar", en: "toast", tool: "🍞", toolEs: "tostador", toolEn: "toaster" },
+            { es: "calentar", en: "heat", tool: "🔥", toolEs: "estufa", toolEn: "stove" },
+            { es: "derretir", en: "melt", tool: "🫕", toolEs: "baño maría", toolEn: "double boiler" },
+            { es: "gratinar", en: "broil/gratin", tool: "🧀", toolEs: "gratinador", toolEn: "broiler" },
+            { es: "saltear", en: "sauté", tool: "🍳", toolEs: "sartén para saltear", toolEn: "sauté pan" },
+            { es: "escalfar", en: "poach", tool: "🥚", toolEs: "escalfador", toolEn: "poaching pan" },
+            { es: "guisar", en: "stew", tool: "🍲", toolEs: "cazuela", toolEn: "Dutch oven" },
+
+            // Pouring & Measuring
+            { category: "Pouring", es: "verter", en: "pour", tool: "🫗", toolEs: "jarra", toolEn: "pitcher" },
+            { es: "medir", en: "measure", tool: "🥛", toolEs: "taza medidora", toolEn: "measuring cup" },
+            { es: "pesar", en: "weigh", tool: "⚖️", toolEs: "balanza", toolEn: "scale" },
+            { es: "colar", en: "strain", tool: "🥣", toolEs: "colador", toolEn: "strainer" },
+            { es: "escurrir", en: "drain", tool: "🧺", toolEs: "escurridor", toolEn: "colander" },
+            { es: "rociar", en: "drizzle", tool: "🍯", toolEs: "dispensador", toolEn: "dispenser" },
+
+            // Grinding & Crushing
+            { category: "Grinding", es: "moler", en: "grind", tool: "🧂", toolEs: "molinillo", toolEn: "grinder" },
+            { es: "machacar", en: "mash", tool: "🥔", toolEs: "machacador", toolEn: "masher" },
+            { es: "triturar", en: "blend", tool: "🫙", toolEs: "licuadora", toolEn: "blender" },
+            { es: "exprimir", en: "squeeze", tool: "🍋", toolEs: "exprimidor", toolEn: "juicer" },
+            { es: "prensar", en: "press", tool: "🧄", toolEs: "prensa", toolEn: "press" },
+            { es: "majar", en: "pound", tool: "🪨", toolEs: "mortero", toolEn: "mortar & pestle" },
+
+            // Shaping
+            { category: "Shaping", es: "estirar", en: "roll out", tool: "🪵", toolEs: "rodillo", toolEn: "rolling pin" },
+            { es: "moldear", en: "mold", tool: "🧁", toolEs: "molde", toolEn: "mold" },
+            { es: "cortar con molde", en: "cut shapes", tool: "⭐", toolEs: "cortador", toolEn: "cookie cutter" },
+            { es: "decorar", en: "decorate", tool: "🎂", toolEs: "manga pastelera", toolEn: "piping bag" },
+            { es: "rellenar", en: "fill/stuff", tool: "🥟", toolEs: "cuchara", toolEn: "stuffing spoon" },
+
+            // Utensils
+            { category: "Utensils", es: "servir", en: "serve", tool: "🍽️", toolEs: "cucharón", toolEn: "ladle" },
+            { es: "voltear", en: "flip", tool: "🥞", toolEs: "espátula", toolEn: "spatula" },
+            { es: "pinchar", en: "poke/skewer", tool: "🥢", toolEs: "pincho", toolEn: "skewer" },
+            { es: "sujetar", en: "hold/grip", tool: "🦞", toolEs: "pinzas", toolEn: "tongs" },
+            { es: "untar", en: "spread", tool: "🧈", toolEs: "cuchillo de untar", toolEn: "butter knife" },
+            { es: "trinchar", en: "carve", tool: "🍗", toolEs: "trinchador", toolEn: "carving knife" },
+
+            // Containers
+            { category: "Storage", es: "cubrir", en: "cover", tool: "🫕", toolEs: "tapa", toolEn: "lid" },
+            { es: "envolver", en: "wrap", tool: "📄", toolEs: "papel aluminio", toolEn: "foil" },
+            { es: "guardar", en: "store", tool: "🫙", toolEs: "recipiente", toolEn: "container" },
+            { es: "refrigerar", en: "refrigerate", tool: "❄️", toolEs: "refrigerador", toolEn: "refrigerator" },
+            { es: "congelar", en: "freeze", tool: "🧊", toolEs: "congelador", toolEn: "freezer" },
+        ];
+
+        let currentIndex = 0;
+
+        // Build word list with categories
+        const wordList = document.getElementById('wordList');
+        let lastCategory = null;
+
+        verbs.forEach((verb, i) => {
+            if (verb.category && verb.category !== lastCategory) {
+                const label = document.createElement('div');
+                label.className = 'category-label';
+                label.textContent = verb.category;
+                wordList.appendChild(label);
+                lastCategory = verb.category;
+            }
+
+            const item = document.createElement('div');
+            item.className = 'word-item';
+            item.innerHTML = `${verb.es} <span class="en">${verb.en}</span>`;
+            item.onclick = () => selectVerb(verb, item, i);
+            wordList.appendChild(item);
+        });
+
+        function selectVerb(verb, item, index) {
+            currentIndex = index;
+            document.querySelectorAll('.word-item').forEach(w => w.classList.remove('active'));
+            item.classList.add('active');
+
+            // Speak the verb
+            const utterance = new SpeechSynthesisUtterance(verb.es);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.8;
+            speechSynthesis.speak(utterance);
+
+            // Update display
+            document.getElementById('toolDisplay').textContent = verb.tool;
+            document.querySelector('.current-word .es').textContent = verb.es;
+            document.querySelector('.current-word .en').textContent = verb.en;
+            document.getElementById('toolName').innerHTML =
+                `<span class="es-tool">${verb.toolEs}</span><span class="en-tool">(${verb.toolEn})</span>`;
+        }
+
+        // Click on tool to hear the tool name
+        document.getElementById('toolDisplay').onclick = function() {
+            const verb = verbs[currentIndex];
+            const utterance = new SpeechSynthesisUtterance(verb.toolEs);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.8;
+            speechSynthesis.speak(utterance);
+        };
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            const items = document.querySelectorAll('.word-item');
+            if (e.key === 'ArrowDown' || e.key === 'j') {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % verbs.length;
+                selectVerb(verbs[currentIndex], items[currentIndex], currentIndex);
+                items[currentIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp' || e.key === 'k') {
+                e.preventDefault();
+                currentIndex = (currentIndex - 1 + verbs.length) % verbs.length;
+                selectVerb(verbs[currentIndex], items[currentIndex], currentIndex);
+                items[currentIndex].scrollIntoView({ block: 'nearest' });
+            }
+        });
+
+        // Start with first verb
+        setTimeout(() => {
+            const firstItem = document.querySelector('.word-item');
+            selectVerb(verbs[0], firstItem, 0);
+        }, 300);
+    </script>
+</body>
+</html>
