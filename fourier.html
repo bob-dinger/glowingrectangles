@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fourier Analysis - Building Waves</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        @media (min-width: 1300px) {
+            body { padding-right: 320px; }
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 10px 0 20px;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #F59E0B, #EF4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 15px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group label {
+            font-size: 13px;
+            color: #888;
+        }
+
+        select {
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        input[type="range"] {
+            width: 120px;
+            height: 4px;
+            -webkit-appearance: none;
+            background: #333;
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #F59E0B;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .value-display {
+            font-size: 14px;
+            color: #F59E0B;
+            min-width: 25px;
+            font-weight: 600;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 0;
+        }
+
+        .result-section {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 15px;
+            flex-shrink: 0;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        .formula {
+            font-size: 12px;
+            color: #666;
+            font-family: 'Courier New', monospace;
+        }
+
+        #resultCanvas {
+            width: 100%;
+            height: 120px;
+            display: block;
+        }
+
+        .harmonics-section {
+            flex: 1;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 15px;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .harmonics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .harmonic-card {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .harmonic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .harmonic-label {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .harmonic-freq {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .harmonic-canvas {
+            width: 100%;
+            height: 50px;
+            display: block;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 25px;
+            z-index: 50;
+            display: none;
+        }
+
+        @media (min-width: 1300px) {
+            .sidebar { display: block; }
+        }
+
+        .sidebar h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #F59E0B;
+        }
+
+        .sidebar p {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .sidebar strong {
+            color: #fff;
+        }
+
+        .sidebar em {
+            color: #F59E0B;
+            font-style: normal;
+        }
+
+        .sidebar .quote {
+            border-left: 2px solid #F59E0B;
+            padding-left: 15px;
+            margin: 15px 0;
+            font-style: italic;
+            color: #999;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .sidebar .app-list {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .sidebar .app-list div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .sidebar .app-list div:last-child {
+            margin-bottom: 0;
+        }
+
+        .sidebar .app-list .icon {
+            font-size: 16px;
+        }
+
+        .sidebar .source {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #222;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .sidebar .source a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+
+        .sidebar .source a:hover {
+            text-decoration: underline;
+        }
+
+        .play-btn {
+            padding: 8px 16px;
+            background: #F59E0B;
+            border: none;
+            color: #000;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .play-btn:hover {
+            background: #D97706;
+        }
+
+        .play-btn.playing {
+            background: #EF4444;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <header>
+            <h1>Fourier Analysis</h1>
+            <p class="subtitle">Any wave can be built from simple sine waves</p>
+        </header>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Wave Type</label>
+                <select id="waveType">
+                    <option value="square">Square Wave</option>
+                    <option value="sawtooth">Sawtooth Wave</option>
+                    <option value="triangle">Triangle Wave</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Harmonics</label>
+                <input type="range" id="numHarmonics" min="1" max="20" value="5">
+                <span class="value-display" id="harmonicsVal">5</span>
+            </div>
+            <div class="control-group">
+                <label>Speed</label>
+                <input type="range" id="speed" min="1" max="10" value="3">
+            </div>
+            <button class="play-btn" id="playBtn">Play Sound</button>
+        </div>
+
+        <div class="main">
+            <div class="result-section">
+                <div class="section-header">
+                    <span class="section-title">Result: Sum of All Harmonics</span>
+                    <span class="formula" id="formulaDisplay">f(t) = Σ sin(n·ωt) / n</span>
+                </div>
+                <canvas id="resultCanvas"></canvas>
+            </div>
+
+            <div class="harmonics-section">
+                <div class="section-header">
+                    <span class="section-title">Individual Harmonics (Component Waves)</span>
+                </div>
+                <div class="harmonics-grid" id="harmonicsGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>The Big Idea</h2>
+
+        <p><strong>Joseph Fourier</strong> discovered in 1822 that any periodic wave—no matter how complex—can be expressed as a <em>sum of simple sine waves</em>.</p>
+
+        <div class="quote">
+            "Mathematics compares the most diverse phenomena and discovers the secret analogies that unite them."
+            <br><br>— Joseph Fourier
+        </div>
+
+        <p>A <strong>square wave</strong> looks nothing like a sine wave. But add up the right sine waves at the right frequencies, and you can build one perfectly.</p>
+
+        <h2 style="margin-top: 25px;">How It Works</h2>
+
+        <p>Each harmonic is a sine wave at a <em>multiple</em> of the base frequency:</p>
+
+        <p style="font-family: monospace; color: #F59E0B; font-size: 12px;">
+            1st harmonic: 1× frequency<br>
+            2nd harmonic: 2× frequency<br>
+            3rd harmonic: 3× frequency<br>
+            ...and so on
+        </p>
+
+        <p>The <strong>amplitude</strong> of each harmonic determines how much it contributes. Different patterns of amplitudes create different wave shapes.</p>
+
+        <h2 style="margin-top: 25px;">Applications</h2>
+
+        <div class="app-list">
+            <div><span class="icon">🎵</span> Audio compression (MP3, AAC)</div>
+            <div><span class="icon">📷</span> Image compression (JPEG)</div>
+            <div><span class="icon">📡</span> Signal processing</div>
+            <div><span class="icon">🔊</span> Noise cancellation</div>
+            <div><span class="icon">🩺</span> Medical imaging (MRI)</div>
+            <div><span class="icon">📊</span> Stock market analysis</div>
+            <div><span class="icon">🌊</span> Ocean wave prediction</div>
+        </div>
+
+        <p>Any time you need to analyze what <em>frequencies</em> are present in a signal, Fourier analysis is the tool.</p>
+
+        <div class="source">
+            <a href="https://en.wikipedia.org/wiki/Fourier_analysis" target="_blank">Wikipedia: Fourier Analysis</a><br>
+            <a href="https://www.youtube.com/watch?v=spUNpyF58BY" target="_blank">3Blue1Brown: Fourier Transform</a>
+        </div>
+    </div>
+
+    <script>
+        const resultCanvas = document.getElementById('resultCanvas');
+        const resultCtx = resultCanvas.getContext('2d');
+
+        let animationId;
+        let time = 0;
+        let audioCtx = null;
+        let oscillators = [];
+        let isPlaying = false;
+
+        // Wave formulas for different types
+        const waveFormulas = {
+            square: {
+                // Square wave: only odd harmonics, amplitude 1/n
+                harmonics: (n) => n % 2 === 1 ? 1 / n : 0,
+                formula: 'f(t) = (4/π) Σ sin((2n-1)ωt) / (2n-1)'
+            },
+            sawtooth: {
+                // Sawtooth: all harmonics, amplitude 1/n, alternating sign
+                harmonics: (n) => (n % 2 === 0 ? -1 : 1) / n,
+                formula: 'f(t) = (2/π) Σ (-1)^(n+1) sin(nωt) / n'
+            },
+            triangle: {
+                // Triangle: only odd harmonics, amplitude 1/n², alternating sign
+                harmonics: (n) => n % 2 === 1 ? (((n - 1) / 2) % 2 === 0 ? 1 : -1) / (n * n) : 0,
+                formula: 'f(t) = (8/π²) Σ (-1)^n sin((2n+1)ωt) / (2n+1)²'
+            }
+        };
+
+        function resizeCanvases() {
+            const dpr = window.devicePixelRatio || 1;
+
+            // Result canvas
+            const resultRect = resultCanvas.parentElement;
+            resultCanvas.width = resultRect.clientWidth * dpr;
+            resultCanvas.height = 120 * dpr;
+            resultCanvas.style.width = resultRect.clientWidth + 'px';
+            resultCanvas.style.height = '120px';
+            resultCtx.scale(dpr, dpr);
+
+            // Harmonic canvases
+            document.querySelectorAll('.harmonic-canvas').forEach(canvas => {
+                const parent = canvas.parentElement;
+                canvas.width = parent.clientWidth * dpr;
+                canvas.height = 50 * dpr;
+                canvas.style.width = parent.clientWidth + 'px';
+                canvas.style.height = '50px';
+                const ctx = canvas.getContext('2d');
+                ctx.scale(dpr, dpr);
+            });
+        }
+
+        function createHarmonicCards(numHarmonics, waveType) {
+            const grid = document.getElementById('harmonicsGrid');
+            grid.innerHTML = '';
+
+            const formula = waveFormulas[waveType];
+
+            for (let n = 1; n <= numHarmonics; n++) {
+                const amplitude = formula.harmonics(n);
+                if (Math.abs(amplitude) < 0.001) continue;
+
+                const card = document.createElement('div');
+                card.className = 'harmonic-card';
+
+                // Color based on harmonic number
+                const hue = 30 + (n - 1) * 15;
+                const color = `hsl(${hue}, 80%, 55%)`;
+
+                card.innerHTML = `
+                    <div class="harmonic-header">
+                        <span class="harmonic-label" style="color: ${color}">${n}${getOrdinal(n)} Harmonic</span>
+                        <span class="harmonic-freq">${n}× freq, amp: ${amplitude.toFixed(3)}</span>
+                    </div>
+                    <canvas class="harmonic-canvas" data-n="${n}" data-amp="${amplitude}" data-color="${color}"></canvas>
+                `;
+
+                grid.appendChild(card);
+            }
+
+            resizeCanvases();
+        }
+
+        function getOrdinal(n) {
+            const s = ['th', 'st', 'nd', 'rd'];
+            const v = n % 100;
+            return s[(v - 20) % 10] || s[v] || s[0];
+        }
+
+        function drawWave(ctx, width, height, time, harmonicsData, isResult = false) {
+            ctx.clearRect(0, 0, width, height);
+
+            const centerY = height / 2;
+            const amplitude = isResult ? height * 0.4 : height * 0.35;
+
+            // Draw center line
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            ctx.stroke();
+
+            // Draw wave
+            ctx.beginPath();
+            ctx.strokeStyle = isResult ? '#F59E0B' : harmonicsData.color;
+            ctx.lineWidth = isResult ? 2 : 1.5;
+
+            for (let x = 0; x < width; x++) {
+                const t = (x / width) * Math.PI * 4 + time;
+                let y;
+
+                if (isResult) {
+                    // Sum all harmonics
+                    y = 0;
+                    harmonicsData.forEach(h => {
+                        y += h.amp * Math.sin(h.n * t);
+                    });
+                    // Normalize
+                    y *= amplitude * 0.8;
+                } else {
+                    // Single harmonic
+                    y = harmonicsData.amp * Math.sin(harmonicsData.n * t) * amplitude * 5;
+                }
+
+                if (x === 0) {
+                    ctx.moveTo(x, centerY - y);
+                } else {
+                    ctx.lineTo(x, centerY - y);
+                }
+            }
+
+            ctx.stroke();
+        }
+
+        function animate() {
+            const speed = parseInt(document.getElementById('speed').value);
+            time += 0.02 * speed;
+
+            const waveType = document.getElementById('waveType').value;
+            const formula = waveFormulas[waveType];
+            const numHarmonics = parseInt(document.getElementById('numHarmonics').value);
+
+            // Collect harmonic data
+            const harmonicsData = [];
+            for (let n = 1; n <= numHarmonics; n++) {
+                const amp = formula.harmonics(n);
+                if (Math.abs(amp) > 0.001) {
+                    harmonicsData.push({ n, amp });
+                }
+            }
+
+            // Draw result wave
+            const resultWidth = resultCanvas.width / (window.devicePixelRatio || 1);
+            const resultHeight = 120;
+            drawWave(resultCtx, resultWidth, resultHeight, time, harmonicsData, true);
+
+            // Draw individual harmonic waves
+            document.querySelectorAll('.harmonic-canvas').forEach(canvas => {
+                const ctx = canvas.getContext('2d');
+                const n = parseInt(canvas.dataset.n);
+                const amp = parseFloat(canvas.dataset.amp);
+                const color = canvas.dataset.color;
+                const width = canvas.width / (window.devicePixelRatio || 1);
+                drawWave(ctx, width, 50, time, { n, amp, color }, false);
+            });
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function updateWave() {
+            const numHarmonics = parseInt(document.getElementById('numHarmonics').value);
+            const waveType = document.getElementById('waveType').value;
+
+            document.getElementById('harmonicsVal').textContent = numHarmonics;
+            document.getElementById('formulaDisplay').textContent = waveFormulas[waveType].formula;
+
+            createHarmonicCards(numHarmonics, waveType);
+
+            if (isPlaying) {
+                stopSound();
+                playSound();
+            }
+        }
+
+        function playSound() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const waveType = document.getElementById('waveType').value;
+            const numHarmonics = parseInt(document.getElementById('numHarmonics').value);
+            const formula = waveFormulas[waveType];
+            const baseFreq = 220; // A3
+
+            const masterGain = audioCtx.createGain();
+            masterGain.gain.value = 0.3;
+            masterGain.connect(audioCtx.destination);
+
+            for (let n = 1; n <= numHarmonics; n++) {
+                const amp = formula.harmonics(n);
+                if (Math.abs(amp) < 0.001) continue;
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.value = baseFreq * n;
+                gain.gain.value = Math.abs(amp) * 0.5;
+
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start();
+
+                oscillators.push({ osc, gain });
+            }
+
+            isPlaying = true;
+            document.getElementById('playBtn').textContent = 'Stop Sound';
+            document.getElementById('playBtn').classList.add('playing');
+        }
+
+        function stopSound() {
+            oscillators.forEach(({ osc, gain }) => {
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                osc.stop(audioCtx.currentTime + 0.1);
+            });
+            oscillators = [];
+            isPlaying = false;
+            document.getElementById('playBtn').textContent = 'Play Sound';
+            document.getElementById('playBtn').classList.remove('playing');
+        }
+
+        // Event listeners
+        document.getElementById('waveType').addEventListener('change', updateWave);
+        document.getElementById('numHarmonics').addEventListener('input', updateWave);
+
+        document.getElementById('playBtn').addEventListener('click', () => {
+            if (isPlaying) {
+                stopSound();
+            } else {
+                playSound();
+            }
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            updateWave();
+            animate();
+        });
+
+        window.addEventListener('resize', resizeCanvases);
+    </script>
+</body>
+</html>
