@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glowing Gardens</title>
+    <title>Glowing Rectangles</title>
     <link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -41,6 +41,17 @@
             border-radius: 4px;
             font-weight: 600;
             font-size: 16px;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5), 0 0 30px rgba(16, 185, 129, 0.2);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 10px rgba(16, 185, 129, 0.4), 0 0 20px rgba(16, 185, 129, 0.15);
+            }
+            to {
+                box-shadow: 0 0 15px rgba(16, 185, 129, 0.6), 0 0 35px rgba(16, 185, 129, 0.25);
+            }
         }
 
         /* Main Container */
