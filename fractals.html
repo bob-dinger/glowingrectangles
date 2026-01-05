@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fractal Trees - Self-Similarity</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        @media (min-width: 1300px) {
+            body { padding-right: 320px; }
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 10px 0 15px;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #22C55E, #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            min-height: 0;
+        }
+
+        .panel {
+            flex: 1;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 15px;
+            border-bottom: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .panel-title.green { color: #22C55E; }
+        .panel-title.blue { color: #3B82F6; }
+
+        .panel-content {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #canvas2d {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        #canvas3d {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            padding: 15px;
+            border-top: 1px solid #222;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group label {
+            font-size: 12px;
+            color: #888;
+        }
+
+        input[type="range"] {
+            width: 100px;
+            height: 4px;
+            -webkit-appearance: none;
+            background: #333;
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #22C55E;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .value-display {
+            font-size: 12px;
+            color: #22C55E;
+            min-width: 30px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 25px;
+            z-index: 50;
+            display: none;
+        }
+
+        @media (min-width: 1300px) {
+            .sidebar { display: block; }
+        }
+
+        .sidebar h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #22C55E;
+        }
+
+        .sidebar p {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .sidebar strong {
+            color: #fff;
+        }
+
+        .sidebar em {
+            color: #22C55E;
+            font-style: normal;
+        }
+
+        .sidebar .quote {
+            border-left: 2px solid #22C55E;
+            padding-left: 15px;
+            margin: 15px 0;
+            font-style: italic;
+            color: #999;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .sidebar .level-demo {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .sidebar .level-demo .level-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .sidebar .level-demo .level-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .sidebar .level-demo .level-label {
+            color: #666;
+            width: 60px;
+        }
+
+        .sidebar .level-demo .level-bar {
+            flex: 1;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .sidebar .level-demo .level-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22C55E, #3B82F6);
+            border-radius: 2px;
+        }
+
+        .sidebar .source {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #222;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .sidebar .source a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+
+        .sidebar .source a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="container">
+        <header>
+            <h1>Fractal Trees</h1>
+            <p class="subtitle">Self-similarity at every scale</p>
+        </header>
+
+        <div class="main">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title green">2D Tree</div>
+                </div>
+                <div class="panel-content">
+                    <canvas id="canvas2d"></canvas>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Depth</label>
+                        <input type="range" id="depth2d" min="1" max="12" value="9">
+                        <span class="value-display" id="depth2dVal">9</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Angle</label>
+                        <input type="range" id="angle2d" min="10" max="45" value="25">
+                        <span class="value-display" id="angle2dVal">25°</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Ratio</label>
+                        <input type="range" id="ratio2d" min="50" max="80" value="67">
+                        <span class="value-display" id="ratio2dVal">0.67</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title blue">3D Tree</div>
+                </div>
+                <div class="panel-content">
+                    <div id="canvas3d"></div>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Depth</label>
+                        <input type="range" id="depth3d" min="1" max="8" value="6">
+                        <span class="value-display" id="depth3dVal">6</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Branches</label>
+                        <input type="range" id="branches3d" min="2" max="5" value="3">
+                        <span class="value-display" id="branches3dVal">3</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Spread</label>
+                        <input type="range" id="spread3d" min="20" max="60" value="35">
+                        <span class="value-display" id="spread3dVal">35°</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>Self-Similarity</h2>
+
+        <p>A <strong>fractal</strong> is a pattern that repeats at every scale. Zoom in on any part, and you'll find the same structure again.</p>
+
+        <div class="quote">
+            "Clouds are not spheres, mountains are not cones, coastlines are not circles, and bark is not smooth, nor does lightning travel in a straight line."
+            <br><br>— Benoit Mandelbrot
+        </div>
+
+        <p>The fractal tree demonstrates this perfectly: <em>each branch is a smaller copy of the whole tree</em>.</p>
+
+        <h2 style="margin-top: 25px;">Levels of Recursion</h2>
+
+        <div class="level-demo">
+            <div class="level-row">
+                <span class="level-label">Level 1</span>
+                <div class="level-bar"><div class="level-fill" style="width: 100%"></div></div>
+                <span style="color: #666;">1 branch</span>
+            </div>
+            <div class="level-row">
+                <span class="level-label">Level 2</span>
+                <div class="level-bar"><div class="level-fill" style="width: 80%"></div></div>
+                <span style="color: #666;">2 branches</span>
+            </div>
+            <div class="level-row">
+                <span class="level-label">Level 3</span>
+                <div class="level-bar"><div class="level-fill" style="width: 60%"></div></div>
+                <span style="color: #666;">4 branches</span>
+            </div>
+            <div class="level-row">
+                <span class="level-label">Level 4</span>
+                <div class="level-bar"><div class="level-fill" style="width: 45%"></div></div>
+                <span style="color: #666;">8 branches</span>
+            </div>
+            <div class="level-row">
+                <span class="level-label">Level 10</span>
+                <div class="level-bar"><div class="level-fill" style="width: 15%"></div></div>
+                <span style="color: #666;">512 branches</span>
+            </div>
+        </div>
+
+        <p>At each level, branches get <em>shorter</em> by a fixed ratio (typically 0.6–0.7) and split at a fixed angle.</p>
+
+        <p>This simple rule—<strong>repeat at smaller scales</strong>—generates infinite complexity from minimal information.</p>
+
+        <h2 style="margin-top: 25px;">In Nature</h2>
+
+        <p>Real trees grow this way because it's <em>efficient</em>: fractal branching maximizes surface area for light absorption while minimizing material.</p>
+
+        <p>The same pattern appears in:</p>
+        <p style="color: #666;">
+            • Blood vessels<br>
+            • River deltas<br>
+            • Lightning bolts<br>
+            • Lungs (bronchi)<br>
+            • Fern leaves<br>
+            • Romanesco broccoli
+        </p>
+
+        <div class="source">
+            <a href="https://en.wikipedia.org/wiki/Fractal" target="_blank">Wikipedia: Fractals</a><br>
+            <a href="https://en.wikipedia.org/wiki/L-system" target="_blank">Wikipedia: L-systems</a>
+        </div>
+    </div>
+
+    <script>
+        // ============ 2D FRACTAL TREE ============
+        const canvas2d = document.getElementById('canvas2d');
+        const ctx = canvas2d.getContext('2d');
+
+        function resize2D() {
+            const container = canvas2d.parentElement;
+            const size = Math.min(container.clientWidth - 20, container.clientHeight - 20);
+            canvas2d.width = size;
+            canvas2d.height = size;
+            draw2DTree();
+        }
+
+        function draw2DTree() {
+            const depth = parseInt(document.getElementById('depth2d').value);
+            const angle = parseInt(document.getElementById('angle2d').value) * Math.PI / 180;
+            const ratio = parseInt(document.getElementById('ratio2d').value) / 100;
+
+            ctx.clearRect(0, 0, canvas2d.width, canvas2d.height);
+
+            const startX = canvas2d.width / 2;
+            const startY = canvas2d.height;
+            const startLen = canvas2d.height * 0.28;
+
+            function drawBranch(x, y, len, angleRad, level) {
+                if (level > depth) return;
+
+                const endX = x + len * Math.sin(angleRad);
+                const endY = y - len * Math.cos(angleRad);
+
+                // Color gradient from brown to green
+                const t = level / depth;
+                const r = Math.round(101 + (34 - 101) * t);
+                const g = Math.round(67 + (197 - 67) * t);
+                const b = Math.round(33 + (94 - 33) * t);
+
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(endX, endY);
+                ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.lineWidth = Math.max(1, (depth - level + 1) * 1.5);
+                ctx.lineCap = 'round';
+                ctx.stroke();
+
+                const newLen = len * ratio;
+                drawBranch(endX, endY, newLen, angleRad - angle, level + 1);
+                drawBranch(endX, endY, newLen, angleRad + angle, level + 1);
+            }
+
+            drawBranch(startX, startY, startLen, 0, 1);
+        }
+
+        // 2D Controls
+        document.getElementById('depth2d').addEventListener('input', (e) => {
+            document.getElementById('depth2dVal').textContent = e.target.value;
+            draw2DTree();
+        });
+        document.getElementById('angle2d').addEventListener('input', (e) => {
+            document.getElementById('angle2dVal').textContent = e.target.value + '°';
+            draw2DTree();
+        });
+        document.getElementById('ratio2d').addEventListener('input', (e) => {
+            document.getElementById('ratio2dVal').textContent = (e.target.value / 100).toFixed(2);
+            draw2DTree();
+        });
+
+        // ============ 3D FRACTAL TREE ============
+        const container3d = document.getElementById('canvas3d');
+        let scene, camera, renderer, tree3d;
+
+        function init3D() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x111111);
+
+            const width = container3d.clientWidth;
+            const height = container3d.clientHeight;
+
+            camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+            camera.position.set(0, 3, 8);
+            camera.lookAt(0, 2, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(width, height);
+            container3d.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambient = new THREE.AmbientLight(0x404040, 0.5);
+            scene.add(ambient);
+
+            const directional = new THREE.DirectionalLight(0xffffff, 0.8);
+            directional.position.set(5, 10, 5);
+            scene.add(directional);
+
+            // Ground
+            const groundGeo = new THREE.CircleGeometry(5, 32);
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = 0;
+            scene.add(ground);
+
+            create3DTree();
+            animate3D();
+
+            // Mouse rotation
+            let isDragging = false;
+            let previousMouseX = 0;
+            let rotationY = 0;
+
+            container3d.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousMouseX = e.clientX;
+            });
+
+            document.addEventListener('mouseup', () => isDragging = false);
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const delta = e.clientX - previousMouseX;
+                rotationY += delta * 0.01;
+                if (tree3d) tree3d.rotation.y = rotationY;
+                previousMouseX = e.clientX;
+            });
+        }
+
+        function create3DTree() {
+            if (tree3d) scene.remove(tree3d);
+
+            const depth = parseInt(document.getElementById('depth3d').value);
+            const numBranches = parseInt(document.getElementById('branches3d').value);
+            const spreadAngle = parseInt(document.getElementById('spread3d').value) * Math.PI / 180;
+
+            tree3d = new THREE.Group();
+
+            function createBranch(parent, length, thickness, level) {
+                if (level > depth) return;
+
+                // Branch cylinder
+                const geo = new THREE.CylinderGeometry(thickness * 0.7, thickness, length, 8);
+                geo.translate(0, length / 2, 0);
+
+                const t = level / depth;
+                const color = new THREE.Color().lerpColors(
+                    new THREE.Color(0x654321),
+                    new THREE.Color(0x22C55E),
+                    t
+                );
+                const mat = new THREE.MeshStandardMaterial({ color });
+                const branch = new THREE.Mesh(geo, mat);
+
+                parent.add(branch);
+
+                // Create child branches at the end
+                const branchEnd = new THREE.Group();
+                branchEnd.position.y = length;
+                branch.add(branchEnd);
+
+                const newLength = length * 0.7;
+                const newThickness = thickness * 0.7;
+
+                for (let i = 0; i < numBranches; i++) {
+                    const childGroup = new THREE.Group();
+
+                    // Spread angle from vertical
+                    childGroup.rotation.z = spreadAngle * (Math.random() * 0.4 + 0.8);
+
+                    // Rotate around Y axis evenly
+                    childGroup.rotation.y = (i / numBranches) * Math.PI * 2 + Math.random() * 0.5;
+
+                    branchEnd.add(childGroup);
+                    createBranch(childGroup, newLength, newThickness, level + 1);
+                }
+            }
+
+            createBranch(tree3d, 1.5, 0.15, 1);
+            scene.add(tree3d);
+        }
+
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            renderer.render(scene, camera);
+        }
+
+        // 3D Controls
+        document.getElementById('depth3d').addEventListener('input', (e) => {
+            document.getElementById('depth3dVal').textContent = e.target.value;
+            create3DTree();
+        });
+        document.getElementById('branches3d').addEventListener('input', (e) => {
+            document.getElementById('branches3dVal').textContent = e.target.value;
+            create3DTree();
+        });
+        document.getElementById('spread3d').addEventListener('input', (e) => {
+            document.getElementById('spread3dVal').textContent = e.target.value + '°';
+            create3DTree();
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            resize2D();
+            init3D();
+        });
+
+        window.addEventListener('resize', () => {
+            resize2D();
+            if (renderer) {
+                const width = container3d.clientWidth;
+                const height = container3d.clientHeight;
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            }
+        });
+    </script>
+</body>
+</html>
