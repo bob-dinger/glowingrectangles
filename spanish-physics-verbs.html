@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Verbs - Spanish - Glowing Gardens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background: #111;
+            border-right: 1px solid #222;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .back-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 20px;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+        h1 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #EF4444 0%, #F59E0B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tagline {
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .category {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #444;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+        .word-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .word-item {
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #888;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .word-item:hover {
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .word-item.active {
+            background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(245,158,11,0.2));
+            color: #fff;
+        }
+        .word-item .en {
+            font-size: 10px;
+            color: #555;
+        }
+        .word-item.active .en {
+            color: #888;
+        }
+
+        .stage {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .scene {
+            position: relative;
+            width: 500px;
+            height: 450px;
+        }
+
+        /* The patient - thing being acted upon */
+        .patient {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 40px rgba(245, 158, 11, 0.3);
+            transition: all 0.3s;
+        }
+        .patient .face {
+            position: relative;
+            width: 50px;
+            height: 35px;
+        }
+        .patient .eye {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #fff;
+            border-radius: 50%;
+            top: 0;
+            transition: all 0.3s;
+        }
+        .patient .eye::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+        }
+        .patient .eye.left { left: 5px; }
+        .patient .eye.right { right: 5px; }
+        .patient .mouth {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            height: 8px;
+            border: 3px solid #fff;
+            border-top: none;
+            border-radius: 0 0 15px 15px;
+            transition: all 0.3s;
+        }
+        .patient.worried .eye {
+            height: 14px;
+        }
+        .patient.worried .mouth {
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            border: 3px solid #fff;
+        }
+
+        /* The agent - thing doing the action */
+        .agent {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .agent.visible {
+            opacity: 1;
+        }
+        .agent .face {
+            position: relative;
+            width: 30px;
+            height: 22px;
+        }
+        .agent .eye {
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            background: #fff;
+            border-radius: 50%;
+            top: 0;
+        }
+        .agent .eye::after {
+            content: '';
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+        }
+        .agent .eye.left { left: 3px; }
+        .agent .eye.right { right: 3px; }
+        .agent .mouth {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 5px;
+            border: 2px solid #fff;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+        }
+
+        /* Blade for cutting */
+        .blade {
+            position: absolute;
+            width: 4px;
+            height: 80px;
+            background: linear-gradient(to bottom, #666, #ccc);
+            border-radius: 2px;
+            opacity: 0;
+            transform-origin: top center;
+        }
+        .blade.visible {
+            opacity: 1;
+        }
+
+        /* Pieces that fly off */
+        .piece {
+            position: absolute;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .piece.visible {
+            opacity: 1;
+        }
+
+        /* Drops for squeezing */
+        .drop {
+            position: absolute;
+            width: 8px;
+            height: 12px;
+            background: #FCD34D;
+            border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
+            opacity: 0;
+        }
+        .drop.visible {
+            opacity: 1;
+        }
+
+        /* Bubbles for boiling */
+        .bubble {
+            position: absolute;
+            background: rgba(255,255,255,0.3);
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 50%;
+            opacity: 0;
+        }
+        .bubble.visible {
+            opacity: 1;
+        }
+
+        /* Steam particles */
+        .steam {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            opacity: 0;
+            filter: blur(3px);
+        }
+        .steam.visible {
+            opacity: 1;
+        }
+
+        /* Surface for grating */
+        .surface {
+            position: absolute;
+            background: repeating-linear-gradient(
+                90deg,
+                #444 0px,
+                #444 3px,
+                #333 3px,
+                #333 6px
+            );
+            border-radius: 4px;
+            opacity: 0;
+        }
+        .surface.visible {
+            opacity: 1;
+        }
+
+        /* Heat source */
+        .heat {
+            position: absolute;
+            width: 120px;
+            height: 20px;
+            background: linear-gradient(to top, #EF4444, #F59E0B, transparent);
+            border-radius: 50%;
+            opacity: 0;
+            filter: blur(5px);
+        }
+        .heat.visible {
+            opacity: 1;
+            animation: flicker 0.3s infinite alternate;
+        }
+        @keyframes flicker {
+            from { opacity: 0.6; }
+            to { opacity: 1; }
+        }
+
+        /* Current word display */
+        .current-word {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+        .current-word .es {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #EF4444, #F59E0B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .current-word .en {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <a href="spanish.html" class="back-link">← Spanish</a>
+            <h1>Physics Verbs</h1>
+            <p class="tagline">Actions that transform</p>
+
+            <div class="word-list" id="wordList"></div>
+        </div>
+
+        <div class="stage">
+            <div class="scene" id="scene">
+                <!-- Patient (thing being acted on) -->
+                <div class="patient" id="patient">
+                    <div class="face">
+                        <div class="eye left"></div>
+                        <div class="eye right"></div>
+                        <div class="mouth"></div>
+                    </div>
+                </div>
+
+                <!-- Agent (thing doing the action) -->
+                <div class="agent" id="agent">
+                    <div class="face">
+                        <div class="eye left"></div>
+                        <div class="eye right"></div>
+                        <div class="mouth"></div>
+                    </div>
+                </div>
+
+                <!-- Blade -->
+                <div class="blade" id="blade"></div>
+
+                <!-- Surface for grating -->
+                <div class="surface" id="surface"></div>
+
+                <!-- Heat source -->
+                <div class="heat" id="heat"></div>
+
+                <!-- Dynamic elements container -->
+                <div id="particles"></div>
+
+                <div class="current-word" id="currentWord">
+                    <div class="es">Click a verb</div>
+                    <div class="en">to see the action</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const verbs = [
+            // Cutting
+            { cat: "Cutting", es: "cortar", en: "cut", anim: "cut" },
+            { cat: "Cutting", es: "rebanar", en: "slice", anim: "slice" },
+            { cat: "Cutting", es: "picar", en: "chop", anim: "chop" },
+            { cat: "Cutting", es: "cortar en cubitos", en: "dice", anim: "dice" },
+            { cat: "Cutting", es: "pelar", en: "peel", anim: "peel" },
+            // Pressure
+            { cat: "Pressure", es: "exprimir", en: "squeeze", anim: "squeeze" },
+            { cat: "Pressure", es: "aplastar", en: "crush", anim: "crush" },
+            { cat: "Pressure", es: "machacar", en: "mash", anim: "mash" },
+            { cat: "Pressure", es: "empujar", en: "push", anim: "push" },
+            { cat: "Pressure", es: "tirar", en: "pull", anim: "pull" },
+            // Friction
+            { cat: "Friction", es: "rallar", en: "grate", anim: "grate" },
+            { cat: "Friction", es: "moler", en: "grind", anim: "grind" },
+            { cat: "Friction", es: "fregar", en: "scrub", anim: "scrub" },
+            // Heat
+            { cat: "Heat", es: "hervir", en: "boil", anim: "boil" },
+            { cat: "Heat", es: "derretir", en: "melt", anim: "melt" },
+            { cat: "Heat", es: "descongelar", en: "thaw", anim: "thaw" },
+            { cat: "Heat", es: "tostar", en: "toast", anim: "toast" },
+        ];
+
+        const wordList = document.getElementById('wordList');
+        const scene = document.getElementById('scene');
+        const patient = document.getElementById('patient');
+        const agent = document.getElementById('agent');
+        const blade = document.getElementById('blade');
+        const surface = document.getElementById('surface');
+        const heat = document.getElementById('heat');
+        const particles = document.getElementById('particles');
+        const currentWord = document.getElementById('currentWord');
+
+        let currentIndex = 0;
+        let animationId = null;
+        let intervals = [];
+
+        // Build word list with categories
+        let lastCat = '';
+        verbs.forEach((verb, i) => {
+            if (verb.cat !== lastCat) {
+                const catEl = document.createElement('div');
+                catEl.className = 'category';
+                catEl.textContent = verb.cat;
+                wordList.appendChild(catEl);
+                lastCat = verb.cat;
+            }
+            const item = document.createElement('div');
+            item.className = 'word-item';
+            item.innerHTML = `${verb.es} <span class="en">${verb.en}</span>`;
+            item.onclick = () => selectVerb(verb, item, i);
+            wordList.appendChild(item);
+        });
+
+        function resetScene() {
+            // Clear intervals
+            intervals.forEach(i => clearInterval(i));
+            intervals = [];
+            if (animationId) cancelAnimationFrame(animationId);
+
+            // Reset patient
+            patient.style.cssText = '';
+            patient.className = 'patient';
+            patient.style.left = '50%';
+            patient.style.top = '50%';
+            patient.style.transform = 'translate(-50%, -50%)';
+            patient.style.width = '100px';
+            patient.style.height = '100px';
+            patient.style.borderRadius = '50%';
+            patient.style.opacity = '1';
+
+            // Hide agent and tools
+            agent.classList.remove('visible');
+            blade.classList.remove('visible');
+            surface.classList.remove('visible');
+            heat.classList.remove('visible');
+
+            // Clear particles
+            particles.innerHTML = '';
+        }
+
+        function selectVerb(verb, item, index) {
+            currentIndex = index;
+            document.querySelectorAll('.word-item').forEach(w => w.classList.remove('active'));
+            item.classList.add('active');
+
+            // Speak
+            const utterance = new SpeechSynthesisUtterance(verb.es);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.8;
+            speechSynthesis.speak(utterance);
+
+            // Update display
+            currentWord.querySelector('.es').textContent = verb.es;
+            currentWord.querySelector('.en').textContent = verb.en;
+
+            // Animate
+            resetScene();
+            setTimeout(() => animate(verb.anim), 100);
+        }
+
+        function createPiece(x, y, size, delay) {
+            const piece = document.createElement('div');
+            piece.className = 'piece';
+            piece.style.width = size + 'px';
+            piece.style.height = size + 'px';
+            piece.style.left = x + 'px';
+            piece.style.top = y + 'px';
+            particles.appendChild(piece);
+            setTimeout(() => piece.classList.add('visible'), delay);
+            return piece;
+        }
+
+        function createDrop(x, y, delay) {
+            const drop = document.createElement('div');
+            drop.className = 'drop';
+            drop.style.left = x + 'px';
+            drop.style.top = y + 'px';
+            particles.appendChild(drop);
+            setTimeout(() => {
+                drop.classList.add('visible');
+                drop.style.transition = 'top 0.8s ease-in';
+                drop.style.top = (y + 100) + 'px';
+                drop.style.opacity = '0';
+            }, delay);
+            return drop;
+        }
+
+        function createBubble(x, y, size) {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble visible';
+            bubble.style.width = size + 'px';
+            bubble.style.height = size + 'px';
+            bubble.style.left = x + 'px';
+            bubble.style.top = y + 'px';
+            particles.appendChild(bubble);
+
+            // Animate up
+            let by = y;
+            const rise = setInterval(() => {
+                by -= 3;
+                bubble.style.top = by + 'px';
+                if (by < y - 80) {
+                    clearInterval(rise);
+                    bubble.remove();
+                }
+            }, 30);
+            intervals.push(rise);
+        }
+
+        function animate(type) {
+            const cx = 250, cy = 200;
+
+            switch(type) {
+                case 'cut':
+                    patient.classList.add('worried');
+                    blade.style.left = '248px';
+                    blade.style.top = '80px';
+                    blade.classList.add('visible');
+
+                    setTimeout(() => {
+                        blade.style.transition = 'top 0.4s ease-in';
+                        blade.style.top = '280px';
+                    }, 300);
+
+                    setTimeout(() => {
+                        // Split into two halves
+                        patient.style.transition = 'all 0.3s';
+                        patient.style.clipPath = 'inset(0 50% 0 0)';
+                        patient.style.transform = 'translate(-70%, -50%)';
+
+                        const half2 = document.createElement('div');
+                        half2.className = 'piece visible';
+                        half2.style.width = '100px';
+                        half2.style.height = '100px';
+                        half2.style.left = (cx + 20) + 'px';
+                        half2.style.top = cy + 'px';
+                        half2.style.transform = 'translate(-30%, -50%)';
+                        half2.style.clipPath = 'inset(0 0 0 50%)';
+                        half2.style.borderRadius = '50%';
+                        particles.appendChild(half2);
+                    }, 700);
+                    break;
+
+                case 'slice':
+                    patient.classList.add('worried');
+                    blade.style.left = '150px';
+                    blade.style.top = '200px';
+                    blade.style.transform = 'rotate(90deg)';
+                    blade.classList.add('visible');
+
+                    let sliceX = 150;
+                    const sliceInt = setInterval(() => {
+                        sliceX += 8;
+                        blade.style.left = sliceX + 'px';
+
+                        if (sliceX > 200 && sliceX < 300 && sliceX % 30 < 8) {
+                            createPiece(sliceX, 200, 15, 0);
+                        }
+
+                        if (sliceX > 350) clearInterval(sliceInt);
+                    }, 30);
+                    intervals.push(sliceInt);
+                    break;
+
+                case 'chop':
+                    patient.classList.add('worried');
+                    blade.style.left = '248px';
+                    blade.style.top = '100px';
+                    blade.classList.add('visible');
+
+                    let chopCount = 0;
+                    const chopInt = setInterval(() => {
+                        blade.style.transition = 'top 0.1s ease-in';
+                        blade.style.top = '240px';
+
+                        setTimeout(() => {
+                            blade.style.transition = 'top 0.1s ease-out';
+                            blade.style.top = '100px';
+
+                            // Create pieces
+                            for (let i = 0; i < 3; i++) {
+                                const px = cx + (Math.random() - 0.5) * 150;
+                                const py = cy + (Math.random() - 0.5) * 50;
+                                createPiece(px, py, 10 + Math.random() * 15, 0);
+                            }
+
+                            chopCount++;
+                            if (chopCount > 5) {
+                                clearInterval(chopInt);
+                                patient.style.opacity = '0.3';
+                            }
+                        }, 100);
+                    }, 300);
+                    intervals.push(chopInt);
+                    break;
+
+                case 'dice':
+                    patient.classList.add('worried');
+                    setTimeout(() => {
+                        patient.style.transition = 'opacity 0.3s';
+                        patient.style.opacity = '0';
+
+                        // Create grid of cubes
+                        for (let i = 0; i < 4; i++) {
+                            for (let j = 0; j < 4; j++) {
+                                const px = cx - 40 + i * 25;
+                                const py = cy - 40 + j * 25;
+                                const piece = createPiece(px, py, 20, i * 50 + j * 50);
+                                piece.style.borderRadius = '3px';
+                            }
+                        }
+                    }, 300);
+                    break;
+
+                case 'peel':
+                    // Create peel strip
+                    let peelAngle = 0;
+                    const peelInt = setInterval(() => {
+                        peelAngle += 15;
+                        const px = cx + Math.cos(peelAngle * Math.PI / 180) * 55;
+                        const py = cy + Math.sin(peelAngle * Math.PI / 180) * 55;
+
+                        const strip = document.createElement('div');
+                        strip.className = 'piece visible';
+                        strip.style.width = '8px';
+                        strip.style.height = '15px';
+                        strip.style.left = px + 'px';
+                        strip.style.top = py + 'px';
+                        strip.style.background = '#92400E';
+                        strip.style.borderRadius = '2px';
+                        strip.style.transform = `rotate(${peelAngle}deg)`;
+                        particles.appendChild(strip);
+
+                        // Make strip fall
+                        setTimeout(() => {
+                            strip.style.transition = 'all 0.5s ease-in';
+                            strip.style.top = (py + 80) + 'px';
+                            strip.style.opacity = '0.5';
+                        }, 100);
+
+                        if (peelAngle >= 360) {
+                            clearInterval(peelInt);
+                            patient.style.transform = 'translate(-50%, -50%) scale(0.85)';
+                        }
+                    }, 80);
+                    intervals.push(peelInt);
+                    break;
+
+                case 'squeeze':
+                    agent.style.left = '150px';
+                    agent.style.top = '200px';
+                    agent.classList.add('visible');
+
+                    const agent2 = agent.cloneNode(true);
+                    agent2.style.left = '350px';
+                    agent2.id = 'agent2';
+                    scene.appendChild(agent2);
+                    agent2.classList.add('visible');
+
+                    patient.classList.add('worried');
+
+                    setTimeout(() => {
+                        agent.style.transition = 'left 0.5s ease-in-out';
+                        agent2.style.transition = 'left 0.5s ease-in-out';
+                        agent.style.left = '190px';
+                        agent2.style.left = '310px';
+
+                        patient.style.transition = 'all 0.5s';
+                        patient.style.transform = 'translate(-50%, -50%) scaleX(0.6) scaleY(1.2)';
+
+                        // Drops
+                        for (let i = 0; i < 5; i++) {
+                            createDrop(cx - 5 + Math.random() * 10, cy + 40, 300 + i * 150);
+                        }
+                    }, 300);
+                    break;
+
+                case 'crush':
+                    agent.style.left = '250px';
+                    agent.style.top = '80px';
+                    agent.style.width = '100px';
+                    agent.style.height = '100px';
+                    agent.classList.add('visible');
+                    patient.classList.add('worried');
+
+                    setTimeout(() => {
+                        agent.style.transition = 'top 0.3s ease-in';
+                        agent.style.top = '180px';
+
+                        setTimeout(() => {
+                            patient.style.transition = 'all 0.2s';
+                            patient.style.transform = 'translate(-50%, -50%) scaleY(0.3) scaleX(1.5)';
+                            patient.style.borderRadius = '40%';
+                        }, 250);
+                    }, 300);
+                    break;
+
+                case 'mash':
+                    agent.style.left = '250px';
+                    agent.style.top = '100px';
+                    agent.classList.add('visible');
+                    patient.classList.add('worried');
+
+                    let mashCount = 0;
+                    const mashInt = setInterval(() => {
+                        agent.style.transition = 'top 0.15s ease-in';
+                        agent.style.top = '190px';
+
+                        setTimeout(() => {
+                            agent.style.transition = 'top 0.1s ease-out';
+                            agent.style.top = '100px';
+
+                            // Gradually flatten
+                            const squash = 1 - mashCount * 0.1;
+                            const spread = 1 + mashCount * 0.1;
+                            patient.style.transition = 'all 0.1s';
+                            patient.style.transform = `translate(-50%, -50%) scaleY(${squash}) scaleX(${spread})`;
+
+                            mashCount++;
+                            if (mashCount > 6) {
+                                clearInterval(mashInt);
+                                patient.style.borderRadius = '30%';
+                            }
+                        }, 150);
+                    }, 300);
+                    intervals.push(mashInt);
+                    break;
+
+                case 'push':
+                    agent.style.left = '120px';
+                    agent.style.top = '200px';
+                    agent.classList.add('visible');
+
+                    setTimeout(() => {
+                        agent.style.transition = 'left 0.5s ease-out';
+                        agent.style.left = '200px';
+
+                        patient.style.transition = 'left 0.5s ease-out';
+                        patient.style.left = '65%';
+                    }, 200);
+                    break;
+
+                case 'pull':
+                    agent.style.left = '120px';
+                    agent.style.top = '200px';
+                    agent.classList.add('visible');
+
+                    // Connection line
+                    const line = document.createElement('div');
+                    line.style.cssText = 'position:absolute;height:3px;background:#666;left:150px;top:200px;width:100px;';
+                    particles.appendChild(line);
+
+                    setTimeout(() => {
+                        agent.style.transition = 'left 0.5s ease-out';
+                        agent.style.left = '60px';
+                        line.style.transition = 'all 0.5s';
+                        line.style.width = '140px';
+                        line.style.left = '90px';
+
+                        patient.style.transition = 'all 0.5s';
+                        patient.style.transform = 'translate(-50%, -50%) scaleX(1.3)';
+                        patient.style.left = '45%';
+                    }, 200);
+                    break;
+
+                case 'grate':
+                    surface.style.left = '300px';
+                    surface.style.top = '150px';
+                    surface.style.width = '20px';
+                    surface.style.height = '150px';
+                    surface.classList.add('visible');
+
+                    patient.style.left = '40%';
+
+                    let grateY = 0;
+                    const grateInt = setInterval(() => {
+                        grateY += 1;
+                        const osc = Math.sin(grateY * 0.3) * 20;
+                        patient.style.top = (200 + osc) + 'px';
+                        patient.style.left = (250 - grateY * 0.5) + 'px';
+
+                        // Shrink over time
+                        const scale = Math.max(0.3, 1 - grateY * 0.005);
+                        patient.style.transform = `translate(-50%, -50%) scale(${scale})`;
+
+                        // Create shreds
+                        if (grateY % 5 === 0) {
+                            const shred = createPiece(310, 180 + Math.random() * 80, 5, 0);
+                            shred.style.transition = 'all 0.3s';
+                            setTimeout(() => {
+                                shred.style.left = (330 + Math.random() * 30) + 'px';
+                                shred.style.top = (300 + Math.random() * 50) + 'px';
+                            }, 50);
+                        }
+
+                        if (grateY > 100) clearInterval(grateInt);
+                    }, 30);
+                    intervals.push(grateInt);
+                    break;
+
+                case 'grind':
+                    agent.style.left = '250px';
+                    agent.style.top = '200px';
+                    agent.classList.add('visible');
+
+                    let grindAngle = 0;
+                    const grindInt = setInterval(() => {
+                        grindAngle += 10;
+                        agent.style.transform = `translate(-50%, -50%) rotate(${grindAngle}deg)`;
+
+                        // Shrink patient
+                        const scale = Math.max(0.2, 1 - grindAngle * 0.002);
+                        patient.style.transform = `translate(-50%, -50%) scale(${scale})`;
+
+                        // Powder particles
+                        if (grindAngle % 30 === 0) {
+                            for (let i = 0; i < 3; i++) {
+                                const p = createPiece(
+                                    cx + (Math.random() - 0.5) * 100,
+                                    cy + 30 + Math.random() * 30,
+                                    3 + Math.random() * 4,
+                                    0
+                                );
+                                p.style.background = '#D97706';
+                            }
+                        }
+
+                        if (grindAngle > 400) clearInterval(grindInt);
+                    }, 30);
+                    intervals.push(grindInt);
+                    break;
+
+                case 'scrub':
+                    agent.style.left = '250px';
+                    agent.style.top = '180px';
+                    agent.classList.add('visible');
+
+                    let scrubX = 0;
+                    const scrubInt = setInterval(() => {
+                        scrubX += 0.3;
+                        const osc = Math.sin(scrubX * 3) * 30;
+                        agent.style.left = (250 + osc) + 'px';
+
+                        // Bubbles occasionally
+                        if (Math.random() < 0.1) {
+                            createBubble(
+                                cx + (Math.random() - 0.5) * 80,
+                                cy - 20,
+                                8 + Math.random() * 12
+                            );
+                        }
+                    }, 30);
+                    intervals.push(scrubInt);
+                    break;
+
+                case 'boil':
+                    heat.style.left = '190px';
+                    heat.style.top = '280px';
+                    heat.classList.add('visible');
+
+                    patient.style.top = '55%';
+
+                    // Continuous bubbles
+                    const boilInt = setInterval(() => {
+                        createBubble(
+                            cx - 30 + Math.random() * 60,
+                            cy + 30,
+                            10 + Math.random() * 15
+                        );
+                    }, 200);
+                    intervals.push(boilInt);
+
+                    // Patient jiggles
+                    let jiggle = 0;
+                    const jiggleInt = setInterval(() => {
+                        jiggle += 0.5;
+                        const jx = Math.sin(jiggle * 5) * 3;
+                        patient.style.transform = `translate(calc(-50% + ${jx}px), -50%)`;
+                    }, 30);
+                    intervals.push(jiggleInt);
+                    break;
+
+                case 'melt':
+                    heat.style.left = '190px';
+                    heat.style.top = '280px';
+                    heat.classList.add('visible');
+
+                    let meltPhase = 0;
+                    const meltInt = setInterval(() => {
+                        meltPhase += 1;
+
+                        // Droop and spread
+                        const droopY = Math.min(50, meltPhase);
+                        const spreadX = 1 + meltPhase * 0.01;
+                        const squashY = Math.max(0.3, 1 - meltPhase * 0.01);
+
+                        patient.style.transform = `translate(-50%, calc(-50% + ${droopY}px)) scaleX(${spreadX}) scaleY(${squashY})`;
+                        patient.style.borderRadius = `${50 - meltPhase * 0.3}%`;
+
+                        if (meltPhase > 80) clearInterval(meltInt);
+                    }, 40);
+                    intervals.push(meltInt);
+                    break;
+
+                case 'thaw':
+                    // Start frozen (blue tint)
+                    patient.style.background = 'linear-gradient(135deg, #60A5FA, #3B82F6)';
+                    patient.style.boxShadow = '0 0 40px rgba(59, 130, 246, 0.5)';
+
+                    heat.style.left = '190px';
+                    heat.style.top = '300px';
+                    heat.style.opacity = '0.3';
+                    heat.classList.add('visible');
+
+                    let thawPhase = 0;
+                    const thawInt = setInterval(() => {
+                        thawPhase += 1;
+
+                        // Transition from blue to orange
+                        const r = Math.min(245, 96 + thawPhase * 2);
+                        const g = Math.min(158, 165 - thawPhase * 0.5);
+                        const b = Math.max(11, 250 - thawPhase * 3);
+                        patient.style.background = `linear-gradient(135deg, rgb(${r},${g},${b}), rgb(${r-30},${g-30},${b}))`;
+
+                        // Drops of water
+                        if (thawPhase % 20 === 0 && thawPhase < 80) {
+                            createDrop(cx - 20 + Math.random() * 40, cy + 40, 0);
+                        }
+
+                        if (thawPhase > 100) clearInterval(thawInt);
+                    }, 50);
+                    intervals.push(thawInt);
+                    break;
+
+                case 'toast':
+                    heat.style.left = '190px';
+                    heat.style.top = '280px';
+                    heat.classList.add('visible');
+
+                    let toastPhase = 0;
+                    const toastInt = setInterval(() => {
+                        toastPhase += 1;
+
+                        // Darken gradually
+                        const darkness = Math.max(100, 245 - toastPhase * 2);
+                        patient.style.background = `linear-gradient(135deg, rgb(${darkness}, ${darkness * 0.6}, ${darkness * 0.1}), rgb(${darkness * 0.8}, ${darkness * 0.4}, 0))`;
+
+                        if (toastPhase > 70) clearInterval(toastInt);
+                    }, 60);
+                    intervals.push(toastInt);
+                    break;
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            const items = document.querySelectorAll('.word-item');
+            if (e.key === 'ArrowDown' || e.key === 'j') {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % verbs.length;
+                selectVerb(verbs[currentIndex], items[currentIndex], currentIndex);
+                items[currentIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp' || e.key === 'k') {
+                e.preventDefault();
+                currentIndex = (currentIndex - 1 + verbs.length) % verbs.length;
+                selectVerb(verbs[currentIndex], items[currentIndex], currentIndex);
+                items[currentIndex].scrollIntoView({ block: 'nearest' });
+            }
+        });
+
+        // Start with first verb
+        setTimeout(() => {
+            const firstItem = document.querySelector('.word-item');
+            selectVerb(verbs[0], firstItem, 0);
+        }, 500);
+    </script>
+</body>
+</html>

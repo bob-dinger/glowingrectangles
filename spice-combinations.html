@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spice Combinations - What's In Your Blend?</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #111;
+            border-right: 1px solid #222;
+            padding: 70px 0 20px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar h2 {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 20px;
+            margin-bottom: 15px;
+        }
+
+        .blend-list {
+            list-style: none;
+        }
+        .blend-item {
+            padding: 14px 20px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .blend-item:hover {
+            background: #1a1a1a;
+        }
+        .blend-item.active {
+            background: #1a1a1a;
+            border-left-color: #F97316;
+        }
+        .blend-item .icon {
+            font-size: 20px;
+        }
+        .blend-item .name {
+            font-size: 14px;
+        }
+        .blend-item .origin {
+            font-size: 11px;
+            color: #555;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        .blend-title {
+            font-size: 32px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .blend-uses {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 500px;
+        }
+
+        #bubbleContainer {
+            width: 600px;
+            height: 500px;
+            position: relative;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: 500;
+            transition: transform 0.2s;
+            cursor: default;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .bubble:hover {
+            transform: scale(1.08);
+            z-index: 10;
+        }
+        .bubble .label {
+            padding: 5px;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body>
+    <a href="cooking.html" class="back-link">← Back to Cooking</a>
+
+    <div class="layout">
+        <div class="sidebar">
+            <h2>Spice Blends</h2>
+            <ul class="blend-list" id="blendList"></ul>
+        </div>
+
+        <div class="main">
+            <h1 class="blend-title" id="blendTitle">Select a Blend</h1>
+            <p class="blend-uses" id="blendUses">Choose a spice blend from the list to see what's inside</p>
+            <div id="bubbleContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const blends = [
+            {
+                name: "Italian Seasoning",
+                icon: "🇮🇹",
+                origin: "Mediterranean",
+                uses: "Pasta, pizza, tomato sauces, bread dipping oil, roasted vegetables",
+                spices: [
+                    { name: "Oregano", parts: 3, color: "#4ade80" },
+                    { name: "Basil", parts: 3, color: "#22c55e" },
+                    { name: "Thyme", parts: 2, color: "#86efac" },
+                    { name: "Rosemary", parts: 1, color: "#166534" },
+                    { name: "Marjoram", parts: 1, color: "#15803d" },
+                    { name: "Sage", parts: 0.5, color: "#14532d" }
+                ]
+            },
+            {
+                name: "Taco Seasoning",
+                icon: "🌮",
+                origin: "Mexican-American",
+                uses: "Ground beef, chicken, fish tacos, fajitas, nachos, beans",
+                spices: [
+                    { name: "Chili Powder", parts: 4, color: "#dc2626" },
+                    { name: "Cumin", parts: 3, color: "#ca8a04" },
+                    { name: "Paprika", parts: 2, color: "#ea580c" },
+                    { name: "Garlic", parts: 1.5, color: "#fef3c7" },
+                    { name: "Onion", parts: 1.5, color: "#fde68a" },
+                    { name: "Oregano", parts: 1, color: "#4ade80" },
+                    { name: "Cayenne", parts: 0.5, color: "#b91c1c" }
+                ]
+            },
+            {
+                name: "Garam Masala",
+                icon: "🇮🇳",
+                origin: "Indian Subcontinent",
+                uses: "Curries, rice dishes, lentils, roasted vegetables, chai",
+                spices: [
+                    { name: "Cumin", parts: 3, color: "#ca8a04" },
+                    { name: "Coriander", parts: 3, color: "#84cc16" },
+                    { name: "Cardamom", parts: 2, color: "#22d3d1" },
+                    { name: "Cinnamon", parts: 1.5, color: "#92400e" },
+                    { name: "Cloves", parts: 1, color: "#78350f" },
+                    { name: "Black Pepper", parts: 1, color: "#404040" },
+                    { name: "Nutmeg", parts: 0.5, color: "#a16207" }
+                ]
+            },
+            {
+                name: "Cajun Seasoning",
+                icon: "🦐",
+                origin: "Louisiana, USA",
+                uses: "Blackened fish, jambalaya, gumbo, shrimp, fries",
+                spices: [
+                    { name: "Paprika", parts: 4, color: "#ea580c" },
+                    { name: "Cayenne", parts: 2, color: "#dc2626" },
+                    { name: "Garlic", parts: 2, color: "#fef3c7" },
+                    { name: "Onion", parts: 1.5, color: "#fde68a" },
+                    { name: "Thyme", parts: 1, color: "#86efac" },
+                    { name: "Oregano", parts: 1, color: "#4ade80" },
+                    { name: "Black Pepper", parts: 1, color: "#404040" }
+                ]
+            },
+            {
+                name: "Chinese Five Spice",
+                icon: "🇨🇳",
+                origin: "China",
+                uses: "Roast duck, pork belly, stir-fry, braised meats",
+                spices: [
+                    { name: "Star Anise", parts: 3, color: "#a855f7" },
+                    { name: "Cinnamon", parts: 2, color: "#92400e" },
+                    { name: "Cloves", parts: 1, color: "#78350f" },
+                    { name: "Fennel", parts: 2, color: "#bef264" },
+                    { name: "Sichuan Pepper", parts: 2, color: "#f87171" }
+                ]
+            },
+            {
+                name: "Herbes de Provence",
+                icon: "🇫🇷",
+                origin: "Southern France",
+                uses: "Roast chicken, grilled lamb, ratatouille, goat cheese, focaccia",
+                spices: [
+                    { name: "Thyme", parts: 3, color: "#86efac" },
+                    { name: "Rosemary", parts: 2, color: "#166534" },
+                    { name: "Oregano", parts: 2, color: "#4ade80" },
+                    { name: "Marjoram", parts: 1.5, color: "#15803d" },
+                    { name: "Savory", parts: 1, color: "#22c55e" },
+                    { name: "Lavender", parts: 0.5, color: "#c084fc" }
+                ]
+            },
+            {
+                name: "Za'atar",
+                icon: "🫓",
+                origin: "Middle East",
+                uses: "Flatbread, hummus, labneh, eggs, roasted vegetables",
+                spices: [
+                    { name: "Thyme", parts: 3, color: "#86efac" },
+                    { name: "Sesame", parts: 3, color: "#fef3c7" },
+                    { name: "Sumac", parts: 2, color: "#be123c" },
+                    { name: "Oregano", parts: 1, color: "#4ade80" },
+                    { name: "Marjoram", parts: 1, color: "#15803d" },
+                    { name: "Salt", parts: 1, color: "#e5e5e5" }
+                ]
+            },
+            {
+                name: "Jerk Seasoning",
+                icon: "🇯🇲",
+                origin: "Jamaica",
+                uses: "Grilled chicken, pork, shrimp, vegetables, rice dishes",
+                spices: [
+                    { name: "Allspice", parts: 4, color: "#78350f" },
+                    { name: "Scotch Bonnet", parts: 3, color: "#f97316" },
+                    { name: "Thyme", parts: 2, color: "#86efac" },
+                    { name: "Cinnamon", parts: 1, color: "#92400e" },
+                    { name: "Nutmeg", parts: 0.5, color: "#a16207" },
+                    { name: "Garlic", parts: 1.5, color: "#fef3c7" },
+                    { name: "Ginger", parts: 1.5, color: "#fbbf24" }
+                ]
+            },
+            {
+                name: "BBQ Dry Rub",
+                icon: "🍖",
+                origin: "American South",
+                uses: "Ribs, brisket, pulled pork, chicken wings, burgers",
+                spices: [
+                    { name: "Brown Sugar", parts: 4, color: "#92400e" },
+                    { name: "Paprika", parts: 3, color: "#ea580c" },
+                    { name: "Chili Powder", parts: 2, color: "#dc2626" },
+                    { name: "Garlic", parts: 1.5, color: "#fef3c7" },
+                    { name: "Onion", parts: 1.5, color: "#fde68a" },
+                    { name: "Cumin", parts: 1, color: "#ca8a04" },
+                    { name: "Black Pepper", parts: 1, color: "#404040" },
+                    { name: "Mustard", parts: 0.5, color: "#eab308" }
+                ]
+            },
+            {
+                name: "Ras el Hanout",
+                icon: "🇲🇦",
+                origin: "North Africa",
+                uses: "Tagines, couscous, lamb, chicken, roasted carrots",
+                spices: [
+                    { name: "Cumin", parts: 3, color: "#ca8a04" },
+                    { name: "Coriander", parts: 2, color: "#84cc16" },
+                    { name: "Turmeric", parts: 2, color: "#eab308" },
+                    { name: "Paprika", parts: 1.5, color: "#ea580c" },
+                    { name: "Cinnamon", parts: 1, color: "#92400e" },
+                    { name: "Ginger", parts: 1, color: "#fbbf24" },
+                    { name: "Cardamom", parts: 0.5, color: "#22d3d1" },
+                    { name: "Cloves", parts: 0.5, color: "#78350f" }
+                ]
+            },
+            {
+                name: "Greek Seasoning",
+                icon: "🇬🇷",
+                origin: "Greece",
+                uses: "Gyros, souvlaki, Greek salad, roasted potatoes, lamb",
+                spices: [
+                    { name: "Oregano", parts: 4, color: "#4ade80" },
+                    { name: "Garlic", parts: 3, color: "#fef3c7" },
+                    { name: "Onion", parts: 2, color: "#fde68a" },
+                    { name: "Dill", parts: 1.5, color: "#86efac" },
+                    { name: "Basil", parts: 1, color: "#22c55e" },
+                    { name: "Marjoram", parts: 1, color: "#15803d" },
+                    { name: "Black Pepper", parts: 0.5, color: "#404040" },
+                    { name: "Lemon Zest", parts: 1, color: "#fde047" }
+                ]
+            },
+            {
+                name: "Curry Powder",
+                icon: "🍛",
+                origin: "British-Indian",
+                uses: "Curries, soups, roasted vegetables, rice, eggs",
+                spices: [
+                    { name: "Turmeric", parts: 4, color: "#eab308" },
+                    { name: "Coriander", parts: 3, color: "#84cc16" },
+                    { name: "Cumin", parts: 2, color: "#ca8a04" },
+                    { name: "Fenugreek", parts: 1, color: "#a3e635" },
+                    { name: "Chili", parts: 1, color: "#dc2626" },
+                    { name: "Ginger", parts: 1, color: "#fbbf24" },
+                    { name: "Black Pepper", parts: 0.5, color: "#404040" }
+                ]
+            },
+            {
+                name: "Old Bay Style",
+                icon: "🦀",
+                origin: "Maryland, USA",
+                uses: "Crab, shrimp, corn on the cob, fries, crab cakes",
+                spices: [
+                    { name: "Celery Salt", parts: 4, color: "#a3e635" },
+                    { name: "Paprika", parts: 3, color: "#ea580c" },
+                    { name: "Black Pepper", parts: 1.5, color: "#404040" },
+                    { name: "Cayenne", parts: 1, color: "#dc2626" },
+                    { name: "Mustard", parts: 1, color: "#eab308" },
+                    { name: "Nutmeg", parts: 0.5, color: "#a16207" },
+                    { name: "Ginger", parts: 0.5, color: "#fbbf24" },
+                    { name: "Bay Leaf", parts: 0.5, color: "#166534" }
+                ]
+            },
+            {
+                name: "Adobo Seasoning",
+                icon: "🇵🇷",
+                origin: "Latin America",
+                uses: "Chicken, pork, beans, rice, stews, marinades",
+                spices: [
+                    { name: "Garlic", parts: 4, color: "#fef3c7" },
+                    { name: "Onion", parts: 3, color: "#fde68a" },
+                    { name: "Oregano", parts: 2, color: "#4ade80" },
+                    { name: "Black Pepper", parts: 1.5, color: "#404040" },
+                    { name: "Cumin", parts: 1, color: "#ca8a04" },
+                    { name: "Turmeric", parts: 0.5, color: "#eab308" }
+                ]
+            },
+            {
+                name: "Pumpkin Pie Spice",
+                icon: "🎃",
+                origin: "American",
+                uses: "Pies, lattes, oatmeal, pancakes, sweet potatoes, cookies",
+                spices: [
+                    { name: "Cinnamon", parts: 4, color: "#92400e" },
+                    { name: "Ginger", parts: 2, color: "#fbbf24" },
+                    { name: "Nutmeg", parts: 1, color: "#a16207" },
+                    { name: "Allspice", parts: 0.5, color: "#78350f" },
+                    { name: "Cloves", parts: 0.5, color: "#451a03" }
+                ]
+            },
+            {
+                name: "Everything Bagel",
+                icon: "🥯",
+                origin: "New York, USA",
+                uses: "Bagels, avocado toast, eggs, cream cheese, salmon",
+                spices: [
+                    { name: "Sesame", parts: 3, color: "#fef3c7" },
+                    { name: "Poppy Seeds", parts: 2, color: "#1e3a5f" },
+                    { name: "Dried Garlic", parts: 2, color: "#fffbeb" },
+                    { name: "Dried Onion", parts: 2, color: "#fef3c7" },
+                    { name: "Coarse Salt", parts: 2, color: "#e5e5e5" }
+                ]
+            },
+            {
+                name: "Tony Chachere's Creole",
+                icon: "⚜️",
+                origin: "Louisiana, USA",
+                uses: "Everything! Eggs, meats, seafood, vegetables, popcorn",
+                spices: [
+                    { name: "Salt", parts: 5, color: "#e5e5e5" },
+                    { name: "Red Pepper", parts: 3, color: "#dc2626" },
+                    { name: "Garlic", parts: 2, color: "#fef3c7" },
+                    { name: "Black Pepper", parts: 1.5, color: "#404040" },
+                    { name: "Chili Powder", parts: 1, color: "#b91c1c" }
+                ]
+            },
+            {
+                name: "Tajín",
+                icon: "🇲🇽",
+                origin: "Mexico",
+                uses: "Fresh fruit, corn, cucumber, mango, watermelon, beer rims",
+                spices: [
+                    { name: "Chili Powder", parts: 4, color: "#dc2626" },
+                    { name: "Lime", parts: 3, color: "#84cc16" },
+                    { name: "Salt", parts: 2, color: "#e5e5e5" }
+                ]
+            },
+            {
+                name: "Montreal Steak",
+                icon: "🥩",
+                origin: "Montreal, Canada",
+                uses: "Steaks, burgers, roasts, grilled vegetables",
+                spices: [
+                    { name: "Black Pepper", parts: 4, color: "#404040" },
+                    { name: "Garlic", parts: 3, color: "#fef3c7" },
+                    { name: "Coriander", parts: 2, color: "#84cc16" },
+                    { name: "Dill", parts: 2, color: "#86efac" },
+                    { name: "Red Pepper", parts: 1.5, color: "#dc2626" },
+                    { name: "Salt", parts: 3, color: "#e5e5e5" }
+                ]
+            },
+            {
+                name: "Lawry's Seasoned Salt",
+                icon: "🧂",
+                origin: "California, USA",
+                uses: "French fries, popcorn, eggs, chicken, burgers",
+                spices: [
+                    { name: "Salt", parts: 5, color: "#e5e5e5" },
+                    { name: "Paprika", parts: 2, color: "#ea580c" },
+                    { name: "Turmeric", parts: 1.5, color: "#eab308" },
+                    { name: "Onion", parts: 1.5, color: "#fde68a" },
+                    { name: "Garlic", parts: 1, color: "#fef3c7" },
+                    { name: "Sugar", parts: 1, color: "#fef9c3" }
+                ]
+            },
+            {
+                name: "Sazón",
+                icon: "🇵🇷",
+                origin: "Caribbean / Latin America",
+                uses: "Rice, beans, stews, chicken, pork, sofrito base",
+                spices: [
+                    { name: "Coriander", parts: 3, color: "#84cc16" },
+                    { name: "Annatto", parts: 3, color: "#f97316" },
+                    { name: "Cumin", parts: 2, color: "#ca8a04" },
+                    { name: "Garlic", parts: 2, color: "#fef3c7" },
+                    { name: "Salt", parts: 2, color: "#e5e5e5" },
+                    { name: "Oregano", parts: 1, color: "#4ade80" }
+                ]
+            },
+            {
+                name: "Herbs de la Mediterranee",
+                icon: "🫒",
+                origin: "Mediterranean Basin",
+                uses: "Grilled fish, lamb, chicken, olive oil dips, roasted vegetables",
+                spices: [
+                    { name: "Oregano", parts: 3, color: "#4ade80" },
+                    { name: "Basil", parts: 2, color: "#22c55e" },
+                    { name: "Thyme", parts: 2, color: "#86efac" },
+                    { name: "Mint", parts: 1.5, color: "#34d399" },
+                    { name: "Lemon Zest", parts: 1, color: "#fde047" },
+                    { name: "Garlic", parts: 1, color: "#fef3c7" }
+                ]
+            }
+        ];
+
+        const blendList = document.getElementById('blendList');
+        const blendTitle = document.getElementById('blendTitle');
+        const blendUses = document.getElementById('blendUses');
+        const bubbleContainer = document.getElementById('bubbleContainer');
+
+        // Create sidebar list
+        blends.forEach((blend, index) => {
+            const li = document.createElement('li');
+            li.className = 'blend-item';
+            li.innerHTML = `
+                <span class="icon">${blend.icon}</span>
+                <div>
+                    <div class="name">${blend.name}</div>
+                    <div class="origin">${blend.origin}</div>
+                </div>
+            `;
+            li.addEventListener('click', () => selectBlend(index));
+            blendList.appendChild(li);
+        });
+
+        function selectBlend(index) {
+            // Update active state
+            document.querySelectorAll('.blend-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+
+            const blend = blends[index];
+            blendTitle.textContent = blend.icon + ' ' + blend.name;
+            blendUses.textContent = blend.uses;
+
+            renderBubbles(blend.spices);
+        }
+
+        function renderBubbles(spices) {
+            bubbleContainer.innerHTML = '';
+
+            const containerWidth = 600;
+            const containerHeight = 500;
+            const centerX = containerWidth / 2;
+            const centerY = containerHeight / 2;
+
+            // Calculate total parts and sizes
+            const totalParts = spices.reduce((sum, s) => sum + s.parts, 0);
+            const minSize = 60;
+            const maxSize = 150;
+
+            // Sort by parts descending for better packing
+            const sortedSpices = [...spices].sort((a, b) => b.parts - a.parts);
+
+            // Position bubbles in a packed circle layout
+            const bubbles = sortedSpices.map((spice, i) => {
+                const ratio = spice.parts / totalParts;
+                const size = minSize + (maxSize - minSize) * Math.sqrt(ratio * spices.length);
+                return { ...spice, size, x: 0, y: 0 };
+            });
+
+            // Simple force-directed placement
+            // Start with largest in center
+            bubbles[0].x = centerX;
+            bubbles[0].y = centerY;
+
+            // Place others around
+            for (let i = 1; i < bubbles.length; i++) {
+                const angle = (i / (bubbles.length - 1)) * Math.PI * 2 - Math.PI / 2;
+                const radius = 120 + i * 20;
+                bubbles[i].x = centerX + Math.cos(angle) * radius;
+                bubbles[i].y = centerY + Math.sin(angle) * radius;
+            }
+
+            // Simple collision resolution
+            for (let iter = 0; iter < 50; iter++) {
+                for (let i = 0; i < bubbles.length; i++) {
+                    for (let j = i + 1; j < bubbles.length; j++) {
+                        const dx = bubbles[j].x - bubbles[i].x;
+                        const dy = bubbles[j].y - bubbles[i].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        const minDist = (bubbles[i].size + bubbles[j].size) / 2 + 8;
+
+                        if (dist < minDist && dist > 0) {
+                            const overlap = (minDist - dist) / 2;
+                            const nx = dx / dist;
+                            const ny = dy / dist;
+                            bubbles[i].x -= nx * overlap;
+                            bubbles[i].y -= ny * overlap;
+                            bubbles[j].x += nx * overlap;
+                            bubbles[j].y += ny * overlap;
+                        }
+                    }
+
+                    // Keep in bounds
+                    const r = bubbles[i].size / 2;
+                    bubbles[i].x = Math.max(r, Math.min(containerWidth - r, bubbles[i].x));
+                    bubbles[i].y = Math.max(r, Math.min(containerHeight - r, bubbles[i].y));
+                }
+            }
+
+            // Render bubbles
+            bubbles.forEach(bubble => {
+                const div = document.createElement('div');
+                div.className = 'bubble';
+                div.style.width = bubble.size + 'px';
+                div.style.height = bubble.size + 'px';
+                div.style.left = (bubble.x - bubble.size / 2) + 'px';
+                div.style.top = (bubble.y - bubble.size / 2) + 'px';
+                div.style.background = bubble.color;
+                div.style.fontSize = Math.max(11, bubble.size / 7) + 'px';
+
+                // Determine text color based on background brightness
+                const isLight = isLightColor(bubble.color);
+                div.style.color = isLight ? '#000' : '#fff';
+
+                div.innerHTML = `<span class="label">${bubble.name}</span>`;
+                bubbleContainer.appendChild(div);
+            });
+        }
+
+        function isLightColor(color) {
+            // Convert hex to RGB and check brightness
+            const hex = color.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            return brightness > 128;
+        }
+
+        // Select first blend by default
+        selectBlend(0);
+    </script>
+</body>
+</html>

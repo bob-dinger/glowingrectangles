@@ -11,7 +11,7 @@
             color: #fff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            padding: 80px 30px 40px;
+            padding: 30px 30px 40px;
         }
 
         .back-link {
@@ -25,9 +25,52 @@
         }
         .back-link:hover { color: #fff; }
 
+        .floating-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(10, 10, 20, 0.85));
+            backdrop-filter: blur(10px);
+            padding: 20px 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+            min-width: 220px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .floating-info .artist {
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .floating-info .period-name {
+            font-size: 18px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .floating-info .period-years {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .floating-info .total {
+            font-size: 11px;
+            color: #555;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
         .header {
-            text-align: center;
-            margin-bottom: 50px;
+            display: none;
         }
 
         .title {
@@ -130,6 +173,13 @@
 </head>
 <body>
     <a href="../index.html" class="back-link">← Back</a>
+
+    <div class="floating-info" id="floatingInfo">
+        <div class="artist">Van Gogh</div>
+        <div class="period-name" id="currentPeriod">Arles</div>
+        <div class="period-years" id="currentYears">1888-1889 · 189 paintings</div>
+        <div class="total">681 paintings, 1881–1890</div>
+    </div>
 
     <div class="header">
         <h1 class="title">VINCENT VAN GOGH</h1>
@@ -419,7 +469,7 @@
         <div class="painting"><img src="https://themapstorage.blob.core.windows.net/images/vangogh/VincentVanGogh/Paris/Plaster%20Statuette%20of%20a%20Female%20Torso%207.jpg" alt="Plaster Statuette of a Female Torso 7" loading="lazy"><div class="painting-info"><div class="painting-title">Plaster Statuette of a Female Torso 7</div></div></div>
         <div class="painting"><img src="https://themapstorage.blob.core.windows.net/images/vangogh/VincentVanGogh/Paris/View%20of%20a%20River%20with%20Rowing%20Boats.jpg" alt="View of a River with Rowing Boats" loading="lazy"><div class="painting-info"><div class="painting-title">View of a River with Rowing Boats</div></div></div>
         <div class="painting"><img src="https://themapstorage.blob.core.windows.net/images/vangogh/VincentVanGogh/Paris/The%20Kingfisher.jpg" alt="The Kingfisher" loading="lazy"><div class="painting-info"><div class="painting-title">The Kingfisher</div></div></div>
-        <div class="period-header">
+        <div class="period-header" id="arles">
             <div class="period-name">Arles</div>
             <div class="period-years">1888-1889 · 189 paintings</div>
         </div>
@@ -843,5 +893,47 @@
         <div class="painting"><img src="https://themapstorage.blob.core.windows.net/images/vangogh/VincentVanGogh/Auvers%20sur%20Oise/Chestnut%20Tree%20in%20Blossom.jpg" alt="Chestnut Tree in Blossom" loading="lazy"><div class="painting-info"><div class="painting-title">Chestnut Tree in Blossom</div></div></div>
         <div class="painting"><img src="https://themapstorage.blob.core.windows.net/images/vangogh/VincentVanGogh/Auvers%20sur%20Oise/Landscape%20with%20Three%20Trees%20and%20a%20House.jpg" alt="Landscape with Three Trees and a House" loading="lazy"><div class="painting-info"><div class="painting-title">Landscape with Three Trees and a House</div></div></div>
     </div>
+
+    <script>
+        const periodHeaders = document.querySelectorAll('.period-header');
+        const currentPeriod = document.getElementById('currentPeriod');
+        const currentYears = document.getElementById('currentYears');
+        const floatingInfo = document.getElementById('floatingInfo');
+
+        function updateFloatingInfo() {
+            let activeHeader = null;
+            const scrollTop = window.scrollY + 100;
+
+            periodHeaders.forEach(header => {
+                if (header.offsetTop <= scrollTop) {
+                    activeHeader = header;
+                }
+            });
+
+            if (activeHeader) {
+                const name = activeHeader.querySelector('.period-name').textContent;
+                const years = activeHeader.querySelector('.period-years').textContent;
+                currentPeriod.textContent = name;
+                currentYears.textContent = years;
+            }
+
+            // Fade in after scrolling past header
+            if (window.scrollY > 150) {
+                floatingInfo.style.opacity = '1';
+            } else {
+                floatingInfo.style.opacity = '0';
+            }
+        }
+
+        window.addEventListener('scroll', updateFloatingInfo, { passive: true });
+
+        // Start at Arles section (plus 10% into it)
+        const arles = document.getElementById('arles');
+        if (arles) {
+            const extraScroll = window.innerHeight * 0.5;
+            window.scrollTo(0, arles.offsetTop + extraScroll);
+        }
+        updateFloatingInfo();
+    </script>
 </body>
 </html>

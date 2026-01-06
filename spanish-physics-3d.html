@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Verbs 3D - Spanish - Glowing Gardens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background: #111;
+            border-right: 1px solid #222;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .back-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 20px;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+        h1 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tagline {
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .word-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #888;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .word-item:hover {
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .word-item.active {
+            background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(236,72,153,0.2));
+            color: #fff;
+        }
+        .word-item .en {
+            font-size: 10px;
+            color: #555;
+        }
+        .word-item.active .en {
+            color: #888;
+        }
+        .stage {
+            flex: 1;
+            position: relative;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .current-word {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 100;
+            pointer-events: none;
+        }
+        .current-word .es {
+            font-size: 36px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #8B5CF6, #EC4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .current-word .en {
+            font-size: 16px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .instructions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 11px;
+            color: #444;
+            text-align: right;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <a href="spanish-physics-verbs.html" class="back-link">← 2D Version</a>
+            <h1>Physics 3D</h1>
+            <p class="tagline">Actions in space</p>
+
+            <div id="wordList"></div>
+        </div>
+
+        <div class="stage">
+            <canvas id="canvas"></canvas>
+            <div class="current-word" id="currentWord">
+                <div class="es">Click a verb</div>
+                <div class="en">to see the action</div>
+            </div>
+            <div class="instructions">
+                Drag to rotate<br>
+                Scroll to zoom<br>
+                ↑↓ to cycle verbs
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        const verbs = [
+            // Cutting
+            { es: "cortar", en: "cut", anim: "cut" },
+            { es: "rebanar", en: "slice", anim: "slice" },
+            { es: "picar", en: "chop", anim: "chop" },
+            { es: "cortar en cubitos", en: "dice", anim: "dice" },
+            { es: "pelar", en: "peel", anim: "peel" },
+            { es: "raspar", en: "scrape", anim: "scrape" },
+            { es: "desmenuzar", en: "crumble", anim: "crumble" },
+            // Pressure
+            { es: "exprimir", en: "squeeze", anim: "squeeze" },
+            { es: "aplastar", en: "crush", anim: "crush" },
+            { es: "machacar", en: "mash", anim: "mash" },
+            { es: "estirar", en: "stretch", anim: "stretch" },
+            { es: "empujar", en: "push", anim: "push" },
+            { es: "tirar", en: "pull", anim: "pull" },
+            { es: "amasar", en: "knead", anim: "knead" },
+            { es: "prensar", en: "press", anim: "press" },
+            // Friction
+            { es: "rallar", en: "grate", anim: "grate" },
+            { es: "moler", en: "grind", anim: "grind" },
+            { es: "fregar", en: "scrub", anim: "scrub" },
+            { es: "lijar", en: "sand", anim: "sand" },
+            { es: "frotar", en: "rub", anim: "rub" },
+            { es: "rodar", en: "roll", anim: "roll" },
+            { es: "pulir", en: "polish", anim: "polish" },
+            // Heat
+            { es: "calentar", en: "heat", anim: "heat" },
+            { es: "derretir", en: "melt", anim: "melt" },
+            { es: "hervir", en: "boil", anim: "boil" },
+            { es: "freír", en: "fry", anim: "fry" },
+            { es: "hornear", en: "bake", anim: "bake" },
+            { es: "quemar", en: "burn", anim: "burn" },
+            { es: "congelar", en: "freeze", anim: "freeze" },
+            { es: "tostar", en: "toast", anim: "toast" },
+            { es: "evaporar", en: "evaporate", anim: "evaporate" },
+            // Liquid
+            { es: "verter", en: "pour", anim: "pour" },
+            { es: "gotear", en: "drip", anim: "drip" },
+            { es: "salpicar", en: "splash", anim: "splash" },
+            { es: "mezclar", en: "mix", anim: "mix" },
+            { es: "batir", en: "whisk", anim: "whisk" },
+            // Motion
+            { es: "girar", en: "spin", anim: "spin" },
+            { es: "rebotar", en: "bounce", anim: "bounce" },
+            { es: "temblar", en: "shake", anim: "shake" },
+            { es: "flotar", en: "float", anim: "float" },
+            { es: "caer", en: "fall", anim: "fall" },
+            { es: "rotar", en: "rotate", anim: "rotate" },
+            // Dramatic
+            { es: "explotar", en: "explode", anim: "explode" },
+            { es: "inflar", en: "inflate", anim: "inflate" },
+            { es: "desinflar", en: "deflate", anim: "deflate" },
+            { es: "apretar", en: "squeeze tight", anim: "squish" },
+            { es: "romper", en: "break", anim: "break" },
+            { es: "doblar", en: "bend", anim: "bend" },
+            { es: "torcer", en: "twist", anim: "twist" },
+            // Size
+            { es: "encoger", en: "shrink", anim: "shrink" },
+            { es: "expandir", en: "expand", anim: "expand" },
+            { es: "crecer", en: "grow", anim: "grow" },
+            { es: "hinchar", en: "swell", anim: "swell" },
+            { es: "marchitar", en: "shrivel", anim: "shrivel" },
+            // Connect
+            { es: "enganchar", en: "hook", anim: "hook" },
+            { es: "pegar", en: "stick", anim: "stick" },
+            { es: "colgar", en: "hang", anim: "hang" },
+            { es: "balancear", en: "swing", anim: "swing" },
+            { es: "atar", en: "tie", anim: "tie" },
+            // Transform
+            { es: "voltear", en: "flip", anim: "flip" },
+            { es: "plegar", en: "fold", anim: "fold" },
+            { es: "enrollar", en: "roll up", anim: "rollup" },
+            { es: "desenrollar", en: "unroll", anim: "unroll" },
+            { es: "absorber", en: "absorb", anim: "absorb" },
+            { es: "expulsar", en: "eject", anim: "eject" },
+        ];
+
+        let currentIndex = 0;
+        let animationPhase = 0;
+        let currentAnim = null;
+        let patient, pieces = [], bubbles = [];
+
+        // Three.js setup
+        const canvas = document.getElementById('canvas');
+        const scene = new THREE.Scene();
+
+        // Gradient background using a large sphere
+        const bgGeo = new THREE.SphereGeometry(50, 32, 32);
+        const bgMat = new THREE.ShaderMaterial({
+            uniforms: {
+                colorTop: { value: new THREE.Color(0x1a1a2e) },
+                colorBottom: { value: new THREE.Color(0x0a0a0a) }
+            },
+            vertexShader: `
+                varying vec3 vWorldPosition;
+                void main() {
+                    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+                    vWorldPosition = worldPosition.xyz;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform vec3 colorTop;
+                uniform vec3 colorBottom;
+                varying vec3 vWorldPosition;
+                void main() {
+                    float h = normalize(vWorldPosition).y;
+                    gl_FragColor = vec4(mix(colorBottom, colorTop, h * 0.5 + 0.5), 1.0);
+                }
+            `,
+            side: THREE.BackSide
+        });
+        const bgSphere = new THREE.Mesh(bgGeo, bgMat);
+        scene.add(bgSphere);
+
+        // Fog for atmosphere
+        scene.fog = new THREE.Fog(0x0f0f1a, 8, 25);
+
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 2, 7);
+
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        renderer.setSize(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+
+        // Controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxDistance = 15;
+        controls.minDistance = 3;
+
+        // Lighting - softer, more ambient
+        const ambientLight = new THREE.AmbientLight(0x404060, 0.8);
+        scene.add(ambientLight);
+
+        const mainLight = new THREE.DirectionalLight(0xfff5e6, 0.8);
+        mainLight.position.set(5, 10, 5);
+        scene.add(mainLight);
+
+        const fillLight = new THREE.DirectionalLight(0x8B5CF6, 0.4);
+        fillLight.position.set(-5, 3, -5);
+        scene.add(fillLight);
+
+        const rimLight = new THREE.DirectionalLight(0xEC4899, 0.3);
+        rimLight.position.set(0, -2, -5);
+        scene.add(rimLight);
+
+        // Ground plane - softer
+        const groundGeo = new THREE.PlaneGeometry(30, 30);
+        const groundMat = new THREE.MeshStandardMaterial({
+            color: 0x151520,
+            roughness: 0.95,
+            metalness: 0,
+        });
+        const ground = new THREE.Mesh(groundGeo, groundMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -1.5;
+        scene.add(ground);
+
+        // Subtle grid
+        const grid = new THREE.GridHelper(20, 20, 0x252530, 0x1a1a25);
+        grid.position.y = -1.49;
+        scene.add(grid);
+
+        // Ambient particles
+        const particlesGeo = new THREE.BufferGeometry();
+        const particleCount = 100;
+        const positions = new Float32Array(particleCount * 3);
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 20;
+            positions[i + 1] = Math.random() * 10 - 1;
+            positions[i + 2] = (Math.random() - 0.5) * 20;
+        }
+        particlesGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const particlesMat = new THREE.PointsMaterial({
+            color: 0x8B5CF6,
+            size: 0.03,
+            transparent: true,
+            opacity: 0.5
+        });
+        const particleSystem = new THREE.Points(particlesGeo, particlesMat);
+        scene.add(particleSystem);
+
+        // Patient sphere - matte, clay-like
+        const patientGeo = new THREE.SphereGeometry(1, 64, 64);
+        const patientMat = new THREE.MeshStandardMaterial({
+            color: 0xF59E0B,
+            roughness: 0.85,
+            metalness: 0,
+        });
+        patient = new THREE.Mesh(patientGeo, patientMat);
+        scene.add(patient);
+
+        // Eyes for the patient
+        const eyeGeo = new THREE.SphereGeometry(0.15, 16, 16);
+        const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0 });
+        const pupilGeo = new THREE.SphereGeometry(0.07, 16, 16);
+        const pupilMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5, metalness: 0 });
+
+        const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+        leftEye.position.set(-0.3, 0.2, 0.85);
+        patient.add(leftEye);
+        const leftPupil = new THREE.Mesh(pupilGeo, pupilMat);
+        leftPupil.position.set(0, 0, 0.1);
+        leftEye.add(leftPupil);
+
+        const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+        rightEye.position.set(0.3, 0.2, 0.85);
+        patient.add(rightEye);
+        const rightPupil = new THREE.Mesh(pupilGeo, pupilMat);
+        rightPupil.position.set(0, 0, 0.1);
+        rightEye.add(rightPupil);
+
+        // Build word list
+        const wordList = document.getElementById('wordList');
+        verbs.forEach((verb, i) => {
+            const item = document.createElement('div');
+            item.className = 'word-item';
+            item.innerHTML = `${verb.es} <span class="en">${verb.en}</span>`;
+            item.onclick = () => selectVerb(verb, item, i);
+            wordList.appendChild(item);
+        });
+
+        function resetScene() {
+            // Reset patient
+            patient.scale.set(1, 1, 1);
+            patient.position.set(0, 0, 0);
+            patient.rotation.set(0, 0, 0);
+            patient.material.color.setHex(0xF59E0B);
+            patient.visible = true;
+
+            // Clear pieces
+            pieces.forEach(p => scene.remove(p));
+            pieces = [];
+
+            // Clear bubbles
+            bubbles.forEach(b => scene.remove(b));
+            bubbles = [];
+
+            animationPhase = 0;
+        }
+
+        function selectVerb(verb, item, index) {
+            currentIndex = index;
+            document.querySelectorAll('.word-item').forEach(w => w.classList.remove('active'));
+            item.classList.add('active');
+
+            // Speak
+            const utterance = new SpeechSynthesisUtterance(verb.es);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.8;
+            speechSynthesis.speak(utterance);
+
+            // Update display
+            document.querySelector('.current-word .es').textContent = verb.es;
+            document.querySelector('.current-word .en').textContent = verb.en;
+
+            resetScene();
+            currentAnim = verb.anim;
+        }
+
+        function createPiece(x, y, z, size) {
+            const geo = new THREE.SphereGeometry(size, 16, 16);
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0xF59E0B,
+                roughness: 0.85,
+                metalness: 0,
+            });
+            const piece = new THREE.Mesh(geo, mat);
+            piece.position.set(x, y, z);
+            piece.userData.velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.2,
+                Math.random() * 0.2,
+                (Math.random() - 0.5) * 0.2
+            );
+            scene.add(piece);
+            pieces.push(piece);
+            return piece;
+        }
+
+        function createBubble(x, y, z) {
+            const geo = new THREE.SphereGeometry(0.1 + Math.random() * 0.15, 16, 16);
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.3,
+            });
+            const bubble = new THREE.Mesh(geo, mat);
+            bubble.position.set(x, y, z);
+            bubble.userData.speed = 0.02 + Math.random() * 0.03;
+            scene.add(bubble);
+            bubbles.push(bubble);
+            return bubble;
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+
+            animationPhase += 0.016;
+
+            if (currentAnim) {
+                switch (currentAnim) {
+                    case 'cut':
+                        if (animationPhase < 1) {
+                            // Waiting
+                        } else if (animationPhase < 1.5) {
+                            // Split
+                            const split = (animationPhase - 1) * 2;
+                            patient.scale.x = 1 - split * 0.5;
+                            if (pieces.length === 0) {
+                                const half = createPiece(0.8, 0, 0, 0.8);
+                                half.scale.x = 0.5;
+                            }
+                            if (pieces.length > 0) {
+                                pieces[0].position.x = 0.5 + split * 0.5;
+                                pieces[0].scale.x = 0.5;
+                            }
+                            patient.position.x = -split * 0.5;
+                        }
+                        break;
+
+                    case 'squeeze':
+                        const squeezeAmount = Math.sin(animationPhase * 2) * 0.3;
+                        patient.scale.x = 1 - Math.abs(squeezeAmount);
+                        patient.scale.y = 1 + Math.abs(squeezeAmount) * 0.5;
+                        patient.scale.z = 1 - Math.abs(squeezeAmount);
+                        break;
+
+                    case 'crush':
+                        if (animationPhase < 2) {
+                            const crush = Math.min(1, animationPhase * 0.5);
+                            patient.scale.y = 1 - crush * 0.7;
+                            patient.scale.x = 1 + crush * 0.5;
+                            patient.scale.z = 1 + crush * 0.5;
+                            patient.position.y = -crush * 0.7;
+                        }
+                        break;
+
+                    case 'stretch':
+                        const stretchY = 1 + Math.sin(animationPhase * 1.5) * 0.8;
+                        const stretchXZ = 1 / Math.sqrt(stretchY);
+                        patient.scale.set(stretchXZ, stretchY, stretchXZ);
+                        break;
+
+                    case 'melt':
+                        if (animationPhase < 4) {
+                            const melt = animationPhase * 0.25;
+                            patient.scale.y = Math.max(0.2, 1 - melt * 0.8);
+                            patient.scale.x = 1 + melt * 0.6;
+                            patient.scale.z = 1 + melt * 0.6;
+                            patient.position.y = -melt * 0.8;
+
+                            // Color shift to darker
+                            const r = Math.max(0.5, 0.96 - melt * 0.2);
+                            const g = Math.max(0.3, 0.62 - melt * 0.2);
+                            const b = 0.04;
+                            patient.material.color.setRGB(r, g, b);
+                        }
+                        break;
+
+                    case 'boil':
+                        // Jiggle
+                        patient.position.x = Math.sin(animationPhase * 20) * 0.05;
+                        patient.position.z = Math.cos(animationPhase * 17) * 0.05;
+
+                        // Create bubbles
+                        if (Math.random() < 0.1) {
+                            createBubble(
+                                (Math.random() - 0.5) * 1.5,
+                                -1,
+                                (Math.random() - 0.5) * 1.5
+                            );
+                        }
+
+                        // Animate bubbles
+                        bubbles.forEach((b, i) => {
+                            b.position.y += b.userData.speed;
+                            if (b.position.y > 2) {
+                                scene.remove(b);
+                                bubbles.splice(i, 1);
+                            }
+                        });
+                        break;
+
+                    case 'spin':
+                        patient.rotation.y += 0.1;
+                        patient.rotation.x = Math.sin(animationPhase) * 0.3;
+                        break;
+
+                    case 'bounce':
+                        const bounceY = Math.abs(Math.sin(animationPhase * 3)) * 2;
+                        patient.position.y = bounceY;
+                        // Squash and stretch
+                        const squash = 1 - Math.abs(Math.cos(animationPhase * 3)) * 0.3;
+                        if (bounceY < 0.3) {
+                            patient.scale.y = squash;
+                            patient.scale.x = 1 / squash;
+                            patient.scale.z = 1 / squash;
+                        } else {
+                            patient.scale.set(1, 1, 1);
+                        }
+                        break;
+
+                    case 'explode':
+                        if (animationPhase > 0.5 && pieces.length === 0) {
+                            patient.visible = false;
+                            // Create explosion pieces
+                            for (let i = 0; i < 20; i++) {
+                                const p = createPiece(0, 0, 0, 0.15 + Math.random() * 0.2);
+                                p.userData.velocity = new THREE.Vector3(
+                                    (Math.random() - 0.5) * 0.3,
+                                    Math.random() * 0.3,
+                                    (Math.random() - 0.5) * 0.3
+                                );
+                            }
+                        }
+                        // Animate pieces
+                        pieces.forEach(p => {
+                            p.position.add(p.userData.velocity);
+                            p.userData.velocity.y -= 0.01; // gravity
+                            if (p.position.y < -1.4) {
+                                p.position.y = -1.4;
+                                p.userData.velocity.y *= -0.5;
+                                p.userData.velocity.x *= 0.8;
+                                p.userData.velocity.z *= 0.8;
+                            }
+                        });
+                        break;
+
+                    case 'inflate':
+                        const inflateSize = 1 + Math.sin(animationPhase * 0.5) * 0.5 + animationPhase * 0.1;
+                        const maxSize = 2.5;
+                        if (inflateSize < maxSize) {
+                            patient.scale.set(inflateSize, inflateSize, inflateSize);
+                        } else if (pieces.length === 0) {
+                            // Pop!
+                            patient.visible = false;
+                            for (let i = 0; i < 15; i++) {
+                                createPiece(0, 0, 0, 0.1 + Math.random() * 0.15);
+                            }
+                        }
+                        pieces.forEach(p => {
+                            p.position.add(p.userData.velocity);
+                            p.userData.velocity.y -= 0.008;
+                            if (p.position.y < -1.4) {
+                                p.position.y = -1.4;
+                                p.userData.velocity.multiplyScalar(0.5);
+                            }
+                        });
+                        break;
+
+                    case 'slice':
+                        if (animationPhase > 0.5 && pieces.length === 0) {
+                            // Create slices
+                            for (let i = 0; i < 5; i++) {
+                                const slice = createPiece(0, 0, 0, 0.8);
+                                slice.scale.set(1, 0.15, 1);
+                                slice.position.y = -0.6 + i * 0.3;
+                            }
+                            patient.visible = false;
+                        }
+                        // Spread slices apart
+                        pieces.forEach((p, i) => {
+                            const targetY = -0.8 + i * 0.5;
+                            p.position.y += (targetY - p.position.y) * 0.05;
+                        });
+                        break;
+
+                    case 'chop':
+                        if (animationPhase % 0.3 < 0.016 && animationPhase > 0.3) {
+                            for (let i = 0; i < 3; i++) {
+                                createPiece(
+                                    (Math.random() - 0.5) * 0.5,
+                                    Math.random() * 0.5,
+                                    (Math.random() - 0.5) * 0.5,
+                                    0.15 + Math.random() * 0.1
+                                );
+                            }
+                            const shrink = Math.max(0.2, 1 - animationPhase * 0.15);
+                            patient.scale.set(shrink, shrink, shrink);
+                        }
+                        pieces.forEach(p => {
+                            p.position.add(p.userData.velocity);
+                            p.userData.velocity.y -= 0.008;
+                            if (p.position.y < -1.4) {
+                                p.position.y = -1.4;
+                                p.userData.velocity.multiplyScalar(0.3);
+                            }
+                        });
+                        break;
+
+                    case 'peel':
+                        if (animationPhase < 4) {
+                            const peelAngle = animationPhase * 2;
+                            // Create peel strips
+                            if (animationPhase % 0.2 < 0.016) {
+                                const strip = createPiece(
+                                    Math.cos(peelAngle) * 1.1,
+                                    Math.sin(peelAngle * 0.5) * 0.5,
+                                    Math.sin(peelAngle) * 1.1,
+                                    0.1
+                                );
+                                strip.material = new THREE.MeshStandardMaterial({ color: 0x92400E, roughness: 0.9 });
+                                strip.scale.set(0.5, 1.5, 0.3);
+                            }
+                            patient.scale.setScalar(Math.max(0.7, 1 - animationPhase * 0.08));
+                        }
+                        pieces.forEach(p => {
+                            p.position.y -= 0.02;
+                            p.rotation.x += 0.05;
+                        });
+                        break;
+
+                    case 'mash':
+                        const mashPhase = Math.sin(animationPhase * 5);
+                        if (mashPhase > 0.8) {
+                            const mashAmount = animationPhase * 0.1;
+                            patient.scale.y = Math.max(0.3, 1 - mashAmount);
+                            patient.scale.x = 1 + mashAmount * 0.5;
+                            patient.scale.z = 1 + mashAmount * 0.5;
+                            patient.position.y = -mashAmount * 0.7;
+                        }
+                        break;
+
+                    case 'push':
+                        if (animationPhase < 2) {
+                            patient.position.x = animationPhase * 1.5;
+                            patient.rotation.z = -animationPhase * 0.2;
+                        }
+                        break;
+
+                    case 'pull':
+                        if (animationPhase < 2) {
+                            patient.scale.x = 1 + animationPhase * 0.4;
+                            patient.scale.y = 1 - animationPhase * 0.15;
+                            patient.scale.z = 1 - animationPhase * 0.15;
+                        }
+                        break;
+
+                    case 'grate':
+                        const grateOsc = Math.sin(animationPhase * 8) * 0.3;
+                        patient.position.x = grateOsc;
+                        patient.scale.setScalar(Math.max(0.3, 1 - animationPhase * 0.1));
+
+                        if (animationPhase % 0.1 < 0.016) {
+                            for (let i = 0; i < 2; i++) {
+                                const shred = createPiece(grateOsc + 1, -0.5, (Math.random() - 0.5), 0.05);
+                                shred.userData.velocity.x = 0.1;
+                                shred.userData.velocity.y = 0.05;
+                            }
+                        }
+                        pieces.forEach(p => {
+                            p.position.add(p.userData.velocity);
+                            p.userData.velocity.y -= 0.005;
+                        });
+                        break;
+
+                    case 'grind':
+                        patient.rotation.y += 0.15;
+                        patient.scale.setScalar(Math.max(0.2, 1 - animationPhase * 0.08));
+
+                        if (animationPhase % 0.15 < 0.016) {
+                            for (let i = 0; i < 3; i++) {
+                                const dust = createPiece(
+                                    (Math.random() - 0.5) * 2,
+                                    -1,
+                                    (Math.random() - 0.5) * 2,
+                                    0.03 + Math.random() * 0.03
+                                );
+                                dust.userData.velocity.set(0, 0, 0);
+                            }
+                        }
+                        break;
+
+                    case 'roll':
+                        patient.position.x = Math.sin(animationPhase) * 2;
+                        patient.position.z = Math.cos(animationPhase) * 2;
+                        patient.rotation.x += 0.1;
+                        patient.rotation.z += 0.05;
+                        break;
+
+                    case 'freeze':
+                        if (animationPhase < 3) {
+                            // Transition to blue/icy
+                            const freezeT = animationPhase / 3;
+                            const r = 0.96 * (1 - freezeT) + 0.4 * freezeT;
+                            const g = 0.62 * (1 - freezeT) + 0.7 * freezeT;
+                            const b = 0.04 * (1 - freezeT) + 0.95 * freezeT;
+                            patient.material.color.setRGB(r, g, b);
+                            patient.material.roughness = 0.85 - freezeT * 0.6;
+
+                            // Slight jitter then stop
+                            if (freezeT < 0.5) {
+                                patient.position.x = (Math.random() - 0.5) * 0.05 * (1 - freezeT * 2);
+                            }
+                        }
+                        break;
+
+                    case 'toast':
+                        if (animationPhase < 4) {
+                            const toastT = animationPhase / 4;
+                            const r = 0.96 * (1 - toastT * 0.6);
+                            const g = 0.62 * (1 - toastT * 0.7);
+                            const b = 0.04;
+                            patient.material.color.setRGB(r, g, b);
+                        }
+                        break;
+
+                    case 'shake':
+                        patient.position.x = Math.sin(animationPhase * 30) * 0.15;
+                        patient.position.z = Math.cos(animationPhase * 25) * 0.15;
+                        patient.rotation.x = Math.sin(animationPhase * 20) * 0.1;
+                        patient.rotation.z = Math.cos(animationPhase * 22) * 0.1;
+                        break;
+
+                    case 'float':
+                        patient.position.y = Math.sin(animationPhase * 0.8) * 0.5 + 0.5;
+                        patient.rotation.y += 0.01;
+                        patient.rotation.x = Math.sin(animationPhase * 0.5) * 0.1;
+                        break;
+
+                    case 'deflate':
+                        if (animationPhase < 3) {
+                            const deflateT = animationPhase / 3;
+                            patient.scale.setScalar(1 - deflateT * 0.7);
+                            patient.position.y = -deflateT * 0.7;
+                            // Wrinkle effect - flatten slightly
+                            patient.scale.y = (1 - deflateT * 0.7) * (1 - deflateT * 0.3);
+                        }
+                        break;
+
+                    case 'squish':
+                        const squishT = Math.sin(animationPhase * 3);
+                        patient.scale.x = 1 - squishT * 0.4;
+                        patient.scale.z = 1 - squishT * 0.4;
+                        patient.scale.y = 1 + squishT * 0.3;
+                        break;
+
+                    case 'dice':
+                        if (animationPhase > 0.5 && pieces.length === 0) {
+                            patient.visible = false;
+                            // Create grid of cubes
+                            for (let x = -1; x <= 1; x++) {
+                                for (let y = -1; y <= 1; y++) {
+                                    for (let z = -1; z <= 1; z++) {
+                                        const cube = createPiece(x * 0.4, y * 0.4, z * 0.4, 0.18);
+                                        cube.geometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+                                        cube.userData.target = new THREE.Vector3(x * 0.6, y * 0.6, z * 0.6);
+                                    }
+                                }
+                            }
+                        }
+                        pieces.forEach(p => {
+                            if (p.userData.target) {
+                                p.position.lerp(p.userData.target, 0.05);
+                            }
+                        });
+                        break;
+
+                    case 'scrape':
+                        const scrapeX = Math.sin(animationPhase * 4) * 0.5;
+                        patient.position.x = scrapeX;
+                        patient.position.y = -0.3;
+                        patient.scale.y = 0.7;
+                        patient.scale.x = 1.2;
+
+                        if (animationPhase % 0.15 < 0.016) {
+                            const flake = createPiece(scrapeX, -0.5, (Math.random() - 0.5) * 0.5, 0.04);
+                            flake.userData.velocity.x = (Math.random() - 0.5) * 0.1;
+                            flake.userData.velocity.y = 0.02;
+                        }
+                        pieces.forEach(p => {
+                            p.position.add(p.userData.velocity);
+                            p.userData.velocity.y -= 0.002;
+                        });
+                        break;
+
+                    case 'crumble':
+                        if (animationPhase > 0.3) {
+                            const crumbleRate = Math.min(1, (animationPhase - 0.3) * 0.3);
+                            patient.scale.setScalar(1 - crumbleRate * 0.8);
+
+                            if (animationPhase % 0.08 < 0.016 && patient.scale.x > 0.3) {
+                                for (let i = 0; i < 4; i++) {
+                                    createPiece(
+                                        (Math.random() - 0.5) * 0.8,
+                                        (Math.random() - 0.5) * 0.8,
+                                        (Math.random() - 0.5) * 0.8,
+                                        0.05 + Math.random() * 0.08
+                                    );
+                                }
+                            }
+                        }
+                        pieces.forEach(p => {
+                            p.position.add(p.userData.velocity);
+                            p.userData.velocity.y -= 0.006;
+                            if (p.position.y < -1.4) {
+                                p.position.y = -1.4;
+                                p.userData.velocity.multiplyScalar(0.2);
+                            }
+                        });
+                        break;
+
+                    case 'knead':
+                        const kneadPhase = animationPhase * 2;
+                        patient.scale.x = 1 + Math.sin(kneadPhase) * 0.3;
+                        patient.scale.z = 1 - Math.sin(kneadPhase) * 0.3;
+                        patient.scale.y = 1 - Math.abs(Math.sin(kneadPhase)) * 0.2;
+                        patient.rotation.y = Math.sin(kneadPhase * 0.5) * 0.3;
+                        patient.position.y = Math.abs(Math.sin(kneadPhase)) * 0.2 - 0.2;
+                        break;
+
+                    case 'press':
+                        const pressT = Math.min(1, animationPhase * 0.5);
+                        patient.scale.y = 1 - pressT * 0.6;
+                        patient.scale.x = 1 + pressT * 0.4;
+                        patient.scale.z = 1 + pressT * 0.4;
+                        patient.position.y = -pressT * 0.6;
+                        break;
+
+                    case 'scrub':
+                        const scrubOsc = Math.sin(animationPhase * 10);
+                        patient.position.x = scrubOsc * 0.4;
+                        patient.rotation.z = scrubOsc * 0.1;
+
+                        if (Math.random() < 0.15) {
+                            createBubble(
+                                patient.position.x + (Math.random() - 0.5) * 1.5,
+                                -0.5,
+                                (Math.random() - 0.5) * 1.5
+                            );
+                        }
+                        bubbles.forEach((b, i) => {
+                            b.position.y += b.userData.speed;
+                            b.position.x += Math.sin(animationPhase * 5 + i) * 0.01;
+                            if (b.position.y > 2) {
+                                scene.remove(b);
+                                bubbles.splice(i, 1);
+                            }
+                        });
+                        break;
+
+                    case 'sand':
+                        const sandOsc = Math.sin(animationPhase * 6);
+                        patient.position.x = sandOsc * 0.3;
+                        patient.scale.setScalar(Math.max(0.5, 1 - animationPhase * 0.05));
+
+                        if (animationPhase % 0.1 < 0.016) {
+                            for (let i = 0; i < 3; i++) {
+                                const dust = createPiece(
+                                    sandOsc * 0.3 + (Math.random() - 0.5),
+                                    -1,
+                                    (Math.random() - 0.5),
+                                    0.02 + Math.random() * 0.02
+                                );
+                                dust.material.color.setHex(0xD4A574);
+                            }
+                        }
+                        break;
+
+                    case 'rub':
+                        patient.position.x = Math.sin(animationPhase * 8) * 0.3;
+                        patient.position.z = Math.cos(animationPhase * 6) * 0.2;
+                        patient.rotation.x = Math.sin(animationPhase * 4) * 0.1;
+                        break;
+
+                    case 'polish':
+                        patient.rotation.y += 0.05;
+                        const polishShine = (Math.sin(animationPhase * 2) + 1) * 0.5;
+                        patient.material.roughness = 0.85 - polishShine * 0.5;
+                        patient.material.metalness = polishShine * 0.3;
+                        break;
+
+                    case 'heat':
+                        const heatT = Math.min(1, animationPhase * 0.2);
+                        const heatR = 0.96 + heatT * 0.04;
+                        const heatG = 0.62 - heatT * 0.3;
+                        const heatB = 0.04 - heatT * 0.04;
+                        patient.material.color.setRGB(heatR, heatG, heatB);
+                        patient.position.y = Math.sin(animationPhase * 15) * 0.03;
+
+                        if (Math.random() < 0.05 && heatT > 0.5) {
+                            createBubble(
+                                (Math.random() - 0.5) * 0.5,
+                                1,
+                                (Math.random() - 0.5) * 0.5
+                            );
+                        }
+                        bubbles.forEach((b, i) => {
+                            b.position.y += 0.03;
+                            b.scale.multiplyScalar(0.98);
+                            if (b.position.y > 3) {
+                                scene.remove(b);
+                                bubbles.splice(i, 1);
+                            }
+                        });
+                        break;
+
+                    case 'fry':
+                        patient.position.y = -0.5 + Math.random() * 0.1;
+                        patient.rotation.z = Math.sin(animationPhase * 20) * 0.05;
+
+                        const fryT = Math.min(1, animationPhase * 0.15);
+                        patient.material.color.setRGB(0.96 - fryT * 0.3, 0.62 - fryT * 0.4, 0.04);
+
+                        if (Math.random() < 0.2) {
+                            const splatter = createBubble(
+                                (Math.random() - 0.5) * 2,
+                                -0.3,
+                                (Math.random() - 0.5) * 2
+                            );
+                            splatter.userData.speed = 0.08 + Math.random() * 0.1;
+                        }
+                        bubbles.forEach((b, i) => {
+                            b.position.y += b.userData.speed;
+                            b.userData.speed -= 0.005;
+                            if (b.position.y < -1.4 || b.position.y > 3) {
+                                scene.remove(b);
+                                bubbles.splice(i, 1);
+                            }
+                        });
+                        break;
+
+                    case 'bake':
+                        const bakeT = Math.min(1, animationPhase * 0.1);
+                        patient.scale.setScalar(1 + bakeT * 0.3);
+                        patient.material.color.setRGB(0.96 - bakeT * 0.2, 0.62 - bakeT * 0.3, 0.04 + bakeT * 0.1);
+                        break;
+
+                    case 'burn':
+                        const burnT = Math.min(1, animationPhase * 0.2);
+                        patient.material.color.setRGB(0.2 + (1 - burnT) * 0.76, (1 - burnT) * 0.62, 0);
+
+                        if (Math.random() < 0.1 && burnT > 0.3) {
+                            const smoke = createBubble(
+                                (Math.random() - 0.5) * 0.8,
+                                0.5 + Math.random() * 0.5,
+                                (Math.random() - 0.5) * 0.8
+                            );
+                            smoke.material.color.setHex(0x333333);
+                            smoke.material.opacity = 0.5;
+                        }
+                        bubbles.forEach((b, i) => {
+                            b.position.y += 0.02;
+                            b.scale.multiplyScalar(1.01);
+                            b.material.opacity *= 0.98;
+                            if (b.material.opacity < 0.05) {
+                                scene.remove(b);
+                                bubbles.splice(i, 1);
+                            }
+                        });
+                        break;
+
+                    case 'evaporate':
+                        const evapT = animationPhase * 0.2;
+                        patient.scale.setScalar(Math.max(0.1, 1 - evapT));
+                        patient.material.transparent = true;
+                        patient.material.opacity = Math.max(0.1, 1 - evapT);
+
+                        if (Math.random() < 0.15) {
+                            const vapor = createBubble(
+                                (Math.random() - 0.5) * patient.scale.x,
+                                patient.scale.y * 0.5,
+                                (Math.random() - 0.5) * patient.scale.z
+                            );
+                            vapor.material.opacity = 0.2;
+                        }
+                        bubbles.forEach((b, i) => {
+                            b.position.y += 0.03;
+                            b.scale.multiplyScalar(1.02);
+                            b.material.opacity *= 0.97;
+                            if (b.material.opacity < 0.02) {
+                                scene.remove(b);
+                                bubbles.splice(i, 1);
+                            }
+                        });
+                        break;
+
+                    case 'pour':
+                        patient.position.y = 2 - animationPhase * 0.5;
+                        patient.scale.y = 2;
+                        patient.scale.x = 0.4;
+                        patient.scale.z = 0.4;
+
+                        if (patient.position.y > -1 && animationPhase % 0.05 < 0.016) {
+                            const drop = createPiece(0, patient.position.y - 1, 0, 0.1);
+                            drop.userData.velocity.y = -0.1;
+                        }
+                        pieces.forEach(p => {
+                            p.position.add(p.userData.velocity);
+                            p.userData.velocity.y -= 0.01;
+                            if (p.position.y < -1.4) {
+                                p.scale.y = 0.3;
+                                p.scale.x = 1.5;
+                                p.scale.z = 1.5;
+                                p.position.y = -1.4;
+                                p.userData.velocity.set(0, 0, 0);
+                            }
+                        });
+                        break;
+
+                    case 'drip':
+                        if (animationPhase % 0.8 < 0.016) {
+                            const drip = createPiece(0, 0.8, 0, 0.15);
+                            drip.userData.velocity.y = 0;
+                        }
+                        pieces.forEach((p, i) => {
+                            p.userData.velocity.y -= 0.008;
+                            p.position.add(p.userData.velocity);
+                            p.scale.y = 1 + Math.abs(p.userData.velocity.y) * 3;
+                            p.scale.x = 1 / (1 + Math.abs(p.userData.velocity.y) * 2);
+                            p.scale.z = p.scale.x;
+                            if (p.position.y < -1.4) {
+                                scene.remove(p);
+                                pieces.splice(i, 1);
+                            }
+                        });
+                        break;
+
+                    case 'splash':
+                        if (animationPhase < 0.5) {
+                            patient.position.y = 2 - animationPhase * 8;
+                        } else if (pieces.length === 0) {
+                            patient.visible = false;
+                            for (let i = 0; i < 20; i++) {
+                                const angle = (i / 20) * Math.PI * 2;
+                                const splash = createPiece(0, -1, 0, 0.08 + Math.random() * 0.1);
+                                splash.userData.velocity.x = Math.cos(angle) * 0.15;
+                                splash.userData.velocity.z = Math.sin(angle) * 0.15;
+                                splash.userData.velocity.y = 0.1 + Math.random() * 0.15;
+                            }
+                        }
+                        pieces.forEach(p => {
+                            p.position.add(p.userData.velocity);
+                            p.userData.velocity.y -= 0.008;
+                            if (p.position.y < -1.4) {
+                                p.position.y = -1.4;
+                                p.userData.velocity.multiplyScalar(0.3);
+                            }
+                        });
+                        break;
+
+                    case 'mix':
+                        patient.rotation.y += 0.1;
+                        const mixWobble = Math.sin(animationPhase * 3) * 0.2;
+                        patient.scale.x = 1 + mixWobble;
+                        patient.scale.z = 1 - mixWobble;
+
+                        if (pieces.length < 8 && animationPhase > 0.5) {
+                            const bit = createPiece(
+                                Math.cos(animationPhase * 2) * 0.5,
+                                Math.sin(animationPhase * 3) * 0.3,
+                                Math.sin(animationPhase * 2) * 0.5,
+                                0.2
+                            );
+                            bit.material.color.setHex(0x3B82F6);
+                            bit.userData.velocity.set(0, 0, 0);
+                        }
+                        pieces.forEach((p, i) => {
+                            const a = animationPhase * 2 + i;
+                            p.position.x = Math.cos(a) * 0.6;
+                            p.position.z = Math.sin(a) * 0.6;
+                            p.position.y = Math.sin(a * 0.5) * 0.3;
+                        });
+                        break;
+
+                    case 'whisk':
+                        patient.rotation.y += 0.2;
+                        patient.scale.y = 1.3;
+                        patient.scale.x = 0.8;
+                        patient.scale.z = 0.8;
+
+                        if (Math.random() < 0.1) {
+                            createBubble(
+                                (Math.random() - 0.5) * 1.5,
+                                (Math.random() - 0.5) * 1,
+                                (Math.random() - 0.5) * 1.5
+                            );
+                        }
+                        bubbles.forEach((b, i) => {
+                            b.position.y += 0.01;
+                            const a = animationPhase * 3 + i * 0.5;
+                            b.position.x += Math.cos(a) * 0.02;
+                            b.position.z += Math.sin(a) * 0.02;
+                            if (b.position.y > 2) {
+                                scene.remove(b);
+                                bubbles.splice(i, 1);
+                            }
+                        });
+                        break;
+
+                    case 'fall':
+                        if (animationPhase < 2) {
+                            patient.position.y = 3 - animationPhase * 2.5;
+                            if (patient.position.y < -1) {
+                                patient.position.y = -1;
+                                patient.scale.y = 0.6;
+                                patient.scale.x = 1.3;
+                                patient.scale.z = 1.3;
+                            }
+                        } else {
+                            // Recover
+                            patient.scale.y += (1 - patient.scale.y) * 0.1;
+                            patient.scale.x += (1 - patient.scale.x) * 0.1;
+                            patient.scale.z += (1 - patient.scale.z) * 0.1;
+                        }
+                        break;
+
+                    case 'rotate':
+                        patient.rotation.x += 0.03;
+                        patient.rotation.y += 0.02;
+                        patient.rotation.z += 0.01;
+                        break;
+
+                    case 'break':
+                        if (animationPhase > 0.5 && pieces.length === 0) {
+                            patient.visible = false;
+                            for (let i = 0; i < 12; i++) {
+                                const shard = createPiece(
+                                    (Math.random() - 0.5) * 0.5,
+                                    (Math.random() - 0.5) * 0.5,
+                                    (Math.random() - 0.5) * 0.5,
+                                    0.2 + Math.random() * 0.2
+                                );
+                                shard.geometry = new THREE.TetrahedronGeometry(0.25);
+                            }
+                        }
+                        pieces.forEach(p => {
+                            p.position.add(p.userData.velocity);
+                            p.userData.velocity.y -= 0.008;
+                            p.rotation.x += 0.05;
+                            p.rotation.y += 0.03;
+                            if (p.position.y < -1.4) {
+                                p.position.y = -1.4;
+                                p.userData.velocity.multiplyScalar(0.3);
+                            }
+                        });
+                        break;
+
+                    case 'bend':
+                        const bendT = Math.sin(animationPhase * 1.5);
+                        patient.scale.x = 1 + bendT * 0.3;
+                        patient.scale.y = 1 - Math.abs(bendT) * 0.2;
+                        patient.rotation.z = bendT * 0.5;
+                        patient.position.x = bendT * 0.3;
+                        break;
+
+                    case 'twist':
+                        const twistT = animationPhase * 2;
+                        patient.rotation.y = twistT;
+                        patient.scale.y = 1 + Math.sin(twistT * 2) * 0.2;
+                        patient.scale.x = 1 - Math.sin(twistT * 2) * 0.15;
+                        patient.scale.z = 1 - Math.cos(twistT * 2) * 0.15;
+                        break;
+
+                    case 'shrink':
+                        const shrinkT = Math.max(0.1, 1 - animationPhase * 0.15);
+                        patient.scale.setScalar(shrinkT);
+                        patient.position.y = (1 - shrinkT) * -0.5;
+                        break;
+
+                    case 'expand':
+                        const expandT = 1 + animationPhase * 0.3;
+                        patient.scale.setScalar(Math.min(3, expandT));
+                        break;
+
+                    case 'grow':
+                        const growT = 1 + Math.sin(animationPhase * 0.3) * animationPhase * 0.1;
+                        patient.scale.setScalar(Math.min(2.5, growT));
+                        // Pulsing growth
+                        patient.scale.y = patient.scale.x * (1 + Math.sin(animationPhase * 2) * 0.05);
+                        break;
+
+                    case 'swell':
+                        const swellT = 1 + Math.sin(animationPhase * 1.5) * 0.4;
+                        patient.scale.setScalar(swellT);
+                        // Uneven swelling
+                        patient.scale.x *= 1 + Math.sin(animationPhase * 3) * 0.1;
+                        patient.scale.z *= 1 + Math.cos(animationPhase * 2.5) * 0.1;
+                        break;
+
+                    case 'shrivel':
+                        const shrivelT = Math.min(1, animationPhase * 0.2);
+                        patient.scale.setScalar(1 - shrivelT * 0.6);
+                        // Wrinkly uneven shrinking
+                        patient.scale.x *= 1 - Math.sin(animationPhase * 5) * 0.2;
+                        patient.scale.z *= 1 - Math.cos(animationPhase * 4) * 0.2;
+                        patient.position.y = -shrivelT * 0.5;
+                        // Darken
+                        const shrivelColor = 1 - shrivelT * 0.4;
+                        patient.material.color.setRGB(0.96 * shrivelColor, 0.62 * shrivelColor, 0.04);
+                        break;
+
+                    case 'hook':
+                        // Create a hook that comes in and pulls
+                        if (pieces.length === 0) {
+                            const hook = createPiece(3, 0.5, 0, 0.15);
+                            hook.material.color.setHex(0x888888);
+                            hook.userData.velocity.set(0, 0, 0);
+                        }
+                        if (pieces.length > 0) {
+                            const hookPiece = pieces[0];
+                            if (animationPhase < 1.5) {
+                                // Hook approaches
+                                hookPiece.position.x = 3 - animationPhase * 2;
+                            } else {
+                                // Hook pulls patient
+                                hookPiece.position.x = Math.min(3, hookPiece.position.x + 0.05);
+                                patient.position.x = hookPiece.position.x - 0.5;
+                            }
+                        }
+                        break;
+
+                    case 'stick':
+                        // Something sticks to patient
+                        if (pieces.length < 5 && animationPhase % 0.5 < 0.016) {
+                            const sticky = createPiece(
+                                (Math.random() - 0.5) * 4,
+                                2 + Math.random(),
+                                (Math.random() - 0.5) * 4,
+                                0.15 + Math.random() * 0.1
+                            );
+                            sticky.material.color.setHex(0x22C55E);
+                            sticky.userData.target = new THREE.Vector3(
+                                (Math.random() - 0.5) * 1.2,
+                                (Math.random() - 0.5) * 1.2,
+                                (Math.random() - 0.5) * 1.2
+                            );
+                        }
+                        pieces.forEach(p => {
+                            if (p.userData.target) {
+                                p.position.lerp(p.userData.target, 0.05);
+                            }
+                        });
+                        break;
+
+                    case 'hang':
+                        patient.position.y = 1.5;
+                        // Gentle sway
+                        patient.position.x = Math.sin(animationPhase * 1.5) * 0.3;
+                        patient.rotation.z = Math.sin(animationPhase * 1.5) * 0.2;
+                        // Draw rope
+                        if (pieces.length === 0) {
+                            for (let i = 0; i < 5; i++) {
+                                const rope = createPiece(0, 2 + i * 0.3, 0, 0.05);
+                                rope.material.color.setHex(0x8B4513);
+                                rope.userData.velocity.set(0, 0, 0);
+                            }
+                        }
+                        pieces.forEach((p, i) => {
+                            p.position.x = Math.sin(animationPhase * 1.5) * 0.1 * (5 - i) / 5;
+                            p.position.y = 2.5 + i * 0.2;
+                        });
+                        break;
+
+                    case 'swing':
+                        const swingAngle = Math.sin(animationPhase * 2) * 1.2;
+                        patient.position.x = Math.sin(swingAngle) * 2;
+                        patient.position.y = 1.5 - Math.cos(swingAngle) * 0.5;
+                        patient.rotation.z = swingAngle * 0.3;
+                        break;
+
+                    case 'tie':
+                        // Rope wraps around
+                        patient.rotation.y += 0.05;
+                        if (animationPhase % 0.2 < 0.016 && pieces.length < 20) {
+                            const ropeAngle = pieces.length * 0.4;
+                            const ropeY = -0.8 + pieces.length * 0.08;
+                            const rope = createPiece(
+                                Math.cos(ropeAngle) * 1.1,
+                                ropeY,
+                                Math.sin(ropeAngle) * 1.1,
+                                0.06
+                            );
+                            rope.material.color.setHex(0x8B4513);
+                            rope.userData.velocity.set(0, 0, 0);
+                        }
+                        // Squeeze as rope tightens
+                        const tieT = Math.min(1, pieces.length / 20);
+                        patient.scale.x = 1 - tieT * 0.3;
+                        patient.scale.z = 1 - tieT * 0.3;
+                        patient.scale.y = 1 + tieT * 0.2;
+                        break;
+
+                    case 'flip':
+                        patient.rotation.x += 0.15;
+                        patient.position.y = Math.abs(Math.sin(animationPhase * 2)) * 1.5;
+                        break;
+
+                    case 'fold':
+                        const foldT = Math.min(1, animationPhase * 0.3);
+                        patient.scale.y = 1 - foldT * 0.5;
+                        patient.scale.x = 1 + foldT * 0.3;
+                        patient.rotation.x = foldT * Math.PI * 0.4;
+                        patient.position.y = -foldT * 0.3;
+                        break;
+
+                    case 'rollup':
+                        const rollupT = Math.min(1, animationPhase * 0.2);
+                        patient.scale.x = 1 - rollupT * 0.7;
+                        patient.scale.z = 1 - rollupT * 0.7;
+                        patient.scale.y = 1 + rollupT * 0.5;
+                        patient.rotation.y += 0.1;
+                        break;
+
+                    case 'unroll':
+                        const unrollT = Math.min(1, animationPhase * 0.2);
+                        patient.scale.x = 0.3 + unrollT * 0.7;
+                        patient.scale.z = 0.3 + unrollT * 0.7;
+                        patient.scale.y = 1.5 - unrollT * 0.5;
+                        patient.rotation.y += 0.1 * (1 - unrollT);
+                        break;
+
+                    case 'absorb':
+                        // Small pieces get absorbed
+                        if (pieces.length < 8 && animationPhase < 3) {
+                            if (animationPhase % 0.4 < 0.016) {
+                                const morsel = createPiece(
+                                    (Math.random() - 0.5) * 4,
+                                    (Math.random() - 0.5) * 2,
+                                    (Math.random() - 0.5) * 4,
+                                    0.2
+                                );
+                                morsel.material.color.setHex(0x3B82F6);
+                                morsel.userData.velocity.set(0, 0, 0);
+                            }
+                        }
+                        pieces.forEach((p, i) => {
+                            // Move toward patient
+                            p.position.lerp(patient.position, 0.03);
+                            const dist = p.position.distanceTo(patient.position);
+                            if (dist < 0.5) {
+                                scene.remove(p);
+                                pieces.splice(i, 1);
+                                // Grow patient
+                                patient.scale.multiplyScalar(1.05);
+                            }
+                        });
+                        break;
+
+                    case 'eject':
+                        patient.scale.x = 1 + Math.sin(animationPhase * 8) * 0.1;
+                        patient.scale.z = 1 + Math.cos(animationPhase * 8) * 0.1;
+
+                        if (animationPhase % 0.3 < 0.016) {
+                            const eject = createPiece(0, 0, 0, 0.15);
+                            const angle = Math.random() * Math.PI * 2;
+                            eject.userData.velocity.x = Math.cos(angle) * 0.2;
+                            eject.userData.velocity.z = Math.sin(angle) * 0.2;
+                            eject.userData.velocity.y = 0.1 + Math.random() * 0.1;
+                            patient.scale.multiplyScalar(0.98);
+                        }
+                        pieces.forEach(p => {
+                            p.position.add(p.userData.velocity);
+                            p.userData.velocity.y -= 0.008;
+                            if (p.position.y < -1.4) {
+                                p.position.y = -1.4;
+                                p.userData.velocity.multiplyScalar(0.3);
+                            }
+                        });
+                        break;
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            const items = document.querySelectorAll('.word-item');
+            if (e.key === 'ArrowDown' || e.key === 'j') {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % verbs.length;
+                selectVerb(verbs[currentIndex], items[currentIndex], currentIndex);
+                items[currentIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp' || e.key === 'k') {
+                e.preventDefault();
+                currentIndex = (currentIndex - 1 + verbs.length) % verbs.length;
+                selectVerb(verbs[currentIndex], items[currentIndex], currentIndex);
+                items[currentIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'r') {
+                resetScene();
+            }
+        });
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            const width = canvas.parentElement.clientWidth;
+            const height = canvas.parentElement.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+
+        // Start
+        animate();
+        setTimeout(() => {
+            const firstItem = document.querySelector('.word-item');
+            selectVerb(verbs[0], firstItem, 0);
+        }, 500);
+    </script>
+</body>
+</html>

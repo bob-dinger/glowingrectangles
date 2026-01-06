@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language in Space - Glowing Gardens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 240px;
+            background: #111;
+            border-right: 1px solid #222;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .back-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 20px;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+        h1 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #F59E0B 0%, #EC4899 50%, #8B5CF6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tagline {
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 10px;
+            margin-top: 20px;
+        }
+        .noun-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+        .noun-btn {
+            padding: 6px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 15px;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .noun-btn:hover {
+            border-color: #3B82F6;
+            color: #fff;
+        }
+        .noun-btn.active {
+            background: #3B82F6;
+            border-color: #3B82F6;
+            color: #fff;
+        }
+        .adj-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .adj-btn {
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .adj-btn:hover {
+            border-color: #F59E0B;
+            color: #fff;
+        }
+        .adj-btn.active {
+            background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(236,72,153,0.2));
+            border-color: #F59E0B;
+            color: #fff;
+        }
+        .adj-btn .en {
+            font-size: 10px;
+            color: #555;
+            margin-left: 5px;
+        }
+        .adj-btn.active .en {
+            color: #888;
+        }
+        .verb-section {
+            margin-top: 20px;
+        }
+        .verb-btn {
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 4px;
+        }
+        .verb-btn:hover {
+            border-color: #10B981;
+            color: #fff;
+        }
+        .verb-btn.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10B981;
+            color: #10B981;
+        }
+
+        .stage {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* The sentence display */
+        .sentence {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 100;
+        }
+        .sentence-text {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .sentence-text .noun { color: #3B82F6; }
+        .sentence-text .adj { color: #F59E0B; }
+        .sentence-text .verb { color: #10B981; }
+        .sentence-en {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Main noun circle */
+        .noun-circle {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 60px rgba(59, 130, 246, 0.4);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: grab;
+        }
+        .noun-circle:active {
+            cursor: grabbing;
+        }
+        .noun-circle .face {
+            position: relative;
+            width: 50px;
+            height: 35px;
+        }
+        .noun-circle .eye {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            top: 0;
+        }
+        .noun-circle .eye::after {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+        }
+        .noun-circle .eye.left { left: 5px; }
+        .noun-circle .eye.right { right: 5px; }
+        .noun-circle .mouth {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 8px;
+            border: 3px solid #fff;
+            border-top: none;
+            border-radius: 0 0 16px 16px;
+        }
+        .noun-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 600;
+            color: #3B82F6;
+            white-space: nowrap;
+        }
+
+        /* Adjective satellites */
+        .adj-orbit {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #F59E0B, #EC4899);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .adj-orbit.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .adj-orbit .face {
+            position: relative;
+            width: 22px;
+            height: 16px;
+        }
+        .adj-orbit .eye {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            border-radius: 50%;
+            top: 0;
+        }
+        .adj-orbit .eye::after {
+            content: '';
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            top: 1px;
+            left: 1px;
+        }
+        .adj-orbit .eye.left { left: 2px; }
+        .adj-orbit .eye.right { right: 2px; }
+        .adj-orbit .mouth {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 4px;
+            border: 2px solid #fff;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+        .adj-label {
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #F59E0B;
+            white-space: nowrap;
+        }
+
+        /* Movement trail */
+        .trail {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Verb arrow */
+        .verb-arrow {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .verb-arrow.visible {
+            opacity: 1;
+        }
+
+        .instructions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 11px;
+            color: #444;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <a href="index.html" class="back-link">← Home</a>
+            <h1>Language in Space</h1>
+            <p class="tagline">Nouns float. Adjectives orbit. Verbs move.</p>
+
+            <div class="section-title">Noun (the thing)</div>
+            <div class="noun-picker" id="nounPicker"></div>
+
+            <div class="section-title">Adjectives (describing it)</div>
+            <div class="adj-list" id="adjList"></div>
+
+            <div class="section-title verb-section">Verb (what it does)</div>
+            <div id="verbList"></div>
+        </div>
+
+        <div class="stage" id="stage">
+            <div class="noun-circle" id="nounCircle">
+                <div class="face">
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+                    <div class="mouth"></div>
+                </div>
+                <div class="noun-label" id="nounLabel">perro</div>
+            </div>
+
+            <!-- Adjective orbits will be added dynamically -->
+            <div id="adjOrbits"></div>
+
+            <!-- Verb arrow -->
+            <svg class="verb-arrow" id="verbArrow" width="100%" height="100%">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#10B981"/>
+                    </marker>
+                </defs>
+                <path id="verbPath" stroke="#10B981" stroke-width="3" fill="none" stroke-dasharray="8 4" marker-end="url(#arrowhead)"/>
+            </svg>
+
+            <div class="sentence" id="sentence">
+                <div class="sentence-text" id="sentenceText"></div>
+                <div class="sentence-en" id="sentenceEn"></div>
+            </div>
+
+            <div class="instructions">
+                Drag the noun around<br>
+                Click adjectives to orbit<br>
+                Click verbs to move
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const nouns = [
+            { es: "perro", en: "dog" },
+            { es: "gato", en: "cat" },
+            { es: "pájaro", en: "bird" },
+            { es: "niño", en: "child" },
+            { es: "luna", en: "moon" },
+            { es: "sol", en: "sun" },
+        ];
+
+        const adjectives = [
+            { es: "grande", en: "big" },
+            { es: "pequeño", en: "small" },
+            { es: "rápido", en: "fast" },
+            { es: "lento", en: "slow" },
+            { es: "feliz", en: "happy" },
+            { es: "triste", en: "sad" },
+            { es: "rojo", en: "red" },
+            { es: "azul", en: "blue" },
+        ];
+
+        const verbs = [
+            { es: "corre", en: "runs", anim: "run" },
+            { es: "salta", en: "jumps", anim: "jump" },
+            { es: "vuela", en: "flies", anim: "fly" },
+            { es: "nada", en: "swims", anim: "swim" },
+            { es: "duerme", en: "sleeps", anim: "sleep" },
+            { es: "gira", en: "spins", anim: "spin" },
+        ];
+
+        let currentNoun = nouns[0];
+        let activeAdjs = new Set();
+        let currentVerb = null;
+        let nounX = 400, nounY = 250;
+        let isDragging = false;
+        let animationId = null;
+
+        const stage = document.getElementById('stage');
+        const nounCircle = document.getElementById('nounCircle');
+        const nounLabel = document.getElementById('nounLabel');
+        const nounPicker = document.getElementById('nounPicker');
+        const adjList = document.getElementById('adjList');
+        const verbList = document.getElementById('verbList');
+        const adjOrbits = document.getElementById('adjOrbits');
+        const verbArrow = document.getElementById('verbArrow');
+        const verbPath = document.getElementById('verbPath');
+        const sentenceText = document.getElementById('sentenceText');
+        const sentenceEn = document.getElementById('sentenceEn');
+
+        // Build UI
+        nouns.forEach(n => {
+            const btn = document.createElement('div');
+            btn.className = 'noun-btn' + (n === currentNoun ? ' active' : '');
+            btn.textContent = n.es;
+            btn.onclick = () => selectNoun(n, btn);
+            nounPicker.appendChild(btn);
+        });
+
+        adjectives.forEach(a => {
+            const btn = document.createElement('div');
+            btn.className = 'adj-btn';
+            btn.innerHTML = `${a.es} <span class="en">${a.en}</span>`;
+            btn.onclick = () => toggleAdj(a, btn);
+            adjList.appendChild(btn);
+        });
+
+        verbs.forEach(v => {
+            const btn = document.createElement('div');
+            btn.className = 'verb-btn';
+            btn.innerHTML = `${v.es} <span class="en" style="color:#555;margin-left:5px">${v.en}</span>`;
+            btn.onclick = () => selectVerb(v, btn);
+            verbList.appendChild(btn);
+        });
+
+        // Create adjective orbit elements
+        for (let i = 0; i < 8; i++) {
+            const orb = document.createElement('div');
+            orb.className = 'adj-orbit';
+            orb.id = 'adj-orb-' + i;
+            orb.innerHTML = `
+                <div class="face">
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+                    <div class="mouth"></div>
+                </div>
+                <div class="adj-label"></div>
+            `;
+            adjOrbits.appendChild(orb);
+        }
+
+        function selectNoun(noun, btn) {
+            currentNoun = noun;
+            document.querySelectorAll('.noun-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            nounLabel.textContent = noun.es;
+            updateSentence();
+            speak(noun.es);
+        }
+
+        function toggleAdj(adj, btn) {
+            if (activeAdjs.has(adj.es)) {
+                activeAdjs.delete(adj.es);
+                btn.classList.remove('active');
+            } else if (activeAdjs.size < 8) {
+                activeAdjs.add(adj.es);
+                btn.classList.add('active');
+                speak(adj.es);
+            }
+            updateOrbits();
+            updateSentence();
+        }
+
+        function selectVerb(verb, btn) {
+            if (currentVerb === verb) {
+                currentVerb = null;
+                btn.classList.remove('active');
+                stopAnimation();
+            } else {
+                document.querySelectorAll('.verb-btn').forEach(b => b.classList.remove('active'));
+                currentVerb = verb;
+                btn.classList.add('active');
+                speak(verb.es);
+                startAnimation(verb.anim);
+            }
+            updateSentence();
+        }
+
+        function updateOrbits() {
+            const adjArray = Array.from(activeAdjs);
+            const orbs = document.querySelectorAll('.adj-orbit');
+
+            orbs.forEach((orb, i) => {
+                if (i < adjArray.length) {
+                    orb.classList.add('visible');
+                    orb.querySelector('.adj-label').textContent = adjArray[i];
+                } else {
+                    orb.classList.remove('visible');
+                }
+            });
+        }
+
+        function updateSentence() {
+            const adjArray = Array.from(activeAdjs);
+            let esText = '';
+            let enText = '';
+
+            if (adjArray.length > 0) {
+                esText = `El <span class="noun">${currentNoun.es}</span> <span class="adj">${adjArray.join(', ')}</span>`;
+                const enAdjs = adjArray.map(a => adjectives.find(adj => adj.es === a)?.en || a);
+                enText = `The ${enAdjs.join(', ')} ${currentNoun.en}`;
+            } else {
+                esText = `El <span class="noun">${currentNoun.es}</span>`;
+                enText = `The ${currentNoun.en}`;
+            }
+
+            if (currentVerb) {
+                esText += ` <span class="verb">${currentVerb.es}</span>`;
+                enText += ` ${currentVerb.en}`;
+            }
+
+            sentenceText.innerHTML = esText;
+            sentenceEn.textContent = enText;
+        }
+
+        function positionElements() {
+            nounCircle.style.left = nounX + 'px';
+            nounCircle.style.top = nounY + 'px';
+            nounCircle.style.transform = 'translate(-50%, -50%)';
+
+            // Position orbiting adjectives
+            const adjArray = Array.from(activeAdjs);
+            const time = Date.now() / 1000;
+
+            adjArray.forEach((adj, i) => {
+                const orb = document.getElementById('adj-orb-' + i);
+                const angle = (time * 0.5) + (i * (Math.PI * 2 / adjArray.length));
+                const radius = 90 + (i % 2) * 20;
+                const x = nounX + Math.cos(angle) * radius;
+                const y = nounY + Math.sin(angle) * radius;
+                orb.style.left = x + 'px';
+                orb.style.top = y + 'px';
+                orb.style.transform = 'translate(-50%, -50%)';
+            });
+        }
+
+        // Animation loop for orbiting
+        let orbitAnim;
+        function orbitLoop() {
+            positionElements();
+            orbitAnim = requestAnimationFrame(orbitLoop);
+        }
+        orbitLoop();
+
+        // Verb animations
+        function startAnimation(type) {
+            stopAnimation();
+            verbArrow.classList.add('visible');
+
+            const stageRect = stage.getBoundingClientRect();
+            const centerX = stageRect.width / 2;
+            const centerY = stageRect.height / 2;
+
+            switch(type) {
+                case 'run':
+                    let runDir = 1;
+                    animationId = setInterval(() => {
+                        nounX += 3 * runDir;
+                        if (nounX > stageRect.width - 100) runDir = -1;
+                        if (nounX < 100) runDir = 1;
+                        verbPath.setAttribute('d', `M${nounX},${nounY} L${nounX + 60 * runDir},${nounY}`);
+                    }, 16);
+                    break;
+
+                case 'jump':
+                    let jumpPhase = 0;
+                    const baseY = nounY;
+                    animationId = setInterval(() => {
+                        jumpPhase += 0.15;
+                        nounY = baseY - Math.abs(Math.sin(jumpPhase)) * 100;
+                        verbPath.setAttribute('d', `M${nounX},${nounY + 50} L${nounX},${nounY + 100}`);
+                    }, 16);
+                    break;
+
+                case 'fly':
+                    let flyAngle = 0;
+                    animationId = setInterval(() => {
+                        flyAngle += 0.02;
+                        nounX = centerX + Math.cos(flyAngle) * 150;
+                        nounY = centerY + Math.sin(flyAngle * 2) * 80 - 50;
+                        verbPath.setAttribute('d', `M${nounX - 40},${nounY} L${nounX + 40},${nounY - 20}`);
+                    }, 16);
+                    break;
+
+                case 'swim':
+                    let swimPhase = 0;
+                    animationId = setInterval(() => {
+                        swimPhase += 0.05;
+                        nounX = centerX + Math.sin(swimPhase) * 120;
+                        nounY = centerY + Math.cos(swimPhase * 0.5) * 30;
+                        verbPath.setAttribute('d', `M${nounX - 50},${nounY} Q${nounX},${nounY - 20} L${nounX + 50},${nounY}`);
+                    }, 16);
+                    break;
+
+                case 'sleep':
+                    let sleepPhase = 0;
+                    animationId = setInterval(() => {
+                        sleepPhase += 0.03;
+                        // Gentle breathing motion
+                        const scale = 1 + Math.sin(sleepPhase) * 0.05;
+                        nounCircle.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                        verbPath.setAttribute('d', '');
+                    }, 16);
+                    verbArrow.classList.remove('visible');
+                    break;
+
+                case 'spin':
+                    let spinAngle = 0;
+                    animationId = setInterval(() => {
+                        spinAngle += 5;
+                        nounCircle.style.transform = `translate(-50%, -50%) rotate(${spinAngle}deg)`;
+                        verbPath.setAttribute('d', '');
+                    }, 16);
+                    verbArrow.classList.remove('visible');
+                    break;
+            }
+        }
+
+        function stopAnimation() {
+            if (animationId) {
+                clearInterval(animationId);
+                animationId = null;
+            }
+            verbArrow.classList.remove('visible');
+            nounCircle.style.transform = 'translate(-50%, -50%)';
+        }
+
+        // Dragging
+        nounCircle.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            stopAnimation();
+            currentVerb = null;
+            document.querySelectorAll('.verb-btn').forEach(b => b.classList.remove('active'));
+            updateSentence();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const rect = stage.getBoundingClientRect();
+                nounX = e.clientX - rect.left;
+                nounY = e.clientY - rect.top;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.8;
+            speechSynthesis.speak(utterance);
+        }
+
+        // Initial position
+        nounX = stage.offsetWidth / 2;
+        nounY = stage.offsetHeight / 2 - 30;
+        updateSentence();
+    </script>
+</body>
+</html>

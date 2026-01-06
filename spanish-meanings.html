@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Word Meanings</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 200px;
+            background: #111;
+            border-right: 1px solid #222;
+            padding: 60px 0 20px;
+            overflow-y: auto;
+        }
+        .sidebar h2 {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 16px;
+            margin-bottom: 12px;
+        }
+        .word-list {
+            list-style: none;
+        }
+        .word-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 15px;
+        }
+        .word-item:hover {
+            background: #1a1a1a;
+        }
+        .word-item.active {
+            background: #1a1a1a;
+            border-left-color: #F97316;
+            color: #F97316;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .radial-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+        }
+
+        .center-word {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 42px;
+            font-weight: 700;
+            color: #F97316;
+            text-align: center;
+            z-index: 10;
+        }
+        .center-word .translation {
+            font-size: 14px;
+            color: #666;
+            font-weight: 400;
+            margin-top: 4px;
+        }
+
+        .meaning-node {
+            position: absolute;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 12px 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            min-width: 100px;
+            transform: translate(-50%, -50%);
+        }
+        .meaning-node:hover {
+            border-color: #F97316;
+            background: #222;
+        }
+        .meaning-node.active {
+            border-color: #F97316;
+            background: #2a1a10;
+        }
+        .meaning-node .meaning {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .meaning-node .hint {
+            font-size: 11px;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .branch-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, #F97316, #333);
+            transform-origin: left center;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        .drawer {
+            width: 0;
+            background: #111;
+            border-left: 1px solid #222;
+            overflow: hidden;
+            transition: width 0.3s;
+        }
+        .drawer.open {
+            width: 380px;
+        }
+        .drawer-content {
+            width: 380px;
+            padding: 30px;
+            overflow-y: auto;
+            height: 100%;
+        }
+        .drawer-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #F97316;
+            margin-bottom: 8px;
+        }
+        .drawer-meaning {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #222;
+        }
+        .example {
+            margin-bottom: 20px;
+        }
+        .example-spanish {
+            font-size: 16px;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .example-spanish .highlight {
+            color: #F97316;
+            font-weight: 600;
+        }
+        .example-english {
+            font-size: 14px;
+            color: #666;
+        }
+        .close-drawer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .close-drawer:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <a href="spanish.html" class="back-link">← Back</a>
+
+    <div class="layout">
+        <div class="sidebar">
+            <h2>Words</h2>
+            <ul class="word-list" id="wordList"></ul>
+        </div>
+
+        <div class="main">
+            <div class="radial-container" id="radialContainer">
+                <div class="center-word" id="centerWord">
+                    <div class="word"></div>
+                    <div class="translation"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="drawer" id="drawer">
+            <button class="close-drawer" onclick="closeDrawer()">×</button>
+            <div class="drawer-content" id="drawerContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const words = {
+            "ya": {
+                base: "already (broad)",
+                meanings: [
+                    {
+                        meaning: "already",
+                        hint: "completed action",
+                        examples: [
+                            { es: "Ya lo hice", en: "I already did it" },
+                            { es: "Ya comí", en: "I already ate" },
+                            { es: "Ya lo sé", en: "I already know" }
+                        ]
+                    },
+                    {
+                        meaning: "now",
+                        hint: "immediate",
+                        examples: [
+                            { es: "Ya voy", en: "I'm coming (right now)" },
+                            { es: "Ya está", en: "It's done / There you go" },
+                            { es: "Ya me voy", en: "I'm leaving now" }
+                        ]
+                    },
+                    {
+                        meaning: "not anymore",
+                        hint: "with 'no'",
+                        examples: [
+                            { es: "Ya no vive aquí", en: "He doesn't live here anymore" },
+                            { es: "Ya no me importa", en: "I don't care anymore" },
+                            { es: "Ya no quiero", en: "I don't want to anymore" }
+                        ]
+                    },
+                    {
+                        meaning: "soon / eventually",
+                        hint: "future certainty",
+                        examples: [
+                            { es: "Ya verás", en: "You'll see" },
+                            { es: "Ya llegará", en: "He'll arrive eventually" },
+                            { es: "Ya aprenderás", en: "You'll learn (in time)" }
+                        ]
+                    },
+                    {
+                        meaning: "emphatic",
+                        hint: "enough! / okay!",
+                        examples: [
+                            { es: "¡Ya!", en: "Enough! / Stop it!" },
+                            { es: "Ya, ya, ya", en: "Okay, okay, okay" },
+                            { es: "¡Ya basta!", en: "That's enough!" }
+                        ]
+                    }
+                ]
+            },
+            "quedar": {
+                base: "to remain (broad)",
+                meanings: [
+                    {
+                        meaning: "to stay",
+                        hint: "remain in place",
+                        examples: [
+                            { es: "Me quedo en casa", en: "I'm staying home" },
+                            { es: "Quédate aquí", en: "Stay here" },
+                            { es: "Se quedó dormido", en: "He fell asleep (stayed asleep)" }
+                        ]
+                    },
+                    {
+                        meaning: "to be located",
+                        hint: "where is...?",
+                        examples: [
+                            { es: "¿Dónde queda el banco?", en: "Where is the bank?" },
+                            { es: "Queda muy lejos", en: "It's very far" },
+                            { es: "Queda a la derecha", en: "It's on the right" }
+                        ]
+                    },
+                    {
+                        meaning: "to have left",
+                        hint: "remaining amount",
+                        examples: [
+                            { es: "Me quedan 5 euros", en: "I have 5 euros left" },
+                            { es: "No queda leche", en: "There's no milk left" },
+                            { es: "¿Cuánto tiempo queda?", en: "How much time is left?" }
+                        ]
+                    },
+                    {
+                        meaning: "to fit / suit",
+                        hint: "clothing, appearance",
+                        examples: [
+                            { es: "Te queda muy bien", en: "It looks great on you" },
+                            { es: "Esta camisa me queda grande", en: "This shirt is too big on me" },
+                            { es: "El rojo te queda mejor", en: "Red suits you better" }
+                        ]
+                    },
+                    {
+                        meaning: "to meet up",
+                        hint: "make plans",
+                        examples: [
+                            { es: "¿Quedamos a las 8?", en: "Shall we meet at 8?" },
+                            { es: "Quedé con María", en: "I'm meeting up with María" },
+                            { es: "¿Dónde quedamos?", en: "Where shall we meet?" }
+                        ]
+                    },
+                    {
+                        meaning: "to agree",
+                        hint: "reach agreement",
+                        examples: [
+                            { es: "Quedamos en eso", en: "We agreed on that" },
+                            { es: "¿En qué quedamos?", en: "What did we agree on?" },
+                            { es: "Quedamos en vernos mañana", en: "We agreed to meet tomorrow" }
+                        ]
+                    }
+                ]
+            },
+            "llevar": {
+                base: "to carry (broad)",
+                meanings: [
+                    {
+                        meaning: "to carry / bring",
+                        hint: "transport",
+                        examples: [
+                            { es: "Llevo los libros", en: "I'm carrying the books" },
+                            { es: "¿Puedes llevar esto?", en: "Can you bring this?" },
+                            { es: "Llévalo a la cocina", en: "Take it to the kitchen" }
+                        ]
+                    },
+                    {
+                        meaning: "to wear",
+                        hint: "clothing",
+                        examples: [
+                            { es: "Llevo camisa negra", en: "I'm wearing a black shirt" },
+                            { es: "¿Qué vas a llevar?", en: "What are you going to wear?" },
+                            { es: "Siempre lleva gafas", en: "He always wears glasses" }
+                        ]
+                    },
+                    {
+                        meaning: "to take someone",
+                        hint: "give a ride",
+                        examples: [
+                            { es: "Te llevo al aeropuerto", en: "I'll take you to the airport" },
+                            { es: "Mi madre me lleva", en: "My mom is taking me" },
+                            { es: "¿Me llevas a casa?", en: "Can you take me home?" }
+                        ]
+                    },
+                    {
+                        meaning: "have been doing",
+                        hint: "duration of time",
+                        examples: [
+                            { es: "Llevo 3 años aquí", en: "I've been here 3 years" },
+                            { es: "Llevo una hora esperando", en: "I've been waiting an hour" },
+                            { es: "¿Cuánto tiempo llevas estudiando?", en: "How long have you been studying?" }
+                        ]
+                    },
+                    {
+                        meaning: "to lead to",
+                        hint: "path, direction",
+                        examples: [
+                            { es: "Este camino lleva al centro", en: "This road leads downtown" },
+                            { es: "¿A dónde lleva esta calle?", en: "Where does this street lead?" },
+                            { es: "Eso no lleva a nada", en: "That leads nowhere" }
+                        ]
+                    }
+                ]
+            },
+            "hasta": {
+                base: "until (broad)",
+                meanings: [
+                    {
+                        meaning: "until",
+                        hint: "time limit",
+                        examples: [
+                            { es: "Hasta mañana", en: "Until tomorrow / See you tomorrow" },
+                            { es: "Trabajo hasta las 5", en: "I work until 5" },
+                            { es: "Espera hasta que llegue", en: "Wait until he arrives" }
+                        ]
+                    },
+                    {
+                        meaning: "up to",
+                        hint: "spatial limit",
+                        examples: [
+                            { es: "Hasta el techo", en: "Up to the ceiling" },
+                            { es: "El agua me llegaba hasta la cintura", en: "The water came up to my waist" },
+                            { es: "Camina hasta la esquina", en: "Walk up to the corner" }
+                        ]
+                    },
+                    {
+                        meaning: "even",
+                        hint: "surprising inclusion",
+                        examples: [
+                            { es: "Hasta mi madre lo sabe", en: "Even my mother knows" },
+                            { es: "Hasta los niños entienden", en: "Even children understand" },
+                            { es: "Hasta él vino", en: "Even he came" }
+                        ]
+                    },
+                    {
+                        meaning: "as many as",
+                        hint: "quantity limit",
+                        examples: [
+                            { es: "Hasta 100 personas", en: "Up to 100 people" },
+                            { es: "Puedes ganar hasta mil euros", en: "You can earn up to 1000 euros" },
+                            { es: "Tardó hasta 3 horas", en: "It took as long as 3 hours" }
+                        ]
+                    }
+                ]
+            },
+            "como": {
+                base: "like / as (broad)",
+                meanings: [
+                    {
+                        meaning: "like / as",
+                        hint: "comparison",
+                        examples: [
+                            { es: "Es como su padre", en: "He's like his father" },
+                            { es: "Hazlo como yo", en: "Do it like me" },
+                            { es: "Blanco como la nieve", en: "White as snow" }
+                        ]
+                    },
+                    {
+                        meaning: "since / because",
+                        hint: "cause (start of sentence)",
+                        examples: [
+                            { es: "Como no viniste, me fui", en: "Since you didn't come, I left" },
+                            { es: "Como estaba lloviendo...", en: "Since it was raining..." },
+                            { es: "Como no tenía dinero...", en: "Because I didn't have money..." }
+                        ]
+                    },
+                    {
+                        meaning: "about / around",
+                        hint: "approximation",
+                        examples: [
+                            { es: "Había como 20 personas", en: "There were about 20 people" },
+                            { es: "Cuesta como 50 euros", en: "It costs around 50 euros" },
+                            { es: "Tardé como una hora", en: "It took me about an hour" }
+                        ]
+                    },
+                    {
+                        meaning: "how",
+                        hint: "question word (with accent)",
+                        examples: [
+                            { es: "¿Cómo estás?", en: "How are you?" },
+                            { es: "¿Cómo se dice?", en: "How do you say it?" },
+                            { es: "No sé cómo hacerlo", en: "I don't know how to do it" }
+                        ]
+                    },
+                    {
+                        meaning: "if",
+                        hint: "warning (+ subjunctive)",
+                        examples: [
+                            { es: "Como no estudies, vas a reprobar", en: "If you don't study, you'll fail" },
+                            { es: "Como llegues tarde...", en: "If you arrive late..." },
+                            { es: "Como no me hagas caso...", en: "If you don't listen to me..." }
+                        ]
+                    }
+                ]
+            },
+            "mismo": {
+                base: "same (broad)",
+                meanings: [
+                    {
+                        meaning: "same",
+                        hint: "identical",
+                        examples: [
+                            { es: "El mismo día", en: "The same day" },
+                            { es: "La misma persona", en: "The same person" },
+                            { es: "Es lo mismo", en: "It's the same thing" }
+                        ]
+                    },
+                    {
+                        meaning: "-self",
+                        hint: "emphasis on person",
+                        examples: [
+                            { es: "Yo mismo lo hice", en: "I did it myself" },
+                            { es: "Ella misma me lo dijo", en: "She herself told me" },
+                            { es: "Tú mismo verás", en: "You yourself will see" }
+                        ]
+                    },
+                    {
+                        meaning: "right (here/now)",
+                        hint: "emphatic location/time",
+                        examples: [
+                            { es: "Ahora mismo", en: "Right now" },
+                            { es: "Aquí mismo", en: "Right here" },
+                            { es: "Hoy mismo", en: "This very day" }
+                        ]
+                    },
+                    {
+                        meaning: "very / exact",
+                        hint: "precision",
+                        examples: [
+                            { es: "En el centro mismo", en: "In the very center" },
+                            { es: "Eso mismo", en: "That very thing / Exactly that" },
+                            { es: "Por eso mismo", en: "For that very reason" }
+                        ]
+                    }
+                ]
+            },
+            "dejar": {
+                base: "to leave (broad)",
+                meanings: [
+                    {
+                        meaning: "to leave behind",
+                        hint: "abandon / place",
+                        examples: [
+                            { es: "Dejé las llaves en casa", en: "I left the keys at home" },
+                            { es: "No dejes tus cosas aquí", en: "Don't leave your things here" },
+                            { es: "Dejó a su familia", en: "He left his family" }
+                        ]
+                    },
+                    {
+                        meaning: "to let / allow",
+                        hint: "permission",
+                        examples: [
+                            { es: "Déjame ir", en: "Let me go" },
+                            { es: "No me dejan salir", en: "They don't let me go out" },
+                            { es: "Deja que te ayude", en: "Let me help you" }
+                        ]
+                    },
+                    {
+                        meaning: "to stop doing",
+                        hint: "cease (+ de)",
+                        examples: [
+                            { es: "Deja de hablar", en: "Stop talking" },
+                            { es: "Dejó de fumar", en: "He stopped smoking" },
+                            { es: "No deja de llover", en: "It won't stop raining" }
+                        ]
+                    },
+                    {
+                        meaning: "to lend",
+                        hint: "Latin America",
+                        examples: [
+                            { es: "¿Me dejas tu carro?", en: "Can you lend me your car?" },
+                            { es: "Déjame 20 pesos", en: "Lend me 20 pesos" },
+                            { es: "Te dejo mi paraguas", en: "I'll lend you my umbrella" }
+                        ]
+                    },
+                    {
+                        meaning: "to leave (in a state)",
+                        hint: "result",
+                        examples: [
+                            { es: "Me dejó sorprendido", en: "It left me surprised" },
+                            { es: "La noticia lo dejó triste", en: "The news left him sad" },
+                            { es: "Déjalo limpio", en: "Leave it clean" }
+                        ]
+                    }
+                ]
+            },
+            "dar": {
+                base: "to give (broad)",
+                meanings: [
+                    {
+                        meaning: "to give",
+                        hint: "hand over",
+                        examples: [
+                            { es: "Dame el libro", en: "Give me the book" },
+                            { es: "Le di un regalo", en: "I gave her a gift" },
+                            { es: "¿Me das agua?", en: "Can you give me water?" }
+                        ]
+                    },
+                    {
+                        meaning: "to take (a walk, etc.)",
+                        hint: "with certain nouns",
+                        examples: [
+                            { es: "Dar un paseo", en: "To take a walk" },
+                            { es: "Dar un salto", en: "To take a jump" },
+                            { es: "Dar una vuelta", en: "To take a stroll" }
+                        ]
+                    },
+                    {
+                        meaning: "to hit / press",
+                        hint: "darle a",
+                        examples: [
+                            { es: "Dale al botón", en: "Press the button" },
+                            { es: "Le di a la pelota", en: "I hit the ball" },
+                            { es: "Dale más fuerte", en: "Hit it harder" }
+                        ]
+                    },
+                    {
+                        meaning: "to face / overlook",
+                        hint: "direction",
+                        examples: [
+                            { es: "La ventana da al jardín", en: "The window faces the garden" },
+                            { es: "Mi casa da a la calle", en: "My house overlooks the street" },
+                            { es: "¿A dónde da esta puerta?", en: "Where does this door lead?" }
+                        ]
+                    },
+                    {
+                        meaning: "to realize",
+                        hint: "darse cuenta",
+                        examples: [
+                            { es: "Me di cuenta del error", en: "I realized the mistake" },
+                            { es: "No se dio cuenta", en: "He didn't realize" },
+                            { es: "Date cuenta", en: "Realize / Notice" }
+                        ]
+                    }
+                ]
+            },
+            "poner": {
+                base: "to put (broad)",
+                meanings: [
+                    {
+                        meaning: "to put / place",
+                        hint: "basic meaning",
+                        examples: [
+                            { es: "Pon el libro aquí", en: "Put the book here" },
+                            { es: "¿Dónde lo pongo?", en: "Where should I put it?" },
+                            { es: "Ponlo en la mesa", en: "Put it on the table" }
+                        ]
+                    },
+                    {
+                        meaning: "to turn on",
+                        hint: "devices, media",
+                        examples: [
+                            { es: "Pon la tele", en: "Turn on the TV" },
+                            { es: "¿Pongo música?", en: "Shall I put on music?" },
+                            { es: "Pon el aire acondicionado", en: "Turn on the AC" }
+                        ]
+                    },
+                    {
+                        meaning: "to make (feel)",
+                        hint: "emotional state",
+                        examples: [
+                            { es: "Me pone nervioso", en: "It makes me nervous" },
+                            { es: "Eso me pone triste", en: "That makes me sad" },
+                            { es: "Me pone de mal humor", en: "It puts me in a bad mood" }
+                        ]
+                    },
+                    {
+                        meaning: "to set (table)",
+                        hint: "prepare",
+                        examples: [
+                            { es: "Pon la mesa", en: "Set the table" },
+                            { es: "Ya puse los platos", en: "I already set out the plates" },
+                            { es: "Ayúdame a poner la mesa", en: "Help me set the table" }
+                        ]
+                    },
+                    {
+                        meaning: "to become",
+                        hint: "ponerse",
+                        examples: [
+                            { es: "Se puso rojo", en: "He turned red / blushed" },
+                            { es: "Me puse enfermo", en: "I got sick" },
+                            { es: "Se puso a llorar", en: "She started crying" }
+                        ]
+                    },
+                    {
+                        meaning: "to put on",
+                        hint: "ponerse (clothes)",
+                        examples: [
+                            { es: "Ponte el abrigo", en: "Put on your coat" },
+                            { es: "Me puse los zapatos", en: "I put on my shoes" },
+                            { es: "¿Qué me pongo?", en: "What should I wear?" }
+                        ]
+                    }
+                ]
+            },
+            "tocar": {
+                base: "to touch (broad)",
+                meanings: [
+                    {
+                        meaning: "to touch",
+                        hint: "physical contact",
+                        examples: [
+                            { es: "No lo toques", en: "Don't touch it" },
+                            { es: "Tócalo, es suave", en: "Touch it, it's soft" },
+                            { es: "Me tocó el hombro", en: "He touched my shoulder" }
+                        ]
+                    },
+                    {
+                        meaning: "to play",
+                        hint: "instrument",
+                        examples: [
+                            { es: "Toca la guitarra", en: "She plays guitar" },
+                            { es: "¿Sabes tocar el piano?", en: "Do you know how to play piano?" },
+                            { es: "Tocaron una canción", en: "They played a song" }
+                        ]
+                    },
+                    {
+                        meaning: "to knock",
+                        hint: "door, bell",
+                        examples: [
+                            { es: "Alguien toca la puerta", en: "Someone's knocking" },
+                            { es: "Toca el timbre", en: "Ring the doorbell" },
+                            { es: "Tocaron tres veces", en: "They knocked three times" }
+                        ]
+                    },
+                    {
+                        meaning: "to be one's turn",
+                        hint: "turn / responsibility",
+                        examples: [
+                            { es: "Me toca a mí", en: "It's my turn" },
+                            { es: "Te toca pagar", en: "It's your turn to pay" },
+                            { es: "¿A quién le toca?", en: "Whose turn is it?" }
+                        ]
+                    },
+                    {
+                        meaning: "to win (lottery)",
+                        hint: "receive by luck",
+                        examples: [
+                            { es: "Me tocó la lotería", en: "I won the lottery" },
+                            { es: "Le tocó un premio", en: "He won a prize" },
+                            { es: "Ojalá me toque", en: "I hope I win" }
+                        ]
+                    }
+                ]
+            },
+            "sino": {
+                base: "but (contrast)",
+                meanings: [
+                    {
+                        meaning: "but rather",
+                        hint: "after negative",
+                        examples: [
+                            { es: "No es azul, sino verde", en: "It's not blue, but green" },
+                            { es: "No quiero té, sino café", en: "I don't want tea, but coffee" },
+                            { es: "No fue él, sino ella", en: "It wasn't him, but her" }
+                        ]
+                    },
+                    {
+                        meaning: "but also",
+                        hint: "no solo... sino también",
+                        examples: [
+                            { es: "No solo habla español, sino también francés", en: "He speaks not only Spanish but also French" },
+                            { es: "No solo es inteligente, sino trabajador", en: "He's not only smart but hardworking" },
+                            { es: "No solo canta, sino que baila", en: "She not only sings but dances" }
+                        ]
+                    },
+                    {
+                        meaning: "except",
+                        hint: "exclusion",
+                        examples: [
+                            { es: "No hace sino quejarse", en: "He does nothing but complain" },
+                            { es: "¿Quién sino tú?", en: "Who but you?" },
+                            { es: "Nadie sino él lo sabe", en: "No one but him knows" }
+                        ]
+                    }
+                ]
+            },
+            "aún": {
+                base: "still / even",
+                meanings: [
+                    {
+                        meaning: "still / yet",
+                        hint: "aún (with accent)",
+                        examples: [
+                            { es: "Aún no ha llegado", en: "He still hasn't arrived" },
+                            { es: "Aún estoy esperando", en: "I'm still waiting" },
+                            { es: "¿Aún vives ahí?", en: "Do you still live there?" }
+                        ]
+                    },
+                    {
+                        meaning: "even",
+                        hint: "aun (no accent)",
+                        examples: [
+                            { es: "Aun así, lo hice", en: "Even so, I did it" },
+                            { es: "Aun cuando llueve, sale", en: "Even when it rains, he goes out" },
+                            { es: "Ni aun con ayuda", en: "Not even with help" }
+                        ]
+                    },
+                    {
+                        meaning: "even more",
+                        hint: "aún más",
+                        examples: [
+                            { es: "Aún mejor", en: "Even better" },
+                            { es: "Aún más difícil", en: "Even more difficult" },
+                            { es: "Aún peor", en: "Even worse" }
+                        ]
+                    }
+                ]
+            },
+            "apenas": {
+                base: "barely (broad)",
+                meanings: [
+                    {
+                        meaning: "barely / hardly",
+                        hint: "almost not",
+                        examples: [
+                            { es: "Apenas puedo verlo", en: "I can barely see it" },
+                            { es: "Apenas tengo dinero", en: "I barely have any money" },
+                            { es: "Apenas lo conozco", en: "I hardly know him" }
+                        ]
+                    },
+                    {
+                        meaning: "just / only",
+                        hint: "small amount",
+                        examples: [
+                            { es: "Apenas tiene 5 años", en: "He's only 5 years old" },
+                            { es: "Apenas son las 8", en: "It's only 8 o'clock" },
+                            { es: "Hace apenas una hora", en: "Just an hour ago" }
+                        ]
+                    },
+                    {
+                        meaning: "as soon as",
+                        hint: "time conjunction",
+                        examples: [
+                            { es: "Apenas llegue, te llamo", en: "As soon as I arrive, I'll call you" },
+                            { es: "Apenas lo vi, lo supe", en: "As soon as I saw it, I knew" },
+                            { es: "Apenas salió, empezó a llover", en: "As soon as he left, it started raining" }
+                        ]
+                    }
+                ]
+            },
+            "propio": {
+                base: "own (broad)",
+                meanings: [
+                    {
+                        meaning: "own",
+                        hint: "possession",
+                        examples: [
+                            { es: "Mi propia casa", en: "My own house" },
+                            { es: "Tiene su propio carro", en: "He has his own car" },
+                            { es: "Con mis propios ojos", en: "With my own eyes" }
+                        ]
+                    },
+                    {
+                        meaning: "himself/itself",
+                        hint: "the very person",
+                        examples: [
+                            { es: "El propio presidente", en: "The president himself" },
+                            { es: "La propia María me lo dijo", en: "María herself told me" },
+                            { es: "El propio autor", en: "The author himself" }
+                        ]
+                    },
+                    {
+                        meaning: "appropriate / suitable",
+                        hint: "fitting",
+                        examples: [
+                            { es: "No es propio de él", en: "It's not like him / not appropriate for him" },
+                            { es: "Es propio de la cultura", en: "It's typical of the culture" },
+                            { es: "Ropa propia para el invierno", en: "Clothes suitable for winter" }
+                        ]
+                    },
+                    {
+                        meaning: "characteristic",
+                        hint: "typical of",
+                        examples: [
+                            { es: "Es propio del país", en: "It's characteristic of the country" },
+                            { es: "Con el entusiasmo propio de su edad", en: "With the enthusiasm typical of his age" },
+                            { es: "El olor propio del mar", en: "The characteristic smell of the sea" }
+                        ]
+                    }
+                ]
+            },
+            "hacer": {
+                base: "to do/make (broad)",
+                meanings: [
+                    {
+                        meaning: "to do / make",
+                        hint: "basic meaning",
+                        examples: [
+                            { es: "¿Qué haces?", en: "What are you doing?" },
+                            { es: "Hice la tarea", en: "I did the homework" },
+                            { es: "Voy a hacer una torta", en: "I'm going to make a cake" }
+                        ]
+                    },
+                    {
+                        meaning: "weather",
+                        hint: "hace + weather",
+                        examples: [
+                            { es: "Hace frío", en: "It's cold" },
+                            { es: "Hace calor", en: "It's hot" },
+                            { es: "Hace buen tiempo", en: "The weather is nice" }
+                        ]
+                    },
+                    {
+                        meaning: "time ago",
+                        hint: "hace + time",
+                        examples: [
+                            { es: "Hace dos años", en: "Two years ago" },
+                            { es: "Hace mucho tiempo", en: "A long time ago" },
+                            { es: "¿Hace cuánto?", en: "How long ago?" }
+                        ]
+                    },
+                    {
+                        meaning: "to cause / have done",
+                        hint: "hacer + infinitive",
+                        examples: [
+                            { es: "Me hizo reír", en: "It made me laugh" },
+                            { es: "Hice arreglar el carro", en: "I had the car fixed" },
+                            { es: "Lo hice esperar", en: "I made him wait" }
+                        ]
+                    },
+                    {
+                        meaning: "to become",
+                        hint: "hacerse",
+                        examples: [
+                            { es: "Se hizo rico", en: "He became rich" },
+                            { es: "Se hizo tarde", en: "It got late" },
+                            { es: "Me hice médico", en: "I became a doctor" }
+                        ]
+                    },
+                    {
+                        meaning: "to pretend",
+                        hint: "hacerse + noun",
+                        examples: [
+                            { es: "Se hace el tonto", en: "He plays dumb" },
+                            { es: "No te hagas", en: "Don't pretend / Don't play innocent" },
+                            { es: "Se hizo el dormido", en: "He pretended to be asleep" }
+                        ]
+                    }
+                ]
+            },
+            "pasar": {
+                base: "to pass (broad)",
+                meanings: [
+                    {
+                        meaning: "to pass / go by",
+                        hint: "movement",
+                        examples: [
+                            { es: "El tren ya pasó", en: "The train already passed" },
+                            { es: "Pasé por tu casa", en: "I passed by your house" },
+                            { es: "Pasa la sal", en: "Pass the salt" }
+                        ]
+                    },
+                    {
+                        meaning: "to happen",
+                        hint: "events",
+                        examples: [
+                            { es: "¿Qué pasó?", en: "What happened?" },
+                            { es: "No pasa nada", en: "Nothing's wrong / No worries" },
+                            { es: "¿Qué te pasa?", en: "What's wrong with you?" }
+                        ]
+                    },
+                    {
+                        meaning: "to spend (time)",
+                        hint: "duration",
+                        examples: [
+                            { es: "Pasé el verano en España", en: "I spent the summer in Spain" },
+                            { es: "Pasamos un buen rato", en: "We had a good time" },
+                            { es: "¿Cómo pasaste el fin de semana?", en: "How did you spend the weekend?" }
+                        ]
+                    },
+                    {
+                        meaning: "to come in",
+                        hint: "enter",
+                        examples: [
+                            { es: "¡Pasa!", en: "Come in!" },
+                            { es: "Pase adelante", en: "Please come in" },
+                            { es: "¿Puedo pasar?", en: "May I come in?" }
+                        ]
+                    },
+                    {
+                        meaning: "to go too far",
+                        hint: "pasarse",
+                        examples: [
+                            { es: "Te pasaste", en: "You went too far" },
+                            { es: "No te pases", en: "Don't overdo it" },
+                            { es: "Se pasó de la raya", en: "He crossed the line" }
+                        ]
+                    }
+                ]
+            },
+            "salir": {
+                base: "to leave/go out (broad)",
+                meanings: [
+                    {
+                        meaning: "to leave / go out",
+                        hint: "exit",
+                        examples: [
+                            { es: "Salgo a las 5", en: "I leave at 5" },
+                            { es: "Sal de aquí", en: "Get out of here" },
+                            { es: "¿A qué hora sales?", en: "What time do you leave?" }
+                        ]
+                    },
+                    {
+                        meaning: "to go out (socially)",
+                        hint: "entertainment",
+                        examples: [
+                            { es: "Vamos a salir esta noche", en: "We're going out tonight" },
+                            { es: "Salí con mis amigos", en: "I went out with my friends" },
+                            { es: "¿Quieres salir?", en: "Do you want to go out?" }
+                        ]
+                    },
+                    {
+                        meaning: "to date",
+                        hint: "romantic",
+                        examples: [
+                            { es: "Están saliendo", en: "They're dating" },
+                            { es: "Salgo con María", en: "I'm dating María" },
+                            { es: "¿Hace cuánto salen?", en: "How long have you been dating?" }
+                        ]
+                    },
+                    {
+                        meaning: "to turn out",
+                        hint: "result",
+                        examples: [
+                            { es: "Salió bien", en: "It turned out well" },
+                            { es: "La foto salió borrosa", en: "The photo came out blurry" },
+                            { es: "¿Cómo te salió?", en: "How did it turn out?" }
+                        ]
+                    },
+                    {
+                        meaning: "to appear / come up",
+                        hint: "emerge",
+                        examples: [
+                            { es: "Salió en las noticias", en: "It appeared on the news" },
+                            { es: "Le salió un grano", en: "He got a pimple" },
+                            { es: "Salió el sol", en: "The sun came out" }
+                        ]
+                    }
+                ]
+            },
+            "volver": {
+                base: "to return (broad)",
+                meanings: [
+                    {
+                        meaning: "to return / come back",
+                        hint: "go back",
+                        examples: [
+                            { es: "Vuelvo enseguida", en: "I'll be right back" },
+                            { es: "¿Cuándo vuelves?", en: "When are you coming back?" },
+                            { es: "Volvió a casa", en: "He returned home" }
+                        ]
+                    },
+                    {
+                        meaning: "to do again",
+                        hint: "volver a + infinitive",
+                        examples: [
+                            { es: "Volvió a llamar", en: "He called again" },
+                            { es: "No lo vuelvas a hacer", en: "Don't do it again" },
+                            { es: "Vuelve a intentar", en: "Try again" }
+                        ]
+                    },
+                    {
+                        meaning: "to become",
+                        hint: "volverse",
+                        examples: [
+                            { es: "Se volvió loco", en: "He went crazy" },
+                            { es: "Se volvió muy serio", en: "He became very serious" },
+                            { es: "Me estoy volviendo viejo", en: "I'm getting old" }
+                        ]
+                    },
+                    {
+                        meaning: "to turn around",
+                        hint: "volverse (physical)",
+                        examples: [
+                            { es: "Se volvió para mirarme", en: "He turned around to look at me" },
+                            { es: "Vuélvete", en: "Turn around" },
+                            { es: "No te vuelvas", en: "Don't turn around" }
+                        ]
+                    }
+                ]
+            },
+            "echar": {
+                base: "to throw (broad)",
+                meanings: [
+                    {
+                        meaning: "to throw / toss",
+                        hint: "basic meaning",
+                        examples: [
+                            { es: "Echa la basura", en: "Throw out the trash" },
+                            { es: "Échalo aquí", en: "Toss it here" },
+                            { es: "Echar una moneda", en: "To toss a coin" }
+                        ]
+                    },
+                    {
+                        meaning: "to pour",
+                        hint: "liquids",
+                        examples: [
+                            { es: "Échale más agua", en: "Pour more water" },
+                            { es: "Echar leche al café", en: "Pour milk in the coffee" },
+                            { es: "No le eches tanta sal", en: "Don't put so much salt" }
+                        ]
+                    },
+                    {
+                        meaning: "to fire / kick out",
+                        hint: "expel",
+                        examples: [
+                            { es: "Lo echaron del trabajo", en: "They fired him" },
+                            { es: "Me echaron de la fiesta", en: "They kicked me out of the party" },
+                            { es: "¡Échenlo!", en: "Throw him out!" }
+                        ]
+                    },
+                    {
+                        meaning: "to miss",
+                        hint: "echar de menos",
+                        examples: [
+                            { es: "Te echo de menos", en: "I miss you" },
+                            { es: "Echo de menos mi país", en: "I miss my country" },
+                            { es: "¿Me echas de menos?", en: "Do you miss me?" }
+                        ]
+                    },
+                    {
+                        meaning: "to take a look / nap",
+                        hint: "echar un...",
+                        examples: [
+                            { es: "Echar un vistazo", en: "To take a look" },
+                            { es: "Echar una siesta", en: "To take a nap" },
+                            { es: "Échale un ojo", en: "Keep an eye on it" }
+                        ]
+                    },
+                    {
+                        meaning: "to blame",
+                        hint: "echar la culpa",
+                        examples: [
+                            { es: "Me echó la culpa", en: "He blamed me" },
+                            { es: "No me eches la culpa", en: "Don't blame me" },
+                            { es: "Siempre le echan la culpa", en: "They always blame him" }
+                        ]
+                    }
+                ]
+            },
+            "meter": {
+                base: "to put in (broad)",
+                meanings: [
+                    {
+                        meaning: "to put in / insert",
+                        hint: "basic meaning",
+                        examples: [
+                            { es: "Mete la llave", en: "Put in the key" },
+                            { es: "Mételo en la caja", en: "Put it in the box" },
+                            { es: "Metí el carro en el garaje", en: "I put the car in the garage" }
+                        ]
+                    },
+                    {
+                        meaning: "to score (goal)",
+                        hint: "sports",
+                        examples: [
+                            { es: "Metió un gol", en: "He scored a goal" },
+                            { es: "¡Métela!", en: "Score!" },
+                            { es: "Metieron tres goles", en: "They scored three goals" }
+                        ]
+                    },
+                    {
+                        meaning: "to get involved",
+                        hint: "meterse",
+                        examples: [
+                            { es: "No te metas", en: "Don't get involved / Stay out of it" },
+                            { es: "Se metió en problemas", en: "He got into trouble" },
+                            { es: "¿Por qué te metes?", en: "Why are you butting in?" }
+                        ]
+                    },
+                    {
+                        meaning: "to pick on",
+                        hint: "meterse con",
+                        examples: [
+                            { es: "No te metas conmigo", en: "Don't mess with me" },
+                            { es: "Se meten con él", en: "They pick on him" },
+                            { es: "¿Por qué te metes con ella?", en: "Why are you picking on her?" }
+                        ]
+                    },
+                    {
+                        meaning: "to hurry",
+                        hint: "meterle",
+                        examples: [
+                            { es: "¡Métele!", en: "Hurry up! / Step on it!" },
+                            { es: "Hay que meterle", en: "We need to hurry" },
+                            { es: "Métele más rápido", en: "Go faster" }
+                        ]
+                    }
+                ]
+            },
+            "caer": {
+                base: "to fall (broad)",
+                meanings: [
+                    {
+                        meaning: "to fall",
+                        hint: "physical",
+                        examples: [
+                            { es: "Se cayó de la silla", en: "He fell off the chair" },
+                            { es: "Me caí en la calle", en: "I fell in the street" },
+                            { es: "¡Cuidado, te vas a caer!", en: "Careful, you're going to fall!" }
+                        ]
+                    },
+                    {
+                        meaning: "to like / dislike (person)",
+                        hint: "caer bien/mal",
+                        examples: [
+                            { es: "Me cae bien", en: "I like him" },
+                            { es: "Me cae mal", en: "I don't like him" },
+                            { es: "¿Cómo te cae?", en: "What do you think of him?" }
+                        ]
+                    },
+                    {
+                        meaning: "to realize / get it",
+                        hint: "caer en cuenta",
+                        examples: [
+                            { es: "Ya caí", en: "Now I get it" },
+                            { es: "No caigo", en: "I don't get it" },
+                            { es: "¿Ya caíste?", en: "Do you get it now?" }
+                        ]
+                    },
+                    {
+                        meaning: "to drop by",
+                        hint: "caer por",
+                        examples: [
+                            { es: "Caigo por tu casa luego", en: "I'll drop by your place later" },
+                            { es: "Cayó sin avisar", en: "He showed up without warning" },
+                            { es: "¿Cuándo caes?", en: "When are you coming over?" }
+                        ]
+                    },
+                    {
+                        meaning: "to fall on (date)",
+                        hint: "dates/days",
+                        examples: [
+                            { es: "Mi cumpleaños cae en viernes", en: "My birthday falls on a Friday" },
+                            { es: "¿En qué día cae?", en: "What day does it fall on?" },
+                            { es: "Este año cae en lunes", en: "This year it falls on Monday" }
+                        ]
+                    }
+                ]
+            },
+            "seguir": {
+                base: "to follow (broad)",
+                meanings: [
+                    {
+                        meaning: "to follow",
+                        hint: "go after",
+                        examples: [
+                            { es: "Sígueme", en: "Follow me" },
+                            { es: "Lo siguió hasta su casa", en: "He followed him home" },
+                            { es: "Sigue las instrucciones", en: "Follow the instructions" }
+                        ]
+                    },
+                    {
+                        meaning: "to continue",
+                        hint: "keep going",
+                        examples: [
+                            { es: "Sigue recto", en: "Continue straight" },
+                            { es: "Sigue así", en: "Keep it up" },
+                            { es: "La fiesta sigue", en: "The party continues" }
+                        ]
+                    },
+                    {
+                        meaning: "to still be (doing)",
+                        hint: "ongoing state",
+                        examples: [
+                            { es: "Sigo trabajando", en: "I'm still working" },
+                            { es: "¿Sigues enojado?", en: "Are you still mad?" },
+                            { es: "Sigue lloviendo", en: "It's still raining" }
+                        ]
+                    },
+                    {
+                        meaning: "to keep (doing)",
+                        hint: "seguir + gerund",
+                        examples: [
+                            { es: "Sigue intentando", en: "Keep trying" },
+                            { es: "Siguió hablando", en: "He kept talking" },
+                            { es: "No sigas comiendo", en: "Stop eating (don't keep eating)" }
+                        ]
+                    }
+                ]
+            },
+            "acabar": {
+                base: "to finish (broad)",
+                meanings: [
+                    {
+                        meaning: "to finish",
+                        hint: "complete",
+                        examples: [
+                            { es: "Ya acabé", en: "I'm done" },
+                            { es: "Acaba tu comida", en: "Finish your food" },
+                            { es: "¿Cuándo acabas?", en: "When do you finish?" }
+                        ]
+                    },
+                    {
+                        meaning: "to run out",
+                        hint: "acabarse",
+                        examples: [
+                            { es: "Se acabó la leche", en: "We ran out of milk" },
+                            { es: "Se me acabó la paciencia", en: "I ran out of patience" },
+                            { es: "¡Se acabó!", en: "It's over! / That's it!" }
+                        ]
+                    },
+                    {
+                        meaning: "to have just (done)",
+                        hint: "acabar de",
+                        examples: [
+                            { es: "Acabo de llegar", en: "I just arrived" },
+                            { es: "Acaba de salir", en: "He just left" },
+                            { es: "Acabamos de comer", en: "We just ate" }
+                        ]
+                    },
+                    {
+                        meaning: "to end up",
+                        hint: "acabar + gerund",
+                        examples: [
+                            { es: "Acabó llorando", en: "She ended up crying" },
+                            { es: "Vas a acabar enfermo", en: "You're going to end up sick" },
+                            { es: "Acabaron peleando", en: "They ended up fighting" }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        const wordList = document.getElementById('wordList');
+        const centerWord = document.getElementById('centerWord');
+        const radialContainer = document.getElementById('radialContainer');
+        const drawer = document.getElementById('drawer');
+        const drawerContent = document.getElementById('drawerContent');
+
+        let currentWord = null;
+        let currentMeaning = null;
+
+        // Build word list
+        Object.keys(words).forEach((word, i) => {
+            const li = document.createElement('li');
+            li.className = 'word-item';
+            li.textContent = word;
+            li.addEventListener('click', () => selectWord(word));
+            wordList.appendChild(li);
+        });
+
+        function selectWord(word) {
+            currentWord = word;
+            currentMeaning = null;
+            closeDrawer();
+
+            // Update sidebar
+            document.querySelectorAll('.word-item').forEach(item => {
+                item.classList.toggle('active', item.textContent === word);
+            });
+
+            // Update center
+            centerWord.querySelector('.word').textContent = word;
+            centerWord.querySelector('.translation').textContent = words[word].base;
+
+            // Clear old nodes and lines
+            document.querySelectorAll('.meaning-node, .branch-line').forEach(el => el.remove());
+
+            // Create meaning nodes in radial layout
+            const meanings = words[word].meanings;
+            const centerX = 250;
+            const centerY = 250;
+            const radius = 180;
+
+            meanings.forEach((m, i) => {
+                const angle = (i / meanings.length) * 2 * Math.PI - Math.PI / 2;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+
+                // Create line
+                const line = document.createElement('div');
+                line.className = 'branch-line';
+                const lineLength = radius - 40;
+                const lineAngle = Math.atan2(y - centerY, x - centerX);
+                line.style.width = lineLength + 'px';
+                line.style.left = centerX + 'px';
+                line.style.top = centerY + 'px';
+                line.style.transform = `rotate(${lineAngle}rad)`;
+                radialContainer.appendChild(line);
+
+                // Create node
+                const node = document.createElement('div');
+                node.className = 'meaning-node';
+                node.style.left = x + 'px';
+                node.style.top = y + 'px';
+                node.innerHTML = `
+                    <div class="meaning">${m.meaning}</div>
+                    <div class="hint">${m.hint}</div>
+                `;
+                node.addEventListener('click', () => showExamples(word, i));
+                radialContainer.appendChild(node);
+            });
+        }
+
+        function showExamples(word, meaningIndex) {
+            currentMeaning = meaningIndex;
+            const m = words[word].meanings[meaningIndex];
+
+            // Update active state
+            document.querySelectorAll('.meaning-node').forEach((node, i) => {
+                node.classList.toggle('active', i === meaningIndex);
+            });
+
+            // Build drawer content
+            let html = `
+                <div class="drawer-title">${word}</div>
+                <div class="drawer-meaning">${m.meaning} — ${m.hint}</div>
+            `;
+
+            m.examples.forEach(ex => {
+                const highlighted = ex.es.replace(new RegExp(word, 'gi'), `<span class="highlight">$&</span>`);
+                html += `
+                    <div class="example">
+                        <div class="example-spanish">${highlighted}</div>
+                        <div class="example-english">${ex.en}</div>
+                    </div>
+                `;
+            });
+
+            drawerContent.innerHTML = html;
+            drawer.classList.add('open');
+        }
+
+        function closeDrawer() {
+            drawer.classList.remove('open');
+            document.querySelectorAll('.meaning-node').forEach(node => {
+                node.classList.remove('active');
+            });
+        }
+
+        // Select first word
+        selectWord(Object.keys(words)[0]);
+    </script>
+</body>
+</html>

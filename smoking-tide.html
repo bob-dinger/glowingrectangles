@@ -213,16 +213,52 @@
             margin-top: 2rem;
             font-size: 1.1rem;
         }
+
+        .play-container {
+            margin-bottom: 1rem;
+        }
+
+        .play-btn-large {
+            background: linear-gradient(to bottom, #4a8a5a, #3a7a4a);
+            border: 2px solid #6aba7a;
+            color: #e8fff0;
+            padding: 1rem 2.5rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(80, 180, 100, 0.3);
+        }
+
+        .play-btn-large:hover {
+            background: linear-gradient(to bottom, #5a9a6a, #4a8a5a);
+            box-shadow: 0 6px 30px rgba(80, 180, 100, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .wave-hint {
+            color: #6a8aaa;
+            font-size: 0.95rem;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
     <h1>THE TIDE OF SMOKING</h1>
     <p class="subtitle">A Century of Rise and Retreat</p>
 
+    <div class="play-container">
+        <button id="playBtn" class="play-btn-large">&#9658; Watch the Tide Rise and Fall</button>
+    </div>
+
+    <p class="wave-hint">The wave shows adoption — further from shore = more smokers</p>
+
     <div id="visualization"></div>
 
     <div class="controls">
-        <button id="playBtn">Play Animation</button>
         <button id="resetBtn">Reset</button>
     </div>
 
@@ -368,10 +404,10 @@
             .attr("offset", "100%")
             .attr("stop-color", "rgba(255,255,255,0.2)");
 
-        // Shore (right side - where wave comes from/returns to)
+        // Shore (left side - where wave comes from/returns to)
         svg.append("rect")
             .attr("class", "shore")
-            .attr("x", width - 60)
+            .attr("x", 0)
             .attr("y", 0)
             .attr("width", 60)
             .attr("height", height)
@@ -379,17 +415,17 @@
 
         // Sandy beach gradient
         svg.append("rect")
-            .attr("x", width - 100)
+            .attr("x", 60)
             .attr("y", 0)
             .attr("width", 40)
             .attr("height", height)
             .attr("fill", "#4a3a2a")
             .attr("opacity", 0.5);
 
-        // Scale for how far the wave reaches (left = further out to sea)
+        // Scale for how far the wave reaches (right = further out to sea)
         const xScale = d3.scaleLinear()
             .domain([0, 50]) // 0-50% smoking rate
-            .range([width - 100, 50]); // Right (shore) to Left (sea)
+            .range([100, width - 50]); // Left (shore) to Right (sea)
 
         // Year display
         const yearDisplay = d3.select("#visualization")
@@ -414,9 +450,9 @@
             .attr("class", "legend")
             .html(`
                 <div><strong>The Metaphor:</strong></div>
-                <div style="margin-top: 5px;">Shore = No smokers</div>
-                <div>Far out to sea = Peak adoption</div>
-                <div style="margin-top: 10px;">Wave distance shows</div>
+                <div style="margin-top: 5px;">Shore (left) = No smokers</div>
+                <div>Further right = More adoption</div>
+                <div style="margin-top: 10px;">Wave reach shows</div>
                 <div>smoking prevalence</div>
             `);
 
@@ -467,18 +503,18 @@
         function updateWave(rate, phase) {
             const reach = xScale(rate);
 
-            // Create wave paths with different amplitudes
-            const backPoints = createWavePath(reach - 30, 15, phase, 0);
+            // Create wave paths with different amplitudes (wave goes right)
+            const backPoints = createWavePath(reach + 30, 15, phase, 0);
             const midPoints = createWavePath(reach, 20, phase + 0.5, 0);
-            const frontPoints = createWavePath(reach + 20, 10, phase + 1, 0);
+            const frontPoints = createWavePath(reach - 20, 10, phase + 1, 0);
 
             // Convert to path
             const lineGen = d3.line().curve(d3.curveBasis);
 
-            // Add closing points to make filled shapes
-            const backPath = lineGen(backPoints) + ` L ${width - 60} ${height} L ${width - 60} 0 Z`;
-            const midPath = lineGen(midPoints) + ` L ${width - 60} ${height} L ${width - 60} 0 Z`;
-            const frontPath = lineGen(frontPoints) + ` L ${width - 60} ${height} L ${width - 60} 0 Z`;
+            // Add closing points to make filled shapes (close on left side)
+            const backPath = lineGen(backPoints) + ` L 60 ${height} L 60 0 Z`;
+            const midPath = lineGen(midPoints) + ` L 60 ${height} L 60 0 Z`;
+            const frontPath = lineGen(frontPoints) + ` L 60 ${height} L 60 0 Z`;
 
             backWave.attr("d", backPath);
             midWave.attr("d", midPath);
@@ -560,7 +596,7 @@
             isPlaying = true;
             currentYear = 1900;
             displayedRate = smokingData[0].rate;
-            document.getElementById("playBtn").textContent = "Playing...";
+            document.getElementById("playBtn").innerHTML = "&#9654; Playing...";
 
             const startYear = 1900;
             const endYear = 2024;
@@ -602,7 +638,7 @@
                     timelineInterval = requestAnimationFrame(animate);
                 } else {
                     isPlaying = false;
-                    document.getElementById("playBtn").textContent = "Play Again";
+                    document.getElementById("playBtn").innerHTML = "&#9658; Watch Again";
                     currentIndex = smokingData.length - 1;
                     displayedRate = smokingData[currentIndex].rate;
                 }
@@ -619,7 +655,7 @@
             displayedRate = smokingData[0].rate;
             smoothedWaveRate = smokingData[0].rate;
             updateDisplay(smokingData[0]);
-            document.getElementById("playBtn").textContent = "Play Animation";
+            document.getElementById("playBtn").innerHTML = "&#9658; Watch the Tide Rise and Fall";
         }
 
         document.getElementById("playBtn").addEventListener("click", playTimeline);
@@ -631,13 +667,13 @@
 
         const timeScale = d3.scaleLinear()
             .domain([1900, 2024])
-            .range([50, width - 100]);
+            .range([100, width - 50]);
 
         // Timeline line
         timelineGroup.append("line")
-            .attr("x1", 50)
+            .attr("x1", 100)
             .attr("y1", timelineY)
-            .attr("x2", width - 100)
+            .attr("x2", width - 50)
             .attr("y2", timelineY)
             .attr("stroke", "#4a6a8a")
             .attr("stroke-width", 2);
@@ -662,24 +698,24 @@
                 .text(year);
         });
 
-        // Add "SHORE" label
+        // Add "SHORE" label (left side)
         svg.append("text")
-            .attr("x", width - 30)
+            .attr("x", 30)
             .attr("y", height / 2)
             .attr("text-anchor", "middle")
             .attr("fill", "#6a5a4a")
             .attr("font-size", "14px")
-            .attr("transform", `rotate(-90, ${width - 30}, ${height / 2})`)
+            .attr("transform", `rotate(-90, 30, ${height / 2})`)
             .text("SHORE");
 
-        // Add "SEA" label
+        // Add "SEA" label (right side)
         svg.append("text")
-            .attr("x", 25)
+            .attr("x", width - 25)
             .attr("y", height / 2)
             .attr("text-anchor", "middle")
             .attr("fill", "#4a6a8a")
             .attr("font-size", "14px")
-            .attr("transform", `rotate(-90, 25, ${height / 2})`)
+            .attr("transform", `rotate(-90, ${width - 25}, ${height / 2})`)
             .text("OPEN SEA");
     </script>
 </body>

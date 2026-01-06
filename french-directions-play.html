@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directions Play - French - Glowing Gardens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 220px;
+            background: #111;
+            border-right: 1px solid #222;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .back-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 20px;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+        h1 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #3B82F6 0%, #EF4444 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tagline {
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .word-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .word-item {
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #888;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .word-item:hover {
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .word-item.active {
+            background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(239,68,68,0.2));
+            color: #fff;
+        }
+        .word-item .en {
+            font-size: 11px;
+            color: #555;
+        }
+        .word-item.active .en {
+            color: #888;
+        }
+        .stage {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .scene {
+            position: relative;
+            width: 500px;
+            height: 500px;
+        }
+        /* Main character - the big circle */
+        .main-circle {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+        }
+        .main-circle .face {
+            position: relative;
+            width: 60px;
+            height: 40px;
+        }
+        .main-circle .eye {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border-radius: 50%;
+            top: 0;
+        }
+        .main-circle .eye::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            top: 4px;
+            left: 4px;
+            transition: all 0.3s;
+        }
+        .main-circle .eye.left { left: 8px; }
+        .main-circle .eye.right { right: 8px; }
+        .main-circle .mouth {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 10px;
+            border: 3px solid #fff;
+            border-top: none;
+            border-radius: 0 0 20px 20px;
+        }
+
+        /* Small character circles */
+        .small-circle {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        }
+        .small-circle .face {
+            position: relative;
+            width: 28px;
+            height: 20px;
+        }
+        .small-circle .eye {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            top: 0;
+        }
+        .small-circle .eye::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+        }
+        .small-circle .eye.left { left: 2px; }
+        .small-circle .eye.right { right: 2px; }
+        .small-circle .mouth {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 5px;
+            border: 2px solid #fff;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+        }
+        .small-circle.visible {
+            opacity: 1;
+        }
+        .small-circle.extra {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+        }
+        .small-circle.extra .face {
+            width: 16px;
+            height: 12px;
+        }
+        .small-circle.extra .eye {
+            width: 5px;
+            height: 5px;
+        }
+        .small-circle.extra .eye::after {
+            width: 2px;
+            height: 2px;
+            top: 1px;
+            left: 1px;
+        }
+        .small-circle.extra .mouth {
+            width: 6px;
+            height: 3px;
+        }
+
+        /* Reference elements */
+        .ref-box {
+            position: absolute;
+            background: #333;
+            border: 2px solid #555;
+            border-radius: 8px;
+            opacity: 0;
+            transition: all 0.4s;
+        }
+        .ref-box.visible {
+            opacity: 1;
+        }
+        .ref-line {
+            position: absolute;
+            background: #444;
+            opacity: 0;
+            transition: all 0.4s;
+        }
+        .ref-line.visible {
+            opacity: 1;
+        }
+
+        /* Current word display */
+        .current-word {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+        .current-word .fr {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #3B82F6, #EF4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .current-word .en {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Arrow indicators */
+        .arrow {
+            position: absolute;
+            opacity: 0;
+            transition: all 0.4s;
+        }
+        .arrow.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <a href="french.html" class="back-link">← French</a>
+            <h1>Directions Play</h1>
+            <p class="tagline">Click a word, watch the circles</p>
+
+            <div class="word-list" id="wordList"></div>
+        </div>
+
+        <div class="stage">
+            <div class="scene" id="scene">
+                <!-- Reference elements -->
+                <div class="ref-box" id="refBox"></div>
+                <div class="ref-line" id="refLine"></div>
+
+                <!-- Main character -->
+                <div class="main-circle" id="mainCircle">
+                    <div class="face">
+                        <div class="eye left"></div>
+                        <div class="eye right"></div>
+                        <div class="mouth"></div>
+                    </div>
+                </div>
+
+                <!-- Small characters -->
+                <div class="small-circle" id="small1">
+                    <div class="face">
+                        <div class="eye left"></div>
+                        <div class="eye right"></div>
+                        <div class="mouth"></div>
+                    </div>
+                </div>
+                <div class="small-circle" id="small2">
+                    <div class="face">
+                        <div class="eye left"></div>
+                        <div class="eye right"></div>
+                        <div class="mouth"></div>
+                    </div>
+                </div>
+                <div class="small-circle extra" id="small3">
+                    <div class="face">
+                        <div class="eye left"></div>
+                        <div class="eye right"></div>
+                        <div class="mouth"></div>
+                    </div>
+                </div>
+                <div class="small-circle extra" id="small4">
+                    <div class="face">
+                        <div class="eye left"></div>
+                        <div class="eye right"></div>
+                        <div class="mouth"></div>
+                    </div>
+                </div>
+
+                <!-- SVG for arrows -->
+                <svg id="arrowSvg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#10B981"/>
+                        </marker>
+                    </defs>
+                    <path id="arrowPath" class="arrow" stroke="#10B981" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+                </svg>
+
+                <div class="current-word" id="currentWord">
+                    <div class="fr">Click a word</div>
+                    <div class="en">to see the relationship</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const words = [
+            { fr: "au-dessus", en: "above", anim: "above" },
+            { fr: "en dessous", en: "below", anim: "below" },
+            { fr: "sur", en: "on top", anim: "ontop" },
+            { fr: "sous", en: "underneath", anim: "under" },
+            { fr: "dedans", en: "inside", anim: "inside" },
+            { fr: "dehors", en: "outside", anim: "outside" },
+            { fr: "devant", en: "in front", anim: "front" },
+            { fr: "derrière", en: "behind", anim: "behind" },
+            { fr: "à gauche", en: "left", anim: "left" },
+            { fr: "à droite", en: "right", anim: "right" },
+            { fr: "près", en: "near", anim: "near" },
+            { fr: "loin", en: "far", anim: "far" },
+            { fr: "entre", en: "between", anim: "between" },
+            { fr: "autour", en: "around", anim: "around" },
+            { fr: "vers", en: "toward", anim: "toward" },
+            { fr: "depuis", en: "from", anim: "from" },
+            { fr: "à côté de", en: "next to", anim: "nextto" },
+            { fr: "auprès de", en: "beside", anim: "beside" },
+            { fr: "à travers", en: "through", anim: "through" },
+            { fr: "par-dessus", en: "over", anim: "over" },
+        ];
+
+        const wordList = document.getElementById('wordList');
+        const small1 = document.getElementById('small1');
+        const small2 = document.getElementById('small2');
+        const small3 = document.getElementById('small3');
+        const small4 = document.getElementById('small4');
+        const mainCircle = document.getElementById('mainCircle');
+        const refBox = document.getElementById('refBox');
+        const refLine = document.getElementById('refLine');
+        const arrowPath = document.getElementById('arrowPath');
+        const currentWord = document.getElementById('currentWord');
+
+        // Build word list
+        words.forEach((word, i) => {
+            const item = document.createElement('div');
+            item.className = 'word-item';
+            item.innerHTML = `${word.fr} <span class="en">${word.en}</span>`;
+            item.onclick = () => selectWord(word, item);
+            wordList.appendChild(item);
+        });
+
+        function resetScene() {
+            [small1, small2, small3, small4].forEach(s => {
+                s.classList.remove('visible');
+                s.style.transform = '';
+                s.style.left = '225px';
+                s.style.top = '225px';
+                s.style.transition = 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            });
+            refBox.classList.remove('visible');
+            refLine.classList.remove('visible');
+            arrowPath.classList.remove('visible');
+            mainCircle.style.transform = 'translate(-50%, -50%)';
+        }
+
+        function selectWord(word, item) {
+            // Update active state
+            document.querySelectorAll('.word-item').forEach(w => w.classList.remove('active'));
+            item.classList.add('active');
+
+            // Speak the word
+            const utterance = new SpeechSynthesisUtterance(word.fr);
+            utterance.lang = 'fr-FR';
+            utterance.rate = 0.8;
+            speechSynthesis.speak(utterance);
+
+            // Update display
+            currentWord.querySelector('.fr').textContent = word.fr;
+            currentWord.querySelector('.en').textContent = word.en;
+
+            // Update current index for keyboard nav
+            currentIndex = words.findIndex(w => w.fr === word.fr);
+
+            // Reset and animate
+            resetScene();
+            setTimeout(() => animate(word.anim), 50);
+        }
+
+        function animate(type) {
+            const center = 250;
+            const mainR = 60;
+
+            switch(type) {
+                case 'above':
+                    small1.style.left = '225px';
+                    small1.style.top = '80px';
+                    small1.classList.add('visible');
+                    break;
+
+                case 'below':
+                    small1.style.left = '225px';
+                    small1.style.top = '370px';
+                    small1.classList.add('visible');
+                    break;
+
+                case 'ontop':
+                    small1.style.left = '225px';
+                    small1.style.top = '165px';
+                    small1.classList.add('visible');
+                    break;
+
+                case 'under':
+                    small1.style.left = '225px';
+                    small1.style.top = '310px';
+                    small1.classList.add('visible');
+                    refLine.style.left = '150px';
+                    refLine.style.top = '300px';
+                    refLine.style.width = '200px';
+                    refLine.style.height = '4px';
+                    refLine.classList.add('visible');
+                    break;
+
+                case 'inside':
+                    small1.style.left = '235px';
+                    small1.style.top = '235px';
+                    small1.style.transform = 'scale(0.6)';
+                    small1.classList.add('visible');
+                    mainCircle.style.transform = 'translate(-50%, -50%) scale(1.3)';
+                    break;
+
+                case 'outside':
+                    small1.style.left = '380px';
+                    small1.style.top = '225px';
+                    small1.classList.add('visible');
+                    refBox.style.left = '180px';
+                    refBox.style.top = '180px';
+                    refBox.style.width = '140px';
+                    refBox.style.height = '140px';
+                    refBox.style.background = 'transparent';
+                    refBox.style.border = '2px dashed #555';
+                    refBox.classList.add('visible');
+                    break;
+
+                case 'front':
+                    small1.style.left = '225px';
+                    small1.style.top = '100px';
+                    small1.classList.add('visible');
+                    arrowPath.setAttribute('d', 'M250,200 L250,160');
+                    arrowPath.classList.add('visible');
+                    break;
+
+                case 'behind':
+                    small1.style.left = '225px';
+                    small1.style.top = '380px';
+                    small1.classList.add('visible');
+                    arrowPath.setAttribute('d', 'M250,200 L250,160');
+                    arrowPath.classList.add('visible');
+                    break;
+
+                case 'left':
+                    small1.style.left = '80px';
+                    small1.style.top = '225px';
+                    small1.classList.add('visible');
+                    break;
+
+                case 'right':
+                    small1.style.left = '370px';
+                    small1.style.top = '225px';
+                    small1.classList.add('visible');
+                    break;
+
+                case 'near':
+                    small1.style.left = '320px';
+                    small1.style.top = '210px';
+                    small1.classList.add('visible');
+                    break;
+
+                case 'far':
+                    small1.style.left = '420px';
+                    small1.style.top = '100px';
+                    small1.style.transform = 'scale(0.7)';
+                    small1.classList.add('visible');
+                    break;
+
+                case 'between':
+                    small1.style.left = '100px';
+                    small1.style.top = '225px';
+                    small1.classList.add('visible');
+                    small2.style.left = '350px';
+                    small2.style.top = '225px';
+                    small2.classList.add('visible');
+                    break;
+
+                case 'around':
+                    const positions = [
+                        { x: 250, y: 100 },
+                        { x: 370, y: 180 },
+                        { x: 370, y: 320 },
+                        { x: 130, y: 320 },
+                        { x: 130, y: 180 },
+                    ];
+                    small1.style.left = (positions[0].x - 25) + 'px';
+                    small1.style.top = (positions[0].y - 25) + 'px';
+                    small1.classList.add('visible');
+
+                    small2.style.left = (positions[1].x - 25) + 'px';
+                    small2.style.top = (positions[1].y - 25) + 'px';
+                    small2.classList.add('visible');
+
+                    small3.style.left = (positions[2].x - 15) + 'px';
+                    small3.style.top = (positions[2].y - 15) + 'px';
+                    small3.classList.add('visible');
+
+                    small4.style.left = (positions[3].x - 15) + 'px';
+                    small4.style.top = (positions[3].y - 15) + 'px';
+                    small4.classList.add('visible');
+                    break;
+
+                case 'toward':
+                    small1.style.left = '80px';
+                    small1.style.top = '225px';
+                    small1.classList.add('visible');
+                    arrowPath.setAttribute('d', 'M130,250 L200,250');
+                    arrowPath.classList.add('visible');
+                    break;
+
+                case 'from':
+                    small1.style.left = '380px';
+                    small1.style.top = '225px';
+                    small1.classList.add('visible');
+                    arrowPath.setAttribute('d', 'M310,250 L380,250');
+                    arrowPath.classList.add('visible');
+                    break;
+
+                case 'nextto':
+                case 'beside':
+                    small1.style.left = '320px';
+                    small1.style.top = '225px';
+                    small1.classList.add('visible');
+                    break;
+
+                case 'through':
+                    refBox.style.left = '230px';
+                    refBox.style.top = '150px';
+                    refBox.style.width = '40px';
+                    refBox.style.height = '200px';
+                    refBox.style.background = '#333';
+                    refBox.classList.add('visible');
+
+                    small1.style.left = '80px';
+                    small1.style.top = '225px';
+                    small1.classList.add('visible');
+
+                    arrowPath.setAttribute('d', 'M130,250 L370,250');
+                    arrowPath.classList.add('visible');
+
+                    setTimeout(() => {
+                        small1.style.transition = 'left 1.5s ease-in-out';
+                        small1.style.left = '380px';
+                    }, 300);
+                    break;
+
+                case 'over':
+                    small1.style.left = '225px';
+                    small1.style.top = '140px';
+                    small1.classList.add('visible');
+                    arrowPath.setAttribute('d', 'M150,300 Q250,80 350,300');
+                    arrowPath.classList.add('visible');
+                    break;
+            }
+        }
+
+        // Keyboard navigation
+        let currentIndex = 0;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'j') {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % words.length;
+                const items = document.querySelectorAll('.word-item');
+                selectWord(words[currentIndex], items[currentIndex]);
+                items[currentIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp' || e.key === 'k') {
+                e.preventDefault();
+                currentIndex = (currentIndex - 1 + words.length) % words.length;
+                const items = document.querySelectorAll('.word-item');
+                selectWord(words[currentIndex], items[currentIndex]);
+                items[currentIndex].scrollIntoView({ block: 'nearest' });
+            }
+        });
+
+        // Start with first word
+        setTimeout(() => {
+            const firstItem = document.querySelector('.word-item');
+            selectWord(words[0], firstItem);
+        }, 500);
+    </script>
+</body>
+</html>

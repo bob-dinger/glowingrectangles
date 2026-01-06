@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Kitchen & Cooking</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #refreshBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #F97316;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #refreshBtn:hover { background: #EA580C; }
+
+        svg {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .word {
+            cursor: pointer;
+            transition: fill 0.2s;
+        }
+        .word:hover {
+            fill: #fff !important;
+        }
+        .word.active {
+            fill: #F97316 !important;
+        }
+        .word.dimmed {
+            fill-opacity: 0.15 !important;
+        }
+
+        .translation-box {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px 40px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .translation-box.visible { opacity: 1; }
+
+        .spanish-word {
+            font-size: 32px;
+            font-weight: 600;
+            color: #F97316;
+            margin-bottom: 8px;
+        }
+        .english-word {
+            font-size: 22px;
+            color: #888;
+        }
+        .category-tag {
+            font-size: 11px;
+            color: #555;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 11px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-width: 700px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+        }
+        .legend-item:hover {
+            background: #3a3a3a;
+            border-color: #4a4a4a;
+        }
+        .legend-item.active {
+            background: #444;
+            border-color: #555;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .legend-label { color: #aaa; }
+
+        .count {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 11px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <a href="spanish.html" class="back-link">← Back</a>
+    <div class="title">La Cocina</div>
+    <button id="refreshBtn">Shuffle</button>
+
+    <svg id="wordCloud"></svg>
+
+    <div class="translation-box" id="translationBox">
+        <div class="spanish-word" id="spanishWord"></div>
+        <div class="english-word" id="englishWord"></div>
+        <div class="category-tag" id="categoryTag"></div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+    <div class="count" id="count"></div>
+
+    <script>
+        const categories = {
+            'Utensils': { color: '#EC4899', words: [
+                { es: 'el cuchillo', en: 'knife' },
+                { es: 'el tenedor', en: 'fork' },
+                { es: 'la cuchara', en: 'spoon' },
+                { es: 'la cucharita', en: 'teaspoon' },
+                { es: 'el cucharón', en: 'ladle' },
+                { es: 'la espátula', en: 'spatula' },
+                { es: 'las pinzas', en: 'tongs' },
+                { es: 'el batidor', en: 'whisk' },
+                { es: 'el pelador', en: 'peeler' },
+                { es: 'el rallador', en: 'grater' },
+                { es: 'el abrelatas', en: 'can opener' },
+                { es: 'el sacacorchos', en: 'corkscrew' },
+                { es: 'el colador', en: 'strainer/colander' },
+                { es: 'el mortero', en: 'mortar' },
+                { es: 'la mano', en: 'pestle' },
+                { es: 'el rodillo', en: 'rolling pin' },
+                { es: 'la brocha', en: 'pastry brush' },
+                { es: 'el termómetro', en: 'thermometer' },
+                { es: 'la báscula', en: 'kitchen scale' },
+                { es: 'el temporizador', en: 'timer' },
+                { es: 'los palillos', en: 'chopsticks' },
+                { es: 'el cubierto', en: 'cutlery/utensil' },
+            ]},
+            'Cookware': { color: '#F59E0B', words: [
+                { es: 'la sartén', en: 'frying pan' },
+                { es: 'la olla', en: 'pot' },
+                { es: 'la cacerola', en: 'saucepan' },
+                { es: 'el cazo', en: 'small pot' },
+                { es: 'la cazuela', en: 'casserole dish' },
+                { es: 'el wok', en: 'wok' },
+                { es: 'la parrilla', en: 'grill pan' },
+                { es: 'la plancha', en: 'griddle' },
+                { es: 'el molde', en: 'baking pan/mold' },
+                { es: 'la bandeja', en: 'baking sheet/tray' },
+                { es: 'el bol', en: 'bowl' },
+                { es: 'la fuente', en: 'serving dish' },
+                { es: 'la tapa', en: 'lid' },
+                { es: 'la olla a presión', en: 'pressure cooker' },
+                { es: 'la vaporera', en: 'steamer' },
+                { es: 'el asador', en: 'roasting pan' },
+                { es: 'la freidora', en: 'deep fryer' },
+                { es: 'el molde para pan', en: 'loaf pan' },
+                { es: 'el molde para tarta', en: 'pie dish' },
+            ]},
+            'Appliances': { color: '#10B981', words: [
+                { es: 'el horno', en: 'oven' },
+                { es: 'la estufa', en: 'stove' },
+                { es: 'el refrigerador', en: 'refrigerator' },
+                { es: 'la nevera', en: 'fridge' },
+                { es: 'el congelador', en: 'freezer' },
+                { es: 'el microondas', en: 'microwave' },
+                { es: 'la licuadora', en: 'blender' },
+                { es: 'el procesador de alimentos', en: 'food processor' },
+                { es: 'la batidora', en: 'mixer' },
+                { es: 'la tostadora', en: 'toaster' },
+                { es: 'la cafetera', en: 'coffee maker' },
+                { es: 'el hervidor', en: 'kettle' },
+                { es: 'el lavavajillas', en: 'dishwasher' },
+                { es: 'el extractor', en: 'exhaust fan' },
+                { es: 'el horno de convección', en: 'convection oven' },
+                { es: 'la freidora de aire', en: 'air fryer' },
+                { es: 'la olla de cocción lenta', en: 'slow cooker' },
+                { es: 'la arrocera', en: 'rice cooker' },
+                { es: 'la máquina de hielo', en: 'ice maker' },
+            ]},
+            'Cutting & Prep': { color: '#0EA5E9', words: [
+                { es: 'la tabla de cortar', en: 'cutting board' },
+                { es: 'cortar', en: 'to cut' },
+                { es: 'picar', en: 'to chop/mince' },
+                { es: 'rebanar', en: 'to slice' },
+                { es: 'trocear', en: 'to dice' },
+                { es: 'rallar', en: 'to grate' },
+                { es: 'pelar', en: 'to peel' },
+                { es: 'deshuesar', en: 'to debone' },
+                { es: 'filetear', en: 'to fillet' },
+                { es: 'triturar', en: 'to crush/grind' },
+                { es: 'machacar', en: 'to mash' },
+                { es: 'exprimir', en: 'to squeeze' },
+                { es: 'escurrir', en: 'to drain' },
+                { es: 'colar', en: 'to strain' },
+                { es: 'tamizar', en: 'to sift' },
+                { es: 'mezclar', en: 'to mix' },
+                { es: 'batir', en: 'to beat/whisk' },
+                { es: 'amasar', en: 'to knead' },
+                { es: 'marinar', en: 'to marinate' },
+                { es: 'sazonar', en: 'to season' },
+            ]},
+            'Cooking Verbs': { color: '#8B5CF6', words: [
+                { es: 'cocinar', en: 'to cook' },
+                { es: 'hervir', en: 'to boil' },
+                { es: 'freír', en: 'to fry' },
+                { es: 'hornear', en: 'to bake' },
+                { es: 'asar', en: 'to roast/grill' },
+                { es: 'saltear', en: 'to sauté' },
+                { es: 'sofreír', en: 'to sauté lightly' },
+                { es: 'cocer al vapor', en: 'to steam' },
+                { es: 'guisar', en: 'to stew' },
+                { es: 'estofar', en: 'to braise' },
+                { es: 'gratinar', en: 'to gratinate' },
+                { es: 'dorar', en: 'to brown' },
+                { es: 'caramelizar', en: 'to caramelize' },
+                { es: 'pochar', en: 'to poach' },
+                { es: 'escaldar', en: 'to blanch' },
+                { es: 'reducir', en: 'to reduce' },
+                { es: 'derretir', en: 'to melt' },
+                { es: 'calentar', en: 'to heat' },
+                { es: 'enfriar', en: 'to cool' },
+                { es: 'congelar', en: 'to freeze' },
+                { es: 'descongelar', en: 'to thaw' },
+                { es: 'precalentar', en: 'to preheat' },
+                { es: 'revolver', en: 'to stir' },
+                { es: 'voltear', en: 'to flip' },
+                { es: 'servir', en: 'to serve' },
+            ]},
+            'Cooking Terms': { color: '#EF4444', words: [
+                { es: 'crudo', en: 'raw' },
+                { es: 'cocido', en: 'cooked' },
+                { es: 'frito', en: 'fried' },
+                { es: 'asado', en: 'roasted' },
+                { es: 'horneado', en: 'baked' },
+                { es: 'al vapor', en: 'steamed' },
+                { es: 'a la parrilla', en: 'grilled' },
+                { es: 'a la plancha', en: 'pan-grilled' },
+                { es: 'al horno', en: 'oven-baked' },
+                { es: 'poco hecho', en: 'rare' },
+                { es: 'al punto', en: 'medium' },
+                { es: 'bien hecho', en: 'well done' },
+                { es: 'picante', en: 'spicy' },
+                { es: 'dulce', en: 'sweet' },
+                { es: 'salado', en: 'salty' },
+                { es: 'agrio', en: 'sour' },
+                { es: 'amargo', en: 'bitter' },
+                { es: 'umami', en: 'umami/savory' },
+                { es: 'tierno', en: 'tender' },
+                { es: 'crujiente', en: 'crispy/crunchy' },
+                { es: 'jugoso', en: 'juicy' },
+                { es: 'seco', en: 'dry' },
+                { es: 'espeso', en: 'thick' },
+                { es: 'líquido', en: 'liquid' },
+            ]},
+            'Ingredients': { color: '#84CC16', words: [
+                { es: 'la harina', en: 'flour' },
+                { es: 'el azúcar', en: 'sugar' },
+                { es: 'la sal', en: 'salt' },
+                { es: 'la pimienta', en: 'pepper' },
+                { es: 'el aceite', en: 'oil' },
+                { es: 'el aceite de oliva', en: 'olive oil' },
+                { es: 'la mantequilla', en: 'butter' },
+                { es: 'el huevo', en: 'egg' },
+                { es: 'la leche', en: 'milk' },
+                { es: 'la nata', en: 'cream' },
+                { es: 'el queso', en: 'cheese' },
+                { es: 'el pan', en: 'bread' },
+                { es: 'el arroz', en: 'rice' },
+                { es: 'la pasta', en: 'pasta' },
+                { es: 'el ajo', en: 'garlic' },
+                { es: 'la cebolla', en: 'onion' },
+                { es: 'el tomate', en: 'tomato' },
+                { es: 'el vinagre', en: 'vinegar' },
+                { es: 'la levadura', en: 'yeast' },
+                { es: 'el polvo de hornear', en: 'baking powder' },
+                { es: 'el caldo', en: 'broth/stock' },
+                { es: 'la salsa', en: 'sauce' },
+            ]},
+            'Spices & Herbs': { color: '#22C55E', words: [
+                { es: 'la especia', en: 'spice' },
+                { es: 'la hierba', en: 'herb' },
+                { es: 'el orégano', en: 'oregano' },
+                { es: 'la albahaca', en: 'basil' },
+                { es: 'el perejil', en: 'parsley' },
+                { es: 'el cilantro', en: 'cilantro' },
+                { es: 'el romero', en: 'rosemary' },
+                { es: 'el tomillo', en: 'thyme' },
+                { es: 'la menta', en: 'mint' },
+                { es: 'el laurel', en: 'bay leaf' },
+                { es: 'el comino', en: 'cumin' },
+                { es: 'la canela', en: 'cinnamon' },
+                { es: 'el jengibre', en: 'ginger' },
+                { es: 'la nuez moscada', en: 'nutmeg' },
+                { es: 'el clavo', en: 'clove' },
+                { es: 'el pimentón', en: 'paprika' },
+                { es: 'el curry', en: 'curry' },
+                { es: 'el azafrán', en: 'saffron' },
+                { es: 'la vainilla', en: 'vanilla' },
+                { es: 'el chile', en: 'chili pepper' },
+                { es: 'el eneldo', en: 'dill' },
+            ]},
+            'Measurements': { color: '#A855F7', words: [
+                { es: 'la taza', en: 'cup' },
+                { es: 'la cucharada', en: 'tablespoon' },
+                { es: 'la cucharadita', en: 'teaspoon' },
+                { es: 'el gramo', en: 'gram' },
+                { es: 'el kilogramo', en: 'kilogram' },
+                { es: 'el litro', en: 'liter' },
+                { es: 'el mililitro', en: 'milliliter' },
+                { es: 'la onza', en: 'ounce' },
+                { es: 'la libra', en: 'pound' },
+                { es: 'la pizca', en: 'pinch' },
+                { es: 'el puñado', en: 'handful' },
+                { es: 'la rebanada', en: 'slice' },
+                { es: 'el trozo', en: 'piece/chunk' },
+                { es: 'el diente', en: 'clove (of garlic)' },
+                { es: 'la porción', en: 'portion/serving' },
+                { es: 'la ración', en: 'serving' },
+            ]},
+            'Kitchen Areas': { color: '#14B8A6', words: [
+                { es: 'la cocina', en: 'kitchen' },
+                { es: 'la encimera', en: 'countertop' },
+                { es: 'el fregadero', en: 'sink' },
+                { es: 'la alacena', en: 'cupboard/pantry' },
+                { es: 'el cajón', en: 'drawer' },
+                { es: 'el armario', en: 'cabinet' },
+                { es: 'el estante', en: 'shelf' },
+                { es: 'la despensa', en: 'pantry' },
+                { es: 'el grifo', en: 'faucet' },
+                { es: 'el quemador', en: 'burner' },
+                { es: 'la hornilla', en: 'stovetop burner' },
+                { es: 'la campana', en: 'range hood' },
+            ]},
+        };
+
+        const allWords = [];
+        Object.entries(categories).forEach(([cat, data]) => {
+            data.words.forEach(word => {
+                allWords.push({ ...word, category: cat, color: data.color });
+            });
+        });
+
+        const svg = document.getElementById('wordCloud');
+        const translationBox = document.getElementById('translationBox');
+        const spanishWord = document.getElementById('spanishWord');
+        const englishWord = document.getElementById('englishWord');
+        const categoryTag = document.getElementById('categoryTag');
+        const legend = document.getElementById('legend');
+        const countEl = document.getElementById('count');
+        let activeWord = null;
+        let activeCategory = null;
+
+        Object.entries(categories).forEach(([cat, data]) => {
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.dataset.category = cat;
+            item.innerHTML = `<div class="legend-dot" style="background:${data.color}"></div><span class="legend-label">${cat}</span>`;
+
+            item.addEventListener('click', () => {
+                if (activeCategory === cat) {
+                    activeCategory = null;
+                    item.classList.remove('active');
+                    document.querySelectorAll('.word').forEach(w => w.classList.remove('dimmed'));
+                } else {
+                    document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active'));
+                    activeCategory = cat;
+                    item.classList.add('active');
+                    document.querySelectorAll('.word').forEach(w => {
+                        if (w.dataset.category === cat) {
+                            w.classList.remove('dimmed');
+                        } else {
+                            w.classList.add('dimmed');
+                        }
+                    });
+                }
+            });
+
+            legend.appendChild(item);
+        });
+
+        countEl.textContent = `${allWords.length} words`;
+
+        function renderWords() {
+            svg.innerHTML = '';
+            translationBox.classList.remove('visible');
+            activeWord = null;
+            activeCategory = null;
+            document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active'));
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const shuffled = [...allWords].sort(() => Math.random() - 0.5);
+            const placed = [];
+            const padding = 10;
+
+            function checkOverlap(x, y, w, h) {
+                for (const p of placed) {
+                    if (x < p.x + p.w + padding && x + w + padding > p.x &&
+                        y - h < p.y + padding && y + padding > p.y - p.h) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            shuffled.forEach((word) => {
+                const fontSize = 12 + Math.random() * 16;
+                const approxWidth = word.es.length * fontSize * 0.5;
+                const approxHeight = fontSize;
+
+                let x, y, attempts = 0;
+                do {
+                    x = 60 + Math.random() * (width - 180);
+                    y = 80 + Math.random() * (height - 180);
+                    attempts++;
+                } while (checkOverlap(x, y, approxWidth, approxHeight) && attempts < 150);
+
+                if (attempts < 150) {
+                    placed.push({ x, y, w: approxWidth, h: approxHeight });
+
+                    const opacity = 0.5 + Math.random() * 0.5;
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', x);
+                    text.setAttribute('y', y);
+                    text.setAttribute('font-size', fontSize);
+                    text.setAttribute('fill', word.color);
+                    text.setAttribute('fill-opacity', opacity);
+                    text.setAttribute('class', 'word');
+                    text.setAttribute('font-family', '-apple-system, BlinkMacSystemFont, sans-serif');
+                    text.dataset.category = word.category;
+                    text.textContent = word.es;
+
+                    text.addEventListener('click', () => {
+                        if (activeWord) activeWord.classList.remove('active');
+                        text.classList.add('active');
+                        activeWord = text;
+                        spanishWord.textContent = word.es;
+                        englishWord.textContent = word.en;
+                        categoryTag.textContent = word.category;
+                        translationBox.classList.add('visible');
+                    });
+
+                    svg.appendChild(text);
+                }
+            });
+        }
+
+        document.getElementById('refreshBtn').addEventListener('click', renderWords);
+        renderWords();
+    </script>
+</body>
+</html>

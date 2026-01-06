@@ -394,6 +394,8 @@
         // ============ 2D FRACTAL TREE ============
         const canvas2d = document.getElementById('canvas2d');
         const ctx = canvas2d.getContext('2d');
+        let animating2D = false;
+        let currentDepth2D = 0;
 
         function resize2D() {
             const container = canvas2d.parentElement;
@@ -403,8 +405,9 @@
             draw2DTree();
         }
 
-        function draw2DTree() {
-            const depth = parseInt(document.getElementById('depth2d').value);
+        function draw2DTree(maxDepth = null) {
+            const targetDepth = parseInt(document.getElementById('depth2d').value);
+            const depth = maxDepth !== null ? Math.min(maxDepth, targetDepth) : targetDepth;
             const angle = parseInt(document.getElementById('angle2d').value) * Math.PI / 180;
             const ratio = parseInt(document.getElementById('ratio2d').value) / 100;
 
@@ -421,7 +424,7 @@
                 const endY = y - len * Math.cos(angleRad);
 
                 // Color gradient from brown to green
-                const t = level / depth;
+                const t = level / targetDepth;
                 const r = Math.round(101 + (34 - 101) * t);
                 const g = Math.round(67 + (197 - 67) * t);
                 const b = Math.round(33 + (94 - 33) * t);
@@ -430,7 +433,7 @@
                 ctx.moveTo(x, y);
                 ctx.lineTo(endX, endY);
                 ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
-                ctx.lineWidth = Math.max(1, (depth - level + 1) * 1.5);
+                ctx.lineWidth = Math.max(1, (targetDepth - level + 1) * 1.5);
                 ctx.lineCap = 'round';
                 ctx.stroke();
 
@@ -440,6 +443,21 @@
             }
 
             drawBranch(startX, startY, startLen, 0, 1);
+        }
+
+        function animate2DGrowth() {
+            const targetDepth = parseInt(document.getElementById('depth2d').value);
+            currentDepth2D = 0;
+            animating2D = true;
+
+            function step() {
+                if (currentDepth2D <= targetDepth && animating2D) {
+                    draw2DTree(currentDepth2D);
+                    currentDepth2D++;
+                    setTimeout(step, 150);
+                }
+            }
+            step();
         }
 
         // 2D Controls
@@ -459,6 +477,8 @@
         // ============ 3D FRACTAL TREE ============
         const container3d = document.getElementById('canvas3d');
         let scene, camera, renderer, tree3d;
+        let animating3D = false;
+        let currentDepth3D = 0;
 
         function init3D() {
             scene = new THREE.Scene();
@@ -491,7 +511,6 @@
             ground.position.y = 0;
             scene.add(ground);
 
-            create3DTree();
             animate3D();
 
             // Mouse rotation
@@ -515,14 +534,27 @@
             });
         }
 
-        function create3DTree() {
+        function create3DTree(maxDepth = null) {
             if (tree3d) scene.remove(tree3d);
 
-            const depth = parseInt(document.getElementById('depth3d').value);
+            const targetDepth = parseInt(document.getElementById('depth3d').value);
+            const depth = maxDepth !== null ? Math.min(maxDepth, targetDepth) : targetDepth;
             const numBranches = parseInt(document.getElementById('branches3d').value);
             const spreadAngle = parseInt(document.getElementById('spread3d').value) * Math.PI / 180;
 
             tree3d = new THREE.Group();
+
+            // Use stored random values for consistent growth animation
+            if (!window.tree3dRandoms) {
+                window.tree3dRandoms = [];
+                for (let i = 0; i < 1000; i++) {
+                    window.tree3dRandoms.push(Math.random());
+                }
+            }
+            let randomIndex = 0;
+            function getRandom() {
+                return window.tree3dRandoms[randomIndex++ % window.tree3dRandoms.length];
+            }
 
             function createBranch(parent, length, thickness, level) {
                 if (level > depth) return;
@@ -531,7 +563,7 @@
                 const geo = new THREE.CylinderGeometry(thickness * 0.7, thickness, length, 8);
                 geo.translate(0, length / 2, 0);
 
-                const t = level / depth;
+                const t = level / targetDepth;
                 const color = new THREE.Color().lerpColors(
                     new THREE.Color(0x654321),
                     new THREE.Color(0x22C55E),
@@ -554,10 +586,10 @@
                     const childGroup = new THREE.Group();
 
                     // Spread angle from vertical
-                    childGroup.rotation.z = spreadAngle * (Math.random() * 0.4 + 0.8);
+                    childGroup.rotation.z = spreadAngle * (getRandom() * 0.4 + 0.8);
 
                     // Rotate around Y axis evenly
-                    childGroup.rotation.y = (i / numBranches) * Math.PI * 2 + Math.random() * 0.5;
+                    childGroup.rotation.y = (i / numBranches) * Math.PI * 2 + getRandom() * 0.5;
 
                     branchEnd.add(childGroup);
                     createBranch(childGroup, newLength, newThickness, level + 1);
@@ -566,6 +598,27 @@
 
             createBranch(tree3d, 1.5, 0.15, 1);
             scene.add(tree3d);
+        }
+
+        function animate3DGrowth() {
+            const targetDepth = parseInt(document.getElementById('depth3d').value);
+            currentDepth3D = 0;
+            animating3D = true;
+
+            // Generate random values once for consistent tree shape
+            window.tree3dRandoms = [];
+            for (let i = 0; i < 1000; i++) {
+                window.tree3dRandoms.push(Math.random());
+            }
+
+            function step() {
+                if (currentDepth3D <= targetDepth && animating3D) {
+                    create3DTree(currentDepth3D);
+                    currentDepth3D++;
+                    setTimeout(step, 200);
+                }
+            }
+            step();
         }
 
         function animate3D() {
@@ -589,8 +642,19 @@
 
         // Initialize
         window.addEventListener('load', () => {
-            resize2D();
+            // Set up canvas size without drawing
+            const container = canvas2d.parentElement;
+            const size = Math.min(container.clientWidth - 20, container.clientHeight - 20);
+            canvas2d.width = size;
+            canvas2d.height = size;
+
             init3D();
+
+            // Start growth animations
+            setTimeout(() => {
+                animate2DGrowth();
+                animate3DGrowth();
+            }, 300);
         });
 
         window.addEventListener('resize', () => {

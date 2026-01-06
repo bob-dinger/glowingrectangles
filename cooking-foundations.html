@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cooking Foundations - Inputs, Process, Results</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 220px;
+            background: #111;
+            border-right: 1px solid #222;
+            padding: 70px 0 20px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar h2 {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 20px;
+            margin-bottom: 15px;
+        }
+
+        .category-list {
+            list-style: none;
+        }
+        .category-item {
+            padding: 14px 20px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .category-item:hover {
+            background: #1a1a1a;
+        }
+        .category-item.active {
+            background: #1a1a1a;
+            border-left-color: #F97316;
+        }
+        .category-item .icon {
+            font-size: 20px;
+        }
+        .category-item .name {
+            font-size: 14px;
+        }
+
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 60px;
+        }
+
+        .category-title {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .category-desc {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        .column-headers {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #222;
+        }
+        .column-header {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+        }
+        .col-input { width: 180px; }
+        .col-arrow { width: 40px; }
+        .col-process { flex: 1; }
+        .col-result { width: 160px; }
+
+        .transform-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .box {
+            padding: 14px 18px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .input-box {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            width: 180px;
+        }
+        .process-steps {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+        .process-box {
+            background: rgba(249, 115, 22, 0.15);
+            border: 1px solid rgba(249, 115, 22, 0.4);
+            flex: 1;
+            min-width: 140px;
+        }
+        .step-arrow {
+            color: #F97316;
+            font-size: 16px;
+            opacity: 0.6;
+        }
+        .result-box {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            width: 160px;
+        }
+
+        .box-main {
+            font-size: 15px;
+            font-weight: 500;
+            color: #fff;
+        }
+        .box-detail {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .arrow {
+            width: 50px;
+            text-align: center;
+            font-size: 20px;
+            color: #444;
+        }
+
+        .transform-row:hover .box {
+            transform: translateY(-2px);
+            transition: transform 0.2s;
+        }
+        .transform-row:hover .input-box {
+            border-color: rgba(34, 197, 94, 0.8);
+        }
+        .transform-row:hover .process-box {
+            border-color: rgba(249, 115, 22, 0.8);
+        }
+        .transform-row:hover .result-box {
+            border-color: rgba(59, 130, 246, 0.8);
+        }
+
+        .process-box, .result-box {
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+        }
+        .process-svg, .result-svg {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+        }
+        .process-svg svg, .result-svg svg {
+            width: 100%;
+            height: 100%;
+        }
+        .process-text, .result-text {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <a href="cooking.html" class="back-link">← Back to Cooking</a>
+
+    <div class="layout">
+        <div class="sidebar">
+            <h2>Foundations</h2>
+            <ul class="category-list" id="categoryList"></ul>
+        </div>
+
+        <div class="main" id="mainContent">
+            <h1 class="category-title" id="categoryTitle">Select a Category</h1>
+            <p class="category-desc" id="categoryDesc">Choose a foundation ingredient to see its transformations</p>
+            <div id="transformsContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const categories = [
+            {
+                name: "Eggs",
+                icon: "🥚",
+                desc: "One ingredient, endless possibilities. Heat and technique transform the humble egg.",
+                transforms: [
+                    {
+                        input: "Egg",
+                        inputDetail: "cracked into pan",
+                        process: "Medium heat + butter",
+                        processDetail: "don't flip (sunny) or flip once (over easy)",
+                        result: "Fried Egg",
+                        resultDetail: "runny or set yolk",
+                        processSvg: "skillet",
+                        svg: "friedegg"
+                    },
+                    {
+                        input: "Eggs + cream",
+                        inputDetail: "whisked together",
+                        process: "Low heat + constant stirring",
+                        processDetail: "remove before fully set",
+                        result: "Scrambled",
+                        resultDetail: "soft, creamy curds",
+                        processSvg: "skillet",
+                        svg: "scrambled"
+                    },
+                    {
+                        input: "Egg",
+                        inputDetail: "cracked into water",
+                        process: "Simmering water + vinegar",
+                        processDetail: "swirl water, cook 3-4 min",
+                        result: "Poached Egg",
+                        resultDetail: "silky white, runny yolk",
+                        processSvg: "pot",
+                        svg: "poached"
+                    },
+                    {
+                        input: "Eggs",
+                        inputDetail: "in shell",
+                        processes: [
+                            { text: "Boiling water", svg: "potboil" },
+                            { text: "10-12 min", svg: "clock" },
+                            { text: "Ice bath", detail: "stop cooking", svg: "pot" }
+                        ],
+                        result: "Hard Boiled",
+                        resultDetail: "fully set yolk",
+                        svg: "hardboiled"
+                    },
+                    {
+                        input: "Eggs",
+                        inputDetail: "in shell",
+                        processes: [
+                            { text: "Boiling water", svg: "potboil" },
+                            { text: "6-7 min", svg: "clock" },
+                            { text: "Ice bath", detail: "immediately", svg: "pot" }
+                        ],
+                        result: "Soft Boiled",
+                        resultDetail: "jammy, runny yolk",
+                        svg: "softboiled"
+                    },
+                    {
+                        input: "Eggs + fillings",
+                        inputDetail: "cheese, vegetables, meat",
+                        process: "Medium heat + fold technique",
+                        processDetail: "tilt pan, fold in thirds",
+                        result: "Omelette",
+                        resultDetail: "folded, filled",
+                        processSvg: "skillet",
+                        svg: "omelette"
+                    },
+                    {
+                        input: "Eggs",
+                        inputDetail: "whisked with butter",
+                        process: "Very low heat + constant motion",
+                        processDetail: "French technique, never brown",
+                        result: "French Omelette",
+                        resultDetail: "creamy, pale, rolled",
+                        processSvg: "skillet",
+                        svg: "omelette"
+                    },
+                    {
+                        input: "Egg yolks + butter",
+                        inputDetail: "clarified butter",
+                        process: "Double boiler + whisk",
+                        processDetail: "emulsify slowly, add lemon",
+                        result: "Hollandaise",
+                        resultDetail: "rich, creamy sauce",
+                        processSvg: "doubleboiler",
+                        svg: "hollandaise"
+                    }
+                ]
+            },
+            {
+                name: "Cream",
+                icon: "🥛",
+                desc: "Heavy cream transforms through agitation, culture, and temperature.",
+                transforms: [
+                    {
+                        input: "Heavy cream",
+                        inputDetail: "cold, 35%+ fat",
+                        process: "Whip vigorously",
+                        processDetail: "by hand or mixer, 3-5 min",
+                        result: "Whipped Cream",
+                        resultDetail: "light, airy peaks",
+                        svg: "whippedcream"
+                    },
+                    {
+                        input: "Heavy cream",
+                        inputDetail: "room temperature",
+                        process: "Churn past whipped stage",
+                        processDetail: "keep going until it separates",
+                        result: "Butter",
+                        resultDetail: "+ buttermilk",
+                        svg: "butter"
+                    },
+                    {
+                        input: "Cream + cultures",
+                        inputDetail: "buttermilk or starter",
+                        process: "Ferment 12-24 hours",
+                        processDetail: "room temp, covered",
+                        result: "Crème Fraîche",
+                        resultDetail: "tangy, thick",
+                        svg: "cremefraiche"
+                    },
+                    {
+                        input: "Cream + cultures",
+                        inputDetail: "specific bacteria",
+                        process: "Ferment + chill",
+                        processDetail: "thickens as it sours",
+                        result: "Sour Cream",
+                        resultDetail: "tangy, smooth",
+                        svg: "sourcream"
+                    },
+                    {
+                        input: "Butter",
+                        inputDetail: "unsalted",
+                        process: "Simmer + skim",
+                        processDetail: "remove milk solids",
+                        result: "Clarified Butter",
+                        resultDetail: "high smoke point",
+                        svg: "clarifiedbutter"
+                    },
+                    {
+                        input: "Butter",
+                        inputDetail: "unsalted",
+                        process: "Simmer until golden",
+                        processDetail: "milk solids toast",
+                        result: "Brown Butter",
+                        resultDetail: "nutty, aromatic",
+                        svg: "brownbutter"
+                    }
+                ]
+            },
+            {
+                name: "Milk",
+                icon: "🧈",
+                desc: "Milk + cultures + time = fermented dairy magic.",
+                transforms: [
+                    {
+                        input: "Milk + cultures",
+                        inputDetail: "live active cultures",
+                        process: "Heat to 110°F + hold warm",
+                        processDetail: "6-12 hours incubation",
+                        result: "Yogurt",
+                        resultDetail: "tangy, thick",
+                        svg: "yogurt"
+                    },
+                    {
+                        input: "Milk + kefir grains",
+                        inputDetail: "symbiotic culture",
+                        process: "Ferment at room temp",
+                        processDetail: "24-48 hours",
+                        result: "Kefir",
+                        resultDetail: "tangy, drinkable",
+                        svg: "kefir"
+                    },
+                    {
+                        input: "Milk + acid",
+                        inputDetail: "lemon juice or vinegar",
+                        process: "Heat + curdle + strain",
+                        processDetail: "separate curds from whey",
+                        result: "Ricotta",
+                        resultDetail: "fresh, creamy cheese",
+                        svg: "ricotta"
+                    },
+                    {
+                        input: "Milk + rennet",
+                        inputDetail: "+ cultures",
+                        process: "Curdle + press + age",
+                        processDetail: "weeks to years",
+                        result: "Cheese",
+                        resultDetail: "infinite varieties",
+                        svg: "cheese"
+                    },
+                    {
+                        input: "Milk + acid",
+                        inputDetail: "hot milk + lemon",
+                        process: "Curdle + hang + drain",
+                        processDetail: "in cheesecloth",
+                        result: "Paneer",
+                        resultDetail: "fresh Indian cheese",
+                        svg: "paneer"
+                    }
+                ]
+            },
+            {
+                name: "Emulsions",
+                icon: "🫒",
+                desc: "Oil and water don't mix—unless you force them with egg yolks.",
+                transforms: [
+                    {
+                        input: "Egg yolk + oil + acid",
+                        inputDetail: "lemon or vinegar",
+                        process: "Whisk while drizzling oil",
+                        processDetail: "very slowly at first",
+                        result: "Mayonnaise",
+                        resultDetail: "creamy, stable emulsion",
+                        svg: "mayo"
+                    },
+                    {
+                        input: "Garlic + egg yolk + oil",
+                        inputDetail: "olive oil traditionally",
+                        process: "Pound garlic, emulsify oil",
+                        processDetail: "mortar & pestle or whisk",
+                        result: "Aioli",
+                        resultDetail: "garlicky mayo",
+                        svg: "aioli"
+                    },
+                    {
+                        input: "Oil + vinegar",
+                        inputDetail: "3:1 ratio",
+                        process: "Whisk vigorously",
+                        processDetail: "add mustard to stabilize",
+                        result: "Vinaigrette",
+                        resultDetail: "temporary emulsion",
+                        svg: "vinaigrette"
+                    },
+                    {
+                        input: "Egg yolks + butter",
+                        inputDetail: "clarified butter, warm",
+                        process: "Double boiler + whisk",
+                        processDetail: "add lemon, keep warm",
+                        result: "Hollandaise",
+                        resultDetail: "eggs benedict sauce",
+                        svg: "hollandaise"
+                    },
+                    {
+                        input: "Hollandaise + tarragon",
+                        inputDetail: "+ shallot reduction",
+                        process: "Infuse with herbs",
+                        processDetail: "white wine + tarragon",
+                        result: "Béarnaise",
+                        resultDetail: "steak sauce",
+                        svg: "bearnaise"
+                    }
+                ]
+            },
+            {
+                name: "Ferments",
+                icon: "🥒",
+                desc: "Salt, time, and beneficial bacteria transform vegetables.",
+                transforms: [
+                    {
+                        input: "Cucumbers + salt brine",
+                        inputDetail: "3-5% salt solution",
+                        process: "Submerge + wait",
+                        processDetail: "3-7 days at room temp",
+                        result: "Dill Pickles",
+                        resultDetail: "sour, crunchy",
+                        svg: "pickles"
+                    },
+                    {
+                        input: "Cabbage + salt",
+                        inputDetail: "2% salt by weight",
+                        process: "Massage + ferment",
+                        processDetail: "1-4 weeks, submerged",
+                        result: "Sauerkraut",
+                        resultDetail: "tangy, probiotic",
+                        svg: "sauerkraut"
+                    },
+                    {
+                        input: "Napa cabbage + gochugaru",
+                        inputDetail: "+ garlic, ginger, fish sauce",
+                        process: "Salt, rinse, paste, ferment",
+                        processDetail: "3-7 days",
+                        result: "Kimchi",
+                        resultDetail: "spicy, complex",
+                        svg: "kimchi"
+                    },
+                    {
+                        input: "Tea + sugar + SCOBY",
+                        inputDetail: "symbiotic culture",
+                        process: "Ferment 7-14 days",
+                        processDetail: "then bottle for fizz",
+                        result: "Kombucha",
+                        resultDetail: "tangy, effervescent",
+                        svg: "kombucha"
+                    },
+                    {
+                        input: "Soybeans + koji + salt",
+                        inputDetail: "aspergillus mold",
+                        process: "Ferment 6 months - 3 years",
+                        processDetail: "in crocks or barrels",
+                        result: "Miso",
+                        resultDetail: "umami paste",
+                        svg: "miso"
+                    }
+                ]
+            },
+            {
+                name: "Stocks",
+                icon: "🍲",
+                desc: "Bones, vegetables, and time extract deep flavor.",
+                transforms: [
+                    {
+                        input: "Chicken bones + mirepoix",
+                        inputDetail: "onion, celery, carrot",
+                        process: "Simmer 4-6 hours",
+                        processDetail: "skim foam, don't boil",
+                        result: "Chicken Stock",
+                        resultDetail: "golden, savory",
+                        svg: "chickenstock"
+                    },
+                    {
+                        input: "Beef bones",
+                        inputDetail: "roasted first",
+                        process: "Simmer 8-12 hours",
+                        processDetail: "low and slow",
+                        result: "Beef Stock",
+                        resultDetail: "rich, brown",
+                        svg: "beefstock"
+                    },
+                    {
+                        input: "Vegetables + herbs",
+                        inputDetail: "scraps work great",
+                        process: "Simmer 45-60 min",
+                        processDetail: "don't overcook",
+                        result: "Vegetable Stock",
+                        resultDetail: "light, clean",
+                        svg: "vegstock"
+                    },
+                    {
+                        input: "Kombu + bonito flakes",
+                        inputDetail: "kelp + dried fish",
+                        process: "Steep, don't boil",
+                        processDetail: "10-15 minutes",
+                        result: "Dashi",
+                        resultDetail: "umami base",
+                        svg: "dashi"
+                    },
+                    {
+                        input: "Any stock",
+                        inputDetail: "strained, defatted",
+                        process: "Reduce by 75-90%",
+                        processDetail: "hours of simmering",
+                        result: "Demi-Glace",
+                        resultDetail: "intense, syrupy",
+                        svg: "demiglace"
+                    }
+                ]
+            },
+            {
+                name: "Bread",
+                icon: "🍞",
+                desc: "Flour, water, yeast, salt—and time makes the magic happen.",
+                transforms: [
+                    {
+                        input: "Flour + water + yeast + salt",
+                        inputDetail: "basic dough",
+                        process: "Knead + rise + bake",
+                        processDetail: "1-2 hours rise, 400°F",
+                        result: "Basic Bread",
+                        resultDetail: "crusty loaf",
+                        svg: "bread"
+                    },
+                    {
+                        input: "Flour + water",
+                        inputDetail: "equal parts",
+                        process: "Feed daily for 5-7 days",
+                        processDetail: "room temp, discard half",
+                        result: "Sourdough Starter",
+                        resultDetail: "wild yeast culture",
+                        svg: "starter"
+                    },
+                    {
+                        input: "Starter + flour + water",
+                        inputDetail: "long ferment",
+                        process: "12-18 hour rise",
+                        processDetail: "cold proof optional",
+                        result: "Sourdough Bread",
+                        resultDetail: "tangy, chewy",
+                        svg: "sourdough"
+                    },
+                    {
+                        input: "Flour + butter + yeast",
+                        inputDetail: "enriched dough",
+                        process: "Laminate + fold + rest",
+                        processDetail: "many layers of butter",
+                        result: "Croissant",
+                        resultDetail: "flaky, buttery",
+                        svg: "croissant"
+                    },
+                    {
+                        input: "Flour + water + salt",
+                        inputDetail: "high hydration",
+                        process: "Stretch + fold, long rise",
+                        processDetail: "minimal kneading",
+                        result: "No-Knead Bread",
+                        resultDetail: "artisan-style",
+                        svg: "noknead"
+                    }
+                ]
+            },
+            {
+                name: "Meats",
+                icon: "🥩",
+                desc: "Grinding, curing, smoking, and aging transform cuts into new creations.",
+                transforms: [
+                    {
+                        input: "Ground meat + spices",
+                        inputDetail: "pork, beef, or mix",
+                        process: "Mix + stuff into casing",
+                        processDetail: "natural or collagen casing",
+                        result: "Fresh Sausage",
+                        resultDetail: "cook before eating",
+                        svg: "sausage"
+                    },
+                    {
+                        input: "Fresh sausage",
+                        inputDetail: "in casing",
+                        process: "Cold smoke + dry",
+                        processDetail: "days to weeks",
+                        result: "Cured Sausage",
+                        resultDetail: "salami, chorizo",
+                        svg: "salami"
+                    },
+                    {
+                        input: "Pork belly + cure",
+                        inputDetail: "salt, sugar, pink salt",
+                        process: "Cure 7 days + smoke",
+                        processDetail: "cold or hot smoke",
+                        result: "Bacon",
+                        resultDetail: "smoky, salty",
+                        svg: "bacon"
+                    },
+                    {
+                        input: "Pork leg + salt",
+                        inputDetail: "whole leg",
+                        process: "Cure + hang 12-36 months",
+                        processDetail: "controlled humidity",
+                        result: "Prosciutto",
+                        resultDetail: "dry-cured ham",
+                        svg: "ham"
+                    },
+                    {
+                        input: "Beef brisket + cure",
+                        inputDetail: "corned beef spices",
+                        process: "Cure + smoke",
+                        processDetail: "low and slow",
+                        result: "Pastrami",
+                        resultDetail: "peppery, smoky",
+                        svg: "pastrami"
+                    },
+                    {
+                        input: "Beef + salt + time",
+                        inputDetail: "prime cuts",
+                        process: "Dry age 21-45 days",
+                        processDetail: "controlled environment",
+                        result: "Dry-Aged Beef",
+                        resultDetail: "intense, tender",
+                        svg: "steak"
+                    },
+                    {
+                        input: "Meat + salt + spices",
+                        inputDetail: "sliced thin",
+                        process: "Dehydrate or smoke",
+                        processDetail: "low temp, hours",
+                        result: "Jerky",
+                        resultDetail: "preserved, chewy",
+                        svg: "jerky"
+                    },
+                    {
+                        input: "Duck/goose + salt",
+                        inputDetail: "legs usually",
+                        process: "Cure + cook in own fat",
+                        processDetail: "low temp, submerged",
+                        result: "Confit",
+                        resultDetail: "tender, rich",
+                        svg: "drumstick"
+                    },
+                    {
+                        input: "Liver + fat + spices",
+                        inputDetail: "duck or chicken liver",
+                        process: "Blend + bake in water bath",
+                        processDetail: "smooth texture",
+                        result: "Pâté",
+                        resultDetail: "spreadable, rich",
+                        svg: "pate"
+                    },
+                    {
+                        input: "Ground meat + fat",
+                        inputDetail: "pork, seasoned",
+                        process: "Emulsify + stuff + poach",
+                        processDetail: "smooth, fine grind",
+                        result: "Hot Dog",
+                        resultDetail: "emulsified sausage",
+                        svg: "hotdog"
+                    }
+                ]
+            }
+        ];
+
+        // SVG icons library
+        const svgIcons = {
+            // Eggs
+            friedegg: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="34" rx="26" ry="22" fill="#fff"/><ellipse cx="32" cy="34" rx="12" ry="10" fill="#FFD93D"/></svg>`,
+            scrambled: `<svg viewBox="0 0 64 64"><path d="M12 28c4-8 12-10 20-8s16 6 20 14c2 6-2 12-10 14s-18 2-24-4-8-12-6-16z" fill="#FFE566"/><circle cx="24" cy="32" r="3" fill="#FFD93D"/><circle cx="36" cy="28" r="4" fill="#FFD93D"/><circle cx="40" cy="38" r="3" fill="#FFD93D"/></svg>`,
+            poached: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="36" rx="20" ry="16" fill="#fff"/><ellipse cx="32" cy="34" rx="10" ry="8" fill="#FFB347"/></svg>`,
+            hardboiled: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="32" rx="16" ry="22" fill="#fff" stroke="#ddd" stroke-width="2"/><ellipse cx="32" cy="32" rx="8" ry="8" fill="#FFD93D"/></svg>`,
+            softboiled: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="32" rx="16" ry="22" fill="#fff" stroke="#ddd" stroke-width="2"/><ellipse cx="32" cy="32" rx="8" ry="8" fill="#FF8C00"/></svg>`,
+            omelette: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="32" rx="26" ry="14" fill="#FFE566"/><path d="M14 32 Q32 20 50 32" fill="#FFD93D"/></svg>`,
+            hollandaise: `<svg viewBox="0 0 64 64"><path d="M16 44 Q12 32 20 24 Q32 16 44 24 Q52 32 48 44 Z" fill="#FFD93D"/><ellipse cx="32" cy="36" rx="12" ry="6" fill="#FFEC8B"/></svg>`,
+
+            // Cream
+            whippedcream: `<svg viewBox="0 0 64 64"><path d="M20 48 Q16 36 24 28 Q32 20 40 28 Q48 36 44 48 Z" fill="#FFFEF0"/><path d="M26 42 Q24 36 30 32 Q36 28 40 34 Q42 40 38 44 Z" fill="#fff"/></svg>`,
+            butter: `<svg viewBox="0 0 64 64"><rect x="14" y="24" width="36" height="24" rx="4" fill="#FFD93D"/><rect x="14" y="24" width="36" height="8" rx="2" fill="#FFEC8B"/></svg>`,
+            cremefraiche: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="36" rx="22" ry="14" fill="#FFFEF0"/><ellipse cx="32" cy="34" rx="16" ry="8" fill="#fff"/></svg>`,
+            sourcream: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="36" rx="22" ry="14" fill="#FAFAFA"/><ellipse cx="32" cy="34" rx="14" ry="6" fill="#fff"/></svg>`,
+            clarifiedbutter: `<svg viewBox="0 0 64 64"><rect x="18" y="20" width="28" height="32" rx="4" fill="#FFD700"/><rect x="18" y="20" width="28" height="10" rx="2" fill="#FFEC8B" opacity="0.5"/></svg>`,
+            brownbutter: `<svg viewBox="0 0 64 64"><rect x="14" y="24" width="36" height="24" rx="4" fill="#B8860B"/><rect x="14" y="24" width="36" height="8" rx="2" fill="#DAA520"/></svg>`,
+
+            // Milk
+            yogurt: `<svg viewBox="0 0 64 64"><rect x="18" y="16" width="28" height="36" rx="4" fill="#F5F5F5"/><ellipse cx="32" cy="52" rx="14" ry="4" fill="#E8E8E8"/><ellipse cx="32" cy="20" rx="10" ry="3" fill="#fff"/></svg>`,
+            kefir: `<svg viewBox="0 0 64 64"><path d="M22 16 L26 52 L38 52 L42 16 Z" fill="#F5F5F5"/><ellipse cx="32" cy="52" rx="8" ry="3" fill="#E8E8E8"/><circle cx="28" cy="32" r="2" fill="#fff" opacity="0.6"/><circle cx="36" cy="28" r="2" fill="#fff" opacity="0.6"/></svg>`,
+            ricotta: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="38" rx="20" ry="14" fill="#FFFEF0"/><ellipse cx="28" cy="34" rx="4" ry="3" fill="#fff"/><ellipse cx="38" cy="38" rx="5" ry="3" fill="#fff"/></svg>`,
+            cheese: `<svg viewBox="0 0 64 64"><path d="M10 44 L32 20 L54 44 L32 52 Z" fill="#FFD93D"/><circle cx="24" cy="40" r="4" fill="#FFEC8B"/><circle cx="38" cy="38" r="3" fill="#FFEC8B"/><circle cx="32" cy="46" r="2" fill="#FFEC8B"/></svg>`,
+            paneer: `<svg viewBox="0 0 64 64"><rect x="16" y="22" width="32" height="28" rx="2" fill="#FFFEF0"/><line x1="16" y1="32" x2="48" y2="32" stroke="#E8E8E8" stroke-width="1"/><line x1="16" y1="40" x2="48" y2="40" stroke="#E8E8E8" stroke-width="1"/></svg>`,
+
+            // Emulsions
+            mayo: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="38" rx="20" ry="14" fill="#FFFEF0"/><ellipse cx="32" cy="34" rx="14" ry="8" fill="#FFF"/></svg>`,
+            aioli: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="38" rx="20" ry="14" fill="#FFFDD0"/><ellipse cx="32" cy="34" rx="14" ry="8" fill="#FFFEF0"/><circle cx="32" cy="34" r="3" fill="#E8E8D0"/></svg>`,
+            vinaigrette: `<svg viewBox="0 0 64 64"><rect x="22" y="14" width="20" height="40" rx="4" fill="transparent" stroke="#666" stroke-width="2"/><rect x="24" y="34" width="16" height="18" rx="2" fill="#A3E635"/><rect x="24" y="24" width="16" height="10" fill="#BE123C" opacity="0.6"/></svg>`,
+            bearnaise: `<svg viewBox="0 0 64 64"><path d="M16 44 Q12 32 20 24 Q32 16 44 24 Q52 32 48 44 Z" fill="#FFD93D"/><path d="M28 32 L32 28 L36 32" stroke="#22C55E" stroke-width="2" fill="none"/></svg>`,
+
+            // Ferments
+            pickles: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="32" rx="8" ry="20" fill="#84CC16"/><ellipse cx="32" cy="32" rx="5" ry="16" fill="#A3E635"/><circle cx="32" cy="20" r="2" fill="#65A30D"/></svg>`,
+            sauerkraut: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="40" rx="22" ry="12" fill="#F5F5DC"/><path d="M16 36 Q24 32 32 36 Q40 32 48 36" stroke="#E8E4C9" stroke-width="3" fill="none"/><path d="M18 42 Q26 38 34 42 Q42 38 46 42" stroke="#E8E4C9" stroke-width="3" fill="none"/></svg>`,
+            kimchi: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="40" rx="22" ry="12" fill="#DC2626"/><path d="M16 38 Q24 34 32 38 Q40 34 48 38" stroke="#22C55E" stroke-width="3" fill="none"/><circle cx="26" cy="42" r="2" fill="#FFF" opacity="0.5"/></svg>`,
+            kombucha: `<svg viewBox="0 0 64 64"><path d="M22 12 L20 52 L44 52 L42 12 Z" fill="#FDE68A"/><ellipse cx="32" cy="52" rx="12" ry="4" fill="#D4A574"/><circle cx="28" cy="28" r="2" fill="#fff" opacity="0.4"/><circle cx="36" cy="36" r="2" fill="#fff" opacity="0.4"/></svg>`,
+            miso: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="38" rx="22" ry="14" fill="#92400E"/><ellipse cx="32" cy="34" rx="16" ry="8" fill="#A16207"/></svg>`,
+
+            // Stocks
+            chickenstock: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="44" rx="20" ry="10" fill="#FDE68A"/><path d="M16 44 L16 28 Q16 20 32 20 Q48 20 48 28 L48 44" fill="none" stroke="#D4A574" stroke-width="3"/></svg>`,
+            beefstock: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="44" rx="20" ry="10" fill="#92400E"/><path d="M16 44 L16 28 Q16 20 32 20 Q48 20 48 28 L48 44" fill="none" stroke="#78350F" stroke-width="3"/></svg>`,
+            vegstock: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="44" rx="20" ry="10" fill="#A3E635"/><path d="M16 44 L16 28 Q16 20 32 20 Q48 20 48 28 L48 44" fill="none" stroke="#65A30D" stroke-width="3"/></svg>`,
+            dashi: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="44" rx="20" ry="10" fill="#E0F2FE"/><path d="M16 44 L16 28 Q16 20 32 20 Q48 20 48 28 L48 44" fill="none" stroke="#7DD3FC" stroke-width="3"/><path d="M28 32 L36 32" stroke="#0EA5E9" stroke-width="2"/></svg>`,
+            demiglace: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="44" rx="16" ry="8" fill="#44403C"/><path d="M20 44 L20 32 Q20 26 32 26 Q44 26 44 32 L44 44" fill="none" stroke="#292524" stroke-width="3"/></svg>`,
+
+            // Bread
+            bread: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="38" rx="22" ry="16" fill="#D4A574"/><ellipse cx="32" cy="34" rx="18" ry="10" fill="#E8C49A"/><path d="M20 34 Q32 28 44 34" stroke="#C4956A" stroke-width="2" fill="none"/></svg>`,
+            starter: `<svg viewBox="0 0 64 64"><rect x="18" y="20" width="28" height="32" rx="4" fill="#F5F5DC"/><circle cx="26" cy="32" r="3" fill="#E8E4C9"/><circle cx="36" cy="28" r="2" fill="#E8E4C9"/><circle cx="32" cy="40" r="4" fill="#E8E4C9"/></svg>`,
+            sourdough: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="38" rx="22" ry="16" fill="#C4956A"/><ellipse cx="32" cy="34" rx="18" ry="10" fill="#D4A574"/><path d="M18 36 L46 32" stroke="#B8860B" stroke-width="2"/></svg>`,
+            croissant: `<svg viewBox="0 0 64 64"><path d="M12 40 Q20 28 32 32 Q44 28 52 40 Q44 44 32 42 Q20 44 12 40 Z" fill="#D4A574"/><path d="M16 38 Q24 32 32 34 Q40 32 48 38" stroke="#C4956A" stroke-width="2" fill="none"/></svg>`,
+            noknead: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="40" rx="20" ry="14" fill="#C4956A"/><ellipse cx="32" cy="36" rx="16" ry="8" fill="#D4A574"/><path d="M20 38 Q32 30 44 38" stroke="#B8860B" stroke-width="2" fill="none"/></svg>`,
+
+            // Meats
+            sausage: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="32" rx="24" ry="10" fill="#C4956A"/><ellipse cx="32" cy="30" rx="22" ry="8" fill="#D4A574"/><line x1="14" y1="32" x2="14" y2="28" stroke="#A16207" stroke-width="2"/><line x1="50" y1="32" x2="50" y2="28" stroke="#A16207" stroke-width="2"/></svg>`,
+            salami: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="32" rx="16" ry="16" fill="#991B1B"/><ellipse cx="32" cy="32" rx="14" ry="14" fill="#B91C1C"/><circle cx="28" cy="28" r="2" fill="#FEF3C7"/><circle cx="36" cy="32" r="2" fill="#FEF3C7"/><circle cx="30" cy="36" r="1.5" fill="#FEF3C7"/></svg>`,
+            bacon: `<svg viewBox="0 0 64 64"><path d="M12 24 Q20 20 28 24 Q36 28 44 24 Q52 20 52 24 L52 44 Q44 40 36 44 Q28 48 20 44 Q12 40 12 44 Z" fill="#B91C1C"/><path d="M12 28 Q20 24 28 28 Q36 32 44 28 Q52 24 52 28" stroke="#FEF3C7" stroke-width="3"/><path d="M12 36 Q20 32 28 36 Q36 40 44 36 Q52 32 52 36" stroke="#FEF3C7" stroke-width="3"/></svg>`,
+            ham: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="34" rx="20" ry="18" fill="#F87171"/><ellipse cx="32" cy="32" rx="16" ry="14" fill="#FCA5A5"/><ellipse cx="36" cy="30" rx="6" ry="4" fill="#FEF3C7" opacity="0.5"/></svg>`,
+            pastrami: `<svg viewBox="0 0 64 64"><rect x="14" y="22" width="36" height="24" rx="4" fill="#991B1B"/><rect x="14" y="22" width="36" height="6" rx="2" fill="#1C1917"/><circle cx="24" cy="34" r="2" fill="#FEF3C7" opacity="0.3"/><circle cx="36" cy="38" r="2" fill="#FEF3C7" opacity="0.3"/></svg>`,
+            steak: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="34" rx="22" ry="16" fill="#991B1B"/><ellipse cx="32" cy="32" rx="18" ry="12" fill="#B91C1C"/><path d="M20 32 Q26 28 32 32 Q38 36 44 32" stroke="#FEF3C7" stroke-width="2" opacity="0.4"/></svg>`,
+            jerky: `<svg viewBox="0 0 64 64"><path d="M16 28 L24 24 L40 26 L48 32 L44 40 L28 44 L16 38 Z" fill="#78350F"/><path d="M20 30 L36 28 L42 34" stroke="#92400E" stroke-width="2"/></svg>`,
+            drumstick: `<svg viewBox="0 0 64 64"><ellipse cx="28" cy="28" rx="14" ry="12" fill="#D4A574"/><rect x="36" y="26" width="16" height="8" rx="4" fill="#FEF3C7"/><ellipse cx="28" cy="26" rx="10" ry="8" fill="#E8C49A"/></svg>`,
+            pate: `<svg viewBox="0 0 64 64"><rect x="14" y="26" width="36" height="20" rx="4" fill="#92400E"/><rect x="14" y="26" width="36" height="6" rx="2" fill="#A16207"/><ellipse cx="32" cy="36" rx="12" ry="6" fill="#B8860B" opacity="0.5"/></svg>`,
+            hotdog: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="32" rx="24" ry="8" fill="#D4A574"/><ellipse cx="32" cy="30" rx="22" ry="6" fill="#E8C49A"/><ellipse cx="32" cy="32" rx="20" ry="5" fill="#B91C1C"/></svg>`,
+
+            // Process icons
+            skillet: `<svg viewBox="0 0 64 64"><ellipse cx="28" cy="32" rx="20" ry="12" fill="#444" stroke="#666" stroke-width="2"/><rect x="46" y="28" width="14" height="8" rx="2" fill="#666"/><ellipse cx="28" cy="30" rx="16" ry="8" fill="#333"/></svg>`,
+            pot: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="44" rx="18" ry="8" fill="#444"/><rect x="14" y="24" width="36" height="20" rx="2" fill="#555" stroke="#666" stroke-width="2"/><ellipse cx="32" cy="24" rx="18" ry="6" fill="#666"/><rect x="8" y="20" width="8" height="4" rx="1" fill="#666"/><rect x="48" y="20" width="8" height="4" rx="1" fill="#666"/></svg>`,
+            potboil: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="44" rx="18" ry="8" fill="#444"/><rect x="14" y="24" width="36" height="20" rx="2" fill="#555" stroke="#666" stroke-width="2"/><ellipse cx="32" cy="24" rx="18" ry="6" fill="#666"/><circle cx="24" cy="18" r="3" fill="#87CEEB" opacity="0.6"/><circle cx="32" cy="14" r="4" fill="#87CEEB" opacity="0.5"/><circle cx="40" cy="17" r="3" fill="#87CEEB" opacity="0.6"/></svg>`,
+            oven: `<svg viewBox="0 0 64 64"><rect x="12" y="12" width="40" height="44" rx="4" fill="#444" stroke="#555" stroke-width="2"/><rect x="18" y="24" width="28" height="26" rx="2" fill="#222"/><rect x="20" y="26" width="24" height="22" rx="1" fill="#F97316" opacity="0.3"/><circle cx="20" cy="16" r="3" fill="#666"/><circle cx="32" cy="16" r="3" fill="#666"/><circle cx="44" cy="16" r="3" fill="#666"/></svg>`,
+            whisk: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="44" rx="12" ry="16" fill="none" stroke="#888" stroke-width="2"/><line x1="26" y1="44" x2="26" y2="28" stroke="#888" stroke-width="2"/><line x1="32" y1="48" x2="32" y2="28" stroke="#888" stroke-width="2"/><line x1="38" y1="44" x2="38" y2="28" stroke="#888" stroke-width="2"/><rect x="29" y="12" width="6" height="18" rx="2" fill="#666"/></svg>`,
+            mixer: `<svg viewBox="0 0 64 64"><rect x="20" y="12" width="24" height="20" rx="4" fill="#555"/><ellipse cx="32" cy="48" rx="14" ry="10" fill="#444" stroke="#555" stroke-width="2"/><line x1="28" y1="32" x2="28" y2="40" stroke="#666" stroke-width="2"/><line x1="36" y1="32" x2="36" y2="40" stroke="#666" stroke-width="2"/><circle cx="40" cy="18" r="3" fill="#F97316"/></svg>`,
+            jar: `<svg viewBox="0 0 64 64"><rect x="18" y="18" width="28" height="38" rx="4" fill="#E8E8E8" opacity="0.3" stroke="#888" stroke-width="2"/><rect x="16" y="12" width="32" height="8" rx="2" fill="#666"/><ellipse cx="32" cy="40" rx="10" ry="6" fill="#A3E635" opacity="0.5"/></svg>`,
+            doubleboiler: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="50" rx="18" ry="6" fill="#444"/><rect x="14" y="34" width="36" height="16" rx="2" fill="#555" stroke="#666" stroke-width="2"/><ellipse cx="32" cy="34" rx="14" ry="5" fill="#666"/><ellipse cx="32" cy="28" rx="10" ry="4" fill="#777"/><circle cx="24" cy="42" r="2" fill="#87CEEB" opacity="0.4"/><circle cx="40" cy="44" r="2" fill="#87CEEB" opacity="0.4"/></svg>`,
+            smoker: `<svg viewBox="0 0 64 64"><rect x="16" y="20" width="32" height="36" rx="4" fill="#444" stroke="#555" stroke-width="2"/><rect x="20" y="24" width="24" height="8" fill="#333"/><path d="M28 12 Q26 8 28 4" stroke="#888" stroke-width="2" fill="none"/><path d="M36 14 Q34 10 36 6" stroke="#888" stroke-width="2" fill="none"/><rect x="20" y="36" width="24" height="2" fill="#666"/><rect x="20" y="42" width="24" height="2" fill="#666"/></svg>`,
+            grill: `<svg viewBox="0 0 64 64"><rect x="12" y="28" width="40" height="24" rx="4" fill="#444"/><line x1="16" y1="34" x2="48" y2="34" stroke="#666" stroke-width="3"/><line x1="16" y1="40" x2="48" y2="40" stroke="#666" stroke-width="3"/><line x1="16" y1="46" x2="48" y2="46" stroke="#666" stroke-width="3"/><path d="M20 24 Q18 20 20 16" stroke="#F97316" stroke-width="2" fill="none" opacity="0.6"/><path d="M32 22 Q30 18 32 14" stroke="#F97316" stroke-width="2" fill="none" opacity="0.6"/><path d="M44 24 Q42 20 44 16" stroke="#F97316" stroke-width="2" fill="none" opacity="0.6"/></svg>`,
+            strainer: `<svg viewBox="0 0 64 64"><path d="M14 24 L20 48 L44 48 L50 24" fill="none" stroke="#888" stroke-width="2"/><line x1="18" y1="32" x2="46" y2="32" stroke="#666" stroke-width="1"/><line x1="19" y1="38" x2="45" y2="38" stroke="#666" stroke-width="1"/><line x1="20" y1="44" x2="44" y2="44" stroke="#666" stroke-width="1"/><rect x="8" y="20" width="48" height="6" rx="2" fill="#666"/></svg>`,
+            mortar: `<svg viewBox="0 0 64 64"><path d="M16 28 Q12 52 32 52 Q52 52 48 28" fill="#666" stroke="#555" stroke-width="2"/><ellipse cx="32" cy="28" rx="18" ry="8" fill="#777"/><rect x="44" y="16" width="8" height="24" rx="4" fill="#888" transform="rotate(30 48 28)"/></svg>`,
+            grinder: `<svg viewBox="0 0 64 64"><rect x="18" y="16" width="28" height="24" rx="4" fill="#555"/><rect x="22" y="8" width="20" height="10" rx="2" fill="#666"/><path d="M24 40 L24 52 L40 52 L40 40" fill="#444"/><circle cx="32" cy="46" r="4" fill="#333"/><rect x="44" y="20" width="12" height="6" rx="2" fill="#666"/></svg>`,
+            clock: `<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="#333" stroke="#555" stroke-width="2"/><circle cx="32" cy="32" r="18" fill="#222"/><line x1="32" y1="32" x2="32" y2="18" stroke="#fff" stroke-width="2"/><line x1="32" y1="32" x2="42" y2="32" stroke="#fff" stroke-width="2"/><circle cx="32" cy="32" r="3" fill="#F97316"/></svg>`,
+            hang: `<svg viewBox="0 0 64 64"><rect x="12" y="8" width="40" height="4" fill="#666"/><line x1="20" y1="12" x2="20" y2="24" stroke="#888" stroke-width="2"/><line x1="32" y1="12" x2="32" y2="20" stroke="#888" stroke-width="2"/><line x1="44" y1="12" x2="44" y2="22" stroke="#888" stroke-width="2"/><ellipse cx="20" cy="38" rx="6" ry="14" fill="#B91C1C"/><ellipse cx="32" cy="36" rx="6" ry="16" fill="#B91C1C"/><ellipse cx="44" cy="37" rx="6" ry="15" fill="#B91C1C"/></svg>`,
+            rolling: `<svg viewBox="0 0 64 64"><rect x="8" y="28" width="48" height="12" rx="6" fill="#D4A574"/><circle cx="8" cy="34" r="6" fill="#C4956A"/><circle cx="56" cy="34" r="6" fill="#C4956A"/><rect x="20" y="44" width="24" height="6" fill="#E8C49A" rx="2"/></svg>`,
+            knead: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="40" rx="22" ry="12" fill="#E8C49A"/><path d="M20 36 Q26 28 32 32 Q38 28 44 36" fill="#D4A574"/><ellipse cx="24" cy="24" rx="8" ry="6" fill="#FFDAB9"/><ellipse cx="40" cy="26" rx="8" ry="6" fill="#FFDAB9"/></svg>`,
+            waterbath: `<svg viewBox="0 0 64 64"><rect x="10" y="28" width="44" height="24" rx="2" fill="#555" stroke="#666" stroke-width="2"/><rect x="20" y="32" width="24" height="16" rx="2" fill="#444"/><ellipse cx="32" cy="48" rx="18" ry="4" fill="#87CEEB" opacity="0.4"/><rect x="22" y="34" width="20" height="12" rx="1" fill="#92400E"/></svg>`
+        };
+
+        const categoryList = document.getElementById('categoryList');
+        const categoryTitle = document.getElementById('categoryTitle');
+        const categoryDesc = document.getElementById('categoryDesc');
+        const transformsContainer = document.getElementById('transformsContainer');
+
+        // Create sidebar
+        categories.forEach((cat, index) => {
+            const li = document.createElement('li');
+            li.className = 'category-item';
+            li.innerHTML = `
+                <span class="icon">${cat.icon}</span>
+                <span class="name">${cat.name}</span>
+            `;
+            li.addEventListener('click', () => selectCategory(index));
+            categoryList.appendChild(li);
+        });
+
+        function selectCategory(index) {
+            document.querySelectorAll('.category-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+
+            const cat = categories[index];
+            categoryTitle.textContent = cat.icon + ' ' + cat.name;
+            categoryDesc.textContent = cat.desc;
+
+            renderTransforms(cat.transforms);
+        }
+
+        function renderTransforms(transforms) {
+            let html = `
+                <div class="column-headers">
+                    <div class="column-header col-input">Input</div>
+                    <div class="col-arrow"></div>
+                    <div class="column-header col-process">Process</div>
+                    <div class="col-arrow"></div>
+                    <div class="column-header col-result">Result</div>
+                </div>
+            `;
+
+            transforms.forEach(t => {
+                const resultSvgHtml = t.svg && svgIcons[t.svg] ? `<div class="result-svg">${svgIcons[t.svg]}</div>` : '';
+
+                // Handle both array and legacy single process format
+                let processes = t.processes;
+                if (!processes) {
+                    // Legacy format - convert to array
+                    processes = [{
+                        text: t.process,
+                        detail: t.processDetail,
+                        svg: t.processSvg
+                    }];
+                }
+
+                // Build process steps HTML
+                let processHtml = '<div class="process-steps">';
+                processes.forEach((p, i) => {
+                    const pSvgHtml = p.svg && svgIcons[p.svg] ? `<div class="process-svg">${svgIcons[p.svg]}</div>` : '';
+                    if (i > 0) {
+                        processHtml += '<span class="step-arrow">→</span>';
+                    }
+                    processHtml += `
+                        <div class="box process-box">
+                            ${pSvgHtml}
+                            <div class="process-text">
+                                <div class="box-main">${p.text}</div>
+                                ${p.detail ? `<div class="box-detail">${p.detail}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                processHtml += '</div>';
+
+                html += `
+                    <div class="transform-row">
+                        <div class="box input-box">
+                            <div class="box-main">${t.input}</div>
+                            <div class="box-detail">${t.inputDetail}</div>
+                        </div>
+                        <div class="arrow">→</div>
+                        ${processHtml}
+                        <div class="arrow">→</div>
+                        <div class="box result-box">
+                            ${resultSvgHtml}
+                            <div class="result-text">
+                                <div class="box-main">${t.result}</div>
+                                <div class="box-detail">${t.resultDetail}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            transformsContainer.innerHTML = html;
+        }
+
+        // Select first category
+        selectCategory(0);
+    </script>
+</body>
+</html>

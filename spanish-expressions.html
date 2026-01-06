@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Expressions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .layout {
+            display: flex;
+            height: 100vh;
+            padding-top: 60px;
+        }
+
+        .sidebar {
+            width: 180px;
+            background: #111;
+            border-right: 1px solid #222;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+        .sidebar h2 {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 16px;
+            margin-bottom: 12px;
+        }
+        .emotion-list {
+            list-style: none;
+        }
+        .emotion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .emotion-item:hover {
+            background: #1a1a1a;
+        }
+        .emotion-item.active {
+            background: #1a1a1a;
+            border-left-color: var(--emotion-color, #F97316);
+        }
+        .emotion-icon {
+            font-size: 18px;
+        }
+
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 50px;
+        }
+
+        .emotion-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        .emotion-header .icon {
+            font-size: 48px;
+        }
+        .emotion-header .text h1 {
+            font-size: 32px;
+            margin-bottom: 4px;
+        }
+        .emotion-header .text p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .expressions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .expression-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .expression-card:hover {
+            border-color: var(--emotion-color, #F97316);
+            transform: translateY(-2px);
+        }
+        .expression-card.expanded {
+            border-color: var(--emotion-color, #F97316);
+            background: #222;
+        }
+        .expression-spanish {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--emotion-color, #F97316);
+            margin-bottom: 6px;
+        }
+        .expression-english {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .expression-literal {
+            font-size: 12px;
+            color: #555;
+            font-style: italic;
+        }
+        .expression-region {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 3px 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .examples {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #333;
+            display: none;
+        }
+        .expression-card.expanded .examples {
+            display: block;
+        }
+        .example {
+            margin-bottom: 12px;
+        }
+        .example:last-child {
+            margin-bottom: 0;
+        }
+        .example-spanish {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 2px;
+        }
+        .example-english {
+            font-size: 12px;
+            color: #666;
+        }
+        .example-context {
+            font-size: 11px;
+            color: #555;
+            margin-top: 2px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <a href="spanish.html" class="back-link">← Back</a>
+    <div class="title">Expresiones</div>
+
+    <div class="layout">
+        <div class="sidebar">
+            <h2>Emotions</h2>
+            <ul class="emotion-list" id="emotionList"></ul>
+        </div>
+
+        <div class="main" id="main"></div>
+    </div>
+
+    <script>
+        const emotions = {
+            "surprise": {
+                name: "Surprise",
+                icon: "😲",
+                color: "#F59E0B",
+                description: "When something unexpected happens",
+                expressions: [
+                    {
+                        es: "¡Qué bárbaro!",
+                        en: "Wow! / That's crazy! / Amazing!",
+                        literal: "How barbaric!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¿Ganó la lotería? ¡Qué bárbaro!", en: "He won the lottery? Wow!", context: "Amazement at good news" },
+                            { es: "¡Qué bárbaro, qué calor hace!", en: "Man, it's so hot!", context: "Extreme weather" },
+                            { es: "¡Qué bárbaro cómo juega!", en: "Wow, look at him play!", context: "Impressed by skill" }
+                        ]
+                    },
+                    {
+                        es: "¡No me digas!",
+                        en: "No way! / You don't say! / Really?",
+                        literal: "Don't tell me!",
+                        region: "Universal",
+                        examples: [
+                            { es: "Se casaron. — ¡No me digas!", en: "They got married. — No way!", context: "Surprise at news" },
+                            { es: "¡No me digas que ya te vas!", en: "Don't tell me you're leaving already!", context: "Disappointment + surprise" },
+                            { es: "¿En serio? ¡No me digas!", en: "Seriously? You don't say!", context: "Can be sarcastic" }
+                        ]
+                    },
+                    {
+                        es: "¡Híjole!",
+                        en: "Wow! / Geez! / Oh man!",
+                        literal: "Son of... (softened)",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¡Híjole, qué caro!", en: "Geez, that's expensive!", context: "Shock at price" },
+                            { es: "¡Híjole, se me olvidó!", en: "Oh man, I forgot!", context: "Realizing a mistake" },
+                            { es: "¡Híjole, qué susto!", en: "Wow, what a scare!", context: "After being startled" }
+                        ]
+                    },
+                    {
+                        es: "¡Órale!",
+                        en: "Wow! / Whoa! / Alright!",
+                        literal: "(no literal meaning)",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¡Órale, qué chido!", en: "Whoa, that's cool!", context: "Impressed" },
+                            { es: "¿Te dieron el trabajo? ¡Órale!", en: "You got the job? Awesome!", context: "Happy surprise" },
+                            { es: "¡Órale, ya llegaron!", en: "Oh, they're here!", context: "Noticing arrival" }
+                        ]
+                    },
+                    {
+                        es: "¡Vaya!",
+                        en: "Wow! / Well, well! / My my!",
+                        literal: "Go!",
+                        region: "Spain",
+                        examples: [
+                            { es: "¡Vaya, qué sorpresa!", en: "Well, what a surprise!", context: "Pleasant surprise" },
+                            { es: "¡Vaya, vaya, vaya!", en: "Well, well, well!", context: "Discovering something" },
+                            { es: "¡Vaya tela!", en: "Wow, that's something!", context: "Amazement (Spain)" }
+                        ]
+                    },
+                    {
+                        es: "¡Anda!",
+                        en: "Wow! / Come on! / Really!",
+                        literal: "Walk!",
+                        region: "Spain",
+                        examples: [
+                            { es: "¡Anda, no lo sabía!", en: "Wow, I didn't know!", context: "Learning something new" },
+                            { es: "¡Anda ya!", en: "Get out of here! / No way!", context: "Disbelief" },
+                            { es: "¡Anda, qué bonito!", en: "Oh, how pretty!", context: "Pleasant discovery" }
+                        ]
+                    },
+                    {
+                        es: "¡Fíjate!",
+                        en: "Imagine that! / Can you believe it!",
+                        literal: "Notice!",
+                        region: "Latin America",
+                        examples: [
+                            { es: "¡Fíjate que no vino!", en: "Can you believe he didn't come!", context: "Sharing surprising info" },
+                            { es: "Fíjate que sí lo hizo", en: "Actually, he did do it", context: "Contrary to expectations" },
+                            { es: "¡Fíjate nada más!", en: "Would you look at that!", context: "Drawing attention" }
+                        ]
+                    }
+                ]
+            },
+            "approval": {
+                name: "Approval",
+                icon: "👍",
+                color: "#22C55E",
+                description: "When something is cool or you approve",
+                expressions: [
+                    {
+                        es: "¡Qué padre!",
+                        en: "How cool! / Awesome!",
+                        literal: "How father!",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¡Qué padre está tu carro!", en: "Your car is so cool!", context: "Admiring something" },
+                            { es: "¡Qué padre que viniste!", en: "Awesome that you came!", context: "Happy someone's there" },
+                            { es: "Estuvo muy padre la fiesta", en: "The party was really cool", context: "Describing an event" }
+                        ]
+                    },
+                    {
+                        es: "¡Qué chido!",
+                        en: "How cool! / Sick! / Awesome!",
+                        literal: "(slang, no literal)",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¡Qué chido tu tatuaje!", en: "Your tattoo is sick!", context: "Complimenting" },
+                            { es: "¡Está bien chido!", en: "It's really cool!", context: "Enthusiasm" },
+                            { es: "¡Qué chido que te ascendieron!", en: "Awesome that you got promoted!", context: "Celebrating news" }
+                        ]
+                    },
+                    {
+                        es: "¡Qué guay!",
+                        en: "How cool! / Awesome!",
+                        literal: "(slang, no literal)",
+                        region: "Spain",
+                        examples: [
+                            { es: "¡Qué guay tu móvil!", en: "Your phone is so cool!", context: "Admiring object" },
+                            { es: "¡Mola, qué guay!", en: "Nice, how cool!", context: "Excitement" },
+                            { es: "Es muy guay", en: "It's really cool", context: "Describing something" }
+                        ]
+                    },
+                    {
+                        es: "¡Chévere!",
+                        en: "Cool! / Great! / Awesome!",
+                        literal: "(Caribbean origin)",
+                        region: "Caribbean / Colombia / Venezuela",
+                        examples: [
+                            { es: "¡Chévere, hermano!", en: "Cool, bro!", context: "Approval" },
+                            { es: "La playa está chévere", en: "The beach is great", context: "Describing place" },
+                            { es: "¡Qué chévere verte!", en: "Great to see you!", context: "Greeting" }
+                        ]
+                    },
+                    {
+                        es: "¡Genial!",
+                        en: "Great! / Awesome! / Brilliant!",
+                        literal: "Genius/Brilliant",
+                        region: "Universal",
+                        examples: [
+                            { es: "¡Genial, cuenta conmigo!", en: "Great, count me in!", context: "Agreeing to plans" },
+                            { es: "Tu idea es genial", en: "Your idea is brilliant", context: "Complimenting" },
+                            { es: "¡Qué genial!", en: "How awesome!", context: "Enthusiasm" }
+                        ]
+                    },
+                    {
+                        es: "¡Mola!",
+                        en: "Cool! / Rocks!",
+                        literal: "(slang, no literal)",
+                        region: "Spain",
+                        examples: [
+                            { es: "¡Mola mucho!", en: "That's really cool!", context: "Strong approval" },
+                            { es: "Tu camiseta mola", en: "Your shirt is cool", context: "Compliment" },
+                            { es: "¡Cómo mola!", en: "How cool is that!", context: "Excitement" }
+                        ]
+                    }
+                ]
+            },
+            "frustration": {
+                name: "Frustration",
+                icon: "😤",
+                color: "#EF4444",
+                description: "When things don't go your way",
+                expressions: [
+                    {
+                        es: "¡Qué lata!",
+                        en: "What a pain! / How annoying!",
+                        literal: "What a can!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¡Qué lata tener que esperar!", en: "What a pain having to wait!", context: "Inconvenience" },
+                            { es: "¡Ay, qué lata!", en: "Ugh, how annoying!", context: "General frustration" },
+                            { es: "Es una lata", en: "It's a hassle", context: "Describing something tedious" }
+                        ]
+                    },
+                    {
+                        es: "¡Qué rollo!",
+                        en: "What a drag! / How boring!",
+                        literal: "What a roll!",
+                        region: "Spain",
+                        examples: [
+                            { es: "¡Qué rollo de película!", en: "What a boring movie!", context: "Disappointment" },
+                            { es: "¡Menudo rollo!", en: "What a drag!", context: "Frustration" },
+                            { es: "No me cuentes el rollo", en: "Don't bore me with the story", context: "Impatience" }
+                        ]
+                    },
+                    {
+                        es: "¡Qué pesado!",
+                        en: "How annoying! / What a pain!",
+                        literal: "How heavy!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¡Qué pesado eres!", en: "You're so annoying!", context: "To a person" },
+                            { es: "¡Qué pesado el tráfico!", en: "The traffic is such a pain!", context: "Situation" },
+                            { es: "No seas pesado", en: "Don't be annoying", context: "Telling someone to stop" }
+                        ]
+                    },
+                    {
+                        es: "¡Ni modo!",
+                        en: "Oh well! / Too bad! / What can you do!",
+                        literal: "Not even way!",
+                        region: "Mexico / Latin America",
+                        examples: [
+                            { es: "Perdimos. ¡Ni modo!", en: "We lost. Oh well!", context: "Accepting defeat" },
+                            { es: "¿No hay más? Ni modo", en: "There's no more? Oh well", context: "Resignation" },
+                            { es: "Ni modo, será para la otra", en: "Oh well, maybe next time", context: "Moving on" }
+                        ]
+                    },
+                    {
+                        es: "¡Qué oso!",
+                        en: "How embarrassing!",
+                        literal: "What a bear!",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¡Qué oso, me caí!", en: "How embarrassing, I fell!", context: "After embarrassment" },
+                            { es: "¡Qué oso con tu hermano!", en: "Your brother is so embarrassing!", context: "About someone" },
+                            { es: "Hice un oso", en: "I embarrassed myself", context: "Admitting mistake" }
+                        ]
+                    },
+                    {
+                        es: "¡Qué pena!",
+                        en: "What a shame! / How embarrassing!",
+                        literal: "What sorrow!",
+                        region: "Universal (different meanings)",
+                        examples: [
+                            { es: "¡Qué pena que no puedas venir!", en: "What a shame you can't come!", context: "Disappointment (Spain)" },
+                            { es: "¡Qué pena contigo!", en: "I'm so sorry to bother you!", context: "Apologetic (Colombia)" },
+                            { es: "Me da pena", en: "I'm embarrassed / It makes me sad", context: "Varies by region" }
+                        ]
+                    },
+                    {
+                        es: "¡Ay, no!",
+                        en: "Oh no! / Ugh!",
+                        literal: "Oh, no!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¡Ay, no, se me olvidó!", en: "Oh no, I forgot!", context: "Realizing mistake" },
+                            { es: "¡Ay, no, otra vez!", en: "Ugh, not again!", context: "Repeated problem" },
+                            { es: "Ay, no, qué horror", en: "Oh no, how awful", context: "Bad news" }
+                        ]
+                    }
+                ]
+            },
+            "disbelief": {
+                name: "Disbelief",
+                icon: "🤨",
+                color: "#8B5CF6",
+                description: "When you can't believe what you're hearing",
+                expressions: [
+                    {
+                        es: "¡Qué va!",
+                        en: "No way! / As if! / Yeah right!",
+                        literal: "What goes!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¿Tú, estudiar? ¡Qué va!", en: "You, study? Yeah right!", context: "Sarcastic disbelief" },
+                            { es: "¡Qué va, eso no es verdad!", en: "No way, that's not true!", context: "Denial" },
+                            { es: "¿Caro? ¡Qué va!", en: "Expensive? Not at all!", context: "Dismissing" }
+                        ]
+                    },
+                    {
+                        es: "¡No manches!",
+                        en: "No way! / You're kidding! / Shut up!",
+                        literal: "Don't stain!",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¡No manches, en serio!", en: "No way, seriously?!", context: "Shock" },
+                            { es: "¡No manches, güey!", en: "Shut up, dude!", context: "Disbelief to friend" },
+                            { es: "No manches, qué chistoso", en: "No way, that's hilarious", context: "Reacting to joke" }
+                        ]
+                    },
+                    {
+                        es: "¡Venga ya!",
+                        en: "Come on! / Oh please! / Get out!",
+                        literal: "Come now!",
+                        region: "Spain",
+                        examples: [
+                            { es: "¿Mil euros? ¡Venga ya!", en: "A thousand euros? Come on!", context: "Disbelief at price" },
+                            { es: "¡Venga ya, no me lo creo!", en: "Come on, I don't believe it!", context: "Skepticism" },
+                            { es: "Venga ya, hombre", en: "Oh please, man", context: "Dismissive" }
+                        ]
+                    },
+                    {
+                        es: "¡Anda ya!",
+                        en: "Get out of here! / No way!",
+                        literal: "Walk now!",
+                        region: "Spain",
+                        examples: [
+                            { es: "¿Casarte tú? ¡Anda ya!", en: "You, get married? Yeah right!", context: "Sarcastic" },
+                            { es: "¡Anda ya, eso es mentira!", en: "Get out, that's a lie!", context: "Denial" },
+                            { es: "Anda ya, no me vaciles", en: "Come on, don't mess with me", context: "Suspecting joke" }
+                        ]
+                    },
+                    {
+                        es: "¡No inventes!",
+                        en: "No way! / Don't make stuff up!",
+                        literal: "Don't invent!",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¡No inventes, qué locura!", en: "No way, that's crazy!", context: "Shock" },
+                            { es: "¡No inventes, güey!", en: "Shut up, dude!", context: "Disbelief" },
+                            { es: "No inventes, ¿en serio?", en: "You're kidding, really?", context: "Asking for confirmation" }
+                        ]
+                    },
+                    {
+                        es: "¡Mentira!",
+                        en: "No way! / Lies! / I don't believe it!",
+                        literal: "Lie!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¿Renunció? ¡Mentira!", en: "He quit? No way!", context: "Disbelief" },
+                            { es: "¡Mentira, no puede ser!", en: "No way, it can't be!", context: "Shock" },
+                            { es: "Eso es mentira", en: "That's a lie", context: "Accusation" }
+                        ]
+                    }
+                ]
+            },
+            "agreement": {
+                name: "Agreement",
+                icon: "✅",
+                color: "#10B981",
+                description: "When you agree or confirm",
+                expressions: [
+                    {
+                        es: "¡Vale!",
+                        en: "Okay! / Sure! / Alright!",
+                        literal: "It's worth!",
+                        region: "Spain",
+                        examples: [
+                            { es: "¿Vamos al cine? — ¡Vale!", en: "Shall we go to the movies? — Sure!", context: "Agreeing to plan" },
+                            { es: "Vale, vale, ya entendí", en: "Okay, okay, I get it", context: "Acknowledging" },
+                            { es: "¿Vale?", en: "Okay? / Deal?", context: "Seeking agreement" }
+                        ]
+                    },
+                    {
+                        es: "¡Órale!",
+                        en: "Alright! / Let's go! / Okay!",
+                        literal: "(no literal meaning)",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¿Nos vemos a las 8? — ¡Órale!", en: "Meet at 8? — Alright!", context: "Confirming plans" },
+                            { es: "¡Órale pues!", en: "Alright then!", context: "Agreement" },
+                            { es: "Órale, va", en: "Okay, sure", context: "Casual agreement" }
+                        ]
+                    },
+                    {
+                        es: "¡Eso!",
+                        en: "That's it! / Exactly! / Yes!",
+                        literal: "That!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¡Eso, eso es lo que digo!", en: "Exactly, that's what I'm saying!", context: "Strong agreement" },
+                            { es: "¡Eso mero!", en: "That's exactly it!", context: "Mexico" },
+                            { es: "¿Así? — ¡Eso!", en: "Like this? — That's it!", context: "Confirming" }
+                        ]
+                    },
+                    {
+                        es: "¡Claro!",
+                        en: "Of course! / Sure! / Obviously!",
+                        literal: "Clear!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¿Puedo ir? — ¡Claro!", en: "Can I come? — Of course!", context: "Permission" },
+                            { es: "¡Claro que sí!", en: "Of course! / Absolutely!", context: "Emphatic yes" },
+                            { es: "Claro, claro", en: "Sure, sure", context: "Understanding" }
+                        ]
+                    },
+                    {
+                        es: "¡Desde luego!",
+                        en: "Of course! / Absolutely! / Certainly!",
+                        literal: "From then!",
+                        region: "Universal (formal)",
+                        examples: [
+                            { es: "¿Está de acuerdo? — ¡Desde luego!", en: "Do you agree? — Absolutely!", context: "Formal agreement" },
+                            { es: "Desde luego que vendré", en: "Of course I'll come", context: "Promise" },
+                            { es: "Desde luego, tiene razón", en: "Certainly, you're right", context: "Acknowledging" }
+                        ]
+                    },
+                    {
+                        es: "¡Ya está!",
+                        en: "Done! / That's it! / There you go!",
+                        literal: "Already it is!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¡Ya está, terminé!", en: "Done, I finished!", context: "Completing task" },
+                            { es: "¿Así está bien? — ¡Ya está!", en: "Is this okay? — Perfect!", context: "Approval" },
+                            { es: "Ya está, vámonos", en: "That's it, let's go", context: "Ready to leave" }
+                        ]
+                    },
+                    {
+                        es: "¡Sale!",
+                        en: "Deal! / Okay! / Done!",
+                        literal: "It leaves!",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¿Mañana a las 10? — ¡Sale!", en: "Tomorrow at 10? — Deal!", context: "Confirming plan" },
+                            { es: "Sale y vale", en: "Done and done", context: "Agreement + confirmation" },
+                            { es: "¡Sale, nos vemos!", en: "Okay, see you!", context: "Goodbye agreement" }
+                        ]
+                    }
+                ]
+            },
+            "warning": {
+                name: "Warning",
+                icon: "⚠️",
+                color: "#F59E0B",
+                description: "When you need someone's attention",
+                expressions: [
+                    {
+                        es: "¡Ojo!",
+                        en: "Watch out! / Be careful! / Heads up!",
+                        literal: "Eye!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¡Ojo con el escalón!", en: "Watch the step!", context: "Physical warning" },
+                            { es: "Ojo, que viene el jefe", en: "Careful, the boss is coming", context: "Heads up" },
+                            { es: "¡Ojo!", en: "Watch it!", context: "Quick warning" }
+                        ]
+                    },
+                    {
+                        es: "¡Aguas!",
+                        en: "Watch out! / Heads up!",
+                        literal: "Waters!",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¡Aguas con el carro!", en: "Watch out for the car!", context: "Danger warning" },
+                            { es: "¡Aguas!", en: "Heads up!", context: "Quick alert" },
+                            { es: "Aguas, ahí viene", en: "Careful, here he comes", context: "Alert" }
+                        ]
+                    },
+                    {
+                        es: "¡Cuidado!",
+                        en: "Careful! / Watch out!",
+                        literal: "Care!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¡Cuidado, te vas a caer!", en: "Careful, you're going to fall!", context: "Physical danger" },
+                            { es: "Ten cuidado", en: "Be careful", context: "General advice" },
+                            { es: "¡Mucho cuidado!", en: "Be very careful!", context: "Strong warning" }
+                        ]
+                    },
+                    {
+                        es: "¡Ándale!",
+                        en: "Come on! / Hurry up!",
+                        literal: "Walk to it!",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¡Ándale, que llegamos tarde!", en: "Come on, we're late!", context: "Rushing" },
+                            { es: "¡Ándale, pues!", en: "Alright then! / Come on!", context: "Urging" },
+                            { es: "Ándale, apúrate", en: "Come on, hurry up", context: "Impatient" }
+                        ]
+                    },
+                    {
+                        es: "¡Pilas!",
+                        en: "Pay attention! / Stay sharp!",
+                        literal: "Batteries!",
+                        region: "Colombia / Ecuador",
+                        examples: [
+                            { es: "¡Pilas con la cartera!", en: "Watch your wallet!", context: "Theft warning" },
+                            { es: "Ponte pilas", en: "Get your act together", context: "Wake up call" },
+                            { es: "¡Pilas!", en: "Heads up!", context: "Quick alert" }
+                        ]
+                    }
+                ]
+            },
+            "greeting": {
+                name: "Greetings",
+                icon: "👋",
+                color: "#3B82F6",
+                description: "Casual greetings and responses",
+                expressions: [
+                    {
+                        es: "¿Qué onda?",
+                        en: "What's up? / How's it going?",
+                        literal: "What wave?",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¡Hey! ¿Qué onda?", en: "Hey! What's up?", context: "Casual greeting" },
+                            { es: "¿Qué onda contigo?", en: "What's up with you?", context: "Asking about someone" },
+                            { es: "¿Qué onda, güey?", en: "What's up, dude?", context: "To a friend" }
+                        ]
+                    },
+                    {
+                        es: "¿Qué tal?",
+                        en: "How's it going? / What's up?",
+                        literal: "What such?",
+                        region: "Universal",
+                        examples: [
+                            { es: "Hola, ¿qué tal?", en: "Hi, how's it going?", context: "Standard greeting" },
+                            { es: "¿Qué tal todo?", en: "How's everything?", context: "Checking in" },
+                            { es: "¿Qué tal el viaje?", en: "How was the trip?", context: "Asking about experience" }
+                        ]
+                    },
+                    {
+                        es: "¿Qué hay?",
+                        en: "What's up? / Hey!",
+                        literal: "What is there?",
+                        region: "Universal",
+                        examples: [
+                            { es: "¿Qué hay de nuevo?", en: "What's new?", context: "Catching up" },
+                            { es: "¡Qué hay!", en: "Hey! / What's up!", context: "Casual hello" },
+                            { es: "¿Qué hay, compa?", en: "What's up, buddy?", context: "To a friend" }
+                        ]
+                    },
+                    {
+                        es: "¿Qué hubo?",
+                        en: "What's up? / Hey!",
+                        literal: "What was there?",
+                        region: "Colombia / Mexico",
+                        examples: [
+                            { es: "¡Quiubo!", en: "Hey! (contracted)", context: "Very casual" },
+                            { es: "¿Qué hubo, parcero?", en: "What's up, buddy?", context: "Colombia" },
+                            { es: "¿Qué hubo, mano?", en: "What's up, bro?", context: "Mexico" }
+                        ]
+                    },
+                    {
+                        es: "¡Bueno!",
+                        en: "Hello? (phone)",
+                        literal: "Good!",
+                        region: "Mexico",
+                        examples: [
+                            { es: "¿Bueno? ¿Quién habla?", en: "Hello? Who's calling?", context: "Answering phone" },
+                            { es: "¡Bueno!", en: "Hello?", context: "Phone greeting" },
+                            { es: "Bueno, bueno", en: "Okay, okay", context: "Can also mean 'alright'" }
+                        ]
+                    },
+                    {
+                        es: "¿Mande?",
+                        en: "Pardon? / Yes? / What?",
+                        literal: "Command?",
+                        region: "Mexico",
+                        examples: [
+                            { es: "Juan... — ¿Mande?", en: "Juan... — Yes?", context: "Responding when called" },
+                            { es: "¿Mande? No escuché", en: "Pardon? I didn't hear", context: "Asking to repeat" },
+                            { es: "¿Mande usted?", en: "What can I do for you?", context: "Very polite" }
+                        ]
+                    }
+                ]
+            },
+            "dismissal": {
+                name: "Dismissal",
+                icon: "🤷",
+                color: "#6B7280",
+                description: "When you don't care or want to dismiss",
+                expressions: [
+                    {
+                        es: "¡Qué más da!",
+                        en: "Who cares! / Whatever! / What difference does it make!",
+                        literal: "What more does it give!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¿Rojo o azul? ¡Qué más da!", en: "Red or blue? Who cares!", context: "Indifference" },
+                            { es: "Qué más da, ya pasó", en: "Whatever, it's in the past", context: "Moving on" },
+                            { es: "¿Y qué más da?", en: "And what difference does it make?", context: "Rhetorical" }
+                        ]
+                    },
+                    {
+                        es: "¡Me da igual!",
+                        en: "I don't care! / It's all the same to me!",
+                        literal: "It gives me equal!",
+                        region: "Universal",
+                        examples: [
+                            { es: "¿Pizza o tacos? — Me da igual", en: "Pizza or tacos? — I don't care", context: "No preference" },
+                            { es: "Me da igual lo que digan", en: "I don't care what they say", context: "Indifference to opinions" },
+                            { es: "Me da lo mismo", en: "It's all the same to me", context: "Same meaning" }
+                        ]
+                    },
+                    {
+                        es: "¡Da igual!",
+                        en: "It doesn't matter! / Whatever!",
+                        literal: "It gives equal!",
+                        region: "Universal",
+                        examples: [
+                            { es: "Da igual, vámonos", en: "Whatever, let's go", context: "Dropping the subject" },
+                            { es: "Da igual cómo lo hagas", en: "It doesn't matter how you do it", context: "Flexibility" },
+                            { es: "Bueno, da igual", en: "Well, it doesn't matter", context: "Conceding" }
+                        ]
+                    },
+                    {
+                        es: "¡Y qué!",
+                        en: "So what! / And?",
+                        literal: "And what!",
+                        region: "Universal",
+                        examples: [
+                            { es: "Llegaste tarde. — ¡Y qué!", en: "You arrived late. — So what!", context: "Defensive" },
+                            { es: "¿Y qué si lo hice?", en: "So what if I did it?", context: "Unapologetic" },
+                            { es: "¿Y eso qué?", en: "And what's that got to do with it?", context: "Dismissing relevance" }
+                        ]
+                    },
+                    {
+                        es: "¡Allá tú!",
+                        en: "That's your problem! / Suit yourself!",
+                        literal: "There you!",
+                        region: "Universal",
+                        examples: [
+                            { es: "No quiero ir. — Allá tú", en: "I don't want to go. — Suit yourself", context: "Giving up on convincing" },
+                            { es: "Allá tú si no me crees", en: "Your loss if you don't believe me", context: "Warning + dismissal" },
+                            { es: "Allá cada quien", en: "To each their own", context: "General dismissal" }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        const emotionList = document.getElementById('emotionList');
+        const main = document.getElementById('main');
+
+        // Build emotion list
+        Object.entries(emotions).forEach(([key, emotion]) => {
+            const li = document.createElement('li');
+            li.className = 'emotion-item';
+            li.style.setProperty('--emotion-color', emotion.color);
+            li.innerHTML = `
+                <span class="emotion-icon">${emotion.icon}</span>
+                <span>${emotion.name}</span>
+            `;
+            li.addEventListener('click', () => selectEmotion(key));
+            emotionList.appendChild(li);
+        });
+
+        function selectEmotion(key) {
+            const emotion = emotions[key];
+            document.documentElement.style.setProperty('--emotion-color', emotion.color);
+
+            // Update sidebar
+            document.querySelectorAll('.emotion-item').forEach((item, i) => {
+                item.classList.toggle('active', Object.keys(emotions)[i] === key);
+            });
+
+            // Build main content
+            let html = `
+                <div class="emotion-header">
+                    <div class="icon">${emotion.icon}</div>
+                    <div class="text">
+                        <h1>${emotion.name}</h1>
+                        <p>${emotion.description}</p>
+                    </div>
+                </div>
+                <div class="expressions-grid">
+            `;
+
+            emotion.expressions.forEach((expr, i) => {
+                html += `
+                    <div class="expression-card" onclick="toggleCard(this)">
+                        <div class="expression-spanish">${expr.es}</div>
+                        <div class="expression-english">${expr.en}</div>
+                        <div class="expression-literal">${expr.literal}</div>
+                        <span class="expression-region">${expr.region}</span>
+                        <div class="examples">
+                            ${expr.examples.map(ex => `
+                                <div class="example">
+                                    <div class="example-spanish">${ex.es}</div>
+                                    <div class="example-english">${ex.en}</div>
+                                    <div class="example-context">${ex.context}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            main.innerHTML = html;
+        }
+
+        function toggleCard(card) {
+            card.classList.toggle('expanded');
+        }
+
+        // Select first emotion
+        selectEmotion(Object.keys(emotions)[0]);
+    </script>
+</body>
+</html>
