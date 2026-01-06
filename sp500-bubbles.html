@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S&P 500 Market Cap Bubbles</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #fff;
+            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        @media (min-width: 1400px) {
+            body { padding-right: 320px; }
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #999;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #333; }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #22C55E, #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            color: #666;
+            cursor: pointer;
+            padding: 3px 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .legend-item:hover {
+            background: #f0f0f0;
+        }
+
+        .legend-item.dimmed {
+            opacity: 0.3;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        #chart {
+            width: 100%;
+            height: calc(100vh - 130px);
+        }
+
+        .bubble {
+            stroke: rgba(0,0,0,0.1);
+            stroke-width: 0.5px;
+            cursor: pointer;
+            transition: stroke-width 0.2s, stroke 0.2s, filter 0.2s;
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.15));
+        }
+
+        .bubble:hover {
+            stroke: rgba(0,0,0,0.3);
+            stroke-width: 1.5px;
+            filter: drop-shadow(3px 3px 5px rgba(0,0,0,0.25));
+        }
+
+        .bubble.dimmed {
+            opacity: 0.15;
+        }
+
+        .bubble-label {
+            pointer-events: none;
+            fill: #fff;
+            font-size: 10px;
+            font-weight: 600;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .tooltip {
+            position: fixed;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px 15px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 1000;
+            max-width: 250px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .tooltip h3 {
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .tooltip .ticker {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .tooltip .stat {
+            font-size: 12px;
+            color: #666;
+            margin: 3px 0;
+        }
+
+        .tooltip .stat span {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .tooltip .sector-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            margin-top: 5px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100vh;
+            background: #fafafa;
+            border-left: 1px solid #e0e0e0;
+            overflow-y: auto;
+            padding: 25px;
+            z-index: 50;
+            display: none;
+        }
+
+        @media (min-width: 1400px) {
+            .sidebar { display: block; }
+        }
+
+        .sidebar h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #059669;
+        }
+
+        .sidebar p {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .sidebar strong {
+            color: #333;
+        }
+
+        .sidebar em {
+            color: #059669;
+            font-style: normal;
+        }
+
+        .sidebar .stat-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .sidebar .stat-card .label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .sidebar .stat-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #059669;
+        }
+
+        .sidebar .stat-card .sub {
+            font-size: 11px;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        .sidebar .source {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .sidebar .source a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>S&P 500 by Market Cap</h1>
+        <p class="subtitle">All 500 companies — bubble size = market capitalization</p>
+    </header>
+
+    <div class="legend" id="legend"></div>
+
+    <svg id="chart"></svg>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <div class="sidebar">
+        <h2>Power Law Distribution</h2>
+
+        <p>Market caps follow a <em>power law</em> — a few giants dominate while hundreds of companies are barely visible specks.</p>
+
+        <div class="stat-card">
+            <div class="label">Largest (NVDA)</div>
+            <div class="value">$4.6T</div>
+            <div class="sub">7.3% of the entire index</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="label">Smallest (LW)</div>
+            <div class="value">$5.7B</div>
+            <div class="sub">0.009% of the index</div>
+        </div>
+
+        <p>That's an <strong>800x difference</strong> between the largest and smallest companies in the same index.</p>
+
+        <h2 style="margin-top: 25px;">What This Means</h2>
+
+        <p>When you buy an S&P 500 index fund, you're <em>heavily weighted</em> toward a handful of tech giants.</p>
+
+        <p>The <strong>top 10 companies</strong> make up ~35% of the index. The bottom 250 companies combined are smaller than Apple alone.</p>
+
+        <h2 style="margin-top: 25px;">Sectors</h2>
+
+        <p>Click a sector in the legend to highlight. The dominance of <strong style="color: #3B82F6;">Technology</strong> is immediately visible.</p>
+
+        <div class="source">
+            Data: January 2025<br>
+            <a href="https://stockanalysis.com/list/sp-500-stocks/" target="_blank">Stock Analysis: S&P 500</a>
+        </div>
+    </div>
+
+    <script>
+        // All S&P 500 companies with market caps (in billions) and sectors
+        // Sector assignments based on GICS classification
+        const sectorMap = {
+            // Technology
+            "NVDA": "Technology", "AAPL": "Technology", "MSFT": "Technology", "AVGO": "Technology",
+            "ORCL": "Technology", "AMD": "Technology", "CSCO": "Technology", "IBM": "Technology",
+            "QCOM": "Technology", "INTU": "Technology", "AMAT": "Technology", "LRCX": "Technology",
+            "ADI": "Technology", "KLAC": "Technology", "SNPS": "Technology", "CDNS": "Technology",
+            "ADBE": "Technology", "CRM": "Technology", "NOW": "Technology", "PANW": "Technology",
+            "INTC": "Technology", "MU": "Technology", "TXN": "Technology", "ANET": "Technology",
+            "APH": "Technology", "TEL": "Technology", "MSI": "Technology", "FTNT": "Technology",
+            "KEYS": "Technology", "NXPI": "Technology", "MPWR": "Technology", "MCHP": "Technology",
+            "GLW": "Technology", "TER": "Technology", "ON": "Technology", "SWKS": "Technology",
+            "ZBRA": "Technology", "FFIV": "Technology", "AKAM": "Technology", "EPAM": "Technology",
+            "IT": "Technology", "TYL": "Technology", "PTC": "Technology", "ADSK": "Technology",
+            "WDAY": "Technology", "DDOG": "Technology", "CRWD": "Technology", "SMCI": "Technology",
+            "HPQ": "Technology", "HPE": "Technology", "DELL": "Technology", "NTAP": "Technology",
+            "WDC": "Technology", "STX": "Technology", "CDW": "Technology", "JKHY": "Technology",
+            "GEN": "Technology", "GDDY": "Technology", "FDS": "Technology", "PAYC": "Technology",
+            "TRMB": "Technology", "BR": "Technology", "FISV": "Technology", "FIS": "Technology",
+            "GPN": "Technology", "SNDK": "Technology", "TTD": "Technology", "DAY": "Technology",
+
+            // Communication Services
+            "GOOGL": "Communication", "GOOG": "Communication", "META": "Communication",
+            "NFLX": "Communication", "DIS": "Communication", "CMCSA": "Communication",
+            "TMUS": "Communication", "VZ": "Communication", "T": "Communication",
+            "CHTR": "Communication", "WBD": "Communication", "LYV": "Communication",
+            "EA": "Communication", "TTWO": "Communication", "FOXA": "Communication",
+            "FOX": "Communication", "NWS": "Communication", "NWSA": "Communication",
+            "OMC": "Communication", "MTCH": "Communication",
+
+            // Consumer Discretionary
+            "AMZN": "Consumer", "TSLA": "Consumer", "HD": "Consumer", "MCD": "Consumer",
+            "BKNG": "Consumer", "TJX": "Consumer", "LOW": "Consumer", "SBUX": "Consumer",
+            "NKE": "Consumer", "ORLY": "Consumer", "CMG": "Consumer", "MAR": "Consumer",
+            "ABNB": "Consumer", "HLT": "Consumer", "RCL": "Consumer", "GM": "Consumer",
+            "F": "Consumer", "AZO": "Consumer", "ROST": "Consumer", "DHI": "Consumer",
+            "LEN": "Consumer", "PHM": "Consumer", "NVR": "Consumer", "YUM": "Consumer",
+            "DRI": "Consumer", "CCL": "Consumer", "EXPE": "Consumer", "LVS": "Consumer",
+            "WYNN": "Consumer", "MGM": "Consumer", "NCLH": "Consumer", "DECK": "Consumer",
+            "ULTA": "Consumer", "BBY": "Consumer", "TSCO": "Consumer", "DPZ": "Consumer",
+            "LULU": "Consumer", "TPR": "Consumer", "RL": "Consumer", "GRMN": "Consumer",
+            "EBAY": "Consumer", "ETSY": "Consumer", "APTV": "Consumer", "BWA": "Consumer",
+            "POOL": "Consumer", "GPC": "Consumer", "LKQ": "Consumer", "KMX": "Consumer",
+            "BLDR": "Consumer", "HAS": "Consumer", "WSM": "Consumer",
+
+            // Consumer Staples
+            "WMT": "Consumer Staples", "PG": "Consumer Staples", "COST": "Consumer Staples",
+            "KO": "Consumer Staples", "PEP": "Consumer Staples", "PM": "Consumer Staples",
+            "MO": "Consumer Staples", "MDLZ": "Consumer Staples", "CL": "Consumer Staples",
+            "KMB": "Consumer Staples", "GIS": "Consumer Staples", "SYY": "Consumer Staples",
+            "STZ": "Consumer Staples", "KR": "Consumer Staples", "HSY": "Consumer Staples",
+            "KDP": "Consumer Staples", "MNST": "Consumer Staples", "ADM": "Consumer Staples",
+            "KHC": "Consumer Staples", "TSN": "Consumer Staples", "CHD": "Consumer Staples",
+            "CLX": "Consumer Staples", "MKC": "Consumer Staples", "HRL": "Consumer Staples",
+            "SJM": "Consumer Staples", "CAG": "Consumer Staples", "CPB": "Consumer Staples",
+            "TAP": "Consumer Staples", "BG": "Consumer Staples", "BF.B": "Consumer Staples",
+            "LW": "Consumer Staples", "EL": "Consumer Staples", "KVUE": "Consumer Staples",
+
+            // Healthcare
+            "LLY": "Healthcare", "UNH": "Healthcare", "JNJ": "Healthcare", "ABBV": "Healthcare",
+            "MRK": "Healthcare", "TMO": "Healthcare", "ABT": "Healthcare", "PFE": "Healthcare",
+            "AMGN": "Healthcare", "ISRG": "Healthcare", "GILD": "Healthcare", "VRTX": "Healthcare",
+            "BMY": "Healthcare", "REGN": "Healthcare", "CVS": "Healthcare", "ELV": "Healthcare",
+            "MCK": "Healthcare", "CI": "Healthcare", "HCA": "Healthcare", "SYK": "Healthcare",
+            "MDT": "Healthcare", "BSX": "Healthcare", "DHR": "Healthcare", "BDX": "Healthcare",
+            "ZTS": "Healthcare", "EW": "Healthcare", "IDXX": "Healthcare", "IQV": "Healthcare",
+            "HUM": "Healthcare", "A": "Healthcare", "COR": "Healthcare", "CAH": "Healthcare",
+            "DXCM": "Healthcare", "BIIB": "Healthcare", "RMD": "Healthcare", "STE": "Healthcare",
+            "HOLX": "Healthcare", "COO": "Healthcare", "PODD": "Healthcare", "INCY": "Healthcare",
+            "ALGN": "Healthcare", "RVTY": "Healthcare", "DGX": "Healthcare", "LH": "Healthcare",
+            "ZBH": "Healthcare", "BAX": "Healthcare", "CRL": "Healthcare", "TECH": "Healthcare",
+            "MOH": "Healthcare", "HSIC": "Healthcare", "CNC": "Healthcare", "DVA": "Healthcare",
+            "VTRS": "Healthcare", "MRNA": "Healthcare", "GEHC": "Healthcare",
+
+            // Financials
+            "BRK.B": "Financials", "JPM": "Financials", "V": "Financials", "MA": "Financials",
+            "BAC": "Financials", "WFC": "Financials", "GS": "Financials", "MS": "Financials",
+            "SPGI": "Financials", "BLK": "Financials", "SCHW": "Financials", "C": "Financials",
+            "AXP": "Financials", "PNC": "Financials", "USB": "Financials", "TFC": "Financials",
+            "COF": "Financials", "BK": "Financials", "CB": "Financials", "MMC": "Financials",
+            "AON": "Financials", "CME": "Financials", "ICE": "Financials", "MCO": "Financials",
+            "PGR": "Financials", "AJG": "Financials", "MET": "Financials", "ALL": "Financials",
+            "PRU": "Financials", "AIG": "Financials", "AFL": "Financials", "TRV": "Financials",
+            "MTB": "Financials", "FITB": "Financials", "HIG": "Financials", "RJF": "Financials",
+            "STT": "Financials", "NTRS": "Financials", "KEY": "Financials", "CFG": "Financials",
+            "RF": "Financials", "HBAN": "Financials", "SYF": "Financials", "WRB": "Financials",
+            "CINF": "Financials", "L": "Financials", "ACGL": "Financials", "EG": "Financials",
+            "ERIE": "Financials", "AIZ": "Financials", "GL": "Financials", "BEN": "Financials",
+            "IVZ": "Financials", "CBOE": "Financials", "NDAQ": "Financials", "TROW": "Financials",
+            "AMP": "Financials", "PFG": "Financials", "WTW": "Financials", "PYPL": "Financials",
+            "KKR": "Financials", "BX": "Financials", "APO": "Financials", "ARES": "Financials",
+            "IBKR": "Financials", "CPAY": "Financials", "COIN": "Financials", "HOOD": "Financials",
+
+            // Industrials
+            "GE": "Industrials", "CAT": "Industrials", "RTX": "Industrials", "HON": "Industrials",
+            "UNP": "Industrials", "UPS": "Industrials", "DE": "Industrials", "LMT": "Industrials",
+            "BA": "Industrials", "GD": "Industrials", "NOC": "Industrials", "ETN": "Industrials",
+            "PH": "Industrials", "ITW": "Industrials", "EMR": "Industrials", "WM": "Industrials",
+            "RSG": "Industrials", "CSX": "Industrials", "NSC": "Industrials", "FDX": "Industrials",
+            "GEV": "Industrials", "TDG": "Industrials", "LHX": "Industrials", "CMI": "Industrials",
+            "PCAR": "Industrials", "JCI": "Industrials", "TT": "Industrials", "CARR": "Industrials",
+            "HWM": "Industrials", "ROK": "Industrials", "CTAS": "Industrials", "AME": "Industrials",
+            "GWW": "Industrials", "FAST": "Industrials", "PWR": "Industrials", "URI": "Industrials",
+            "ROP": "Industrials", "ODFL": "Industrials", "WAB": "Industrials", "DAL": "Industrials",
+            "UAL": "Industrials", "LUV": "Industrials", "TXT": "Industrials", "MMM": "Industrials",
+            "DOV": "Industrials", "SNA": "Industrials", "XYL": "Industrials", "IR": "Industrials",
+            "AXON": "Industrials", "LDOS": "Industrials", "HII": "Industrials", "J": "Industrials",
+            "EXPD": "Industrials", "CHRW": "Industrials", "JBHT": "Industrials", "FTV": "Industrials",
+            "PNR": "Industrials", "IEX": "Industrials", "NDSN": "Industrials", "MAS": "Industrials",
+            "SWK": "Industrials", "EME": "Industrials", "FIX": "Industrials", "LII": "Industrials",
+            "GNRC": "Industrials", "HUBB": "Industrials", "OTIS": "Industrials", "VLTO": "Industrials",
+            "AOS": "Industrials", "TDY": "Industrials", "ALLE": "Industrials", "CBRE": "Industrials",
+            "VRSK": "Industrials", "MSCI": "Industrials", "PAYX": "Industrials", "ADP": "Industrials",
+            "CPRT": "Industrials", "ROL": "Industrials", "FICO": "Industrials", "APP": "Industrials",
+            "PLTR": "Industrials", "DASH": "Industrials", "CVNA": "Industrials",
+
+            // Energy
+            "XOM": "Energy", "CVX": "Energy", "COP": "Energy", "SLB": "Energy",
+            "EOG": "Energy", "MPC": "Energy", "PSX": "Energy", "VLO": "Energy",
+            "OXY": "Energy", "WMB": "Energy", "KMI": "Energy", "OKE": "Energy",
+            "TRGP": "Energy", "BKR": "Energy", "HAL": "Energy", "FANG": "Energy",
+            "DVN": "Energy", "EQT": "Energy", "CTRA": "Energy", "APA": "Energy",
+
+            // Utilities
+            "NEE": "Utilities", "SO": "Utilities", "DUK": "Utilities", "CEG": "Utilities",
+            "SRE": "Utilities", "AEP": "Utilities", "D": "Utilities", "EXC": "Utilities",
+            "XEL": "Utilities", "PCG": "Utilities", "ED": "Utilities", "WEC": "Utilities",
+            "ETR": "Utilities", "EIX": "Utilities", "AWK": "Utilities", "DTE": "Utilities",
+            "ES": "Utilities", "FE": "Utilities", "PPL": "Utilities", "AEE": "Utilities",
+            "CNP": "Utilities", "CMS": "Utilities", "NI": "Utilities", "ATO": "Utilities",
+            "LNT": "Utilities", "EVRG": "Utilities", "PNW": "Utilities", "AES": "Utilities",
+            "NRG": "Utilities", "VST": "Utilities",
+
+            // Real Estate
+            "PLD": "Real Estate", "AMT": "Real Estate", "EQIX": "Real Estate", "WELL": "Real Estate",
+            "DLR": "Real Estate", "SPG": "Real Estate", "PSA": "Real Estate", "O": "Real Estate",
+            "CCI": "Real Estate", "VICI": "Real Estate", "SBAC": "Real Estate", "AVB": "Real Estate",
+            "EQR": "Real Estate", "EXR": "Real Estate", "VTR": "Real Estate", "IRM": "Real Estate",
+            "MAA": "Real Estate", "UDR": "Real Estate", "ESS": "Real Estate", "KIM": "Real Estate",
+            "REG": "Real Estate", "CPT": "Real Estate", "HST": "Real Estate", "BXP": "Real Estate",
+            "DOC": "Real Estate", "ARE": "Real Estate", "FRT": "Real Estate", "INVH": "Real Estate",
+
+            // Materials
+            "LIN": "Materials", "APD": "Materials", "SHW": "Materials", "FCX": "Materials",
+            "NEM": "Materials", "ECL": "Materials", "NUE": "Materials", "VMC": "Materials",
+            "MLM": "Materials", "DD": "Materials", "DOW": "Materials", "PPG": "Materials",
+            "CTVA": "Materials", "IFF": "Materials", "ALB": "Materials", "BALL": "Materials",
+            "AVY": "Materials", "CE": "Materials", "LYB": "Materials", "STLD": "Materials",
+            "CF": "Materials", "MOS": "Materials", "IP": "Materials", "SW": "Materials",
+            "PKG": "Materials", "WY": "Materials", "AMCR": "Materials", "CRH": "Materials",
+        };
+
+        // Raw market cap data (in full dollars from the API)
+        const rawData = [
+            { symbol: "NVDA", name: "NVIDIA", marketCap: 4571127880000 },
+            { symbol: "AAPL", name: "Apple", marketCap: 3949128102780 },
+            { symbol: "GOOG", name: "Alphabet (C)", marketCap: 3823905640000 },
+            { symbol: "GOOGL", name: "Alphabet (A)", marketCap: 3819688180000 },
+            { symbol: "MSFT", name: "Microsoft", marketCap: 3514399774167 },
+            { symbol: "AMZN", name: "Amazon", marketCap: 2491461743524 },
+            { symbol: "META", name: "Meta", marketCap: 1660498375628 },
+            { symbol: "AVGO", name: "Broadcom", marketCap: 1628248248053 },
+            { symbol: "TSLA", name: "Tesla", marketCap: 1502172743159 },
+            { symbol: "BRK.B", name: "Berkshire Hathaway", marketCap: 1071267887262 },
+            { symbol: "LLY", name: "Eli Lilly", marketCap: 932547798714 },
+            { symbol: "JPM", name: "JPMorgan Chase", marketCap: 909344497022 },
+            { symbol: "WMT", name: "Walmart", marketCap: 898317518512 },
+            { symbol: "V", name: "Visa", marketCap: 676549646959 },
+            { symbol: "ORCL", name: "Oracle", marketCap: 553336106700 },
+            { symbol: "XOM", name: "Exxon Mobil", marketCap: 528663881371 },
+            { symbol: "MA", name: "Mastercard", marketCap: 510573499297 },
+            { symbol: "JNJ", name: "Johnson & Johnson", marketCap: 492243082290 },
+            { symbol: "NFLX", name: "Netflix", marketCap: 417926016358 },
+            { symbol: "BAC", name: "Bank of America", marketCap: 415438971840 },
+            { symbol: "PLTR", name: "Palantir", marketCap: 414813260266 },
+            { symbol: "ABBV", name: "AbbVie", marketCap: 389142748274 },
+            { symbol: "COST", name: "Costco", marketCap: 388714197989 },
+            { symbol: "AMD", name: "AMD", marketCap: 359927423663 },
+            { symbol: "MU", name: "Micron", marketCap: 351327715821 },
+            { symbol: "HD", name: "Home Depot", marketCap: 342545546874 },
+            { symbol: "GE", name: "GE Aerospace", marketCap: 342097247616 },
+            { symbol: "CVX", name: "Chevron", marketCap: 329915513668 },
+            { symbol: "PG", name: "Procter & Gamble", marketCap: 328007288273 },
+            { symbol: "UNH", name: "UnitedHealth", marketCap: 309814924812 },
+            { symbol: "WFC", name: "Wells Fargo", marketCap: 302544968158 },
+            { symbol: "CSCO", name: "Cisco", marketCap: 298623727072 },
+            { symbol: "GS", name: "Goldman Sachs", marketCap: 297544667933 },
+            { symbol: "MS", name: "Morgan Stanley", marketCap: 296469758874 },
+            { symbol: "KO", name: "Coca-Cola", marketCap: 292251304929 },
+            { symbol: "CAT", name: "Caterpillar", marketCap: 288322229096 },
+            { symbol: "IBM", name: "IBM", marketCap: 275718843714 },
+            { symbol: "MRK", name: "Merck", marketCap: 266668501268 },
+            { symbol: "AXP", name: "American Express", marketCap: 261625857809 },
+            { symbol: "RTX", name: "RTX", marketCap: 252413725801 },
+            { symbol: "PM", name: "Philip Morris", marketCap: 248844270415 },
+            { symbol: "LRCX", name: "Lam Research", marketCap: 244624402800 },
+            { symbol: "CRM", name: "Salesforce", marketCap: 240115620000 },
+            { symbol: "TMO", name: "Thermo Fisher", marketCap: 229632765661 },
+            { symbol: "AMAT", name: "Applied Materials", marketCap: 225449657821 },
+            { symbol: "TMUS", name: "T-Mobile", marketCap: 224663240898 },
+            { symbol: "C", name: "Citigroup", marketCap: 220616517405 },
+            { symbol: "ABT", name: "Abbott", marketCap: 219875568404 },
+            { symbol: "APP", name: "AppLovin", marketCap: 213895099050 },
+            { symbol: "MCD", name: "McDonald's", marketCap: 213546603391 },
+            { symbol: "DIS", name: "Disney", marketCap: 203647898663 },
+            { symbol: "LIN", name: "Linde", marketCap: 202235581583 },
+            { symbol: "ISRG", name: "Intuitive Surgical", marketCap: 200779485826 },
+            { symbol: "BX", name: "Blackstone", marketCap: 199558038960 },
+            { symbol: "INTC", name: "Intel", marketCap: 196250656002 },
+            { symbol: "PEP", name: "PepsiCo", marketCap: 193533760089 },
+            { symbol: "QCOM", name: "Qualcomm", marketCap: 187421660591 },
+            { symbol: "GEV", name: "GE Vernova", marketCap: 184731247715 },
+            { symbol: "SCHW", name: "Charles Schwab", marketCap: 184339420520 },
+            { symbol: "BLK", name: "BlackRock", marketCap: 182676439299 },
+            { symbol: "KLAC", name: "KLA", marketCap: 177701567528 },
+            { symbol: "INTU", name: "Intuit", marketCap: 176381240966 },
+            { symbol: "T", name: "AT&T", marketCap: 175180297021 },
+            { symbol: "BA", name: "Boeing", marketCap: 173400579115 },
+            { symbol: "BKNG", name: "Booking Holdings", marketCap: 173010811617 },
+            { symbol: "ANET", name: "Arista Networks", marketCap: 172761318753 },
+            { symbol: "AMGN", name: "Amgen", marketCap: 172701520803 },
+            { symbol: "APH", name: "Amphenol", marketCap: 171220884459 },
+            { symbol: "TJX", name: "TJX Companies", marketCap: 170834257895 },
+            { symbol: "VZ", name: "Verizon", marketCap: 169626797422 },
+            { symbol: "NEE", name: "NextEra Energy", marketCap: 169357819503 },
+            { symbol: "UBER", name: "Uber", marketCap: 167764024962 },
+            { symbol: "DHR", name: "Danaher", marketCap: 166246433148 },
+            { symbol: "ACN", name: "Accenture", marketCap: 162428676921 },
+            { symbol: "SPGI", name: "S&P Global", marketCap: 161362120000 },
+            { symbol: "TXN", name: "Texas Instruments", marketCap: 160980740453 },
+            { symbol: "COF", name: "Capital One", marketCap: 159257625389 },
+            { symbol: "NOW", name: "ServiceNow", marketCap: 153121352166 },
+            { symbol: "GILD", name: "Gilead Sciences", marketCap: 146772399401 },
+            { symbol: "PFE", name: "Pfizer", marketCap: 143109259084 },
+            { symbol: "BSX", name: "Boston Scientific", marketCap: 141543565884 },
+            { symbol: "ADBE", name: "Adobe", marketCap: 138791016000 },
+            { symbol: "UNP", name: "Union Pacific", marketCap: 137595531421 },
+            { symbol: "LOW", name: "Lowe's", marketCap: 137292869101 },
+            { symbol: "ADI", name: "Analog Devices", marketCap: 135776184557 },
+            { symbol: "SYK", name: "Stryker", marketCap: 133385544186 },
+            { symbol: "HON", name: "Honeywell", marketCap: 127669468657 },
+            { symbol: "PANW", name: "Palo Alto Networks", marketCap: 126937640000 },
+            { symbol: "WELL", name: "Welltower", marketCap: 126785379383 },
+            { symbol: "DE", name: "Deere", marketCap: 126054618186 },
+            { symbol: "ETN", name: "Eaton", marketCap: 125165784000 },
+            { symbol: "PGR", name: "Progressive", marketCap: 124855699489 },
+            { symbol: "MDT", name: "Medtronic", marketCap: 124816903291 },
+            { symbol: "CB", name: "Chubb", marketCap: 124043295248 },
+            { symbol: "PLD", name: "Prologis", marketCap: 123361517070 },
+            { symbol: "COP", name: "ConocoPhillips", marketCap: 122583250400 },
+            { symbol: "KKR", name: "KKR", marketCap: 119949428384 },
+            { symbol: "LMT", name: "Lockheed Martin", marketCap: 118376170500 },
+            { symbol: "CRWD", name: "CrowdStrike", marketCap: 115095542782 },
+            { symbol: "PH", name: "Parker-Hannifin", marketCap: 114437455456 },
+            { symbol: "VRTX", name: "Vertex Pharma", marketCap: 113869011353 },
+            { symbol: "NEM", name: "Newmont", marketCap: 112794026424 },
+            { symbol: "CEG", name: "Constellation Energy", marketCap: 110844240995 },
+            { symbol: "HOOD", name: "Robinhood", marketCap: 110816036216 },
+            { symbol: "HCA", name: "HCA Healthcare", marketCap: 109037891237 },
+            { symbol: "BMY", name: "Bristol-Myers", marketCap: 108017055613 },
+            { symbol: "ADP", name: "ADP", marketCap: 104072750806 },
+            { symbol: "CMCSA", name: "Comcast", marketCap: 102502752426 },
+            { symbol: "CVS", name: "CVS Health", marketCap: 102087760444 },
+            { symbol: "MCK", name: "McKesson", marketCap: 101817112118 },
+            { symbol: "CME", name: "CME Group", marketCap: 99186576862 },
+            { symbol: "SBUX", name: "Starbucks", marketCap: 98427376000 },
+            { symbol: "DASH", name: "DoorDash", marketCap: 97715984228 },
+            { symbol: "GD", name: "General Dynamics", marketCap: 95900234116 },
+            { symbol: "SO", name: "Southern Company", marketCap: 95652977711 },
+            { symbol: "NKE", name: "Nike", marketCap: 95529140931 },
+            { symbol: "SNPS", name: "Synopsys", marketCap: 94547544223 },
+            { symbol: "MO", name: "Altria", marketCap: 94509208378 },
+            { symbol: "ICE", name: "ICE", marketCap: 94432977248 },
+            { symbol: "CVNA", name: "Carvana", marketCap: 94191738190 },
+            { symbol: "MCO", name: "Moody's", marketCap: 93992876148 },
+            { symbol: "MMC", name: "Marsh McLennan", marketCap: 91779680013 },
+            { symbol: "DUK", name: "Duke Energy", marketCap: 90838607575 },
+            { symbol: "WM", name: "Waste Management", marketCap: 88405145671 },
+            { symbol: "NOC", name: "Northrop Grumman", marketCap: 87247631358 },
+            { symbol: "APO", name: "Apollo", marketCap: 86924084532 },
+            { symbol: "MMM", name: "3M", marketCap: 86881856600 },
+            { symbol: "TT", name: "Trane Technologies", marketCap: 86693298394 },
+            { symbol: "UPS", name: "UPS", marketCap: 86535331098 },
+            { symbol: "USB", name: "U.S. Bancorp", marketCap: 86255546378 },
+            { symbol: "CRH", name: "CRH", marketCap: 86002417478 },
+            { symbol: "HWM", name: "Howmet Aerospace", marketCap: 85607096825 },
+            { symbol: "PNC", name: "PNC Financial", marketCap: 84627793726 },
+            { symbol: "BK", name: "BNY Mellon", marketCap: 84407137969 },
+            { symbol: "MAR", name: "Marriott", marketCap: 83465458799 },
+            { symbol: "AMT", name: "American Tower", marketCap: 82510842304 },
+            { symbol: "ABNB", name: "Airbnb", marketCap: 82384741348 },
+            { symbol: "DELL", name: "Dell", marketCap: 82180137916 },
+            { symbol: "CDNS", name: "Cadence", marketCap: 81992385220 },
+            { symbol: "SHW", name: "Sherwin-Williams", marketCap: 81876214486 },
+            { symbol: "ELV", name: "Elevance Health", marketCap: 80786012738 },
+            { symbol: "EMR", name: "Emerson", marketCap: 80324853985 },
+            { symbol: "REGN", name: "Regeneron", marketCap: 78306988909 },
+            { symbol: "FCX", name: "Freeport-McMoRan", marketCap: 78128987211 },
+            { symbol: "GM", name: "General Motors", marketCap: 77946420699 },
+            { symbol: "TDG", name: "TransDigm", marketCap: 77037627868 },
+            { symbol: "ORLY", name: "O'Reilly Auto", marketCap: 76458948653 },
+            { symbol: "RCL", name: "Royal Caribbean", marketCap: 76403266236 },
+            { symbol: "GLW", name: "Corning", marketCap: 76039293521 },
+            { symbol: "CI", name: "Cigna", marketCap: 75855717970 },
+            { symbol: "EQIX", name: "Equinix", marketCap: 75801615938 },
+            { symbol: "AON", name: "Aon", marketCap: 75504609242 },
+            { symbol: "WMB", name: "Williams Companies", marketCap: 74689745906 },
+            { symbol: "ECL", name: "Ecolab", marketCap: 74541959157 },
+            { symbol: "JCI", name: "Johnson Controls", marketCap: 74271316152 },
+            { symbol: "CTAS", name: "Cintas", marketCap: 74157108300 },
+            { symbol: "MNST", name: "Monster Beverage", marketCap: 73931195415 },
+            { symbol: "CMI", name: "Cummins", marketCap: 73393875720 },
+            { symbol: "ITW", name: "Illinois Tool Works", marketCap: 72406059000 },
+            { symbol: "WBD", name: "Warner Bros", marketCap: 70739755209 },
+            { symbol: "FDX", name: "FedEx", marketCap: 69939632847 },
+            { symbol: "MDLZ", name: "Mondelez", marketCap: 69343865360 },
+            { symbol: "SPG", name: "Simon Property", marketCap: 69066008428 },
+            { symbol: "COIN", name: "Coinbase", marketCap: 68741118961 },
+            { symbol: "TEL", name: "TE Connectivity", marketCap: 68075391524 },
+            { symbol: "AJG", name: "Arthur J. Gallagher", marketCap: 67601348200 },
+            { symbol: "CSX", name: "CSX", marketCap: 66865066380 },
+            { symbol: "HLT", name: "Hilton", marketCap: 66422997388 },
+            { symbol: "COR", name: "Cencora", marketCap: 66136244928 },
+            { symbol: "RSG", name: "Republic Services", marketCap: 65887516411 },
+            { symbol: "SLB", name: "SLB", marketCap: 65433855213 },
+            { symbol: "PWR", name: "Quanta Services", marketCap: 64987685872 },
+            { symbol: "NSC", name: "Norfolk Southern", marketCap: 64605394767 },
+            { symbol: "TFC", name: "Truist", marketCap: 64576353779 },
+            { symbol: "WDC", name: "Western Digital", marketCap: 64236036914 },
+            { symbol: "TRV", name: "Travelers", marketCap: 64188728876 },
+            { symbol: "MSI", name: "Motorola Solutions", marketCap: 63737266635 },
+            { symbol: "STX", name: "Seagate", marketCap: 63145857411 },
+            { symbol: "KMI", name: "Kinder Morgan", marketCap: 62070814881 },
+            { symbol: "CL", name: "Colgate-Palmolive", marketCap: 62010575988 },
+            { symbol: "ADSK", name: "Autodesk", marketCap: 61076280533 },
+            { symbol: "AEP", name: "AEP", marketCap: 60924163037 },
+            { symbol: "ROST", name: "Ross Stores", marketCap: 60380699159 },
+            { symbol: "PCAR", name: "PACCAR", marketCap: 59306076218 },
+            { symbol: "AFL", name: "Aflac", marketCap: 58800340348 },
+            { symbol: "LHX", name: "L3Harris", marketCap: 58244515499 },
+            { symbol: "FTNT", name: "Fortinet", marketCap: 57959933070 },
+            { symbol: "EOG", name: "EOG Resources", marketCap: 57623956133 },
+            { symbol: "SRE", name: "Sempra", marketCap: 57135740348 },
+            { symbol: "ZTS", name: "Zoetis", marketCap: 57012481095 },
+            { symbol: "BDX", name: "Becton Dickinson", marketCap: 56685314780 },
+            { symbol: "APD", name: "Air Products", marketCap: 56502691851 },
+            { symbol: "URI", name: "United Rentals", marketCap: 56440576690 },
+            { symbol: "PSX", name: "Phillips 66", marketCap: 56400900477 },
+            { symbol: "NXPI", name: "NXP Semi", marketCap: 56344880567 },
+            { symbol: "ARES", name: "Ares Management", marketCap: 56237831064 },
+            { symbol: "NDAQ", name: "Nasdaq", marketCap: 56214500379 },
+            { symbol: "PYPL", name: "PayPal", marketCap: 55474804293 },
+            { symbol: "VST", name: "Vistra", marketCap: 55204837086 },
+            { symbol: "VLO", name: "Valero", marketCap: 55075572457 },
+            { symbol: "WDAY", name: "Workday", marketCap: 54940700000 },
+            { symbol: "IDXX", name: "IDEXX Labs", marketCap: 54476972866 },
+            { symbol: "DLR", name: "Digital Realty", marketCap: 54473478065 },
+            { symbol: "AZO", name: "AutoZone", marketCap: 54148609374 },
+            { symbol: "MET", name: "MetLife", marketCap: 53877570711 },
+            { symbol: "ALL", name: "Allstate", marketCap: 53793908714 },
+            { symbol: "F", name: "Ford", marketCap: 53671195684 },
+            { symbol: "O", name: "Realty Income", marketCap: 53371691098 },
+            { symbol: "MPC", name: "Marathon Petroleum", marketCap: 52587397676 },
+            { symbol: "EA", name: "Electronic Arts", marketCap: 50968316290 },
+            { symbol: "CMG", name: "Chipotle", marketCap: 50577133500 },
+            { symbol: "D", name: "Dominion Energy", marketCap: 50116170227 },
+            { symbol: "EW", name: "Edwards Lifesciences", marketCap: 48843851000 },
+            { symbol: "CAH", name: "Cardinal Health", marketCap: 48813901379 },
+            { symbol: "AME", name: "AMETEK", marketCap: 48644380404 },
+            { symbol: "BKR", name: "Baker Hughes", marketCap: 48420994390 },
+            { symbol: "GWW", name: "Grainger", marketCap: 48265430015 },
+            { symbol: "CBRE", name: "CBRE", marketCap: 48191504970 },
+            { symbol: "TTWO", name: "Take-Two", marketCap: 47545441262 },
+            { symbol: "FAST", name: "Fastenal", marketCap: 47241669919 },
+            { symbol: "AMP", name: "Ameriprise", marketCap: 47185882576 },
+            { symbol: "AXON", name: "Axon", marketCap: 46960135351 },
+            { symbol: "DDOG", name: "Datadog", marketCap: 46863638896 },
+            { symbol: "DAL", name: "Delta Air Lines", marketCap: 46585170531 },
+            { symbol: "ROP", name: "Roper Technologies", marketCap: 46462773034 },
+            { symbol: "OKE", name: "ONEOK", marketCap: 46342904173 },
+            { symbol: "TGT", name: "Target", marketCap: 46231535278 },
+            { symbol: "PSA", name: "Public Storage", marketCap: 45901027191 },
+            { symbol: "CTVA", name: "Corteva", marketCap: 45848416200 },
+            { symbol: "MPWR", name: "Monolithic Power", marketCap: 45752622210 },
+            { symbol: "AIG", name: "AIG", marketCap: 45529427437 },
+            { symbol: "ROK", name: "Rockwell Automation", marketCap: 45505082965 },
+            { symbol: "CARR", name: "Carrier", marketCap: 45302464120 },
+            { symbol: "EXC", name: "Exelon", marketCap: 43988040359 },
+            { symbol: "XEL", name: "Xcel Energy", marketCap: 43815350986 },
+            { symbol: "LVS", name: "Las Vegas Sands", marketCap: 43703963841 },
+            { symbol: "MSCI", name: "MSCI", marketCap: 43400597726 },
+            { symbol: "DHI", name: "D.R. Horton", marketCap: 42781027606 },
+            { symbol: "FANG", name: "Diamondback Energy", marketCap: 42097247940 },
+            { symbol: "ETR", name: "Entergy", marketCap: 41859393965 },
+            { symbol: "YUM", name: "Yum! Brands", marketCap: 41728443670 },
+            { symbol: "XYZ", name: "Block", marketCap: 41655675107 },
+            { symbol: "CCL", name: "Carnival", marketCap: 41334013072 },
+            { symbol: "PRU", name: "Prudential", marketCap: 41064264000 },
+            { symbol: "EBAY", name: "eBay", marketCap: 40892440000 },
+            { symbol: "OXY", name: "Occidental Petroleum", marketCap: 40620226194 },
+            { symbol: "A", name: "Agilent", marketCap: 40520493632 },
+            { symbol: "SNDK", name: "Sandisk", marketCap: 40167295300 },
+            { symbol: "IQV", name: "IQVIA", marketCap: 39950677000 },
+            { symbol: "TKO", name: "TKO Group", marketCap: 39728240966 },
+            { symbol: "PEG", name: "PSEG", marketCap: 39602876456 },
+            { symbol: "CTSH", name: "Cognizant", marketCap: 39398431591 },
+            { symbol: "TRGP", name: "Targa Resources", marketCap: 39383406737 },
+            { symbol: "PAYX", name: "Paychex", marketCap: 39299756426 },
+            { symbol: "FICO", name: "Fair Isaac", marketCap: 39202435034 },
+            { symbol: "VMC", name: "Vulcan Materials", marketCap: 39199275586 },
+            { symbol: "GRMN", name: "Garmin", marketCap: 39190140071 },
+            { symbol: "KR", name: "Kroger", marketCap: 39103749596 },
+            { symbol: "EL", name: "Estée Lauder", marketCap: 38976563558 },
+            { symbol: "GEHC", name: "GE HealthCare", marketCap: 38737556184 },
+            { symbol: "MLM", name: "Martin Marietta", marketCap: 38717185806 },
+            { symbol: "CCI", name: "Crown Castle", marketCap: 38505054064 },
+            { symbol: "NUE", name: "Nucor", marketCap: 38478006338 },
+            { symbol: "HIG", name: "Hartford", marketCap: 38384077723 },
+            { symbol: "CPRT", name: "Copart", marketCap: 37302561453 },
+            { symbol: "UAL", name: "United Airlines", marketCap: 37194257556 },
+            { symbol: "STT", name: "State Street", marketCap: 37151347112 },
+            { symbol: "KDP", name: "Keurig Dr Pepper", marketCap: 37116490975 },
+            { symbol: "WAB", name: "Wabtec", marketCap: 37099418934 },
+            { symbol: "HSY", name: "Hershey", marketCap: 36499294109 },
+            { symbol: "FIX", name: "Comfort Systems", marketCap: 36330034215 },
+            { symbol: "MCHP", name: "Microchip Tech", marketCap: 36242364688 },
+            { symbol: "VTR", name: "Ventas", marketCap: 36169283274 },
+            { symbol: "FISV", name: "Fiserv", marketCap: 36030697910 },
+            { symbol: "KEYS", name: "Keysight", marketCap: 35878852460 },
+            { symbol: "RMD", name: "ResMed", marketCap: 35761948719 },
+            { symbol: "ED", name: "Con Edison", marketCap: 35552157388 },
+            { symbol: "PCG", name: "PG&E", marketCap: 35452295155 },
+            { symbol: "EXPE", name: "Expedia", marketCap: 35224422087 },
+            { symbol: "SYY", name: "Sysco", marketCap: 34856296266 },
+            { symbol: "OTIS", name: "Otis", marketCap: 34754859592 },
+            { symbol: "TER", name: "Teradyne", marketCap: 34375522509 },
+            { symbol: "FIS", name: "FIS", marketCap: 34369755207 },
+            { symbol: "WEC", name: "WEC Energy", marketCap: 34289267103 },
+            { symbol: "ODFL", name: "Old Dominion", marketCap: 34235687417 },
+            { symbol: "ACGL", name: "Arch Capital", marketCap: 34102038173 },
+            { symbol: "XYL", name: "Xylem", marketCap: 33842199757 },
+            { symbol: "LYV", name: "Live Nation", marketCap: 33742325682 },
+            { symbol: "FOXA", name: "Fox (A)", marketCap: 33593145698 },
+            { symbol: "EQT", name: "EQT", marketCap: 33294178354 },
+            { symbol: "HUM", name: "Humana", marketCap: 33171312154 },
+            { symbol: "RJF", name: "Raymond James", marketCap: 32909449209 },
+            { symbol: "KMB", name: "Kimberly-Clark", marketCap: 32548757886 },
+            { symbol: "IR", name: "Ingersoll Rand", marketCap: 32482025573 },
+            { symbol: "KVUE", name: "Kenvue", marketCap: 32223792499 },
+            { symbol: "HPE", name: "HPE", marketCap: 32202285416 },
+            { symbol: "MTB", name: "M&T Bank", marketCap: 32190534080 },
+            { symbol: "FITB", name: "Fifth Third", marketCap: 32138392209 },
+            { symbol: "WTW", name: "Willis Towers Watson", marketCap: 32037485910 },
+            { symbol: "IBKR", name: "Interactive Brokers", marketCap: 31874709854 },
+            { symbol: "SYF", name: "Synchrony", marketCap: 31241241041 },
+            { symbol: "NRG", name: "NRG Energy", marketCap: 30967011939 },
+            { symbol: "FOX", name: "Fox (B)", marketCap: 30907683106 },
+            { symbol: "VRSK", name: "Verisk", marketCap: 30759526199 },
+            { symbol: "CHTR", name: "Charter", marketCap: 30642426164 },
+            { symbol: "DG", name: "Dollar General", marketCap: 30581114748 },
+            { symbol: "VICI", name: "VICI Properties", marketCap: 30065663866 },
+            { symbol: "MTD", name: "Mettler-Toledo", marketCap: 29552401390 },
+            { symbol: "EME", name: "EMCOR", marketCap: 29257625734 },
+            { symbol: "FSLR", name: "First Solar", marketCap: 29187814352 },
+            { symbol: "EXR", name: "Extra Space Storage", marketCap: 29052473708 },
+            { symbol: "ADM", name: "Archer-Daniels", marketCap: 28632344811 },
+            { symbol: "ROL", name: "Rollins", marketCap: 28354202147 },
+            { symbol: "CSGP", name: "CoStar Group", marketCap: 28150309778 },
+            { symbol: "KHC", name: "Kraft Heinz", marketCap: 28135493113 },
+            { symbol: "HBAN", name: "Huntington", marketCap: 28033973811 },
+            { symbol: "ULTA", name: "Ulta Beauty", marketCap: 27999184858 },
+            { symbol: "DOV", name: "Dover", marketCap: 27741982416 },
+            { symbol: "BRO", name: "Brown & Brown", marketCap: 27286349537 },
+            { symbol: "NTRS", name: "Northern Trust", marketCap: 27232901136 },
+            { symbol: "EFX", name: "Equifax", marketCap: 27023379429 },
+            { symbol: "ATO", name: "Atmos Energy", marketCap: 26992505739 },
+            { symbol: "AEE", name: "Ameren", marketCap: 26941293634 },
+            { symbol: "WRB", name: "W.R. Berkley", marketCap: 26871297214 },
+            { symbol: "HAL", name: "Halliburton", marketCap: 26864721391 },
+            { symbol: "DTE", name: "DTE Energy", marketCap: 26749571946 },
+            { symbol: "DXCM", name: "DexCom", marketCap: 26384600801 },
+            { symbol: "CBOE", name: "Cboe", marketCap: 26381928425 },
+            { symbol: "TSCO", name: "Tractor Supply", marketCap: 26330351139 },
+            { symbol: "TPR", name: "Tapestry", marketCap: 26303632625 },
+            { symbol: "CFG", name: "Citizens Financial", marketCap: 26220131961 },
+            { symbol: "LEN", name: "Lennar", marketCap: 26035504107 },
+            { symbol: "BR", name: "Broadridge", marketCap: 26009234696 },
+            { symbol: "FE", name: "FirstEnergy", marketCap: 25867863553 },
+            { symbol: "PPL", name: "PPL", marketCap: 25728128576 },
+            { symbol: "BIIB", name: "Biogen", marketCap: 25618617759 },
+            { symbol: "DLTR", name: "Dollar Tree", marketCap: 25566554253 },
+            { symbol: "AVB", name: "AvalonBay", marketCap: 25495930438 },
+            { symbol: "EXE", name: "Expand Energy", marketCap: 25441287034 },
+            { symbol: "CINF", name: "Cincinnati Financial", marketCap: 25268758365 },
+            { symbol: "STE", name: "STERIS", marketCap: 25199244561 },
+            { symbol: "ES", name: "Eversource", marketCap: 25156432172 },
+            { symbol: "STLD", name: "Steel Dynamics", marketCap: 25093169822 },
+            { symbol: "LDOS", name: "Leidos", marketCap: 24994407574 },
+            { symbol: "LULU", name: "Lululemon", marketCap: 24915794825 },
+            { symbol: "CNP", name: "CenterPoint", marketCap: 24874281201 },
+            { symbol: "AWK", name: "American Water", marketCap: 24858742181 },
+            { symbol: "STZ", name: "Constellation Brands", marketCap: 24802374133 },
+            { symbol: "RF", name: "Regions Financial", marketCap: 24789298542 },
+            { symbol: "HUBB", name: "Hubbell", marketCap: 24737819161 },
+            { symbol: "IRM", name: "Iron Mountain", marketCap: 24731972712 },
+            { symbol: "OMC", name: "Omnicom", marketCap: 24649197074 },
+            { symbol: "VLTO", name: "Veralto", marketCap: 24628613651 },
+            { symbol: "TDY", name: "Teledyne", marketCap: 24606542777 },
+            { symbol: "JBL", name: "Jabil", marketCap: 23868522182 },
+            { symbol: "EQR", name: "Equity Residential", marketCap: 23765152250 },
+            { symbol: "GIS", name: "General Mills", marketCap: 23675036934 },
+            { symbol: "ON", name: "ON Semi", marketCap: 23615589000 },
+            { symbol: "PPG", name: "PPG Industries", marketCap: 23609124000 },
+            { symbol: "WAT", name: "Waters", marketCap: 23514436258 },
+            { symbol: "PHM", name: "PulteGroup", marketCap: 23362736877 },
+            { symbol: "EIX", name: "Edison International", marketCap: 23325791335 },
+            { symbol: "TROW", name: "T. Rowe Price", marketCap: 23240058130 },
+            { symbol: "KEY", name: "KeyCorp", marketCap: 23205864004 },
+            { symbol: "DVN", name: "Devon Energy", marketCap: 22927815000 },
+            { symbol: "WSM", name: "Williams-Sonoma", marketCap: 22892445141 },
+            { symbol: "DRI", name: "Darden", marketCap: 22182727712 },
+            { symbol: "VRSN", name: "VeriSign", marketCap: 22178475000 },
+            { symbol: "CNC", name: "Centene", marketCap: 21961024240 },
+            { symbol: "LUV", name: "Southwest Airlines", marketCap: 21948061595 },
+            { symbol: "L", name: "Loews", marketCap: 21837716445 },
+            { symbol: "RL", name: "Ralph Lauren", marketCap: 21740888706 },
+            { symbol: "CPAY", name: "Corpay", marketCap: 21589755662 },
+            { symbol: "IP", name: "International Paper", marketCap: 21396112605 },
+            { symbol: "CMS", name: "CMS Energy", marketCap: 21141094075 },
+            { symbol: "LH", name: "Labcorp", marketCap: 20988622000 },
+            { symbol: "SW", name: "Smurfit Westrock", marketCap: 20870893378 },
+            { symbol: "NTAP", name: "NetApp", marketCap: 20812181368 },
+            { symbol: "NVR", name: "NVR", marketCap: 20788077953 },
+            { symbol: "EXPD", name: "Expeditors", marketCap: 20692831746 },
+            { symbol: "PTC", name: "PTC", marketCap: 20586191171 },
+            { symbol: "TPL", name: "Texas Pacific Land", marketCap: 20511880954 },
+            { symbol: "SBAC", name: "SBA Communications", marketCap: 20250297542 },
+            { symbol: "CHD", name: "Church & Dwight", marketCap: 20197340272 },
+            { symbol: "TSN", name: "Tyson Foods", marketCap: 20170138526 },
+            { symbol: "WST", name: "West Pharma", marketCap: 20074370250 },
+            { symbol: "INCY", name: "Incyte", marketCap: 19983687938 },
+            { symbol: "PODD", name: "Insulet", marketCap: 19944049052 },
+            { symbol: "HPQ", name: "HP", marketCap: 19883544768 },
+            { symbol: "PFG", name: "Principal Financial", marketCap: 19880095853 },
+            { symbol: "NI", name: "NiSource", marketCap: 19837018141 },
+            { symbol: "CHRW", name: "C.H. Robinson", marketCap: 19753717533 },
+            { symbol: "CTRA", name: "Coterra Energy", marketCap: 19658768393 },
+            { symbol: "AMCR", name: "Amcor", marketCap: 19515189101 },
+            { symbol: "TTD", name: "Trade Desk", marketCap: 19396990115 },
+            { symbol: "DGX", name: "Quest Diagnostics", marketCap: 19299437383 },
+            { symbol: "JBHT", name: "J.B. Hunt", marketCap: 19237914626 },
+            { symbol: "TYL", name: "Tyler Technologies", marketCap: 18979530821 },
+            { symbol: "PKG", name: "Packaging Corp", marketCap: 18868951168 },
+            { symbol: "TRMB", name: "Trimble", marketCap: 18859994658 },
+            { symbol: "SNA", name: "Snap-on", marketCap: 18421076689 },
+            { symbol: "ZBH", name: "Zimmer Biomet", marketCap: 18363984820 },
+            { symbol: "GPN", name: "Global Payments", marketCap: 18234001006 },
+            { symbol: "BG", name: "Bunge", marketCap: 18064713210 },
+            { symbol: "SMCI", name: "Super Micro", marketCap: 17950921969 },
+            { symbol: "Q", name: "Qnity Electronics", marketCap: 17827412441 },
+            { symbol: "DOW", name: "Dow", marketCap: 17698108061 },
+            { symbol: "LII", name: "Lennox", marketCap: 17673174850 },
+            { symbol: "MKC", name: "McCormick", marketCap: 17626913283 },
+            { symbol: "DD", name: "DuPont", marketCap: 17601153361 },
+            { symbol: "WY", name: "Weyerhaeuser", marketCap: 17488087860 },
+            { symbol: "APTV", name: "Aptiv", marketCap: 17398714174 },
+            { symbol: "CDW", name: "CDW", marketCap: 17395174913 },
+            { symbol: "IT", name: "Gartner", marketCap: 17253106199 },
+            { symbol: "ALB", name: "Albemarle", marketCap: 17199141520 },
+            { symbol: "GPC", name: "Genuine Parts", marketCap: 17163453490 },
+            { symbol: "IFF", name: "IFF", marketCap: 17148213538 },
+            { symbol: "FTV", name: "Fortive", marketCap: 17090682133 },
+            { symbol: "INVH", name: "Invitation Homes", marketCap: 16897360849 },
+            { symbol: "ESS", name: "Essex Property", marketCap: 16869089934 },
+            { symbol: "PNR", name: "Pentair", marketCap: 16801111820 },
+            { symbol: "LNT", name: "Alliant Energy", marketCap: 16682784416 },
+            { symbol: "HOLX", name: "Hologic", marketCap: 16662165793 },
+            { symbol: "EVRG", name: "Evergy", marketCap: 16646784753 },
+            { symbol: "MAA", name: "Mid-America Apartment", marketCap: 16485238850 },
+            { symbol: "J", name: "Jacobs Solutions", marketCap: 16397742865 },
+            { symbol: "COO", name: "Cooper Companies", marketCap: 16215221871 },
+            { symbol: "GEN", name: "Gen Digital", marketCap: 16120959037 },
+            { symbol: "GDDY", name: "GoDaddy", marketCap: 16026441632 },
+            { symbol: "FFIV", name: "F5", marketCap: 15803860385 },
+            { symbol: "DECK", name: "Deckers", marketCap: 15755016447 },
+            { symbol: "TXT", name: "Textron", marketCap: 15683941696 },
+            { symbol: "NWS", name: "News Corp (B)", marketCap: 15264296865 },
+            { symbol: "ERIE", name: "Erie Indemnity", marketCap: 14742082485 },
+            { symbol: "BBY", name: "Best Buy", marketCap: 14677933965 },
+            { symbol: "LYB", name: "LyondellBasell", marketCap: 14674188429 },
+            { symbol: "NWSA", name: "News Corp (A)", marketCap: 14595728485 },
+            { symbol: "BALL", name: "Ball", marketCap: 14447190599 },
+            { symbol: "EG", name: "Everest Group", marketCap: 14326271634 },
+            { symbol: "HII", name: "Huntington Ingalls", marketCap: 14263476430 },
+            { symbol: "VTRS", name: "Viatris", marketCap: 14247393317 },
+            { symbol: "PSKY", name: "Paramount Skydance", marketCap: 14245551129 },
+            { symbol: "SOLV", name: "Solventum", marketCap: 14014562606 },
+            { symbol: "AVY", name: "Avery Dennison", marketCap: 13954910433 },
+            { symbol: "ALLE", name: "Allegion", marketCap: 13926852552 },
+            { symbol: "UHS", name: "Universal Health", marketCap: 13925471655 },
+            { symbol: "DPZ", name: "Domino's Pizza", marketCap: 13901001534 },
+            { symbol: "NDSN", name: "Nordson", marketCap: 13726444349 },
+            { symbol: "KIM", name: "Kimco Realty", marketCap: 13667784908 },
+            { symbol: "IEX", name: "IDEX", marketCap: 13532778029 },
+            { symbol: "MAS", name: "Masco", marketCap: 13248903664 },
+            { symbol: "JKHY", name: "Jack Henry", marketCap: 13133554373 },
+            { symbol: "UDR", name: "UDR", marketCap: 13091533410 },
+            { symbol: "ZBRA", name: "Zebra Technologies", marketCap: 12798803539 },
+            { symbol: "REG", name: "Regency Centers", marketCap: 12771089679 },
+            { symbol: "BEN", name: "Franklin Resources", marketCap: 12768857582 },
+            { symbol: "HRL", name: "Hormel Foods", marketCap: 12630463493 },
+            { symbol: "HST", name: "Host Hotels", marketCap: 12620114225 },
+            { symbol: "MRNA", name: "Moderna", marketCap: 12569901070 },
+            { symbol: "IVZ", name: "Invesco", marketCap: 12533816064 },
+            { symbol: "CF", name: "CF Industries", marketCap: 12518524927 },
+            { symbol: "AKAM", name: "Akamai", marketCap: 12359462511 },
+            { symbol: "CLX", name: "Clorox", marketCap: 12354172785 },
+            { symbol: "WYNN", name: "Wynn Resorts", marketCap: 12321715197 },
+            { symbol: "AIZ", name: "Assurant", marketCap: 12040500466 },
+            { symbol: "HAS", name: "Hasbro", marketCap: 12010042428 },
+            { symbol: "BLDR", name: "Builders FirstSource", marketCap: 11991358204 },
+            { symbol: "SWK", name: "Stanley Black & Decker", marketCap: 11958668070 },
+            { symbol: "BF.B", name: "Brown-Forman", marketCap: 11955435982 },
+            { symbol: "BXP", name: "BXP", marketCap: 11866052987 },
+            { symbol: "CPT", name: "Camden Property", marketCap: 11782290503 },
+            { symbol: "DOC", name: "Healthpeak", marketCap: 11603297599 },
+            { symbol: "RVTY", name: "Revvity", marketCap: 11571115879 },
+            { symbol: "ALGN", name: "Align Technology", marketCap: 11489326699 },
+            { symbol: "EPAM", name: "EPAM Systems", marketCap: 11413677305 },
+            { symbol: "GL", name: "Globe Life", marketCap: 11194963654 },
+            { symbol: "DAY", name: "Dayforce", marketCap: 11096824334 },
+            { symbol: "FDS", name: "FactSet", marketCap: 10715572873 },
+            { symbol: "PNW", name: "Pinnacle West", marketCap: 10496847992 },
+            { symbol: "AES", name: "AES", marketCap: 10489541505 },
+            { symbol: "NCLH", name: "Norwegian Cruise", marketCap: 10279714102 },
+            { symbol: "CRL", name: "Charles River Labs", marketCap: 10252566919 },
+            { symbol: "BAX", name: "Baxter", marketCap: 10224569961 },
+            { symbol: "SJM", name: "J.M. Smucker", marketCap: 10089015561 },
+            { symbol: "MGM", name: "MGM Resorts", marketCap: 9835291582 },
+            { symbol: "TECH", name: "Bio-Techne", marketCap: 9820874544 },
+            { symbol: "SWKS", name: "Skyworks", marketCap: 9687973618 },
+            { symbol: "AOS", name: "A.O. Smith", marketCap: 9539182911 },
+            { symbol: "MOH", name: "Molina Healthcare", marketCap: 9395920000 },
+            { symbol: "HSIC", name: "Henry Schein", marketCap: 9246106342 },
+            { symbol: "TAP", name: "Molson Coors", marketCap: 9152422112 },
+            { symbol: "POOL", name: "Pool Corporation", marketCap: 8800190595 },
+            { symbol: "GNRC", name: "Generac", marketCap: 8725146933 },
+            { symbol: "APA", name: "APA", marketCap: 8678756572 },
+            { symbol: "FRT", name: "Federal Realty", marketCap: 8641503944 },
+            { symbol: "ARE", name: "Alexandria Real Estate", marketCap: 8561753423 },
+            { symbol: "PAYC", name: "Paycom", marketCap: 8400635901 },
+            { symbol: "CAG", name: "Conagra", marketCap: 8170550633 },
+            { symbol: "DVA", name: "DaVita", marketCap: 8044164000 },
+            { symbol: "CPB", name: "Campbell's", marketCap: 7951240314 },
+            { symbol: "MOS", name: "Mosaic", marketCap: 7893933901 },
+            { symbol: "MTCH", name: "Match Group", marketCap: 7662838335 },
+            { symbol: "LW", name: "Lamb Weston", marketCap: 5735739209 },
+        ];
+
+        // Convert to billions and add sectors
+        const companies = rawData.map(d => ({
+            ticker: d.symbol,
+            name: d.name,
+            marketCap: d.marketCap / 1e9, // Convert to billions
+            sector: sectorMap[d.symbol] || "Other"
+        }));
+
+        // Sector colors
+        const sectorColors = {
+            "Technology": "#3B82F6",
+            "Healthcare": "#22C55E",
+            "Financials": "#F59E0B",
+            "Consumer": "#EF4444",
+            "Consumer Staples": "#F97316",
+            "Communication": "#8B5CF6",
+            "Energy": "#EC4899",
+            "Industrials": "#14B8A6",
+            "Utilities": "#06B6D4",
+            "Real Estate": "#A855F7",
+            "Materials": "#84CC16",
+            "Other": "#6B7280"
+        };
+
+        // Setup
+        const svg = d3.select('#chart');
+        const width = window.innerWidth - (window.innerWidth >= 1400 ? 320 : 0);
+        const height = window.innerHeight - 130;
+
+        svg.attr('width', width).attr('height', height);
+
+        // Scale for bubble size - using sqrt for area proportionality
+        const maxCap = d3.max(companies, d => d.marketCap);
+        const radiusScale = d3.scaleSqrt()
+            .domain([0, maxCap])
+            .range([2, Math.min(width, height) * 0.12]);
+
+        // Create nodes with initial positions
+        const nodes = companies.map(d => ({
+            ...d,
+            r: radiusScale(d.marketCap),
+            x: width / 2 + (Math.random() - 0.5) * width * 0.5,
+            y: height / 2 + (Math.random() - 0.5) * height * 0.5
+        }));
+
+        // Force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(2))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.r + 1).strength(1))
+            .force('x', d3.forceX(width / 2).strength(0.03))
+            .force('y', d3.forceY(height / 2).strength(0.03))
+            .velocityDecay(0.3);
+
+        // Create bubbles
+        const bubbles = svg.selectAll('.bubble')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'bubble')
+            .attr('r', d => d.r)
+            .attr('fill', d => sectorColors[d.sector] || sectorColors["Other"])
+            .attr('fill-opacity', 0.85)
+            .on('mouseover', showTooltip)
+            .on('mouseout', hideTooltip);
+
+        // Labels for large bubbles only
+        const labels = svg.selectAll('.bubble-label')
+            .data(nodes.filter(d => d.r > 25))
+            .enter()
+            .append('text')
+            .attr('class', 'bubble-label')
+            .text(d => d.ticker)
+            .style('font-size', d => Math.max(7, d.r / 5) + 'px');
+
+        // Update positions
+        simulation.on('tick', () => {
+            bubbles
+                .attr('cx', d => d.x = Math.max(d.r, Math.min(width - d.r, d.x)))
+                .attr('cy', d => d.y = Math.max(d.r, Math.min(height - d.r, d.y)));
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        });
+
+        // Tooltip
+        const tooltip = d3.select('#tooltip');
+        const totalMarketCap = companies.reduce((sum, c) => sum + c.marketCap, 0);
+
+        function showTooltip(event, d) {
+            const capStr = d.marketCap >= 1000
+                ? `$${(d.marketCap/1000).toFixed(2)}T`
+                : `$${d.marketCap.toFixed(1)}B`;
+
+            tooltip.html(`
+                <h3>${d.name}</h3>
+                <div class="ticker">${d.ticker}</div>
+                <div class="stat">Market Cap: <span>${capStr}</span></div>
+                <div class="stat">% of S&P 500: <span>${((d.marketCap / totalMarketCap) * 100).toFixed(2)}%</span></div>
+                <div class="sector-badge" style="background: ${sectorColors[d.sector]}; color: #000;">${d.sector}</div>
+            `)
+            .style('left', (event.clientX + 15) + 'px')
+            .style('top', (event.clientY - 10) + 'px')
+            .style('opacity', 1);
+        }
+
+        function hideTooltip() {
+            tooltip.style('opacity', 0);
+        }
+
+        // Legend
+        const sectors = [...new Set(companies.map(c => c.sector))].sort();
+        const legend = d3.select('#legend');
+        let activeSector = null;
+
+        sectors.forEach(sector => {
+            const item = legend.append('div')
+                .attr('class', 'legend-item')
+                .on('click', () => toggleSector(sector));
+
+            item.append('div')
+                .attr('class', 'legend-dot')
+                .style('background', sectorColors[sector]);
+
+            item.append('span').text(sector);
+        });
+
+        function toggleSector(sector) {
+            if (activeSector === sector) {
+                activeSector = null;
+                bubbles.classed('dimmed', false);
+                d3.selectAll('.legend-item').classed('dimmed', false);
+            } else {
+                activeSector = sector;
+                bubbles.classed('dimmed', d => d.sector !== sector);
+                d3.selectAll('.legend-item').classed('dimmed', function() {
+                    const text = d3.select(this).select('span').text();
+                    return text !== sector;
+                });
+            }
+        }
+
+        // Drag behavior
+        bubbles.call(d3.drag()
+            .on('start', (event, d) => {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            })
+            .on('drag', (event, d) => {
+                d.fx = event.x;
+                d.fy = event.y;
+            })
+            .on('end', (event, d) => {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }));
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            const newWidth = window.innerWidth - (window.innerWidth >= 1400 ? 320 : 0);
+            const newHeight = window.innerHeight - 130;
+            svg.attr('width', newWidth).attr('height', newHeight);
+            simulation.force('center', d3.forceCenter(newWidth / 2, newHeight / 2));
+            simulation.force('x', d3.forceX(newWidth / 2).strength(0.03));
+            simulation.force('y', d3.forceY(newHeight / 2).strength(0.03));
+            simulation.alpha(0.3).restart();
+        });
+    </script>
+</body>
+</html>

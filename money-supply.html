@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Supply</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #fff;
+            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #999;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #333; }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #059669, #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .container {
+            display: flex;
+            align-items: center;
+            gap: 100px;
+        }
+
+        .money-pile {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .money-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #22C55E, #16A34A);
+            box-shadow: 0 10px 40px rgba(34, 197, 94, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: all 0.5s ease-out;
+        }
+
+        .money-circle .label {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .money-circle .symbol {
+            color: #fff;
+            font-size: 48px;
+            font-weight: 700;
+        }
+
+        .interest-rate {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rate-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .rate-value {
+            font-size: 64px;
+            font-weight: 700;
+            color: #3B82F6;
+            transition: all 0.5s ease-out;
+        }
+
+        .rate-bar {
+            width: 40px;
+            height: 200px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rate-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, #3B82F6, #60A5FA);
+            border-radius: 20px;
+            transition: height 0.5s ease-out;
+        }
+
+        .controls {
+            margin-top: 50px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .control-btn {
+            padding: 12px 30px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn.expand {
+            background: #22C55E;
+            color: #fff;
+        }
+
+        .control-btn.expand:hover {
+            background: #16A34A;
+        }
+
+        .control-btn.contract {
+            background: #EF4444;
+            color: #fff;
+        }
+
+        .control-btn.contract:hover {
+            background: #DC2626;
+        }
+
+        .slider-container {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-label {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .slider {
+            width: 300px;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #e0e0e0;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #3B82F6;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <h1>Money Supply & Interest Rates</h1>
+
+    <div class="container">
+        <div class="money-pile">
+            <div class="money-circle" id="moneyCircle">
+                <span class="label">Money Supply</span>
+                <span class="symbol">$</span>
+            </div>
+        </div>
+
+        <div class="interest-rate">
+            <div class="rate-label">Interest Rate</div>
+            <div class="rate-value" id="rateValue">5%</div>
+            <div class="rate-bar">
+                <div class="rate-fill" id="rateFill" style="height: 50%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slider-container">
+        <input type="range" class="slider" id="moneySlider" min="0" max="100" value="50">
+        <div class="slider-label">← Less Money &nbsp;&nbsp;&nbsp; More Money →</div>
+    </div>
+
+    <script>
+        const moneyCircle = document.getElementById('moneyCircle');
+        const rateValue = document.getElementById('rateValue');
+        const rateFill = document.getElementById('rateFill');
+        const slider = document.getElementById('moneySlider');
+
+        function update(value) {
+            // Money circle size: 80px to 250px
+            const size = 80 + (value / 100) * 170;
+            moneyCircle.style.width = size + 'px';
+            moneyCircle.style.height = size + 'px';
+
+            // Interest rate: inversely related (10% to 0.5%)
+            const rate = 10 - (value / 100) * 9.5;
+            rateValue.textContent = rate.toFixed(1) + '%';
+
+            // Rate bar fill
+            rateFill.style.height = (100 - value) + '%';
+
+            // Color shift for rate
+            const hue = 220 + (value / 100) * 30; // blue shifts slightly
+            rateValue.style.color = `hsl(${hue}, 70%, 50%)`;
+        }
+
+        slider.addEventListener('input', (e) => {
+            update(e.target.value);
+        });
+
+        // Initial state
+        update(50);
+    </script>
+</body>
+</html>
