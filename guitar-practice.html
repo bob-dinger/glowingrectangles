@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guitar Practice - Glowing Gardens</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 30px 280px 30px 60px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 260px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .sidebar h2 {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+
+        .note-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .note-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .note-item:hover {
+            background: #252525;
+        }
+
+        .note-item.active {
+            border-color: #F59E0B;
+            background: #1a1a1a;
+        }
+
+        .note-item-num {
+            font-size: 10px;
+            color: #555;
+            width: 24px;
+        }
+
+        .note-item-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .note-item-info {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 8px;
+            margin-top: 20px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #222;
+            color: #fff;
+            border: 1px solid #333;
+        }
+
+        .control-btn:hover {
+            background: #333;
+        }
+
+        .speed-slider {
+            width: 120px;
+            -webkit-appearance: none;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #F59E0B;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .speed-label {
+            font-size: 12px;
+            color: #666;
+            min-width: 50px;
+        }
+
+        .tab-container {
+            position: relative;
+        }
+
+        .tab-section {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            margin-bottom: 15px;
+            margin-left: 35px;
+        }
+
+        .string-row {
+            display: flex;
+            align-items: center;
+            height: 24px;
+            position: relative;
+        }
+
+        .string-label {
+            width: 20px;
+            font-size: 12px;
+            color: #555;
+            font-weight: 600;
+            position: absolute;
+            left: -28px;
+        }
+
+        .string-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #333;
+            top: 50%;
+        }
+
+        .note-slots {
+            display: flex;
+            position: relative;
+            z-index: 1;
+        }
+
+        .note-slot {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .note-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .note-dot:hover {
+            transform: scale(1.15);
+        }
+
+        .note-dot.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 12px currentColor;
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+
+        .no-song {
+            color: #666;
+            margin-top: 100px;
+        }
+    </style>
+</head>
+<body>
+    <a href="guitar.html" class="back-link">← Back</a>
+
+    <h1 id="songTitle">Loading...</h1>
+    <p class="subtitle" id="subtitle"></p>
+
+    <div class="controls">
+        <button class="control-btn" id="playBtn" onclick="togglePlay()">▶ Play</button>
+        <input type="range" class="speed-slider" id="speedSlider" min="25" max="200" value="100">
+        <span class="speed-label" id="speedLabel">1x</span>
+    </div>
+
+    <div class="tab-container" id="tab"></div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background: #EF4444;"></div>C</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #F97316;"></div>D</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #EAB308;"></div>E</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #22C55E;"></div>F</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #3B82F6;"></div>G</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #8B5CF6;"></div>A</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #EC4899;"></div>B</div>
+    </div>
+
+    <div class="sidebar">
+        <h2>Notes - click to play from here</h2>
+        <div class="note-list" id="noteList"></div>
+    </div>
+
+    <script>
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const stringLabels = ['e', 'B', 'G', 'D', 'A', 'E'];
+        const noteColors = {
+            'C': '#EF4444', 'C#': '#EF4444',
+            'D': '#F97316', 'D#': '#F97316',
+            'E': '#EAB308',
+            'F': '#22C55E', 'F#': '#22C55E',
+            'G': '#3B82F6', 'G#': '#3B82F6',
+            'A': '#8B5CF6', 'A#': '#8B5CF6',
+            'B': '#EC4899'
+        };
+
+        const songNames = {
+            twinkle: 'Twinkle Twinkle',
+            smoke: 'Smoke on the Water',
+            scale: 'C Major Scale',
+            dontlookback: "Don't Look Back in Anger",
+            sweetchild: "Sweet Child O' Mine",
+            ifeelfine: "I Feel Fine",
+            sevennation: "Seven Nation Army",
+            sunshine: "Sunshine of Your Love",
+            comeasure: "Come As You Are",
+            imported: 'Imported Tab'
+        };
+
+        let audioCtx = null;
+        let songNotes = [];
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playNote(midi) {
+            initAudio();
+            const freq = 440 * Math.pow(2, (midi - 69) / 12);
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        function loadSong() {
+            const data = localStorage.getItem('guitarSong');
+            if (!data) {
+                document.getElementById('songTitle').textContent = 'No song loaded';
+                document.getElementById('tab').innerHTML = '<p class="no-song">Go back to the fretboard, select a song, and click "View Notes"</p>';
+                return;
+            }
+
+            const song = JSON.parse(data);
+            songNotes = song.notes;
+            document.getElementById('songTitle').textContent = songNames[song.name] || song.name;
+            document.getElementById('subtitle').textContent = song.notes.length + ' notes - click any dot to hear it';
+
+            const container = document.getElementById('tab');
+            const notesPerLine = Math.floor((window.innerWidth - 100) / 24); // 24px per note slot
+            const numSections = Math.ceil(song.notes.length / notesPerLine);
+
+            let html = '';
+
+            for (let section = 0; section < numSections; section++) {
+                const startNote = section * notesPerLine;
+                const endNote = Math.min(startNote + notesPerLine, song.notes.length);
+
+                html += '<div class="tab-section">';
+
+                // Build 6 string rows for this section
+                for (let s = 0; s < 6; s++) {
+                    html += `
+                        <div class="string-row">
+                            <div class="string-label">${stringLabels[s]}</div>
+                            <div class="string-line"></div>
+                            <div class="note-slots">
+                    `;
+
+                    // Add notes for this section
+                    for (let i = startNote; i < endNote; i++) {
+                        const [string, fret, midi] = song.notes[i];
+                        const noteName = noteNames[midi % 12];
+                        const color = noteColors[noteName];
+
+                        html += '<div class="note-slot">';
+                        if (s === string) {
+                            html += `<div class="note-dot" style="background: ${color};" onclick="clickNote(${i}, ${midi})" data-index="${i}">${fret}</div>`;
+                        }
+                        html += '</div>';
+                    }
+
+                    html += '</div></div>';
+                }
+
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+
+            // Build sidebar note list
+            const noteList = document.getElementById('noteList');
+            let listHtml = '';
+            song.notes.forEach((note, i) => {
+                const [string, fret, midi] = note;
+                const noteName = noteNames[midi % 12];
+                const color = noteColors[noteName];
+                listHtml += `
+                    <div class="note-item" data-list-index="${i}" onclick="playFrom(${i})">
+                        <span class="note-item-num">${i + 1}</span>
+                        <div class="note-item-dot" style="background: ${color};">${fret}</div>
+                        <span class="note-item-info">${stringLabels[string]} string</span>
+                    </div>
+                `;
+            });
+            noteList.innerHTML = listHtml;
+        }
+
+        function clickNote(index, midi) {
+            document.querySelectorAll('.note-dot').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[data-index="${index}"]`).classList.add('active');
+            playNote(midi);
+        }
+
+        let playing = false;
+        let playTimeout = null;
+        let currentIndex = 0;
+        let hasStarted = false;
+
+        function togglePlay() {
+            if (playing) {
+                pausePlayback();
+            } else {
+                if (!hasStarted) {
+                    playFrom(0);
+                } else {
+                    resumePlayback();
+                }
+            }
+        }
+
+        function pausePlayback() {
+            playing = false;
+            clearTimeout(playTimeout);
+            document.getElementById('playBtn').textContent = '▶ Play';
+        }
+
+        function resumePlayback() {
+            if (songNotes.length === 0) return;
+            initAudio();
+            if (currentIndex >= songNotes.length) currentIndex = 0;
+            playing = true;
+            document.getElementById('playBtn').textContent = '⏸ Pause';
+            playNextNote();
+        }
+
+        function playFrom(index) {
+            if (songNotes.length === 0) return;
+            pausePlayback();
+            initAudio();
+            currentIndex = index;
+            playing = true;
+            hasStarted = true;
+            document.getElementById('playBtn').textContent = '⏸ Pause';
+            playNextNote();
+        }
+
+        function playNextNote() {
+            if (!playing || currentIndex >= songNotes.length) {
+                playing = false;
+                document.getElementById('playBtn').textContent = '▶ Play';
+                if (currentIndex >= songNotes.length) currentIndex = 0;
+                return;
+            }
+
+            const note = songNotes[currentIndex];
+            const [string, fret, midi, duration] = note;
+
+            // Highlight the dot in tab
+            document.querySelectorAll('.note-dot').forEach(el => el.classList.remove('active'));
+            const dot = document.querySelector(`[data-index="${currentIndex}"]`);
+            if (dot) dot.classList.add('active');
+
+            // Highlight in sidebar
+            document.querySelectorAll('.note-item').forEach(el => el.classList.remove('active'));
+            const listItem = document.querySelector(`[data-list-index="${currentIndex}"]`);
+            if (listItem) {
+                listItem.classList.add('active');
+                listItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+
+            // Play sound
+            playNote(midi);
+
+            currentIndex++;
+            // Use actual timing, scaled by speed slider (100 = 1x, 50 = 2x fast, 200 = 0.5x slow)
+            const speedPercent = parseInt(document.getElementById('speedSlider').value);
+            const delay = (duration || 200) * (speedPercent / 100);
+            playTimeout = setTimeout(playNextNote, delay);
+        }
+
+        function stopPlayback() {
+            playing = false;
+            clearTimeout(playTimeout);
+            document.querySelectorAll('.note-dot').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.note-item').forEach(el => el.classList.remove('active'));
+        }
+
+        // Update speed label
+        document.getElementById('speedSlider').addEventListener('input', function() {
+            const val = this.value;
+            const label = val == 100 ? '1x' : (val < 100 ? (100/val).toFixed(1) + 'x fast' : (val/100).toFixed(1) + 'x slow');
+            document.getElementById('speedLabel').textContent = label;
+        });
+
+        loadSong();
+    </script>
+</body>
+</html>

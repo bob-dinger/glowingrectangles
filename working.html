@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work in Progress - Glowing Gardens</title>
+    <link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Carlito', sans-serif;
+            background-color: #fafafa;
+            color: #333;
+        }
+
+        /* App Bar */
+        .app-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid #F59E0B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            gap: 12px;
+        }
+
+        .app-bar .title {
+            background: #111827;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.5), 0 0 30px rgba(245, 158, 11, 0.2);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 10px rgba(245, 158, 11, 0.4), 0 0 20px rgba(245, 158, 11, 0.15);
+            }
+            to {
+                box-shadow: 0 0 15px rgba(245, 158, 11, 0.6), 0 0 35px rgba(245, 158, 11, 0.25);
+            }
+        }
+
+        .back-link {
+            position: fixed;
+            top: 22px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 101;
+        }
+        .back-link:hover { color: #333; }
+
+        /* Main Container */
+        .main-container {
+            margin-top: 80px;
+            padding: 16px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Post Card */
+        .post-card {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .post-card:hover {
+            background: #f5f5f5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .post-card img,
+        .post-card .placeholder {
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
+            border-radius: 4px;
+        }
+
+        .placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+
+        .post-card .content {
+            margin-left: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .post-card .post-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: teal;
+            margin-bottom: 4px;
+        }
+
+        .post-card .post-subtitle {
+            font-size: 14px;
+            color: #888;
+        }
+
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Home</a>
+
+    <div class="app-bar">
+        <span class="title">work in progress</span>
+    </div>
+
+    <div class="main-container">
+        <div class="grid">
+            <a href="availability-bias.html" class="post-card">
+                <div class="placeholder" style="background: linear-gradient(135deg, #F59E0B, #3B82F6);">👁</div>
+                <div class="content">
+                    <div class="post-title">Availability Bias</div>
+                    <div class="post-subtitle">we overestimate what we easily recall</div>
+                </div>
+            </a>
+            <a href="recency-bias.html" class="post-card">
+                <div class="placeholder" style="background: linear-gradient(135deg, #3B82F6, #F59E0B);">⏱</div>
+                <div class="content">
+                    <div class="post-title">Recency Bias</div>
+                    <div class="post-subtitle">the last thing feels most important</div>
+                </div>
+            </a>
+            <a href="fourier.html" class="post-card">
+                <div class="placeholder" style="background: linear-gradient(135deg, #F59E0B, #EF4444);">~</div>
+                <div class="content">
+                    <div class="post-title">Fourier Analysis</div>
+                    <div class="post-subtitle">building waves from sine waves</div>
+                </div>
+            </a>
+            <a href="abstract-concrete.html" class="post-card">
+                <div class="placeholder" style="background: linear-gradient(135deg, #8B5CF6, #F59E0B);">🪨</div>
+                <div class="content">
+                    <div class="post-title">Abstract vs Concrete</div>
+                    <div class="post-subtitle">two ways of seeing</div>
+                </div>
+            </a>
+            <a href="spanish-directions.html" class="post-card">
+                <div class="placeholder" style="background: #1a1a1a;">🧭</div>
+                <div class="content">
+                    <div class="post-title">Spanish Directions</div>
+                    <div class="post-subtitle">navigate in Spanish</div>
+                </div>
+            </a>
+            <a href="spanish-expressions.html" class="post-card">
+                <div class="placeholder" style="background: #1a1a1a;">💬</div>
+                <div class="content">
+                    <div class="post-title">Spanish Expressions</div>
+                    <div class="post-subtitle">common phrases</div>
+                </div>
+            </a>
+            <a href="language-space.html" class="post-card">
+                <div class="placeholder" style="background: #1a1a1a;">📍</div>
+                <div class="content">
+                    <div class="post-title">Language Space</div>
+                    <div class="post-subtitle">spatial vocabulary</div>
+                </div>
+            </a>
+            <a href="cooking-foundations.html" class="post-card">
+                <div class="placeholder" style="background: #1a1a1a;">🔪</div>
+                <div class="content">
+                    <div class="post-title">Cooking Foundations</div>
+                    <div class="post-subtitle">fundamental techniques</div>
+                </div>
+            </a>
+            <a href="dressings.html" class="post-card">
+                <div class="placeholder" style="background: #1a1a1a;">🥗</div>
+                <div class="content">
+                    <div class="post-title">Dressings</div>
+                    <div class="post-subtitle">salad dressing ratios</div>
+                </div>
+            </a>
+            <a href="spice-combinations.html" class="post-card">
+                <div class="placeholder" style="background: #1a1a1a;">🌶</div>
+                <div class="content">
+                    <div class="post-title">Spice Combinations</div>
+                    <div class="post-subtitle">flavor pairings</div>
+                </div>
+            </a>
+            <a href="tax-brackets.html" class="post-card">
+                <div class="placeholder" style="background: linear-gradient(135deg, #22C55E, #059669);">💵</div>
+                <div class="content">
+                    <div class="post-title">Tax Brackets</div>
+                    <div class="post-subtitle">how marginal rates work</div>
+                </div>
+            </a>
+            <a href="money-supply.html" class="post-card">
+                <div class="placeholder" style="background: linear-gradient(135deg, #3B82F6, #1D4ED8);">🏦</div>
+                <div class="content">
+                    <div class="post-title">Money Supply</div>
+                    <div class="post-subtitle">where money comes from</div>
+                </div>
+            </a>
+            <a href="gorilla.html" class="post-card">
+                <img src="images/gorilla.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
+                <div class="content">
+                    <div class="post-title">The Invisible Gorilla</div>
+                    <div class="post-subtitle">what you miss when you focus</div>
+                </div>
+            </a>
+            <a href="stationary-bandit.html" class="post-card">
+                <img src="images/stationary-bandit.svg" alt="" style="object-fit: cover; background: #0a0a0a;">
+                <div class="content">
+                    <div class="post-title">The Stationary Bandit</div>
+                    <div class="post-subtitle">why rulers let people prosper</div>
+                </div>
+            </a>
+            <a href="scroll.html" class="post-card">
+                <img src="images/scroll.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
+                <div class="content">
+                    <div class="post-title">Fuck The Scroll</div>
+                    <div class="post-subtitle">there is no more</div>
+                </div>
+            </a>
+            <a href="over-explorers.html" class="post-card">
+                <img src="images/over-explorers.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
+                <div class="content">
+                    <div class="post-title">Self Improvement Pornographers</div>
+                    <div class="post-subtitle">life is hard for all of us</div>
+                </div>
+            </a>
+            <a href="grifters.html" class="post-card">
+                <img src="images/grifters.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
+                <div class="content">
+                    <div class="post-title">Grifters</div>
+                    <div class="post-subtitle">they take over everything</div>
+                </div>
+            </a>
+            <a href="posts/braess.html" class="post-card">
+                <div class="placeholder" style="background: linear-gradient(135deg, #6366F1, #8B5CF6);">🛣</div>
+                <div class="content">
+                    <div class="post-title">Braess's Paradox</div>
+                    <div class="post-subtitle">when more roads make traffic worse</div>
+                </div>
+            </a>
+            <a href="cleaning.html" class="post-card">
+                <div class="placeholder" style="background: linear-gradient(135deg, #3B82F6, #22C55E);">🧼</div>
+                <div class="content">
+                    <div class="post-title">The Only Cleaners You Need</div>
+                    <div class="post-subtitle">soap, vinegar, baking soda</div>
+                </div>
+            </a>
+            <a href="posts/enzymes/index.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/enzyme_400_lvgqmc.png" alt="">
+                <div class="content">
+                    <div class="post-title">Enzymes</div>
+                    <div class="post-subtitle">biological catalysts</div>
+                </div>
+            </a>
+            <a href="guitar.html" class="post-card">
+                <div class="placeholder" style="background: linear-gradient(135deg, #EF4444, #3B82F6, #8B5CF6);">🎸</div>
+                <div class="content">
+                    <div class="post-title">Guitar Fretboard</div>
+                    <div class="post-subtitle">color-coded notes & songs</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guitar Fretboard - Glowing Gardens</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .main {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-right: 280px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .fretboard {
+            background: linear-gradient(180deg, #2d1810 0%, #1a0f0a 100%);
+            border-radius: 8px;
+            padding: 20px 30px;
+            position: relative;
+        }
+
+        .fret-numbers {
+            display: flex;
+            margin-bottom: 10px;
+            padding-left: 40px;
+        }
+
+        .fret-number {
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .strings {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .string-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .string-label {
+            width: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #888;
+            text-align: center;
+        }
+
+        .frets {
+            display: flex;
+            position: relative;
+        }
+
+        .fret {
+            height: 28px;
+            border-right: 2px solid #8b7355;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .fret:first-child {
+            border-left: 4px solid #f5f5dc;
+        }
+
+        .string-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #d4a574, #c9a067);
+            pointer-events: none;
+        }
+
+        .string-row:nth-child(1) .string-line { height: 1px; }
+        .string-row:nth-child(2) .string-line { height: 1.5px; }
+        .string-row:nth-child(3) .string-line { height: 2px; }
+        .string-row:nth-child(4) .string-line { height: 2.5px; }
+        .string-row:nth-child(5) .string-line { height: 3px; }
+        .string-row:nth-child(6) .string-line { height: 3.5px; }
+
+        .note {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            color: #fff;
+            z-index: 1;
+            opacity: 0.15;
+            transition: all 0.15s;
+            cursor: pointer;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .note:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        .note.active {
+            opacity: 1;
+            transform: scale(1.3);
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .note.highlight {
+            opacity: 1;
+        }
+
+        /* Note colors */
+        .note-C { background: #EF4444; color: #fff; }
+        .note-D { background: #F97316; color: #fff; }
+        .note-E { background: #EAB308; color: #000; }
+        .note-F { background: #22C55E; color: #fff; }
+        .note-G { background: #3B82F6; color: #fff; }
+        .note-A { background: #8B5CF6; color: #fff; }
+        .note-B { background: #EC4899; color: #fff; }
+
+        /* Fret markers */
+        .fret-markers {
+            display: flex;
+            padding-left: 40px;
+            margin-top: 10px;
+        }
+
+        .fret-marker {
+            display: flex;
+            justify-content: center;
+        }
+
+        .fret-marker .dot {
+            width: 8px;
+            height: 8px;
+            background: #444;
+            border-radius: 50%;
+        }
+
+        .fret-marker.double .dot {
+            width: 6px;
+            height: 6px;
+        }
+
+        .fret-marker.double {
+            gap: 8px;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #222;
+            color: #fff;
+            border: 1px solid #333;
+        }
+
+        .control-btn:hover {
+            background: #333;
+        }
+
+        .control-btn.active {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+
+        .transpose-controls {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .transpose-btn {
+            width: 40px;
+            height: 32px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #222;
+            color: #fff;
+            border: 1px solid #333;
+            transition: all 0.2s;
+        }
+
+        .transpose-btn:hover {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+
+        .transpose-label {
+            font-size: 13px;
+            color: #888;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .transpose-label span {
+            color: #3B82F6;
+            font-weight: 600;
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 260px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 25px;
+            z-index: 50;
+        }
+
+        .sidebar h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #3B82F6;
+        }
+
+        .sidebar p {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .song-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .song-btn {
+            padding: 12px 15px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .song-btn:hover {
+            border-color: #3B82F6;
+        }
+
+        .song-btn.playing {
+            border-color: #22C55E;
+            background: #22C55E22;
+        }
+
+        .song-btn .song-title {
+            font-weight: 600;
+        }
+
+        .song-btn .song-info {
+            font-size: 11px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        /* Scrubber */
+        .scrubber-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 15px;
+            width: 400px;
+        }
+
+        .scrubber {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .scrubber::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #F59E0B;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+        }
+
+        .scrubber::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #F59E0B;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .scrubber-label {
+            font-size: 12px;
+            color: #888;
+            min-width: 35px;
+            text-align: center;
+        }
+
+        @media (max-width: 1100px) {
+            .main { padding-right: 0; }
+            .sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="main">
+        <h1>Guitar Fretboard</h1>
+
+        <div class="fretboard">
+            <div class="fret-numbers" id="fretNumbers"></div>
+            <div class="strings" id="strings"></div>
+            <div class="fret-markers" id="fretMarkers"></div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot note-C"></div>C</div>
+            <div class="legend-item"><div class="legend-dot note-D"></div>D</div>
+            <div class="legend-item"><div class="legend-dot note-E"></div>E</div>
+            <div class="legend-item"><div class="legend-dot note-F"></div>F</div>
+            <div class="legend-item"><div class="legend-dot note-G"></div>G</div>
+            <div class="legend-item"><div class="legend-dot note-A"></div>A</div>
+            <div class="legend-item"><div class="legend-dot note-B"></div>B</div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="showAll()">Show All</button>
+            <button class="control-btn" onclick="hideAll()">Hide All</button>
+            <button class="control-btn" onclick="showNote('C')">C</button>
+            <button class="control-btn" onclick="showNote('G')">G</button>
+            <button class="control-btn" onclick="showNote('E')">E</button>
+        </div>
+
+        <div class="transpose-controls">
+            <button class="transpose-btn" onclick="changeTranspose(-12)">-12</button>
+            <button class="transpose-btn" onclick="changeTranspose(-1)">-1</button>
+            <span class="transpose-label">Transpose: <span id="transposeValue">0</span></span>
+            <button class="transpose-btn" onclick="changeTranspose(1)">+1</button>
+            <button class="transpose-btn" onclick="changeTranspose(12)">+12</button>
+            <button class="control-btn" id="altBtn" onclick="toggleAlternatives()" style="margin-left: 20px;">Show Alt Positions</button>
+        </div>
+
+        <div class="controls" style="margin-top: 20px;">
+            <button class="control-btn" id="playBtn" onclick="resumePlay()">▶ Play</button>
+            <button class="control-btn" id="pauseBtn" onclick="pausePlay()">⏸ Pause</button>
+            <button class="control-btn" id="stopBtn" onclick="stopPlaying()">⏹ Stop</button>
+            <button class="control-btn" id="viewBtn" onclick="viewSong()" style="margin-left: 15px;">📋 View Notes</button>
+            <span id="nowPlaying" style="margin-left: 15px; color: #666; font-size: 13px;"></span>
+        </div>
+
+        <div class="scrubber-container" id="scrubberContainer" style="display: none;">
+            <span class="scrubber-label" id="mainScrubberPos">1</span>
+            <input type="range" class="scrubber" id="mainScrubber" min="0" max="100" value="0" oninput="scrubToMain(this.value)">
+            <span class="scrubber-label" id="mainScrubberTotal">0</span>
+        </div>
+
+        </div>
+
+    
+    <div class="sidebar">
+        <h2>Songs</h2>
+        <p>Watch songs play across the fretboard</p>
+
+        <div class="song-list">
+            <button class="song-btn" onclick="playSong('twinkle')">
+                <div class="song-title">Twinkle Twinkle</div>
+                <div class="song-info">Simple melody</div>
+            </button>
+            <button class="song-btn" onclick="playSong('smoke')">
+                <div class="song-title">Smoke on the Water</div>
+                <div class="song-info">Classic riff</div>
+            </button>
+            <button class="song-btn" onclick="playSong('scale')">
+                <div class="song-title">C Major Scale</div>
+                <div class="song-info">Practice pattern</div>
+            </button>
+            <button class="song-btn" onclick="playSong('dontlookback')">
+                <div class="song-title">Don't Look Back in Anger</div>
+                <div class="song-info">Oasis intro</div>
+            </button>
+            <button class="song-btn" onclick="playSong('sweetchild')">
+                <div class="song-title">Sweet Child O' Mine</div>
+                <div class="song-info">GN'R intro</div>
+            </button>
+            <button class="song-btn" onclick="playSong('ifeelfine')">
+                <div class="song-title">I Feel Fine</div>
+                <div class="song-info">Beatles riff</div>
+            </button>
+            <button class="song-btn" onclick="playSong('sevennation')">
+                <div class="song-title">Seven Nation Army</div>
+                <div class="song-info">White Stripes</div>
+            </button>
+            <button class="song-btn" onclick="playSong('sunshine')">
+                <div class="song-title">Sunshine of Your Love</div>
+                <div class="song-info">Cream riff</div>
+            </button>
+            <button class="song-btn" onclick="playSong('comeasure')">
+                <div class="song-title">Come As You Are</div>
+                <div class="song-info">Nirvana</div>
+            </button>
+        </div>
+
+        <h2 style="margin-top: 30px;">Import Tab</h2>
+        <textarea id="tabInput" placeholder="Paste guitar tab here..." style="width: 100%; height: 100px; background: #1a1a1a; border: 1px solid #333; border-radius: 6px; color: #fff; font-family: monospace; font-size: 11px; padding: 8px; resize: vertical;"></textarea>
+        <button class="song-btn" onclick="importTab()" style="width: 100%; margin-top: 8px;">
+            <div class="song-title">Import Tab</div>
+            <div class="song-info">No timing data</div>
+        </button>
+
+        <h2 style="margin-top: 30px;">Tuning</h2>
+        <p>Standard tuning: E A D G B E</p>
+    </div>
+
+    <script>
+        const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const strings = ['E', 'B', 'G', 'D', 'A', 'E']; // High to low
+        const stringNotes = [4, 11, 7, 2, 9, 4]; // Starting note index for each string
+        const fretCount = 21; // 0-20
+
+        const fretMarkersPos = [3, 5, 7, 9, 12, 15, 17, 19];
+        const doubleDots = [12];
+
+        // Calculate realistic fret widths (each fret is 94.387% of the previous)
+        const fretRatio = 1 / Math.pow(2, 1/12); // ≈ 0.94387
+        const baseFretWidth = 58; // Width of first fret in pixels
+        const fretWidths = [];
+        for (let i = 0; i < fretCount; i++) {
+            fretWidths.push(baseFretWidth * Math.pow(fretRatio, i));
+        }
+
+        function getNoteAt(stringIdx, fret) {
+            const startNote = stringNotes[stringIdx];
+            return notes[(startNote + fret) % 12];
+        }
+
+        function getBaseNote(note) {
+            return note.replace('#', '');
+        }
+
+        function buildFretboard() {
+            // Fret numbers
+            const fretNumbersEl = document.getElementById('fretNumbers');
+            fretNumbersEl.innerHTML = Array.from({length: fretCount}, (_, i) =>
+                `<div class="fret-number" style="width: ${fretWidths[i]}px">${i}</div>`
+            ).join('');
+
+            // Strings
+            const stringsEl = document.getElementById('strings');
+            stringsEl.innerHTML = strings.map((stringName, stringIdx) => {
+                const frets = Array.from({length: fretCount}, (_, fret) => {
+                    const note = getNoteAt(stringIdx, fret);
+                    const baseNote = getBaseNote(note);
+                    const displayNote = note.includes('#') ? '' : note;
+                    const noteClass = note.includes('#') ? '' : `note-${baseNote}`;
+                    return `
+                        <div class="fret" style="width: ${fretWidths[fret]}px">
+                            <div class="string-line"></div>
+                            <div class="note ${noteClass}" data-note="${note}" data-string="${stringIdx}" data-fret="${fret}">
+                                ${displayNote}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="string-row">
+                        <div class="string-label">${stringName}</div>
+                        <div class="frets">${frets}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Fret markers
+            const fretMarkersEl = document.getElementById('fretMarkers');
+            fretMarkersEl.innerHTML = Array.from({length: fretCount}, (_, i) => {
+                if (doubleDots.includes(i)) {
+                    return `<div class="fret-marker double" style="width: ${fretWidths[i]}px"><div class="dot"></div><div class="dot"></div></div>`;
+                } else if (fretMarkersPos.includes(i)) {
+                    return `<div class="fret-marker" style="width: ${fretWidths[i]}px"><div class="dot"></div></div>`;
+                }
+                return `<div class="fret-marker" style="width: ${fretWidths[i]}px"></div>`;
+            }).join('');
+        }
+
+        function showAll() {
+            document.querySelectorAll('.note').forEach(n => n.classList.add('highlight'));
+        }
+
+        function hideAll() {
+            document.querySelectorAll('.note').forEach(n => n.classList.remove('highlight', 'active'));
+        }
+
+        function showNote(note) {
+            hideAll();
+            document.querySelectorAll('.note').forEach(n => {
+                if (getBaseNote(n.dataset.note) === note) {
+                    n.classList.add('highlight');
+                }
+            });
+        }
+
+        // Audio context for playing notes
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function midiToFreq(midi) {
+            return 440 * Math.pow(2, (midi - 69) / 12);
+        }
+
+        function playNote(midi, duration = 300) {
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.value = midiToFreq(midi);
+
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration / 1000);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration / 1000);
+        }
+
+        // Songs - [string, fret] for simple songs, [string, fret, midi, delayMs] for timed songs
+        const songs = {
+            twinkle: [
+                [0, 0, 64, 400], [0, 0, 64, 400], [0, 7, 71, 400], [0, 7, 71, 400],
+                [0, 9, 73, 400], [0, 9, 73, 400], [0, 7, 71, 800],
+                [0, 5, 69, 400], [0, 5, 69, 400], [0, 4, 68, 400], [0, 4, 68, 400],
+                [0, 2, 66, 400], [0, 2, 66, 400], [0, 0, 64, 800]
+            ],
+            smoke: [
+                [5, 0, 40, 400], [5, 3, 43, 400], [5, 5, 45, 600],
+                [5, 0, 40, 400], [5, 3, 43, 400], [5, 6, 46, 200], [5, 5, 45, 600],
+                [5, 0, 40, 400], [5, 3, 43, 400], [5, 5, 45, 600],
+                [5, 3, 43, 400], [5, 0, 40, 800]
+            ],
+            scale: [
+                [4, 3, 48, 400], [4, 5, 50, 400], [3, 2, 52, 400], [3, 3, 53, 400],
+                [3, 5, 55, 400], [2, 2, 57, 400], [2, 4, 59, 400], [2, 5, 60, 400]
+            ],
+            dontlookback: [
+                // Intro - staying in position around frets 5-7
+                // D and C on G string, A and G on D string (same fret positions, string below)
+                [2, 7, 62, 500], [2, 5, 60, 500], [2, 7, 62, 500], [2, 5, 60, 500],
+                [2, 7, 62, 500], [2, 5, 60, 500], [3, 7, 57, 500], [3, 5, 55, 1000],
+                [3, 5, 55, 250], [3, 7, 57, 250], [2, 5, 60, 500], [2, 7, 62, 250],
+                [2, 5, 60, 250], [1, 5, 64, 250], [2, 7, 62, 250], [2, 5, 60, 250],
+                [3, 7, 57, 250], [2, 5, 60, 500], [2, 7, 62, 250], [2, 5, 60, 250],
+                [2, 7, 62, 500], [2, 5, 60, 500], [2, 7, 62, 500], [2, 5, 60, 500],
+                [2, 7, 62, 500], [2, 5, 60, 500], [3, 7, 57, 500], [3, 5, 55, 1000],
+                [3, 7, 57, 500], [3, 5, 55, 750], [4, 3, 48, 250], [3, 0, 50, 250],
+                [3, 2, 52, 250], [3, 0, 50, 250], [4, 3, 48, 250], [4, 3, 48, 500],
+                [3, 0, 50, 250], [4, 3, 48, 750], [3, 3, 53, 250], [3, 5, 55, 250],
+                [3, 7, 57, 250], [2, 5, 60, 250], [2, 7, 62, 250], [2, 5, 60, 500],
+                [2, 5, 60, 250], [2, 7, 62, 250], [1, 5, 64, 250], [2, 7, 62, 250],
+                [2, 5, 60, 250], [3, 7, 57, 250], [2, 5, 60, 250], [1, 5, 64, 500],
+                [2, 12, 67, 500], [2, 12, 67, 500], [1, 10, 69, 250], [1, 13, 72, 500],
+                [1, 13, 72, 250], [1, 13, 72, 250], [1, 15, 74, 250], [1, 13, 72, 1000],
+                [2, 12, 67, 250], [1, 10, 69, 250], [1, 13, 72, 250], [2, 12, 67, 250],
+                [1, 10, 69, 250], [1, 13, 72, 250], [2, 12, 67, 250], [1, 10, 69, 250],
+                [1, 13, 72, 250], [2, 12, 67, 250], [1, 10, 69, 250], [1, 13, 72, 250],
+                [2, 12, 67, 250], [1, 10, 69, 250], [1, 13, 72, 500], [1, 13, 72, 250],
+                [1, 15, 74, 250], [1, 13, 72, 250], [1, 15, 74, 250], [1, 13, 72, 250],
+                [1, 15, 74, 250], [1, 13, 72, 250], [1, 15, 74, 250], [1, 13, 72, 250],
+                [1, 15, 74, 250], [1, 13, 72, 250], [1, 15, 74, 250], [1, 13, 72, 250],
+                [1, 15, 74, 250], [1, 13, 72, 500], [0, 12, 76, 500], [0, 12, 76, 500],
+                [0, 12, 76, 500], [0, 12, 76, 500], [0, 12, 76, 500], [0, 12, 76, 500],
+                [0, 12, 76, 500], [0, 12, 76, 500], [0, 12, 76, 250], [1, 15, 74, 250],
+                [1, 13, 72, 250], [1, 10, 69, 250], [1, 13, 72, 500], [1, 15, 74, 250],
+                [0, 12, 76, 750], [1, 15, 74, 250], [1, 13, 72, 250], [1, 15, 74, 250],
+                [1, 13, 72, 250], [1, 10, 69, 250], [1, 13, 72, 250], [0, 12, 76, 400]
+            ],
+            sweetchild: [
+                // Sweet Child O' Mine intro - D and G strings around fret 12-14
+                [3, 14, 64, 150], [3, 12, 62, 150], [2, 14, 69, 150], [2, 12, 67, 150],
+                [2, 14, 69, 150], [3, 12, 62, 150], [3, 14, 64, 150], [3, 12, 62, 150],
+                [3, 14, 64, 150], [3, 12, 62, 150], [2, 14, 69, 150], [2, 12, 67, 150],
+                [2, 14, 69, 150], [3, 12, 62, 150], [3, 14, 64, 150], [3, 12, 62, 150],
+                // Second phrase - shifts to B string
+                [3, 14, 64, 150], [3, 12, 62, 150], [1, 15, 74, 150], [1, 12, 71, 150],
+                [1, 15, 74, 150], [3, 12, 62, 150], [3, 14, 64, 150], [3, 12, 62, 150],
+                [3, 14, 64, 150], [3, 12, 62, 150], [1, 15, 74, 150], [1, 12, 71, 150],
+                [1, 15, 74, 150], [3, 12, 62, 150], [3, 14, 64, 150], [3, 12, 62, 150]
+            ],
+            ifeelfine: [
+                // I Feel Fine - Beatles riff on G and D strings
+                [2, 0, 55, 200], [2, 2, 57, 200], [2, 0, 55, 200], [3, 2, 52, 400],
+                [2, 0, 55, 200], [2, 2, 57, 200], [2, 0, 55, 200], [3, 2, 52, 400],
+                [2, 0, 55, 200], [2, 2, 57, 200], [2, 0, 55, 200], [3, 2, 52, 400],
+                [2, 0, 55, 200], [2, 2, 57, 200], [2, 0, 55, 200], [3, 2, 52, 400]
+            ],
+            sevennation: [
+                // Seven Nation Army - low E string riff
+                [5, 7, 47, 500], [5, 7, 47, 250], [5, 10, 50, 500], [5, 7, 47, 250],
+                [5, 5, 45, 250], [5, 3, 43, 500], [5, 2, 42, 750],
+                [5, 7, 47, 500], [5, 7, 47, 250], [5, 10, 50, 500], [5, 7, 47, 250],
+                [5, 5, 45, 250], [5, 3, 43, 250], [5, 5, 45, 250], [5, 3, 43, 250], [5, 2, 42, 750]
+            ],
+            sunshine: [
+                // Sunshine of Your Love - Cream riff
+                [3, 10, 60, 300], [3, 12, 62, 300], [4, 10, 55, 200], [4, 12, 57, 600],
+                [4, 10, 55, 200], [3, 10, 60, 300], [3, 12, 62, 200], [3, 10, 60, 400],
+                [3, 10, 60, 300], [3, 12, 62, 300], [4, 10, 55, 200], [4, 12, 57, 600],
+                [4, 10, 55, 200], [3, 10, 60, 300], [3, 12, 62, 200], [3, 10, 60, 400]
+            ],
+            comeasure: [
+                // Come As You Are - Nirvana, clean chorus-y riff
+                [5, 0, 40, 250], [5, 1, 41, 250], [5, 2, 42, 250], [4, 2, 47, 250],
+                [4, 0, 45, 250], [4, 2, 47, 250], [5, 2, 42, 250], [5, 1, 41, 250],
+                [5, 0, 40, 250], [5, 1, 41, 250], [5, 2, 42, 250], [4, 2, 47, 250],
+                [4, 0, 45, 250], [4, 2, 47, 250], [4, 0, 45, 250], [5, 2, 42, 250]
+            ]
+        };
+
+        let playing = false;
+        let paused = false;
+        let currentTimeout = null;
+        let transpose = 0;
+        let showAlternatives = false;
+        let currentSongName = null;
+        let currentSong = null;
+        let currentNoteIndex = 0;
+        let lastPosition = null; // Track hand position for smart fingering
+
+        function changeTranspose(delta) {
+            transpose += delta;
+            document.getElementById('transposeValue').textContent = (transpose >= 0 ? '+' : '') + transpose;
+        }
+
+        function toggleAlternatives() {
+            showAlternatives = !showAlternatives;
+            document.getElementById('altBtn').classList.toggle('active', showAlternatives);
+        }
+
+        // String tuning for transpose calculations (high E to low E)
+        const string_tuning = [64, 59, 55, 50, 45, 40];
+
+        function getTransposedGuitarPos(midi, prevPosition = null) {
+            const transposedMidi = midi + transpose;
+            const positions = getAllPositions(transposedMidi);
+
+            if (positions.length === 0) return null;
+
+            // If no previous position, pick middle-of-neck default (prefer frets 3-7)
+            if (!prevPosition) {
+                const midFret = positions.reduce((best, pos) => {
+                    const bestDist = Math.abs(best.fret - 5);
+                    const posDist = Math.abs(pos.fret - 5);
+                    return posDist < bestDist ? pos : best;
+                }, positions[0]);
+                return { ...midFret, midi: transposedMidi };
+            }
+
+            // Find position closest to previous note (minimize hand movement)
+            const closest = positions.reduce((best, pos) => {
+                // Distance considers both fret and string
+                const bestDist = Math.abs(best.fret - prevPosition.fret) + Math.abs(best.string - prevPosition.string) * 2;
+                const posDist = Math.abs(pos.fret - prevPosition.fret) + Math.abs(pos.string - prevPosition.string) * 2;
+                return posDist < bestDist ? pos : best;
+            }, positions[0]);
+
+            return { ...closest, midi: transposedMidi };
+        }
+
+        function getAllPositions(midi) {
+            // Find ALL positions where this note can be played
+            const positions = [];
+            for (let stringIdx = 0; stringIdx < string_tuning.length; stringIdx++) {
+                const openNote = string_tuning[stringIdx];
+                const fret = midi - openNote;
+                if (fret >= 0 && fret <= 20) {
+                    positions.push({ string: stringIdx, fret: fret });
+                }
+            }
+            return positions;
+        }
+
+        function playSong(name) {
+            initAudio();
+
+            // If clicking same song while playing, toggle pause
+            if (playing && currentSongName === name) {
+                pausePlay();
+                return;
+            }
+
+            // If clicking different song, stop current and start new
+            if (playing || paused) {
+                stopPlaying();
+            }
+
+            const song = songs[name];
+            if (!song) return;
+
+            currentSongName = name;
+            currentSong = song;
+            currentNoteIndex = 0;
+            lastPosition = null; // Reset hand position for new song
+            playing = true;
+            paused = false;
+
+            updatePlaybackUI();
+            showMainScrubber();
+            hideAll();
+            playFromCurrentPosition();
+        }
+
+        function playFromCurrentPosition() {
+            if (!playing || paused || currentNoteIndex >= currentSong.length) {
+                if (currentNoteIndex >= currentSong.length) {
+                    stopPlaying();
+                }
+                return;
+            }
+
+            hideAll();
+            const note = currentSong[currentNoteIndex];
+            if (note) {
+                const [string, fret, midi, delay] = note;
+
+                let playString = string;
+                let playFret = fret;
+                let playMidi = midi;
+
+                // Only recalculate position if transposing
+                if (transpose !== 0) {
+                    const transposed = getTransposedGuitarPos(midi, lastPosition);
+                    if (transposed) {
+                        playString = transposed.string;
+                        playFret = transposed.fret;
+                        playMidi = transposed.midi;
+                    } else {
+                        playMidi = midi + transpose;
+                    }
+                }
+
+                // Track hand position for smart fingering
+                lastPosition = { string: playString, fret: playFret };
+
+                // Update main scrubber
+                updateScrubber();
+
+                // Show the main note
+                const noteEl = document.querySelector(`.note[data-string="${playString}"][data-fret="${playFret}"]`);
+                if (noteEl) {
+                    noteEl.classList.add('active');
+                }
+
+                // Show alternative positions (same pitch, different location)
+                if (showAlternatives) {
+                    const altPositions = getAllPositions(playMidi);
+                    altPositions.forEach(pos => {
+                        if (pos.string !== playString || pos.fret !== playFret) {
+                            const altEl = document.querySelector(`.note[data-string="${pos.string}"][data-fret="${pos.fret}"]`);
+                            if (altEl) {
+                                altEl.classList.add('highlight');
+                            }
+                        }
+                    });
+                }
+
+                // Play the sound
+                playNote(playMidi, Math.min(delay || 400, 500));
+
+                currentNoteIndex++;
+                currentTimeout = setTimeout(playFromCurrentPosition, delay || 400);
+            } else {
+                currentNoteIndex++;
+                currentTimeout = setTimeout(playFromCurrentPosition, 400);
+            }
+        }
+
+        function pausePlay() {
+            if (playing && !paused) {
+                paused = true;
+                playing = false;
+                clearTimeout(currentTimeout);
+                updatePlaybackUI();
+            }
+        }
+
+        function updateScrubber() {
+            if (!currentSong) return;
+            document.getElementById('mainScrubber').value = currentNoteIndex;
+            document.getElementById('mainScrubberPos').textContent = currentNoteIndex + 1;
+        }
+
+        function viewSong() {
+            if (!currentSongName || !songs[currentSongName]) {
+                alert('Select a song first');
+                return;
+            }
+            // Store song data for practice page
+            localStorage.setItem('guitarSong', JSON.stringify({
+                name: currentSongName,
+                notes: songs[currentSongName]
+            }));
+            window.open('guitar-practice.html', '_blank');
+        }
+
+        function showMainScrubber() {
+            if (!currentSong) return;
+            const container = document.getElementById('scrubberContainer');
+            const scrubber = document.getElementById('mainScrubber');
+            container.style.display = 'flex';
+            scrubber.max = currentSong.length - 1;
+            scrubber.value = currentNoteIndex;
+            document.getElementById('mainScrubberPos').textContent = currentNoteIndex + 1;
+            document.getElementById('mainScrubberTotal').textContent = currentSong.length;
+        }
+
+        function hideMainScrubber() {
+            document.getElementById('scrubberContainer').style.display = 'none';
+        }
+
+        function scrubToMain(value) {
+            if (!currentSong) return;
+            const index = parseInt(value);
+            currentNoteIndex = index;
+            document.getElementById('mainScrubberPos').textContent = index + 1;
+
+            // Show the note on fretboard
+            hideAll();
+            const [string, fret, midi] = currentSong[index];
+            const noteEl = document.querySelector(`.note[data-string="${string}"][data-fret="${fret}"]`);
+            if (noteEl) noteEl.classList.add('active');
+
+            // Play sound
+            initAudio();
+            playNote(midi, 300);
+        }
+
+        function resumePlay() {
+            initAudio();
+            if (paused && currentSong) {
+                paused = false;
+                playing = true;
+                updatePlaybackUI();
+                playFromCurrentPosition();
+            } else if (!playing && currentSongName && songs[currentSongName]) {
+                // Restart from beginning
+                currentNoteIndex = 0;
+                currentSong = songs[currentSongName];
+                paused = false;
+                playing = true;
+                updatePlaybackUI();
+                playFromCurrentPosition();
+            }
+        }
+
+        function updatePlaybackUI() {
+            document.querySelectorAll('.song-btn').forEach(b => b.classList.remove('playing'));
+            const nowPlaying = document.getElementById('nowPlaying');
+
+            if (playing) {
+                const btn = document.querySelector(`[onclick="playSong('${currentSongName}')"]`);
+                if (btn) btn.classList.add('playing');
+                const songNames = {
+                    twinkle: 'Twinkle Twinkle',
+                    smoke: 'Smoke on the Water',
+                    scale: 'C Major Scale',
+                    dontlookback: "Don't Look Back in Anger",
+                    sweetchild: "Sweet Child O' Mine",
+                    ifeelfine: "I Feel Fine",
+                    sevennation: "Seven Nation Army",
+                    sunshine: "Sunshine of Your Love",
+                    comeasure: "Come As You Are",
+                    imported: 'Imported Tab'
+                };
+                nowPlaying.textContent = '♪ ' + (songNames[currentSongName] || currentSongName);
+            } else if (paused) {
+                nowPlaying.textContent = '⏸ Paused';
+            } else {
+                nowPlaying.textContent = '';
+            }
+        }
+
+        function importTab() {
+            const tabText = document.getElementById('tabInput').value;
+            if (!tabText.trim()) return;
+
+            const stringMapTab = {'e': 0, 'B': 1, 'G': 2, 'D': 3, 'A': 4, 'E': 5};
+            const openStrings = {0: 64, 1: 59, 2: 55, 3: 50, 4: 45, 5: 40};
+
+            // Parse all sections
+            const sections = tabText.split(/\n\s*\n/);
+            const allNotes = [];
+
+            for (const section of sections) {
+                const lines = section.trim().split('\n');
+                const parsed = {};
+
+                for (const line of lines) {
+                    if (!line.includes('|')) continue;
+                    const stringName = line.trim()[0];
+                    if (!(stringName in stringMapTab)) continue;
+                    const stringIdx = stringMapTab[stringName];
+                    const parts = line.split('|');
+                    if (parts.length >= 2) {
+                        parsed[stringIdx] = parts[1];
+                    }
+                }
+
+                if (Object.keys(parsed).length === 0) continue;
+                const maxLen = Math.max(...Object.values(parsed).map(v => v.length));
+
+                let col = 0;
+                while (col < maxLen) {
+                    const colNotes = [];
+
+                    for (let stringIdx = 0; stringIdx < 6; stringIdx++) {
+                        const content = parsed[stringIdx] || '';
+                        if (col >= content.length) continue;
+
+                        const char = content[col];
+                        // Skip non-digit characters and technique markers
+                        if (!/\d/.test(char)) {
+                            continue;
+                        }
+
+                        // Check if previous char was a technique marker (this digit is part of like "h10")
+                        if (col > 0 && /[hbp\/\\]/.test(content[col-1])) {
+                            // This is part of a hammer-on target, still a valid note
+                        }
+
+                        // Read full fret number
+                        let fretStr = char;
+                        if (col + 1 < content.length && /\d/.test(content[col + 1])) {
+                            fretStr += content[col + 1];
+                        }
+                        const fret = parseInt(fretStr);
+                        const midi = openStrings[stringIdx] + fret;
+
+                        colNotes.push({
+                            string: stringIdx,
+                            fret: fret,
+                            midi: midi
+                        });
+                    }
+
+                    if (colNotes.length > 0) {
+                        // Take highest note (lowest string index)
+                        colNotes.sort((a, b) => a.string - b.string);
+                        allNotes.push(colNotes[0]);
+                    }
+                    col++;
+                }
+            }
+
+            if (allNotes.length === 0) {
+                alert('No notes found in tab');
+                return;
+            }
+
+            // Convert to song format
+            const importedSong = allNotes.map(n => [n.string, n.fret, n.midi, 200]);
+            songs.imported = importedSong;
+
+            // Add button if not exists
+            if (!document.querySelector('[onclick="playSong(\'imported\')"]')) {
+                const btn = document.createElement('button');
+                btn.className = 'song-btn';
+                btn.onclick = () => playSong('imported');
+                btn.innerHTML = '<div class="song-title">Imported Tab</div><div class="song-info">' + allNotes.length + ' notes</div>';
+                btn.setAttribute('onclick', "playSong('imported')");
+                document.querySelector('.song-list').appendChild(btn);
+            } else {
+                document.querySelector('[onclick="playSong(\'imported\')"] .song-info').textContent = allNotes.length + ' notes';
+            }
+
+            alert('Imported ' + allNotes.length + ' notes!');
+        }
+
+        function playImported() {
+            if (!songs.imported) {
+                alert('Import a tab first');
+                return;
+            }
+            playSong('imported');
+        }
+
+        function stopPlaying() {
+            playing = false;
+            paused = false;
+            clearTimeout(currentTimeout);
+            currentNoteIndex = 0;
+            hideAll();
+            hideMainScrubber();
+            updatePlaybackUI();
+        }
+
+        buildFretboard();
+    </script>
+</body>
+</html>
