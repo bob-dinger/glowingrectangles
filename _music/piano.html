@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano Chords - Glowing Gardens</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 10px;
+            margin-top: 20px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .chord-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .chord-card {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .chord-card:hover {
+            border-color: #3B82F6;
+            cursor: pointer;
+        }
+
+        .chord-card-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #3B82F6;
+        }
+
+        .chord-card-notes {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .keyboard {
+            position: relative;
+            display: inline-flex;
+            height: 80px;
+        }
+
+        .white-key {
+            width: 22px;
+            height: 80px;
+            background: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%);
+            border: 1px solid #999;
+            border-radius: 0 0 3px 3px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .white-key.active {
+            background: linear-gradient(180deg, #3B82F6 0%, #2563EB 100%);
+        }
+
+        .black-key {
+            width: 14px;
+            height: 50px;
+            background: linear-gradient(180deg, #333 0%, #111 100%);
+            border-radius: 0 0 2px 2px;
+            position: absolute;
+            z-index: 2;
+        }
+
+        .black-key.active {
+            background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <h1>With a Little Help from My Friends</h1>
+    <p class="subtitle">Click any chord to hear it</p>
+
+    <div class="chord-grid" id="chordGrid"></div>
+
+    <script>
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+        const chordTypes = {
+            '': [0, 4, 7],
+            'm': [0, 3, 7],
+        };
+
+        function parseChord(chord) {
+            const match = chord.match(/^([A-G][#b]?)(.*)/);
+            if (!match) return null;
+            let root = match[1];
+            let type = match[2];
+
+            if (root.includes('b')) {
+                const flatToSharp = {'Db':'C#','Eb':'D#','Gb':'F#','Ab':'G#','Bb':'A#'};
+                root = flatToSharp[root] || root;
+            }
+
+            const rootIndex = noteNames.indexOf(root);
+            if (rootIndex === -1) return null;
+
+            const intervals = chordTypes[type] || chordTypes[''];
+            return {
+                notes: intervals.map(i => (rootIndex + i) % 12),
+                noteNames: intervals.map(i => noteNames[(rootIndex + i) % 12])
+            };
+        }
+
+        const chords = ['E', 'B', 'F#m', 'A', 'C#m', 'D', 'F#'];
+
+        function buildGrid() {
+            const container = document.getElementById('chordGrid');
+            let html = '';
+
+            chords.forEach(chordName => {
+                const chord = parseChord(chordName);
+                html += `
+                    <div class="chord-card" onclick="playChord('${chordName}')">
+                        <div class="chord-card-name">${chordName}</div>
+                        <div class="chord-card-notes">${chord.noteNames.join(' - ')}</div>
+                        <div class="keyboard">
+                            ${buildKeyboardHTML(chordName)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function getVoicing(chordName) {
+            const chord = parseChord(chordName);
+            const root = chord.notes[0];
+            // Build voicing with root as lowest, other notes close above
+            return chord.notes.map((note, i) => {
+                if (i === 0) return note;
+                // If note is below root, move it up an octave
+                return note < root ? note + 12 : note;
+            });
+        }
+
+        function buildKeyboardHTML(chordName) {
+            const voicing = getVoicing(chordName);
+            const root = voicing[0];
+
+            // Show 10 white keys starting from root area
+            const allNotes = [];
+            for (let i = root; i < root + 17; i++) {
+                allNotes.push(i);
+            }
+
+            // Figure out which white keys to show (about 10)
+            const whiteKeyPattern = [0, 2, 4, 5, 7, 9, 11]; // C D E F G A B
+            const blackKeyPattern = [1, 3, 6, 8, 10]; // C# D# F# G# A#
+
+            let html = '';
+            let whiteKeyCount = 0;
+            let whiteKeyPositions = [];
+
+            // Start from a white key at or just before root
+            let startNote = root;
+            while (!whiteKeyPattern.includes(startNote % 12)) {
+                startNote--;
+            }
+
+            // Build white keys
+            for (let i = 0; i < 10; i++) {
+                const noteNum = startNote + whiteKeyPattern.indexOf(whiteKeyPattern.find(w => {
+                    const n = (startNote % 12);
+                    return whiteKeyPattern.includes(n);
+                }));
+
+                // Just iterate through actual notes
+            }
+
+            // Iterate through chromatic notes, render white keys
+            let whiteIndex = 0;
+            for (let note = startNote; whiteIndex < 7; note++) {
+                const noteInOctave = note % 12;
+                if (whiteKeyPattern.includes(noteInOctave)) {
+                    const isActive = voicing.includes(note);
+                    html += `<div class="white-key ${isActive ? 'active' : ''}"></div>`;
+                    whiteKeyPositions.push({ note, index: whiteIndex });
+                    whiteIndex++;
+                }
+            }
+
+            // Add black keys
+            whiteIndex = 0;
+            for (let note = startNote; whiteIndex < 7; note++) {
+                const noteInOctave = note % 12;
+                if (whiteKeyPattern.includes(noteInOctave)) {
+                    // Check if there's a black key after this white key
+                    const blackAfter = note + 1;
+                    if (blackKeyPattern.includes(blackAfter % 12) && whiteIndex < 6) {
+                        const isActive = voicing.includes(blackAfter);
+                        const left = (whiteIndex + 1) * 22 - 7;
+                        html += `<div class="black-key ${isActive ? 'active' : ''}" style="left:${left}px;"></div>`;
+                    }
+                    whiteIndex++;
+                }
+            }
+
+            return html;
+        }
+
+        let audioCtx = null;
+
+        function playChord(chordName) {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            const voicing = getVoicing(chordName);
+            voicing.forEach((note, i) => {
+                // C4 (middle C) = note 0 = 261.63 Hz
+                const freq = 261.63 * Math.pow(2, note / 12);
+                setTimeout(() => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.8);
+                }, i * 30);
+            });
+        }
+
+        buildGrid();
+    </script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phrase Patterns — 8 Measures</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+.layout {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 200px;
+    min-width: 200px;
+    background: #16162a;
+    border-right: 1px solid #2a2a4a;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+}
+
+.sidebar-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #6a6a8a;
+    padding: 0 16px 10px;
+}
+
+.sidebar-subtitle {
+    font-size: 11px;
+    color: #4a4a6a;
+    padding: 0 16px 14px;
+    line-height: 1.4;
+}
+
+.filter-item {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #b0b0cc;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+}
+
+.filter-item:hover {
+    background: #1e1e3a;
+    color: #e0e0e0;
+}
+
+.filter-item.active {
+    background: #1e1e3a;
+    color: #e0e0e0;
+    border-left-color: #6366f1;
+}
+
+.filter-count {
+    float: right;
+    color: #4a4a6a;
+    font-size: 11px;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding: 16px;
+    font-size: 11px;
+    color: #4a4a6a;
+    line-height: 1.5;
+}
+
+.sidebar-footer a {
+    color: #6366f1;
+    text-decoration: none;
+}
+
+.sidebar-footer a:hover {
+    color: #818cf8;
+}
+
+/* Center */
+.center {
+    flex: 1;
+    padding: 24px 32px;
+    overflow-y: auto;
+}
+
+.center-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.center-subtitle {
+    font-size: 13px;
+    color: #6a6a8a;
+    margin-bottom: 24px;
+}
+
+/* Pattern grid */
+.pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+.pattern-card {
+    background: #1e1e3a;
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    padding: 16px;
+    transition: all 0.2s;
+}
+
+.pattern-card:hover {
+    border-color: #3a3a5a;
+    background: #22224a;
+}
+
+.pattern-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.pattern-name {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    letter-spacing: 2px;
+}
+
+.pattern-hook {
+    font-size: 11px;
+    color: #6a6a8a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pattern-blocks {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.phrase-block {
+    flex: 1;
+    height: 36px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.phrase-A { background: rgba(60, 120, 220, 0.3); color: #90b8f8; }
+.phrase-B { background: rgba(220, 90, 80, 0.3); color: #ffa0a0; }
+.phrase-C { background: rgba(50, 180, 80, 0.3); color: #88e8a0; }
+.phrase-D { background: rgba(230, 170, 40, 0.3); color: #f0d888; }
+
+.pattern-desc {
+    font-size: 12px;
+    color: #8888aa;
+    line-height: 1.5;
+}
+
+.pattern-stats {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+    font-size: 10px;
+    color: #4a4a6a;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.stat-label {
+    color: #6a6a8a;
+}
+
+.pattern-examples {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.example {
+    font-size: 10px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+    <div class="sidebar">
+        <div class="sidebar-title">Filter</div>
+        <div class="sidebar-subtitle">Group by A count or ending</div>
+        <div class="filter-item active" data-filter="all">All patterns <span class="filter-count">15</span></div>
+        <div class="filter-item" data-filter="a4">4 As <span class="filter-count">1</span></div>
+        <div class="filter-item" data-filter="a3">3 As <span class="filter-count">2</span></div>
+        <div class="filter-item" data-filter="a2">2 As <span class="filter-count">7</span></div>
+        <div class="filter-item" data-filter="a1">1 A <span class="filter-count">5</span></div>
+        <div class="filter-item" data-filter="ends-a">Ends on A <span class="filter-count">5</span></div>
+        <div class="filter-item" data-filter="ends-b">Ends on B <span class="filter-count">5</span></div>
+        <div class="filter-item" data-filter="ends-c">Ends on C <span class="filter-count">3</span></div>
+        <div class="filter-item" data-filter="ends-d">Ends on D <span class="filter-count">2</span></div>
+        <div class="sidebar-footer"><a href="index.html">&larr; Music Hub</a></div>
+    </div>
+
+    <div class="center">
+        <div class="center-title">Phrase Patterns</div>
+        <div class="center-subtitle">15 ways to arrange 4 two-measure phrases across 8 measures</div>
+        <div class="pattern-grid" id="patternGrid"></div>
+    </div>
+</div>
+
+<script>
+const PATTERNS = [
+    { name: 'AAAA', hook: 'The drone', desc: 'One idea, repeat repeat repeat. Hypnotic. Needs strong melody/lyrics to hold interest.', letters: ['A','A','A','A'], examples: [] },
+    { name: 'AAAB', hook: 'The setup', desc: 'Three times sets up expectation, fourth breaks it. Great for verse leading into chorus.', letters: ['A','A','A','B'], examples: ['Nowhere Man (bridge)', 'Ticket To Ride (bridge)', 'Ticket To Ride (chorus melody)', 'Losing My Religion (verse)'] },
+    { name: 'AABA', hook: 'The standard', desc: 'Home home away home. The classic Tin Pan Alley / jazz standard form. Safe, satisfying.', letters: ['A','A','B','A'], examples: ['Eight Days A Week (verse)', "I'm Looking Through You (verse)", 'Fire Escape (verse chords)', 'Have You Ever Seen The Rain (verse)', 'Day Tripper (verse)'] },
+    { name: 'AABB', hook: 'Two pairs', desc: 'First thing twice, second thing twice. First half establishes, second half responds.', letters: ['A','A','B','B'], examples: [] },
+    { name: 'AABC', hook: 'Slow departure', desc: 'Settle in, then gradually leave. Two As anchor you before the journey begins.', letters: ['A','A','B','C'], examples: ['She Loves You (verse)', 'No Reply (verse)', '1979 (bridge chords)', 'Day Tripper (chorus)'] },
+    { name: 'ABAA', hook: 'Quick return', desc: 'Depart early, spend the rest coming home. Strong sense of resolution.', letters: ['A','B','A','A'], examples: [] },
+    { name: 'ABAB', hook: 'Ping pong', desc: 'Back and forth, back and forth. Call and response. Very singable, predictable.', letters: ['A','B','A','B'], examples: ['Help (verse)', 'Losing My Religion (intro)', 'John Deere Green (chorus)', 'In My Life (verse)', 'In My Life (bridge melody)', 'In My Life (verse melody)'] },
+    { name: 'ABAC', hook: 'The surprise', desc: 'Return home, then somewhere NEW. Common in modern pop/rock. C is the payoff.', letters: ['A','B','A','C'], examples: ['Something (bridge)', "I'm Looking Through You (bridge)", "Can't Buy Me Love (bridge)", "Norwegian Wood (bridge)"] },
+    { name: 'ABBA', hook: 'The arch', desc: 'Palindrome, mirror. Feels composed, intentional. Departure and return feel earned.', letters: ['A','B','B','A'], examples: ['Yellow Submarine (chorus)'] },
+    { name: 'ABBB', hook: 'One then three', desc: 'Quick setup, then settle into B. The exception becomes the rule.', letters: ['A','B','B','B'], examples: [] },
+    { name: 'ABBC', hook: 'Linger then move', desc: 'Touch A, dwell on B, then exit to C. Building momentum.', letters: ['A','B','B','C'], examples: ['Rain (verse)', 'Come As You Are', 'I Should Have Known Better', 'Yellow Submarine (chorus melody)'] },
+    { name: 'ABCA', hook: 'Full circle', desc: 'A journey that returns home. Three different ideas before resolution.', letters: ['A','B','C','A'], examples: ['Eight Days A Week (chords)'] },
+    { name: 'ABCB', hook: 'B wins', desc: 'Return to B, not A. The answer becomes more important than the question.', letters: ['A','B','C','B'], examples: ['Smells Like Teen Spirit (chorus)'] },
+    { name: 'ABCC', hook: 'Journey then settle', desc: 'Keep moving, then land somewhere new and stay. C is the destination.', letters: ['A','B','C','C'], examples: ["You've Got To Hide Your Love Away (chorus)", "1979", "Margaritaville", "John Deere Green (chorus)"] },
+    { name: 'ABCD', hook: 'Through-composed', desc: 'Never look back. Maximum variety, used for storytelling or building momentum.', letters: ['A','B','C','D'], examples: ['Help (chorus)', 'I Am The Walrus (verse)', 'Please Please Me (verse)', 'Eight Days A Week (bridge)', 'I Want To Hold Your Hand (chords)', 'She Loves You (chords)'] }
+];
+
+function countAs(letters) {
+    return letters.filter(l => l === 'A').length;
+}
+
+function endsOn(letters) {
+    return letters[3];
+}
+
+function matchesFilter(pattern, filter) {
+    if (filter === 'all') return true;
+    if (filter === 'a4') return countAs(pattern.letters) === 4;
+    if (filter === 'a3') return countAs(pattern.letters) === 3;
+    if (filter === 'a2') return countAs(pattern.letters) === 2;
+    if (filter === 'a1') return countAs(pattern.letters) === 1;
+    if (filter === 'ends-a') return endsOn(pattern.letters) === 'A';
+    if (filter === 'ends-b') return endsOn(pattern.letters) === 'B';
+    if (filter === 'ends-c') return endsOn(pattern.letters) === 'C';
+    if (filter === 'ends-d') return endsOn(pattern.letters) === 'D';
+    return true;
+}
+
+let currentFilter = 'all';
+
+function renderGrid() {
+    const grid = document.getElementById('patternGrid');
+    grid.innerHTML = '';
+
+    const filtered = PATTERNS.filter(p => matchesFilter(p, currentFilter));
+
+    filtered.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'pattern-card';
+
+        const aCount = countAs(p.letters);
+        const uniqueCount = new Set(p.letters).size;
+
+        const examplesHtml = p.examples && p.examples.length > 0
+            ? `<div class="pattern-examples">${p.examples.map(e => `<span class="example">${e}</span>`).join('')}</div>`
+            : '';
+
+        card.innerHTML = `
+            <div class="pattern-header">
+                <span class="pattern-name">${p.name}</span>
+                <span class="pattern-hook">${p.hook}</span>
+            </div>
+            <div class="pattern-blocks">
+                ${p.letters.map(l => `<div class="phrase-block phrase-${l}">${l}</div>`).join('')}
+            </div>
+            <div class="pattern-desc">${p.desc}</div>
+            ${examplesHtml}
+            <div class="pattern-stats">
+                <span class="stat"><span class="stat-label">As:</span> ${aCount}</span>
+                <span class="stat"><span class="stat-label">Unique:</span> ${uniqueCount}</span>
+                <span class="stat"><span class="stat-label">Ends:</span> ${endsOn(p.letters)}</span>
+            </div>
+        `;
+
+        grid.appendChild(card);
+    });
+}
+
+document.querySelectorAll('.filter-item').forEach(item => {
+    item.addEventListener('click', () => {
+        document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        currentFilter = item.dataset.filter;
+        renderGrid();
+    });
+});
+
+renderGrid();
+</script>
+
+</body>
+</html>

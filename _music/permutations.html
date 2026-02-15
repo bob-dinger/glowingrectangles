@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chord Permutations</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+.layout {
+    display: flex;
+    height: 100vh;
+}
+
+/* ---- Left Nav ---- */
+.nav {
+    width: 160px;
+    min-width: 160px;
+    background: #16162a;
+    border-right: 1px solid #2a2a4a;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+}
+
+.nav-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #6a6a8a;
+    padding: 0 16px 16px;
+}
+
+.nav-item {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #b0b0cc;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+}
+
+.nav-item:hover {
+    background: #1e1e3a;
+    color: #e0e0e0;
+}
+
+.nav-item.active {
+    background: #1e1e3a;
+    color: #e0e0e0;
+    border-left-color: #6366f1;
+}
+
+.nav-count {
+    float: right;
+    color: #4a4a6a;
+    font-size: 11px;
+}
+
+.nav-footer {
+    margin-top: auto;
+    padding: 16px;
+    font-size: 11px;
+    color: #4a4a6a;
+    line-height: 1.5;
+}
+
+/* ---- Center Grid ---- */
+.grid-area {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.grid-header {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.grid-subtitle {
+    font-size: 13px;
+    color: #6a6a8a;
+    margin-bottom: 20px;
+}
+
+.combo-grid {
+    display: grid;
+    gap: 8px;
+}
+
+.combo-grid.cols-2 { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.combo-grid.cols-3 { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.combo-grid.cols-4 { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.combo-grid.cols-5 { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+.combo-grid.cols-6 { grid-template-columns: 1fr; max-width: 340px; }
+
+.combo-card {
+    background: #1e1e3a;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.combo-card:hover {
+    border-color: #3a3a5a;
+    background: #22224a;
+}
+
+.combo-card.selected {
+    border-color: #6366f1;
+    background: #22224a;
+}
+
+.combo-blocks {
+    display: flex;
+    gap: 3px;
+    height: 28px;
+}
+
+.combo-blocks .block {
+    flex: 1;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 0;
+}
+
+.combo-label {
+    font-size: 10px;
+    color: #6a6a8a;
+    margin-top: 6px;
+    text-align: center;
+}
+
+/* ---- Right Detail Panel ---- */
+.detail-panel {
+    width: 320px;
+    min-width: 320px;
+    background: #16162a;
+    border-left: 1px solid #2a2a4a;
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #4a4a6a;
+    font-size: 13px;
+    text-align: center;
+    line-height: 1.6;
+}
+
+.detail-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.detail-subtitle {
+    font-size: 12px;
+    color: #6a6a8a;
+    margin-bottom: 18px;
+}
+
+.detail-big-blocks {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    height: 48px;
+}
+
+.detail-big-blocks .block {
+    flex: 1;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    min-width: 0;
+}
+
+.detail-big-blocks .block .numeral {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.detail-big-blocks .block .chord-name {
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+/* Orderings section */
+.orderings-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6a6a8a;
+    margin-bottom: 10px;
+}
+
+.ordering-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ordering-item {
+    display: flex;
+    gap: 3px;
+    padding: 6px 8px;
+    background: #1e1e3a;
+    border: 1px solid #2a2a4a;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    align-items: center;
+}
+
+.ordering-item:hover {
+    border-color: #3a3a5a;
+    background: #22224a;
+}
+
+.ordering-item.highlighted {
+    border-color: #6366f1;
+}
+
+.ordering-item .mini-block {
+    flex: 1;
+    height: 18px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 600;
+    min-width: 0;
+}
+
+.ordering-label {
+    font-size: 10px;
+    color: #4a4a6a;
+    margin-left: 6px;
+    flex-shrink: 0;
+}
+
+/* ---- Scale degree colors ---- */
+.deg-1 { background: rgba(220, 60, 60, 0.25); color: #ffa0a0; }
+.deg-2 { background: rgba(230, 140, 40, 0.25); color: #ffc888; }
+.deg-3 { background: rgba(220, 200, 40, 0.25); color: #f0e888; }
+.deg-4 { background: rgba(50, 180, 80, 0.25); color: #88e8a0; }
+.deg-5 { background: rgba(60, 120, 220, 0.25); color: #90b8f8; }
+.deg-6 { background: rgba(160, 80, 220, 0.25); color: #d0a0f8; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+    <div class="nav">
+        <div class="nav-title">Set Size</div>
+        <div class="nav-item active" data-n="2">2 chords <span class="nav-count">15</span></div>
+        <div class="nav-item" data-n="3">3 chords <span class="nav-count">20</span></div>
+        <div class="nav-item" data-n="4">4 chords <span class="nav-count">15</span></div>
+        <div class="nav-item" data-n="5">5 chords <span class="nav-count">6</span></div>
+        <div class="nav-item" data-n="6">6 chords <span class="nav-count">1</span></div>
+        <div class="nav-footer">
+            All combinations of<br>
+            the 6 diatonic chords<br>
+            in C Major
+        </div>
+    </div>
+
+    <div class="grid-area">
+        <div class="grid-header" id="gridHeader">2-Chord Combinations</div>
+        <div class="grid-subtitle" id="gridSubtitle">15 ways to pair two chords from C major</div>
+        <div class="combo-grid" id="comboGrid"></div>
+    </div>
+
+    <div class="detail-panel" id="detailPanel">
+        <div class="detail-empty">Select a combination<br>to see orderings</div>
+    </div>
+</div>
+
+<script>
+const CHORDS = [
+    { numeral: 'I',   deg: 1, name: 'C'  },
+    { numeral: 'ii',  deg: 2, name: 'Dm' },
+    { numeral: 'iii', deg: 3, name: 'Em' },
+    { numeral: 'IV',  deg: 4, name: 'F'  },
+    { numeral: 'V',   deg: 5, name: 'G'  },
+    { numeral: 'vi',  deg: 6, name: 'Am' }
+];
+
+// Known progressions: tag popular orderings
+const KNOWN = {
+    '1,4,5,6': [
+        { order: [0,3,4,5], label: 'I-IV-V-vi' },
+        { order: [5,3,0,4], label: 'vi-IV-I-V', note: 'Axis of Awesome' },
+        { order: [0,4,5,3], label: 'I-V-vi-IV', note: 'Let It Be, No Woman No Cry' }
+    ],
+    '1,2,4,5': [
+        { order: [0,1,3,4], label: 'I-ii-IV-V', note: 'Pre-chorus staple' },
+        { order: [1,4,0,3], label: 'ii-V-I-IV', note: 'Jazz turnaround + IV' }
+    ],
+    '1,4,5': [
+        { order: [0,3,4], label: 'I-IV-V', note: '12-bar blues, rock & roll' },
+        { order: [0,4,3], label: 'I-V-IV', note: 'Louie Louie, Wild Thing' }
+    ],
+    '1,5,6': [
+        { order: [0,4,5], label: 'I-V-vi', note: 'Deceptive cadence setup' },
+        { order: [5,0,4], label: 'vi-I-V', note: 'Pop verse pattern' }
+    ],
+    '1,4,6': [
+        { order: [5,3,0], label: 'vi-IV-I', note: 'Plagal with vi lead-in' },
+        { order: [0,5,3], label: 'I-vi-IV', note: '50s ballad start' }
+    ],
+    '1,4': [
+        { order: [0,3], label: 'I-IV', note: 'Pendulum, blues' }
+    ],
+    '1,5': [
+        { order: [0,4], label: 'I-V', note: 'Most basic motion' }
+    ],
+    '1,6': [
+        { order: [0,5], label: 'I-vi', note: '50s doo-wop start' }
+    ],
+    '4,5': [
+        { order: [3,4], label: 'IV-V', note: 'Pre-dominant to dominant' }
+    ],
+    '2,5,1': [
+        { order: [1,4,0], label: 'ii-V-I', note: 'Jazz standard cadence' }
+    ],
+    '2,5': [
+        { order: [1,4], label: 'ii-V', note: 'Jazz approach' }
+    ],
+    '1,2,5': [
+        { order: [1,4,0], label: 'ii-V-I', note: 'The jazz cadence' }
+    ],
+    '1,6,2,5': [
+        { order: [0,5,1,4], label: 'I-vi-ii-V', note: '50s progression / rhythm changes' }
+    ],
+    '1,2,5,6': [
+        { order: [5,1,4,0], label: 'vi-ii-V-I', note: 'Circle of fifths' }
+    ],
+    '1,2,4': [
+        { order: [1,3,0], label: 'ii-IV-I', note: 'Plagal with ii' }
+    ],
+    '1,3,4,5': [
+        { order: [0,2,3,4], label: 'I-iii-IV-V', note: 'Beatles, ascending' }
+    ],
+    '1,2,3,4': [
+        { order: [0,1,2,3], label: 'I-ii-iii-IV', note: 'Ascending stepwise' }
+    ],
+    '2,3,4,5': [
+        { order: [4,3,2,1], label: 'V-IV-iii-ii', note: 'Descending stepwise' }
+    ],
+    '5,6': [
+        { order: [4,5], label: 'V-vi', note: 'Deceptive cadence' }
+    ],
+    '1,6,4': [
+        { order: [0,5,3], label: 'I-vi-IV', note: 'Heart and Soul start' }
+    ],
+    '1,6,4,5': [
+        { order: [0,5,3,4], label: 'I-vi-IV-V', note: '50s doo-wop' }
+    ]
+};
+
+function lookupKey(combo) {
+    const degs = combo.map(c => c.deg).sort((a,b) => a-b).join(',');
+    return degs;
+}
+
+// Generate combinations
+function combinations(arr, k) {
+    if (k === 0) return [[]];
+    if (arr.length === 0) return [];
+    const [first, ...rest] = arr;
+    const with_ = combinations(rest, k - 1).map(c => [first, ...c]);
+    const without = combinations(rest, k);
+    return [...with_, ...without];
+}
+
+// Generate all orderings of an array
+function permutations(arr) {
+    if (arr.length <= 1) return [arr];
+    const result = [];
+    for (let i = 0; i < arr.length; i++) {
+        const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+        for (const perm of permutations(rest)) {
+            result.push([arr[i], ...perm]);
+        }
+    }
+    return result;
+}
+
+// State
+let currentN = 2;
+let selectedCombo = null;
+
+function renderGrid() {
+    const combos = combinations(CHORDS, currentN);
+    document.getElementById('gridHeader').textContent = `${currentN}-Chord Combinations`;
+    document.getElementById('gridSubtitle').textContent =
+        `${combos.length} way${combos.length !== 1 ? 's' : ''} to choose ${currentN} from the 6 diatonic chords`;
+
+    const grid = document.getElementById('comboGrid');
+    grid.innerHTML = '';
+    grid.className = `combo-grid cols-${currentN}`;
+
+    combos.forEach(combo => {
+        const card = document.createElement('div');
+        const isSelected = selectedCombo && combo.every((c,i) => c.deg === selectedCombo[i].deg);
+        card.className = 'combo-card' + (isSelected ? ' selected' : '');
+        card.onclick = () => selectCombo(combo);
+
+        const blocks = document.createElement('div');
+        blocks.className = 'combo-blocks';
+        combo.forEach(ch => {
+            const b = document.createElement('div');
+            b.className = `block deg-${ch.deg}`;
+            b.textContent = ch.numeral;
+            blocks.appendChild(b);
+        });
+
+        const label = document.createElement('div');
+        label.className = 'combo-label';
+        label.textContent = combo.map(c => c.name).join(' · ');
+
+        card.appendChild(blocks);
+        card.appendChild(label);
+        grid.appendChild(card);
+    });
+}
+
+function selectCombo(combo) {
+    selectedCombo = combo;
+    renderGrid();
+    renderDetail();
+}
+
+function renderDetail() {
+    const panel = document.getElementById('detailPanel');
+
+    if (!selectedCombo) {
+        panel.innerHTML = '<div class="detail-empty">Select a combination<br>to see orderings</div>';
+        return;
+    }
+
+    const combo = selectedCombo;
+    let html = '';
+
+    // Title
+    html += `<div class="detail-title">${combo.map(c => c.numeral).join(' – ')}</div>`;
+    html += `<div class="detail-subtitle">${combo.map(c => c.name).join(' – ')}</div>`;
+
+    // Big blocks
+    html += `<div class="detail-big-blocks">`;
+    combo.forEach(ch => {
+        html += `<div class="block deg-${ch.deg}">
+            <span class="numeral">${ch.numeral}</span>
+            <span class="chord-name">${ch.name}</span>
+        </div>`;
+    });
+    html += `</div>`;
+
+    // Known orderings
+    const key = lookupKey(combo);
+    const known = KNOWN[key] || [];
+
+    if (known.length > 0) {
+        html += `<div class="orderings-title">Known Progressions</div>`;
+        html += `<ul class="ordering-list">`;
+        known.forEach(k => {
+            const ordered = k.order.map(i => CHORDS[i]);
+            html += `<li class="ordering-item highlighted">`;
+            ordered.forEach(ch => {
+                html += `<div class="mini-block deg-${ch.deg}">${ch.numeral}</div>`;
+            });
+            html += `<span class="ordering-label">${k.note || k.label}</span>`;
+            html += `</li>`;
+        });
+        html += `</ul>`;
+    }
+
+    // All orderings (show for 2 and 3; for 4+ just show count)
+    const perms = permutations(combo);
+    if (currentN <= 3) {
+        html += `<div class="orderings-title" style="margin-top:18px;">All ${perms.length} Orderings</div>`;
+        html += `<ul class="ordering-list">`;
+        perms.forEach(perm => {
+            const isKnown = known.some(k => {
+                const ordered = k.order.map(i => CHORDS[i]);
+                return ordered.every((c, i) => c.deg === perm[i].deg);
+            });
+            html += `<li class="ordering-item${isKnown ? ' highlighted' : ''}">`;
+            perm.forEach(ch => {
+                html += `<div class="mini-block deg-${ch.deg}">${ch.numeral}</div>`;
+            });
+            html += `</li>`;
+        });
+        html += `</ul>`;
+    } else {
+        html += `<div style="margin-top:18px;font-size:12px;color:#4a4a6a;">${perms.length} possible orderings</div>`;
+    }
+
+    panel.innerHTML = html;
+}
+
+// Nav
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
+        currentN = parseInt(item.dataset.n);
+        selectedCombo = null;
+        renderGrid();
+        renderDetail();
+    });
+});
+
+// Init
+renderGrid();
+</script>
+
+</body>
+</html>

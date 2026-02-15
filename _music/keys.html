@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diatonic Chords by Key</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+.layout {
+    display: flex;
+    height: 100vh;
+}
+
+/* ---- Sidebar ---- */
+.sidebar {
+    width: 200px;
+    min-width: 200px;
+    background: #16162a;
+    border-right: 1px solid #2a2a4a;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+}
+
+.sidebar-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #6a6a8a;
+    padding: 0 16px 14px;
+}
+
+.key-item {
+    padding: 9px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #b0b0cc;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.key-item:hover {
+    background: #1e1e3a;
+    color: #e0e0e0;
+}
+
+.key-item.active {
+    background: #1e1e3a;
+    color: #e0e0e0;
+    border-left-color: #6366f1;
+}
+
+.key-item .key-type {
+    font-size: 10px;
+    color: #4a4a6a;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding: 16px;
+    font-size: 11px;
+    color: #4a4a6a;
+    line-height: 1.5;
+}
+
+.sidebar-footer a {
+    color: #6366f1;
+    text-decoration: none;
+}
+
+.sidebar-footer a:hover {
+    color: #818cf8;
+}
+
+/* ---- Center ---- */
+.center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 32px;
+    overflow: hidden;
+}
+
+.center-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.center-subtitle {
+    font-size: 13px;
+    color: #6a6a8a;
+    margin-bottom: 24px;
+}
+
+/* ---- Chord cards ---- */
+.chord-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.chord-card {
+    background: #1e1e3a;
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    cursor: default;
+}
+
+.chord-card:hover {
+    border-color: #3a3a5a;
+    background: #22224a;
+}
+
+.chord-card.playing {
+    border-color: #6366f1;
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.2);
+}
+
+.chord-numeral {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 4px;
+}
+
+.chord-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: #e0e0e0;
+}
+
+.chord-quality {
+    font-size: 11px;
+    color: #6a6a8a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chord-notes {
+    font-size: 12px;
+    color: #8888aa;
+    margin-top: 4px;
+    letter-spacing: 1px;
+}
+
+.chord-listen {
+    margin-top: 6px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid #2a2a4a;
+    background: transparent;
+    color: #6a6a8a;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.chord-listen:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+    background: rgba(99, 102, 241, 0.1);
+}
+
+/* ---- Scale display ---- */
+.scale-section {
+    margin-bottom: 20px;
+}
+
+.scale-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #4a4a6a;
+    margin-bottom: 8px;
+}
+
+.scale-notes {
+    display: flex;
+    gap: 4px;
+}
+
+.scale-note {
+    width: 44px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    background: #1e1e3a;
+    border: 1px solid #2a2a4a;
+}
+
+.scale-degree {
+    font-size: 10px;
+    color: #4a4a6a;
+    text-align: center;
+    width: 44px;
+}
+
+.scale-degrees {
+    display: flex;
+    gap: 4px;
+    margin-top: 3px;
+}
+
+/* ---- Play all button ---- */
+.play-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    background: #6366f1;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.play-all:hover {
+    background: #818cf8;
+}
+
+.controls-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* ---- Degree colors ---- */
+.deg-1 { background: rgba(220, 60, 60, 0.25); color: #ffa0a0; }
+.deg-2 { background: rgba(230, 140, 40, 0.25); color: #ffc888; }
+.deg-3 { background: rgba(220, 200, 40, 0.25); color: #f0e888; }
+.deg-4 { background: rgba(50, 180, 80, 0.25); color: #88e8a0; }
+.deg-5 { background: rgba(60, 120, 220, 0.25); color: #90b8f8; }
+.deg-6 { background: rgba(160, 80, 220, 0.25); color: #d0a0f8; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+    <div class="sidebar">
+        <div class="sidebar-title">Keys</div>
+        <div id="keyList"></div>
+        <div class="sidebar-footer"><a href="index.html">&larr; Music Hub</a></div>
+    </div>
+    <div class="center">
+        <div class="center-title" id="centerTitle">C Major</div>
+        <div class="center-subtitle" id="centerSubtitle">The 6 diatonic triads built on scale degrees I through vi</div>
+
+        <div class="scale-section">
+            <div class="scale-label">Scale</div>
+            <div class="scale-notes" id="scaleNotes"></div>
+            <div class="scale-degrees" id="scaleDegrees"></div>
+        </div>
+
+        <div class="chord-grid" id="chordGrid"></div>
+
+        <div class="controls-row">
+            <button class="play-all" id="playAllBtn">&#9654; Play all chords</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.3.5/Tone.js"></script>
+<script>
+// ---- Music theory data ----
+
+const NOTE_NAMES = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+// Enharmonic display names per key (prefer flats or sharps depending on key)
+const KEY_DISPLAY = {
+    0:  ['C','D','E','F','G','A','B'],
+    1:  ['Db','Eb','F','Gb','Ab','Bb','C'],
+    2:  ['D','E','F#','G','A','B','C#'],
+    3:  ['Eb','F','G','Ab','Bb','C','D'],
+    4:  ['E','F#','G#','A','B','C#','D#'],
+    5:  ['F','G','A','Bb','C','D','E'],
+    6:  ['F#','G#','A#','B','C#','D#','E#'],
+    7:  ['G','A','B','C','D','E','F#'],
+    8:  ['Ab','Bb','C','Db','Eb','F','G'],
+    9:  ['A','B','C#','D','E','F#','G#'],
+    10: ['Bb','C','D','Eb','F','G','A'],
+    11: ['B','C#','D#','E','F#','G#','A#']
+};
+
+const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11]; // W W H W W W H
+const DEGREE_LABELS = ['1','2','3','4','5','6','7'];
+const CHORD_DEGREES = [0, 1, 2, 3, 4, 5]; // I ii iii IV V vi (skip vii°)
+const NUMERALS = ['I','ii','iii','IV','V','vi'];
+const QUALITIES = ['major','minor','minor','major','major','minor'];
+
+const KEYS = [
+    { root: 0,  name: 'C Major' },
+    { root: 1,  name: 'Db Major' },
+    { root: 2,  name: 'D Major' },
+    { root: 3,  name: 'Eb Major' },
+    { root: 4,  name: 'E Major' },
+    { root: 5,  name: 'F Major' },
+    { root: 6,  name: 'F# Major' },
+    { root: 7,  name: 'G Major' },
+    { root: 8,  name: 'Ab Major' },
+    { root: 9,  name: 'A Major' },
+    { root: 10, name: 'Bb Major' },
+    { root: 11, name: 'B Major' }
+];
+
+function buildChords(rootIdx) {
+    const scaleNotes = KEY_DISPLAY[rootIdx];
+    return CHORD_DEGREES.map(deg => {
+        const rootNote = scaleNotes[deg];
+        const third = scaleNotes[(deg + 2) % 7];
+        const fifth = scaleNotes[(deg + 4) % 7];
+        const quality = QUALITIES[deg];
+        const chordName = rootNote + (quality === 'minor' ? 'm' : '');
+        const rootMidi = (rootIdx + MAJOR_INTERVALS[deg]) % 12;
+
+        // Build Tone.js note names (octave 4 for triad, octave 3 for bass)
+        const r4 = rootNote.replace('#','#').replace('b','b') + '4';
+        const t4 = third + '4';
+        // If the third's pitch class is lower than root, bump octave
+        const thirdMidi = (rootIdx + MAJOR_INTERVALS[(deg + 2) % 7]) % 12;
+        const fifthMidi = (rootIdx + MAJOR_INTERVALS[(deg + 4) % 7]) % 12;
+
+        const rootPitch = rootMidi;
+        let thirdOct = 4, fifthOct = 4;
+        if (thirdMidi <= rootPitch) thirdOct = 5;
+        if (fifthMidi <= rootPitch) fifthOct = 5;
+
+        const notes = [
+            rootNote + '4',
+            third + (thirdOct === 5 ? '5' : '4'),
+            fifth + (fifthOct === 5 ? '5' : '4')
+        ];
+        const bass = rootNote + '3';
+
+        return {
+            deg: deg + 1,
+            numeral: NUMERALS[deg],
+            name: chordName,
+            displayName: rootNote + (quality === 'minor' ? 'm' : ''),
+            quality,
+            triadNotes: [rootNote, third, fifth],
+            toneNotes: notes,
+            bass
+        };
+    });
+}
+
+// ---- State ----
+let currentKeyIdx = 0;
+let synth = null;
+let bassSynth = null;
+let playingTimeout = null;
+
+// ---- Rendering ----
+
+const keyListEl = document.getElementById('keyList');
+const centerTitleEl = document.getElementById('centerTitle');
+const centerSubtitleEl = document.getElementById('centerSubtitle');
+const scaleNotesEl = document.getElementById('scaleNotes');
+const scaleDegreesEl = document.getElementById('scaleDegrees');
+const chordGridEl = document.getElementById('chordGrid');
+const playAllBtnEl = document.getElementById('playAllBtn');
+
+function renderKeyList() {
+    keyListEl.innerHTML = '';
+    KEYS.forEach((key, i) => {
+        const item = document.createElement('div');
+        item.className = 'key-item' + (i === currentKeyIdx ? ' active' : '');
+        item.innerHTML = `<span>${key.name.split(' ')[0]}</span><span class="key-type">major</span>`;
+        item.onclick = () => selectKey(i);
+        keyListEl.appendChild(item);
+    });
+}
+
+function selectKey(idx) {
+    currentKeyIdx = idx;
+    stopPlayAll();
+    renderKeyList();
+    renderCenter();
+}
+
+function renderCenter() {
+    const key = KEYS[currentKeyIdx];
+    const scaleNotes = KEY_DISPLAY[key.root];
+    const chords = buildChords(key.root);
+
+    centerTitleEl.textContent = key.name;
+
+    // Scale
+    scaleNotesEl.innerHTML = '';
+    scaleDegreesEl.innerHTML = '';
+    for (let i = 0; i < 7; i++) {
+        const note = document.createElement('div');
+        note.className = 'scale-note deg-' + (i < 6 ? (i + 1) : 1);
+        note.textContent = scaleNotes[i];
+        scaleNotesEl.appendChild(note);
+
+        const deg = document.createElement('div');
+        deg.className = 'scale-degree';
+        deg.textContent = DEGREE_LABELS[i];
+        scaleDegreesEl.appendChild(deg);
+    }
+
+    // Chord cards
+    chordGridEl.innerHTML = '';
+    chords.forEach((ch, i) => {
+        const card = document.createElement('div');
+        card.className = 'chord-card';
+        card.id = 'chord-' + i;
+        card.innerHTML = `
+            <div class="chord-numeral deg-${ch.deg}">${ch.numeral}</div>
+            <div class="chord-name">${ch.displayName}</div>
+            <div class="chord-quality">${ch.quality}</div>
+            <div class="chord-notes">${ch.triadNotes.join(' · ')}</div>
+            <button class="chord-listen" data-idx="${i}" title="Play chord">&#9654;</button>
+        `;
+        chordGridEl.appendChild(card);
+    });
+
+    // Wire up individual play buttons
+    chordGridEl.querySelectorAll('.chord-listen').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            playChord(parseInt(btn.dataset.idx));
+        });
+    });
+}
+
+// ---- Audio ----
+
+function ensureSynths() {
+    if (synth) return;
+    synth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'triangle' },
+        envelope: { attack: 0.02, decay: 0.3, sustain: 0.4, release: 0.8 },
+        volume: -10
+    }).toDestination();
+
+    bassSynth = new Tone.Synth({
+        oscillator: { type: 'triangle' },
+        envelope: { attack: 0.02, decay: 0.4, sustain: 0.5, release: 1.0 },
+        volume: -14
+    }).toDestination();
+}
+
+async function playChord(idx) {
+    await Tone.start();
+    ensureSynths();
+    const chords = buildChords(KEYS[currentKeyIdx].root);
+    const ch = chords[idx];
+
+    synth.triggerAttackRelease(ch.toneNotes, '2n');
+    bassSynth.triggerAttackRelease(ch.bass, '2n');
+
+    const card = document.getElementById('chord-' + idx);
+    card.classList.add('playing');
+    setTimeout(() => card.classList.remove('playing'), 600);
+}
+
+async function playAll() {
+    await Tone.start();
+    ensureSynths();
+    stopPlayAll();
+
+    const chords = buildChords(KEYS[currentKeyIdx].root);
+    let i = 0;
+
+    playAllBtnEl.innerHTML = '&#9632; Stop';
+
+    function next() {
+        if (i >= chords.length) {
+            stopPlayAll();
+            return;
+        }
+        const ch = chords[i];
+        synth.triggerAttackRelease(ch.toneNotes, '2n');
+        bassSynth.triggerAttackRelease(ch.bass, '2n');
+
+        const card = document.getElementById('chord-' + i);
+        chordGridEl.querySelectorAll('.chord-card').forEach(c => c.classList.remove('playing'));
+        card.classList.add('playing');
+
+        i++;
+        playingTimeout = setTimeout(next, 700);
+    }
+
+    next();
+}
+
+function stopPlayAll() {
+    if (playingTimeout) {
+        clearTimeout(playingTimeout);
+        playingTimeout = null;
+    }
+    chordGridEl.querySelectorAll('.chord-card').forEach(c => c.classList.remove('playing'));
+    playAllBtnEl.innerHTML = '&#9654; Play all chords';
+}
+
+playAllBtnEl.addEventListener('click', () => {
+    if (playingTimeout) {
+        stopPlayAll();
+    } else {
+        playAll();
+    }
+});
+
+// ---- Init ----
+renderKeyList();
+renderCenter();
+</script>
+
+</body>
+</html>

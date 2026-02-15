@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Song Browser</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+
+#sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: #16162a;
+  border-right: 1px solid #2a2a4a;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#search-box {
+  padding: 12px;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+#search-box input {
+  width: 100%;
+  padding: 8px 12px;
+  background: #1e1e3a;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 13px;
+  outline: none;
+}
+
+#search-box input:focus {
+  border-color: #6366f1;
+}
+
+#search-box input::placeholder {
+  color: #6a6a8a;
+}
+
+#song-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+#song-list::-webkit-scrollbar { width: 6px; }
+#song-list::-webkit-scrollbar-track { background: transparent; }
+#song-list::-webkit-scrollbar-thumb { background: #3a3a5a; border-radius: 3px; }
+
+.artist-group {
+  margin-bottom: 2px;
+}
+
+.artist-name {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8888aa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  background: #16162a;
+  z-index: 1;
+}
+
+.song-item {
+  padding: 5px 14px 5px 24px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #b0b0cc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-item:hover {
+  background: #1e1e3a;
+  color: #e0e0e0;
+}
+
+.song-item.active {
+  background: #2a2a5a;
+  color: #fff;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.complete { background: #4ade80; }
+.status-dot.melody_only { background: #facc15; }
+.status-dot.fragments { background: #6a6a8a; }
+
+.song-title-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#sidebar-stats {
+  padding: 8px 14px;
+  font-size: 11px;
+  color: #6a6a8a;
+  border-top: 1px solid #2a2a4a;
+  text-align: center;
+}
+
+/* ── Main content ────────────────────────────────────────────── */
+
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#song-header {
+  padding: 16px 24px 12px;
+  border-bottom: 1px solid #2a2a4a;
+  min-height: 68px;
+}
+
+#song-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+#song-meta {
+  font-size: 13px;
+  color: #8888aa;
+  display: flex;
+  gap: 16px;
+}
+
+#song-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-label {
+  color: #6a6a8a;
+}
+
+#key-select {
+  background: #1e1e3a;
+  border: 1px solid #3a3a5a;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 13px;
+  padding: 1px 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+#key-select:focus {
+  border-color: #6366f1;
+}
+
+#song-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px 24px;
+}
+
+#song-content::-webkit-scrollbar { width: 8px; }
+#song-content::-webkit-scrollbar-track { background: transparent; }
+#song-content::-webkit-scrollbar-thumb { background: #3a3a5a; border-radius: 4px; }
+
+#empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #4a4a6a;
+  font-size: 15px;
+}
+
+/* ── Sections ────────────────────────────────────────────────── */
+
+.section-block {
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.section-measure-count {
+  font-size: 11px;
+  color: #6a6a8a;
+}
+
+/* Section colors */
+.section-label.verse   { background: #1e3a5f; color: #60a5fa; }
+.section-label.chorus  { background: #1a3d2e; color: #4ade80; }
+.section-label.bridge  { background: #3d2e1a; color: #fb923c; }
+.section-label.intro   { background: #2e1a3d; color: #c084fc; }
+.section-label.outro   { background: #2e1a3d; color: #c084fc; }
+.section-label.prechorus { background: #1a3d3d; color: #2dd4bf; }
+.section-label.solo    { background: #3d1a2e; color: #f472b6; }
+.section-label.hook    { background: #1a3d2e; color: #4ade80; }
+.section-label.default { background: #2a2a4a; color: #a0a0c0; }
+
+/* ── Measure grid ────────────────────────────────────────────── */
+
+.measures-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.measure-block {
+  width: 80px;
+  height: 34px;
+  display: flex;
+  align-items: stretch;
+  border: 1px solid #2a2a4a;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #1e1e3a;
+}
+
+.chord-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #d0d0e8;
+  padding: 0 2px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-right: 1px solid rgba(42, 42, 74, 0.5);
+}
+
+.chord-cell:last-child {
+  border-right: none;
+}
+
+.chord-cell.nc {
+  color: #5a5a7a;
+  font-style: italic;
+}
+
+/* Scale degree colors (matching Hookpad: I=red, ii=orange, iii=yellow, IV=green, V=blue, vi=purple, vii=pink) */
+.chord-cell.deg-1 { background: rgba(220, 60, 60, 0.25); color: #ffa0a0; }
+.chord-cell.deg-2 { background: rgba(230, 140, 40, 0.25); color: #ffc888; }
+.chord-cell.deg-3 { background: rgba(220, 200, 40, 0.25); color: #f0e888; }
+.chord-cell.deg-4 { background: rgba(50, 180, 80, 0.25); color: #88e8a0; }
+.chord-cell.deg-5 { background: rgba(60, 120, 220, 0.25); color: #90b8f8; }
+.chord-cell.deg-6 { background: rgba(160, 80, 220, 0.25); color: #d0a0f8; }
+.chord-cell.deg-7 { background: rgba(200, 70, 150, 0.25); color: #f098d0; }
+
+/* ── Melody-only message ─────────────────────────────────────── */
+
+.melody-only-msg {
+  font-size: 12px;
+  color: #5a5a7a;
+  font-style: italic;
+  padding: 8px 0;
+}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div id="search-box">
+    <input type="text" id="search-input" placeholder="Search songs or artists..." />
+  </div>
+  <div id="song-list"></div>
+  <div id="sidebar-stats"></div>
+</div>
+
+<div id="main">
+  <div id="song-header">
+    <div id="song-title">Song Browser</div>
+    <div id="song-meta"></div>
+  </div>
+  <div id="song-content">
+    <div id="empty-state">Select a song from the sidebar</div>
+  </div>
+</div>
+
+<script>
+// ── State ───────────────────────────────────────────────────────────
+
+let allSongs = [];
+let groupedSongs = {};
+let activeSongFilename = null;
+let activeSongTitle = '';
+let activeSongArtist = '';
+
+const ALL_KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+// ── Section color classification ────────────────────────────────────
+
+function sectionClass(name) {
+  const n = name.toLowerCase();
+  if (n.includes('verse'))    return 'verse';
+  if (n.includes('chorus') || n.includes('hook')) return 'chorus';
+  if (n.includes('bridge'))   return 'bridge';
+  if (n.includes('intro'))    return 'intro';
+  if (n.includes('outro') || n.includes('coda'))  return 'outro';
+  if (n.includes('pre'))      return 'prechorus';
+  if (n.includes('solo') || n.includes('instrumental')) return 'solo';
+  return 'default';
+}
+
+// ── Chord degree class ──────────────────────────────────────────────
+
+function chordDegClass(deg) {
+  if (deg >= 1 && deg <= 7) return 'deg-' + deg;
+  return '';
+}
+
+// ── Load songs ──────────────────────────────────────────────────────
+
+async function loadSongs() {
+  const resp = await fetch('/api/songs');
+  allSongs = await resp.json();
+
+  // Group by artist
+  groupedSongs = {};
+  for (const song of allSongs) {
+    const artist = song.artist || '(Unknown Artist)';
+    if (!groupedSongs[artist]) groupedSongs[artist] = [];
+    groupedSongs[artist].push(song);
+  }
+
+  // Sort artists alphabetically, sort songs within each artist
+  for (const artist of Object.keys(groupedSongs)) {
+    groupedSongs[artist].sort((a, b) => a.title.localeCompare(b.title));
+  }
+
+  renderSongList('');
+  document.getElementById('sidebar-stats').textContent =
+    `${allSongs.length} songs`;
+}
+
+// ── Render song list ────────────────────────────────────────────────
+
+function renderSongList(filter) {
+  const list = document.getElementById('song-list');
+  const f = filter.toLowerCase();
+
+  let html = '';
+  const artists = Object.keys(groupedSongs).sort((a, b) => {
+    const aB = a.toLowerCase().includes('beatles') ? 0 : 1;
+    const bB = b.toLowerCase().includes('beatles') ? 0 : 1;
+    if (aB !== bB) return aB - bB;
+    return a.localeCompare(b, undefined, { sensitivity: 'base' });
+  });
+
+  let visibleCount = 0;
+
+  for (const artist of artists) {
+    const songs = groupedSongs[artist].filter(s => {
+      if (!f) return true;
+      return s.title.toLowerCase().includes(f) ||
+             s.artist.toLowerCase().includes(f);
+    });
+    if (songs.length === 0) continue;
+
+    html += `<div class="artist-group">`;
+    html += `<div class="artist-name">${esc(artist)}</div>`;
+    for (const song of songs) {
+      const active = song.filename === activeSongFilename ? ' active' : '';
+      const status = song.status || 'fragments';
+      html += `<div class="song-item${active}" data-filename="${esc(song.filename)}" data-title="${esc(song.title)}" data-artist="${esc(song.artist)}" onclick="selectSong(this)">`;
+      html += `<span class="status-dot ${status}"></span>`;
+      html += `<span class="song-title-text">${esc(song.title)}</span>`;
+      html += `</div>`;
+      visibleCount++;
+    }
+    html += `</div>`;
+  }
+
+  list.innerHTML = html;
+  document.getElementById('sidebar-stats').textContent =
+    f ? `${visibleCount} of ${allSongs.length} songs` : `${allSongs.length} songs`;
+}
+
+// ── Select a song ───────────────────────────────────────────────────
+
+async function selectSong(el) {
+  const filename = el.dataset.filename;
+  const title = el.dataset.title;
+  const artist = el.dataset.artist;
+
+  activeSongFilename = filename;
+  activeSongTitle = title;
+  activeSongArtist = artist;
+
+  // Update active state in sidebar
+  document.querySelectorAll('.song-item.active').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+
+  loadSongData();
+}
+
+// ── Load song data (with optional tonic override) ───────────────────
+
+async function loadSongData(tonicOverride) {
+  const headerTitle = document.getElementById('song-title');
+  const headerMeta = document.getElementById('song-meta');
+  const content = document.getElementById('song-content');
+
+  headerTitle.textContent = activeSongTitle + (activeSongArtist ? ' \u2014 ' + activeSongArtist : '');
+  headerMeta.innerHTML = '<span style="color:#6a6a8a">Loading...</span>';
+  content.innerHTML = '';
+
+  try {
+    let url = '/api/song/' + encodeURIComponent(activeSongFilename);
+    if (tonicOverride) url += '?tonic=' + encodeURIComponent(tonicOverride);
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('Failed to load');
+    const data = await resp.json();
+    renderSong(data, activeSongTitle, activeSongArtist);
+  } catch (e) {
+    content.innerHTML = `<div id="empty-state" style="display:flex">Error loading song</div>`;
+    headerMeta.innerHTML = '';
+  }
+}
+
+// ── Render song detail ──────────────────────────────────────────────
+
+function renderSong(data, title, artist) {
+  const headerTitle = document.getElementById('song-title');
+  const headerMeta = document.getElementById('song-meta');
+  const content = document.getElementById('song-content');
+
+  headerTitle.textContent = title + (artist ? ' \u2014 ' + artist : '');
+
+  // Key selector
+  const currentTonic = data.key.split(' ')[0];
+  const scaleName = data.scale || 'major';
+  let keyOptions = ALL_KEYS.map(k => {
+    const selected = k === currentTonic ? ' selected' : '';
+    return `<option value="${k}"${selected}>${k} ${scaleName}</option>`;
+  }).join('');
+
+  let metaHtml = '';
+  metaHtml += `<span><span class="meta-label">Key:</span> <select id="key-select" onchange="loadSongData(this.value)">${keyOptions}</select></span>`;
+  if (currentTonic !== data.originalTonic) {
+    metaHtml += `<span style="color:#6a6a8a; font-size:11px">(original: ${esc(data.originalTonic)} ${scaleName})</span>`;
+  }
+  metaHtml += `<span><span class="meta-label">BPM:</span> ${data.bpm}</span>`;
+  metaHtml += `<span><span class="meta-label">Time:</span> ${esc(data.timeSig)}</span>`;
+  metaHtml += `<span><span class="meta-label">Measures:</span> ${data.totalMeasures}</span>`;
+  headerMeta.innerHTML = metaHtml;
+
+  if (!data.hasChords) {
+    content.innerHTML = renderMelodyOnly(data);
+    return;
+  }
+
+  let html = '';
+  for (const section of data.sections) {
+    html += renderSection(section);
+  }
+  content.innerHTML = html;
+}
+
+function renderMelodyOnly(data) {
+  let html = '';
+  for (const section of data.sections) {
+    const cls = sectionClass(section.name);
+    html += `<div class="section-block">`;
+    html += `<div class="section-header">`;
+    html += `<span class="section-label ${cls}">${esc(section.name)}</span>`;
+    html += `<span class="section-measure-count">${section.measureCount} measures</span>`;
+    html += `</div>`;
+    html += `<div class="melody-only-msg">Melody only \u2014 no chord data</div>`;
+    html += `</div>`;
+  }
+  return html;
+}
+
+function renderSection(section) {
+  const cls = sectionClass(section.name);
+  let html = `<div class="section-block">`;
+  html += `<div class="section-header">`;
+  html += `<span class="section-label ${cls}">${esc(section.name)}</span>`;
+  html += `<span class="section-measure-count">${section.measureCount} measures</span>`;
+  html += `</div>`;
+
+  // Break measures into rows of 8
+  const measuresPerRow = 8;
+  for (let i = 0; i < section.measures.length; i += measuresPerRow) {
+    const row = section.measures.slice(i, i + measuresPerRow);
+    html += `<div class="measures-row">`;
+    for (const measure of row) {
+      html += `<div class="measure-block">`;
+      for (const chord of measure) {
+        const degCls = chordDegClass(chord.deg);
+        const ncCls = (!chord.name || chord.name === 'N.C.') ? ' nc' : '';
+        const widthPct = (chord.widthFraction * 100).toFixed(1);
+        const title = chord.name ? ` title="${esc(chord.name)}"` : '';
+        html += `<div class="chord-cell ${degCls}${ncCls}" style="width:${widthPct}%"${title}>`;
+        html += esc(chord.name || '\u00A0');
+        html += `</div>`;
+      }
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────
+
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+}
+
+// ── Search ──────────────────────────────────────────────────────────
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+  renderSongList(e.target.value);
+});
+
+// ── Keyboard shortcut: focus search on Cmd/Ctrl+K ──────────────────
+
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('search-input').focus();
+    document.getElementById('search-input').select();
+  }
+});
+
+// ── Init ────────────────────────────────────────────────────────────
+
+loadSongs();
+</script>
+</body>
+</html>

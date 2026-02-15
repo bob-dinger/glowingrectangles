@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fire Escape Mashup — 360 Permutations</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.0.4/Tone.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+.layout {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: #16162a;
+    border-right: 1px solid #2a2a4a;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    overflow-y: auto;
+}
+
+.sidebar-title {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6a6a8a;
+    padding: 0 16px 8px;
+}
+
+.sidebar-subtitle {
+    font-size: 11px;
+    color: #4a4a6a;
+    padding: 0 16px 16px;
+    line-height: 1.4;
+}
+
+.perm-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.perm-item:hover {
+    background: #1e1e3a;
+}
+
+.perm-item.active {
+    background: #1e1e3a;
+    border-left-color: #6366f1;
+}
+
+.perm-item.original {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.perm-num {
+    font-size: 10px;
+    color: #4a4a6a;
+    width: 20px;
+}
+
+.perm-chords {
+    display: flex;
+    gap: 4px;
+}
+
+.chord-chip {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.chord-G { background: rgba(14, 165, 233, 0.3); color: #7dd3fc; }
+.chord-Am { background: rgba(251, 191, 36, 0.3); color: #fde047; }
+.chord-Bm { background: rgba(34, 197, 94, 0.3); color: #86efac; }
+.chord-C { background: rgba(236, 72, 153, 0.3); color: #f9a8d4; }
+.chord-D { background: rgba(99, 102, 241, 0.3); color: #a5b4fc; }
+.chord-Em { background: rgba(249, 115, 22, 0.3); color: #fdba74; }
+
+.center {
+    flex: 1;
+    padding: 24px 32px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.header {
+    margin-bottom: 24px;
+}
+
+.header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.header p {
+    font-size: 13px;
+    color: #6a6a8a;
+}
+
+.grid-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.phrase-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.phrase-label {
+    width: 24px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #6a6a8a;
+}
+
+.phrase-grid {
+    flex: 1;
+    height: 50px;
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    background: #1e1e3a;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.chord-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.15s;
+}
+
+.chord-block.playing {
+    filter: brightness(1.3);
+    box-shadow: inset 0 0 20px rgba(255,255,255,0.2);
+}
+
+.beat-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(255,255,255,0.1);
+    pointer-events: none;
+}
+
+.beat-marker.measure {
+    background: rgba(255,255,255,0.25);
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 24px;
+    padding: 16px;
+    background: #16162a;
+    border-radius: 10px;
+}
+
+.play-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #6366f1;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.play-btn:hover {
+    background: #818cf8;
+    transform: scale(1.05);
+}
+
+.tempo-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tempo-label {
+    font-size: 12px;
+    color: #6a6a8a;
+}
+
+.tempo-slider {
+    width: 150px;
+    accent-color: #6366f1;
+}
+
+.tempo-value {
+    font-size: 14px;
+    font-weight: 600;
+    width: 70px;
+}
+
+.info {
+    margin-left: auto;
+    font-size: 12px;
+    color: #4a4a6a;
+}
+
+.structure-info {
+    display: flex;
+    gap: 24px;
+    margin-top: 16px;
+    font-size: 12px;
+    color: #6a6a8a;
+}
+
+.structure-info div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+    <div class="sidebar">
+        <div class="sidebar-title">360 Permutations</div>
+        <div class="sidebar-subtitle">P(6,4) = 360 • Same AABA rhythm</div>
+        <input type="text" id="searchBox" placeholder="Filter (e.g. G, Am)" style="margin: 0 12px 12px; padding: 8px 12px; background: #1e1e3a; border: 1px solid #2a2a4a; border-radius: 6px; color: #e0e0e0; font-size: 12px;">
+        <div id="permList"></div>
+    </div>
+
+    <div class="center">
+        <div class="header">
+            <h1>Fire Escape Verse Mashup</h1>
+            <p>AABA structure • 8 measures • G major • 360 possibilities • <span id="currentPerm">D → C → Bm → Am</span></p>
+        </div>
+
+        <div class="grid-container">
+            <div class="phrase-row">
+                <div class="phrase-label">A</div>
+                <div class="phrase-grid" id="phrase1"></div>
+            </div>
+            <div class="phrase-row">
+                <div class="phrase-label">A</div>
+                <div class="phrase-grid" id="phrase2"></div>
+            </div>
+            <div class="phrase-row">
+                <div class="phrase-label">B</div>
+                <div class="phrase-grid" id="phrase3"></div>
+            </div>
+            <div class="phrase-row">
+                <div class="phrase-label">A</div>
+                <div class="phrase-grid" id="phrase4"></div>
+            </div>
+        </div>
+
+        <div class="structure-info">
+            <div><span class="chord-chip chord-G">G</span> = I</div>
+            <div><span class="chord-chip chord-Am">Am</span> = ii</div>
+            <div><span class="chord-chip chord-Bm">Bm</span> = iii</div>
+            <div><span class="chord-chip chord-C">C</span> = IV</div>
+            <div><span class="chord-chip chord-D">D</span> = V</div>
+            <div><span class="chord-chip chord-Em">Em</span> = vi</div>
+        </div>
+
+        <div class="controls">
+            <button class="play-btn" id="playBtn">▶</button>
+            <div class="tempo-control">
+                <span class="tempo-label">Tempo</span>
+                <input type="range" class="tempo-slider" id="tempoSlider" min="80" max="160" value="120">
+                <span class="tempo-value" id="tempoValue">120 BPM</span>
+            </div>
+            <button class="play-btn" id="hookpadBtn" style="background: #22c55e; width: auto; padding: 0 16px; border-radius: 8px; font-size: 13px;">Hookpad</button>
+            <div class="info">Key: G major • Original: Fastball</div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Chord definitions in G major (all 6 diatonic)
+const CHORDS = {
+    'G':  { notes: ['G2', 'B2', 'D3', 'G3'], color: 'chord-G', degree: 'I' },
+    'Am': { notes: ['A2', 'C3', 'E3', 'A3'], color: 'chord-Am', degree: 'ii' },
+    'Bm': { notes: ['B2', 'D3', 'F#3', 'B3'], color: 'chord-Bm', degree: 'iii' },
+    'C':  { notes: ['C3', 'E3', 'G3', 'C4'], color: 'chord-C', degree: 'IV' },
+    'D':  { notes: ['D3', 'F#3', 'A3', 'D4'], color: 'chord-D', degree: 'V' },
+    'Em': { notes: ['E3', 'G3', 'B3', 'E4'], color: 'chord-Em', degree: 'vi' }
+};
+
+// A phrase rhythm: 1.5, 2, 2, 2.5 beats (total 8)
+const A_RHYTHM = [1.5, 2, 2, 2.5];
+// B phrase rhythm: 4, 4 beats (total 8)
+const B_RHYTHM = [4, 4];
+
+// Generate all 24 permutations of 4 chords
+function permute(arr) {
+    if (arr.length <= 1) return [arr];
+    const result = [];
+    for (let i = 0; i < arr.length; i++) {
+        const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+        for (const p of permute(rest)) {
+            result.push([arr[i], ...p]);
+        }
+    }
+    return result;
+}
+
+const ALL_CHORDS = ['G', 'Am', 'Bm', 'C', 'D', 'Em'];
+const B_CHORDS = ['G', 'C'];
+
+// Generate P(6,4) = 360 permutations (pick 4 from 6, order matters)
+function permutations(arr, len) {
+    if (len === 1) return arr.map(x => [x]);
+    const result = [];
+    for (let i = 0; i < arr.length; i++) {
+        const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+        for (const p of permutations(rest, len - 1)) {
+            result.push([arr[i], ...p]);
+        }
+    }
+    return result;
+}
+
+const PERMUTATIONS = permutations(ALL_CHORDS, 4);
+
+let currentPerm = PERMUTATIONS[0];
+let isPlaying = false;
+let synth, bassSynth;
+
+// Initialize Tone.js
+function initAudio() {
+    synth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'triangle' },
+        envelope: { attack: 0.02, decay: 0.3, sustain: 0.4, release: 0.8 }
+    }).toDestination();
+    synth.volume.value = -8;
+
+    bassSynth = new Tone.Synth({
+        oscillator: { type: 'triangle' },
+        envelope: { attack: 0.02, decay: 0.2, sustain: 0.5, release: 0.5 }
+    }).toDestination();
+    bassSynth.volume.value = -6;
+}
+
+// Render sidebar
+function renderPermList() {
+    const list = document.getElementById('permList');
+    list.innerHTML = PERMUTATIONS.map((perm, i) => {
+        const isOriginal = perm.join(',') === 'D,C,Bm,Am';
+        return `
+            <div class="perm-item ${isOriginal ? 'original' : ''}" data-index="${i}">
+                <span class="perm-num">${i + 1}</span>
+                <div class="perm-chords">
+                    ${perm.map(c => `<span class="chord-chip ${CHORDS[c].color}">${c}</span>`).join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    list.querySelectorAll('.perm-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const idx = parseInt(item.dataset.index);
+            selectPerm(idx);
+        });
+    });
+}
+
+// Select a permutation
+function selectPerm(idx) {
+    currentPerm = PERMUTATIONS[idx];
+    document.querySelectorAll('.perm-item').forEach((item, i) => {
+        item.classList.toggle('active', i === idx);
+    });
+    document.getElementById('currentPerm').textContent = currentPerm.join(' → ');
+    renderGrid();
+    if (isPlaying) {
+        stopPlayback();
+    }
+}
+
+// Render the beat grid
+function renderGrid() {
+    // A phrases (1, 2, 4)
+    ['phrase1', 'phrase2', 'phrase4'].forEach(id => {
+        renderPhrase(id, currentPerm, A_RHYTHM);
+    });
+    // B phrase
+    renderPhrase('phrase3', B_CHORDS, B_RHYTHM);
+}
+
+function renderPhrase(containerId, chords, rhythm) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+
+    // Add beat markers
+    for (let i = 1; i < 8; i++) {
+        const marker = document.createElement('div');
+        marker.className = 'beat-marker' + (i % 4 === 0 ? ' measure' : '');
+        marker.style.left = (i / 8 * 100) + '%';
+        container.appendChild(marker);
+    }
+
+    // Add chord blocks
+    let beatPos = 0;
+    chords.forEach((chord, i) => {
+        const dur = rhythm[i];
+        const block = document.createElement('div');
+        block.className = `chord-block ${CHORDS[chord].color}`;
+        block.style.gridColumn = `${Math.round(beatPos * 2) + 1} / span ${Math.round(dur * 2)}`;
+        block.textContent = chord;
+        block.dataset.chord = chord;
+        block.dataset.start = beatPos;
+        block.dataset.duration = dur;
+        container.appendChild(block);
+        beatPos += dur;
+    });
+}
+
+// Playback
+async function startPlayback() {
+    await Tone.start();
+    if (!synth) initAudio();
+
+    isPlaying = true;
+    document.getElementById('playBtn').textContent = '⏹';
+
+    const tempo = parseInt(document.getElementById('tempoSlider').value);
+    Tone.Transport.bpm.value = tempo;
+    Tone.Transport.cancel();
+
+    // Schedule all 4 phrases
+    const phrases = [
+        { id: 'phrase1', chords: currentPerm, rhythm: A_RHYTHM, startBeat: 0 },
+        { id: 'phrase2', chords: currentPerm, rhythm: A_RHYTHM, startBeat: 8 },
+        { id: 'phrase3', chords: B_CHORDS, rhythm: B_RHYTHM, startBeat: 16 },
+        { id: 'phrase4', chords: currentPerm, rhythm: A_RHYTHM, startBeat: 24 }
+    ];
+
+    phrases.forEach(phrase => {
+        let beatPos = phrase.startBeat;
+        phrase.chords.forEach((chord, i) => {
+            const dur = phrase.rhythm[i];
+            const time = `0:${beatPos}`;
+            const chordData = CHORDS[chord];
+
+            Tone.Transport.schedule(t => {
+                synth.triggerAttackRelease(chordData.notes, dur * 0.9 * (60 / tempo), t);
+                bassSynth.triggerAttackRelease(chordData.notes[0].replace('3', '2').replace('4', '3'), dur * 0.9 * (60 / tempo), t);
+
+                // Highlight
+                Tone.Draw.schedule(() => {
+                    document.querySelectorAll('.chord-block').forEach(b => b.classList.remove('playing'));
+                    const container = document.getElementById(phrase.id);
+                    const blocks = container.querySelectorAll('.chord-block');
+                    if (blocks[i]) blocks[i].classList.add('playing');
+                }, t);
+            }, time);
+
+            beatPos += dur;
+        });
+    });
+
+    // Stop at end
+    Tone.Transport.schedule(() => {
+        stopPlayback();
+    }, '0:32');
+
+    Tone.Transport.start();
+}
+
+function stopPlayback() {
+    isPlaying = false;
+    Tone.Transport.stop();
+    Tone.Transport.cancel();
+    document.getElementById('playBtn').textContent = '▶';
+    document.querySelectorAll('.chord-block').forEach(b => b.classList.remove('playing'));
+}
+
+// Event listeners
+document.getElementById('playBtn').addEventListener('click', () => {
+    if (isPlaying) {
+        stopPlayback();
+    } else {
+        startPlayback();
+    }
+});
+
+document.getElementById('tempoSlider').addEventListener('input', (e) => {
+    document.getElementById('tempoValue').textContent = e.target.value + ' BPM';
+    Tone.Transport.bpm.value = parseInt(e.target.value);
+});
+
+// Search/filter
+document.getElementById('searchBox').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    document.querySelectorAll('.perm-item').forEach(item => {
+        const chords = item.textContent.toLowerCase();
+        item.style.display = chords.includes(query) ? 'flex' : 'none';
+    });
+});
+
+// Send to Hookpad
+document.getElementById('hookpadBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('hookpadBtn');
+    btn.textContent = 'Sending...';
+
+    // Build chord data for the full AABA structure
+    const data = {
+        key: 'G',
+        tempo: parseInt(document.getElementById('tempoSlider').value),
+        phrases: [
+            { chords: currentPerm, rhythm: A_RHYTHM },
+            { chords: currentPerm, rhythm: A_RHYTHM },
+            { chords: B_CHORDS, rhythm: B_RHYTHM },
+            { chords: currentPerm, rhythm: A_RHYTHM }
+        ]
+    };
+
+    try {
+        const response = await fetch('http://localhost:5111/hookpad', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (response.ok) {
+            btn.textContent = 'Sent!';
+            setTimeout(() => btn.textContent = 'Hookpad', 2000);
+        } else {
+            throw new Error('Server error');
+        }
+    } catch (e) {
+        btn.textContent = 'Error';
+        alert('Start the Hookpad server first:\\n\\ncd ~/Desktop/glowinggardens_claude/_music && python hookpad_server.py');
+        setTimeout(() => btn.textContent = 'Hookpad', 2000);
+    }
+});
+
+// Initialize
+renderPermList();
+// Find and select the original (D, C, Bm, Am)
+const originalIdx = PERMUTATIONS.findIndex(p => p.join(',') === 'D,C,Bm,Am');
+selectPerm(originalIdx >= 0 ? originalIdx : 0);
+</script>
+
+</body>
+</html>

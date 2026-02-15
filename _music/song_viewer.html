@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Norwegian Wood - Bridge</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    color: #eee;
+    font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    gap: 24px;
+  }
+  h1 { font-size: 18px; color: #888; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
+  h2 { font-size: 28px; font-weight: 300; color: #e0e0e0; }
+  .section-label { font-size: 14px; color: #666; margin-bottom: 8px; }
+  .measures {
+    display: flex;
+    border: 1px solid #333;
+    border-radius: 6px;
+    overflow: hidden;
+    height: 80px;
+  }
+  .chord-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+  }
+  .chord-block:last-child { border-right: none; }
+  /* Measure tick marks */
+  .chord-block::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  .measure-ticks {
+    display: flex;
+    width: fit-content;
+  }
+  .tick {
+    width: 100px;
+    text-align: center;
+    font-size: 11px;
+    color: #555;
+    padding-top: 4px;
+  }
+  /* Colors for different chords */
+  .chord-Dm { background: #2d4a7a; }
+  .chord-Em { background: #4a7a2d; }
+  .chord-G  { background: #7a5a2d; }
+  .chord-A  { background: #6a2d6a; }
+</style>
+</head>
+<body>
+  <h1>Norwegian Wood</h1>
+  <div>
+    <div class="section-label">Bridge &mdash; 8 measures</div>
+    <div class="measures" id="measures"></div>
+    <div class="measure-ticks" id="ticks"></div>
+  </div>
+
+<script>
+const chords = [
+  { name: 'Dm', measures: 2 },
+  { name: 'Em', measures: 2 },
+  { name: 'Dm', measures: 2 },
+  { name: 'G',  measures: 1 },
+  { name: 'A',  measures: 1 },
+];
+
+const MW = 100; // pixels per measure
+const container = document.getElementById('measures');
+const ticks = document.getElementById('ticks');
+let m = 1;
+
+chords.forEach(chord => {
+  const div = document.createElement('div');
+  div.className = `chord-block chord-${chord.name}`;
+  div.style.width = (chord.measures * MW) + 'px';
+  div.textContent = chord.name;
+  container.appendChild(div);
+
+  for (let i = 0; i < chord.measures; i++) {
+    const tick = document.createElement('div');
+    tick.className = 'tick';
+    tick.textContent = m++;
+    ticks.appendChild(tick);
+  }
+});
+</script>
+</body>
+</html>

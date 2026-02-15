@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Patterns Explorer</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+.layout {
+    display: flex;
+    height: 100vh;
+}
+
+/* ---- Left Nav ---- */
+.nav {
+    width: 160px;
+    min-width: 160px;
+    background: #16162a;
+    border-right: 1px solid #2a2a4a;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+}
+
+.nav-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #6a6a8a;
+    padding: 0 16px 16px;
+}
+
+.nav-item {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #b0b0cc;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+}
+
+.nav-item:hover {
+    background: #1e1e3a;
+    color: #e0e0e0;
+}
+
+.nav-item.active {
+    background: #1e1e3a;
+    color: #e0e0e0;
+    border-left-color: #6366f1;
+}
+
+.nav-footer {
+    margin-top: auto;
+    padding: 16px;
+    font-size: 11px;
+    color: #4a4a6a;
+    line-height: 1.5;
+}
+
+/* ---- Center Grid ---- */
+.grid-area {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.grid-header {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.grid-subtitle {
+    font-size: 13px;
+    color: #6a6a8a;
+    margin-bottom: 20px;
+}
+
+.pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.pattern-card {
+    background: #1e1e3a;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.pattern-card:hover {
+    border-color: #3a3a5a;
+    background: #22224a;
+}
+
+.pattern-card.selected {
+    border-color: #6366f1;
+    background: #22224a;
+}
+
+.pattern-card.disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.pattern-card.disabled:hover {
+    border-color: #2a2a4a;
+    background: #1e1e3a;
+}
+
+.card-name {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.card-blocks {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 10px;
+    height: 28px;
+}
+
+.card-blocks .block {
+    border-radius: 4px;
+    min-width: 0;
+}
+
+.card-meta {
+    font-size: 11px;
+    color: #6a6a8a;
+}
+
+.card-meta span {
+    color: #8888aa;
+}
+
+/* ---- Right Detail Panel ---- */
+.detail-panel {
+    width: 320px;
+    min-width: 320px;
+    background: #16162a;
+    border-left: 1px solid #2a2a4a;
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #4a4a6a;
+    font-size: 13px;
+    text-align: center;
+    line-height: 1.6;
+}
+
+.detail-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.detail-blocks {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 18px;
+    height: 36px;
+}
+
+.detail-blocks .block {
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 0;
+}
+
+.detail-desc {
+    font-size: 13px;
+    line-height: 1.65;
+    color: #b0b0cc;
+    margin-bottom: 18px;
+}
+
+.detail-insight {
+    background: #1e1e3a;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 18px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #8888aa;
+}
+
+.detail-insight strong {
+    color: #b0b0cc;
+}
+
+.detail-examples-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6a6a8a;
+    margin-bottom: 10px;
+}
+
+.example-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.example-item {
+    font-size: 13px;
+    padding: 8px 10px;
+    background: #1e1e3a;
+    border-radius: 5px;
+    border: 1px solid #2a2a4a;
+    line-height: 1.4;
+}
+
+.example-item .song {
+    font-weight: 600;
+    color: #e0e0e0;
+}
+
+.example-item .artist {
+    color: #6a6a8a;
+    font-size: 12px;
+}
+
+.example-item .detail {
+    color: #8888aa;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+/* ---- Block colors ---- */
+
+/* Phrase blocks */
+.block-A { background: rgba(60, 120, 220, 0.35); color: #90b8f8; }
+.block-B { background: rgba(220, 90, 80, 0.35); color: #ffa0a0; }
+.block-C { background: rgba(50, 180, 80, 0.35); color: #88e8a0; }
+.block-D { background: rgba(230, 170, 40, 0.35); color: #f0d888; }
+
+/* Scale degree blocks (from song-browser) */
+.deg-1 { background: rgba(220, 60, 60, 0.25); color: #ffa0a0; }
+.deg-2 { background: rgba(230, 140, 40, 0.25); color: #ffc888; }
+.deg-3 { background: rgba(220, 200, 40, 0.25); color: #f0e888; }
+.deg-4 { background: rgba(50, 180, 80, 0.25); color: #88e8a0; }
+.deg-5 { background: rgba(60, 120, 220, 0.25); color: #90b8f8; }
+.deg-6 { background: rgba(160, 80, 220, 0.25); color: #d0a0f8; }
+.deg-7 { background: rgba(200, 70, 150, 0.25); color: #f098d0; }
+
+/* Harmonic rhythm blocks */
+.hr-block { background: rgba(100, 100, 200, 0.25); color: #b0b0e0; }
+
+/* ---- Breadcrumb ---- */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    font-size: 13px;
+    color: #6a6a8a;
+}
+
+.breadcrumb-back {
+    cursor: pointer;
+    color: #6366f1;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.15s;
+}
+
+.breadcrumb-back:hover {
+    color: #818cf8;
+}
+
+.breadcrumb-sep {
+    color: #4a4a6a;
+}
+
+.breadcrumb-current {
+    color: #b0b0cc;
+    font-weight: 600;
+}
+
+/* ---- Song cards (drill-down) ---- */
+.variant-card {
+    background: #1e1e3a;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.variant-card:hover {
+    border-color: #3a3a5a;
+    background: #22224a;
+}
+
+.variant-card.selected {
+    border-color: #6366f1;
+    background: #22224a;
+}
+
+.variant-card .card-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: #8888aa;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.variant-phrase-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.phrase-group {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    padding: 4px 6px;
+    border-radius: 5px;
+    border-left: 3px solid;
+}
+
+.phrase-group-A { border-left-color: rgba(60, 120, 220, 0.7); background: rgba(60, 120, 220, 0.08); }
+.phrase-group-B { border-left-color: rgba(220, 90, 80, 0.7); background: rgba(220, 90, 80, 0.08); }
+.phrase-group-C { border-left-color: rgba(50, 180, 80, 0.7); background: rgba(50, 180, 80, 0.08); }
+.phrase-group-D { border-left-color: rgba(230, 170, 40, 0.7); background: rgba(230, 170, 40, 0.08); }
+
+.phrase-group-label {
+    font-size: 10px;
+    font-weight: 700;
+    opacity: 0.6;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.phrase-chord-area {
+    flex: 1;
+    position: relative;
+    min-width: 0;
+    height: 26px;
+}
+
+.phrase-chord-area .beat-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.07);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.phrase-chord-area .chord-row {
+    display: grid;
+    height: 100%;
+}
+
+.phrase-chord-area .chord-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 0;
+    white-space: nowrap;
+    margin: 0 1px;
+}
+
+
+/* ---- Detail chord row (in C Major) ---- */
+.detail-chord-row {
+    margin-bottom: 18px;
+}
+
+.detail-chord-row .key-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #4a4a6a;
+    margin-bottom: 8px;
+}
+
+.detail-chord-table {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.detail-phrase-line {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.detail-phrase-letter {
+    font-size: 11px;
+    font-weight: 700;
+    width: 16px;
+    flex-shrink: 0;
+    opacity: 0.5;
+}
+
+.detail-chord-pair {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    min-width: 32px;
+}
+
+.detail-chord-pair .numeral {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.detail-chord-pair .chord-name {
+    font-size: 10px;
+    color: #6a6a8a;
+}
+
+.detail-chord-arrow {
+    color: #3a3a5a;
+    font-size: 10px;
+    margin: 0 1px;
+}
+
+/* ---- Song links ---- */
+.example-item a.song-link {
+    color: inherit;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.example-item a.song-link:hover {
+    color: #6366f1;
+}
+
+.example-item .link-icon {
+    font-size: 10px;
+    opacity: 0.4;
+    flex-shrink: 0;
+}
+
+.example-item a.song-link:hover .link-icon {
+    opacity: 0.8;
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+    <div class="nav">
+        <div class="nav-title">Patterns</div>
+        <div class="nav-item active" data-cat="phrase">Phrase Structure</div>
+        <div class="nav-item" data-cat="harmonic">Harmonic Rhythm</div>
+        <div class="nav-item" data-cat="motion">Chord Motion</div>
+        <div class="nav-footer">Click a pattern to<br>explore examples</div>
+    </div>
+
+    <div class="grid-area">
+        <div class="grid-header" id="gridHeader">Phrase Structure</div>
+        <div class="grid-subtitle" id="gridSubtitle">How 2-measure phrases combine across an 8-measure section</div>
+        <div class="pattern-grid" id="patternGrid"></div>
+    </div>
+
+    <div class="detail-panel" id="detailPanel">
+        <div class="detail-empty">Select a pattern<br>to see details</div>
+    </div>
+</div>
+
+<script>
+const PATTERN_DATA = {
+    phrase: {
+        title: "Phrase Structure",
+        subtitle: "How 2-measure phrases combine across an 8-measure section",
+        patterns: [
+            {
+                id: "aaba",
+                name: "AABA",
+                letters: ["A","A","B","A"],
+                description: "The most common song form in American popular music. Three statements of the main idea with one contrasting section (the bridge) before the final return.",
+                insight: "The B section creates tension that makes the final A feel like a satisfying homecoming. Standards, Tin Pan Alley, and countless pop songs use this as their backbone.",
+                songs: [
+                    { song: "I Got Rhythm", artist: "Gershwin", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "vi", deg: 6 }, { numeral: "ii", deg: 2 }, { numeral: "V", deg: 5 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1, dur: 2 }]
+                    }},
+                    { song: "Over the Rainbow", artist: "Judy Garland", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }, { numeral: "vi", deg: 6 }, { numeral: "IV", deg: 4 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "I", deg: 1 }]
+                    }},
+                    { song: "Yesterday", artist: "Beatles", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }, { numeral: "vi", deg: 6 }, { numeral: "IV", deg: 4 }],
+                        B: [{ numeral: "ii", deg: 2 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1, dur: 2 }]
+                    }},
+                    { song: "Fire Escape", artist: "Andrew McMahon", slots: {
+                        A: [{ numeral: "V", deg: 5 }, { numeral: "IV", deg: 4 }, { numeral: "iii", deg: 3 }, { numeral: "ii", deg: 2 }],
+                        B: [{ numeral: "I", deg: 1 }, { numeral: "IV", deg: 4 }]
+                    }},
+                    { song: "While My Guitar Gently Weeps", artist: "Beatles", slots: {
+                        A: [{ numeral: "vi", deg: 6 }, { numeral: "V", deg: 5 }, { numeral: "IV", deg: 4 }, { numeral: "iii", deg: 3 }],
+                        B: [{ numeral: "I", deg: 1 }, { numeral: "IV", deg: 4 }]
+                    }},
+                    { song: "Don't Stop Believin'", artist: "Journey", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }, { numeral: "vi", deg: 6 }, { numeral: "IV", deg: 4 }],
+                        B: [{ numeral: "V", deg: 5 }, { numeral: "IV", deg: 4 }, { numeral: "I", deg: 1, dur: 2 }]
+                    }}
+                ]
+            },
+            {
+                id: "aaab",
+                name: "AAAB",
+                letters: ["A","A","A","B"],
+                description: "Three repetitions build expectation, then the final phrase breaks the pattern. The B often serves as a turnaround or cadential phrase.",
+                insight: "The 'rule of three' — repetition creates a groove, and the departure in the fourth phrase provides resolution or sets up the next section.",
+                songs: [
+                    { song: "Get Back", artist: "Beatles", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "I", deg: 1 }, { numeral: "IV", deg: 4 }, { numeral: "I", deg: 1 }],
+                        B: [{ numeral: "V", deg: 5 }, { numeral: "IV", deg: 4 }, { numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }]
+                    }},
+                    { song: "Twist and Shout", artist: "Beatles", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "IV", deg: 4 }, { numeral: "V", deg: 5, dur: 2 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1, dur: 2 }]
+                    }},
+                    { song: "La Bamba", artist: "Ritchie Valens", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "IV", deg: 4 }, { numeral: "V", deg: 5, dur: 2 }],
+                        B: [{ numeral: "V", deg: 5 }, { numeral: "IV", deg: 4 }, { numeral: "I", deg: 1, dur: 2 }]
+                    }},
+                    { song: "Louie Louie", artist: "The Kingsmen", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "IV", deg: 4 }, { numeral: "V", deg: 5, dur: 2 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1, dur: 2 }]
+                    }}
+                ]
+            },
+            {
+                id: "aabb",
+                name: "AABB",
+                letters: ["A","A","B","B"],
+                description: "Two paired phrases: the first idea stated twice, then a second idea stated twice. Creates a clear two-part structure within the section.",
+                insight: "Often used in verse-prechorus or verse-chorus boundaries where the second pair sets up or delivers the hook.",
+                songs: [
+                    { song: "Let It Be", artist: "Beatles", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }, { numeral: "vi", deg: 6 }, { numeral: "IV", deg: 4 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1 }]
+                    }},
+                    { song: "Brown Eyed Girl", artist: "Van Morrison", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "IV", deg: 4 }, { numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }],
+                        B: [{ numeral: "I", deg: 1 }, { numeral: "IV", deg: 4 }, { numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }]
+                    }},
+                    { song: "Sweet Home Alabama", artist: "Lynyrd Skynyrd", slots: {
+                        A: [{ numeral: "V", deg: 5 }, { numeral: "IV", deg: 4 }, { numeral: "I", deg: 1, dur: 2 }],
+                        B: [{ numeral: "V", deg: 5 }, { numeral: "IV", deg: 4 }, { numeral: "I", deg: 1, dur: 2 }]
+                    }},
+                    { song: "Riptide", artist: "Vance Joy", slots: {
+                        A: [{ numeral: "vi", deg: 6 }, { numeral: "IV", deg: 4 }, { numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }],
+                        B: [{ numeral: "vi", deg: 6 }, { numeral: "IV", deg: 4 }, { numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }]
+                    }}
+                ]
+            },
+            {
+                id: "abab",
+                name: "ABAB",
+                letters: ["A","B","A","B"],
+                description: "Alternating phrases create a call-and-response or verse-refrain feel. Each A is answered by B, creating a conversational structure.",
+                insight: "Natural for question-answer or tension-release phrasing. The alternation keeps things moving without staying on one idea too long.",
+                songs: [
+                    { song: "Hey Jude", artist: "Beatles", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "I", deg: 1 }]
+                    }},
+                    { song: "Stand By Me", artist: "Ben E. King", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "vi", deg: 6 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "V", deg: 5 }]
+                    }},
+                    { song: "I Will Survive", artist: "Gloria Gaynor", slots: {
+                        A: [{ numeral: "vi", deg: 6 }, { numeral: "ii", deg: 2 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "iii", deg: 3 }, { numeral: "vi", deg: 6, dur: 2 }]
+                    }},
+                    { song: "Lean on Me", artist: "Bill Withers", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "ii", deg: 2 }, { numeral: "iii", deg: 3 }, { numeral: "IV", deg: 4 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "iii", deg: 3 }, { numeral: "ii", deg: 2 }, { numeral: "I", deg: 1 }]
+                    }}
+                ]
+            },
+            {
+                id: "aaaa",
+                name: "AAAA",
+                letters: ["A","A","A","A"],
+                description: "Pure repetition — the same phrase four times. Relies on lyrics, dynamics, or subtle variation to maintain interest. Common in blues and folk.",
+                insight: "Maximum hypnotic effect. The unchanging harmony puts focus entirely on melody, lyrics, and performance. Groove-based music thrives on this.",
+                songs: [
+                    { song: "Tomorrow Never Knows", artist: "Beatles", slots: {
+                        A: [{ numeral: "I", deg: 1 }]
+                    }},
+                    { song: "Paperback Writer", artist: "Beatles", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "IV", deg: 4 }]
+                    }},
+                    { song: "Chain of Fools", artist: "Aretha Franklin", slots: {
+                        A: [{ numeral: "vi", deg: 6 }]
+                    }},
+                    { song: "One Note Samba", artist: "Tom Jobim", slots: {
+                        A: [{ numeral: "I", deg: 1 }]
+                    }}
+                ]
+            },
+            {
+                id: "abac",
+                name: "ABAC",
+                letters: ["A","B","A","C"],
+                description: "The A phrase anchors the section while B and C provide two different contrasts. Creates variety while maintaining a home base.",
+                insight: "More adventurous than ABAB — the C section surprises after you expect another B. Common in Broadway and jazz standards.",
+                songs: [
+                    { song: "Fly Me to the Moon", artist: "Frank Sinatra", slots: {
+                        A: [{ numeral: "vi", deg: 6 }, { numeral: "ii", deg: 2 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1 }],
+                        B: [{ numeral: "I", deg: 1 }, { numeral: "IV", deg: 4 }],
+                        C: [{ numeral: "ii", deg: 2 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1, dur: 2 }]
+                    }},
+                    { song: "All the Things You Are", artist: "Jerome Kern", slots: {
+                        A: [{ numeral: "vi", deg: 6 }, { numeral: "ii", deg: 2 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1 }],
+                        B: [{ numeral: "I", deg: 1 }, { numeral: "IV", deg: 4 }, { numeral: "V", deg: 5, dur: 2 }],
+                        C: [{ numeral: "ii", deg: 2 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1, dur: 2 }]
+                    }},
+                    { song: "Blue Skies", artist: "Irving Berlin", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "vi", deg: 6 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "V", deg: 5 }, { numeral: "vi", deg: 6, dur: 2 }],
+                        C: [{ numeral: "IV", deg: 4 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1, dur: 2 }]
+                    }},
+                    { song: "Autumn Leaves", artist: "Joseph Kosma", slots: {
+                        A: [{ numeral: "ii", deg: 2 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1, dur: 2 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "vii\u00B0", deg: 7 }, { numeral: "iii", deg: 3, dur: 2 }],
+                        C: [{ numeral: "vi", deg: 6 }, { numeral: "ii", deg: 2 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1 }]
+                    }}
+                ]
+            },
+            {
+                id: "abcd",
+                name: "ABCD",
+                letters: ["A","B","C","D"],
+                description: "Through-composed — every phrase is different. No repetition within the section. Maximum variety, often used for storytelling or building momentum.",
+                insight: "Rare in pop (hard to remember), common in art song and progressive rock. Each phrase moves the narrative forward without looking back.",
+                songs: [
+                    { song: "Bohemian Rhapsody", artist: "Queen", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "I", deg: 1 }],
+                        C: [{ numeral: "vi", deg: 6 }, { numeral: "ii", deg: 2 }, { numeral: "V", deg: 5, dur: 2 }],
+                        D: [{ numeral: "IV", deg: 4 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1, dur: 2 }]
+                    }},
+                    { song: "A Day in the Life", artist: "Beatles", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "vi", deg: 6 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "ii", deg: 2 }],
+                        C: [{ numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }],
+                        D: [{ numeral: "vi", deg: 6 }, { numeral: "IV", deg: 4 }, { numeral: "I", deg: 1, dur: 2 }]
+                    }},
+                    { song: "Stairway to Heaven", artist: "Led Zeppelin", slots: {
+                        A: [{ numeral: "vi", deg: 6 }, { numeral: "V", deg: 5 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "I", deg: 1 }],
+                        C: [{ numeral: "ii", deg: 2 }, { numeral: "IV", deg: 4 }, { numeral: "V", deg: 5, dur: 2 }],
+                        D: [{ numeral: "I", deg: 1 }, { numeral: "V", deg: 5 }, { numeral: "vi", deg: 6, dur: 2 }]
+                    }}
+                ]
+            },
+            {
+                id: "abba",
+                name: "ABBA",
+                letters: ["A","B","B","A"],
+                description: "Arch form — the phrases mirror themselves. Opens with A, moves to B, then reverses. Creates a sense of symmetry and return.",
+                insight: "The palindrome structure gives a feeling of departure and return. The second A feels earned after the journey through B-B.",
+                songs: [
+                    { song: "Norwegian Wood", artist: "Beatles", slots: {
+                        A: [{ numeral: "I", deg: 1 }],
+                        B: [{ numeral: "IV", deg: 4 }, { numeral: "I", deg: 1 }]
+                    }},
+                    { song: "Something", artist: "Beatles", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "IV", deg: 4 }],
+                        B: [{ numeral: "vi", deg: 6 }, { numeral: "ii", deg: 2 }, { numeral: "V", deg: 5, dur: 2 }]
+                    }},
+                    { song: "Blackbird", artist: "Beatles", slots: {
+                        A: [{ numeral: "I", deg: 1 }, { numeral: "ii", deg: 2 }, { numeral: "iii", deg: 3, dur: 2 }],
+                        B: [{ numeral: "vi", deg: 6 }, { numeral: "ii", deg: 2 }, { numeral: "V", deg: 5 }, { numeral: "I", deg: 1 }]
+                    }}
+                ]
+            }
+        ]
+    },
+    harmonic: {
+        title: "Harmonic Rhythm",
+        subtitle: "How chord durations distribute across a phrase — when changes speed up or stay even",
+        patterns: [
+            {
+                id: "even",
+                name: "Even (1-1-1-1)",
+                beats: [1, 1, 1, 1],
+                labels: ["I","IV","V","I"],
+                description: "Each chord gets exactly the same duration. Steady, predictable harmonic pacing with no acceleration or deceleration.",
+                insight: "The default in most pop and rock. Feels stable and groove-oriented. The regularity lets rhythm and melody carry the song.",
+                examples: [
+                    { song: "Let It Be", artist: "Beatles", detail: "C-G-Am-F, one bar each" },
+                    { song: "No Woman No Cry", artist: "Bob Marley", detail: "Even four-chord rotation" },
+                    { song: "With or Without You", artist: "U2", detail: "D-A-Bm-G, steady pace" },
+                    { song: "Unchained Melody", artist: "Righteous Brothers", detail: "Even chord changes" },
+                    { song: "Someone Like You", artist: "Adele", detail: "Steady harmonic pulse" }
+                ]
+            },
+            {
+                id: "help-accel",
+                name: "Help! Acceleration",
+                beats: [2, 2, 2, 0.5, 0.5, 1],
+                labels: ["I","vi","ii","V/V","V","I"],
+                description: "Long sustained chords accelerate into rapid changes at the phrase end. Creates a dramatic rush toward the cadence.",
+                insight: "The 'Help!' verse pattern: sit on each chord for 2 bars, then cram three changes into the final bars. Maximum momentum at the phrase boundary.",
+                examples: [
+                    { song: "Help!", artist: "Beatles", detail: "Bm-G-E-A, accelerating at end" },
+                    { song: "Every Breath You Take", artist: "The Police", detail: "Long holds, quick turnaround" },
+                    { song: "Piano Man", artist: "Billy Joel", detail: "Sustained then rapid at cadence" }
+                ]
+            },
+            {
+                id: "friends-accel",
+                name: "Friends Acceleration",
+                beats: [1, 1, 0.5, 0.5, 1],
+                labels: ["I","IV","V","vi","I"],
+                description: "Moderate acceleration — even pacing in the first half, then two quick changes before resolving. A gentler version of the Help! pattern.",
+                insight: "Common in verse phrases where the final bar needs a turnaround. The brief acceleration signals 'we're heading somewhere' without being dramatic.",
+                examples: [
+                    { song: "With a Little Help", artist: "Beatles", detail: "E-B-F#m, quick C#m-E turnaround" },
+                    { song: "I'll Be There for You", artist: "The Rembrandts", detail: "Phrase-end acceleration" },
+                    { song: "Don't Look Back in Anger", artist: "Oasis", detail: "Quick changes at end of verse" },
+                    { song: "Wonderwall", artist: "Oasis", detail: "Subtle acceleration toward chorus" }
+                ]
+            },
+            {
+                id: "bridge-decel",
+                name: "Norwegian Bridge",
+                beats: [2, 2, 2, 1, 1],
+                labels: ["IV","V","I","vi","IV"],
+                description: "Similar to acceleration but the final two chords are full-bar, not half-bar. A more relaxed deceleration — the phrase settles rather than rushes.",
+                insight: "The Norwegian Wood bridge approach: long chords establish a mood, then the pace picks up slightly to transition back to the verse.",
+                examples: [
+                    { song: "Norwegian Wood", artist: "Beatles", detail: "Bridge harmonic rhythm" },
+                    { song: "Here Comes the Sun", artist: "Beatles", detail: "Bridge pacing pattern" },
+                    { song: "Michelle", artist: "Beatles", detail: "Long chords into faster movement" }
+                ]
+            },
+            {
+                id: "static",
+                name: "Static (whole phrase)",
+                beats: [4],
+                labels: ["I"],
+                description: "One chord for the entire phrase. All movement comes from melody, rhythm, and performance. The harmonic rhythm is essentially frozen.",
+                insight: "Extreme but effective: funk, modal jazz, and drone-based music all use static harmony. Forces the listener to find interest in texture and groove.",
+                examples: [
+                    { song: "Tomorrow Never Knows", artist: "Beatles", detail: "C throughout, pure drone" },
+                    { song: "Get Lucky", artist: "Daft Punk", detail: "Two-chord vamp, feels static" },
+                    { song: "Superstition", artist: "Stevie Wonder", detail: "Single-chord funk groove" },
+                    { song: "So What", artist: "Miles Davis", detail: "16 bars on one chord" }
+                ]
+            },
+            {
+                id: "decel",
+                name: "Deceleration",
+                beats: [0.5, 0.5, 1, 1, 1],
+                labels: ["V","IV","I","I","I"],
+                description: "Rapid changes at the start that slow down into longer holds. The opposite of acceleration — front-loaded activity settling into stability.",
+                insight: "Often heard at section beginnings after a busy turnaround. The phrase 'lands' on a chord and stays there, creating a sense of arrival.",
+                examples: [
+                    { song: "Hey Jude", artist: "Beatles", detail: "Quick intro chords into sustained verse" },
+                    { song: "Imagine", artist: "John Lennon", detail: "Brief pickup into long holds" },
+                    { song: "Hallelujah", artist: "Leonard Cohen", detail: "Opening flourish into sustained chords" }
+                ]
+            }
+        ]
+    },
+    motion: {
+        title: "Chord Motion",
+        subtitle: "How chords move between scale degrees — the shape of harmonic movement",
+        patterns: [
+            {
+                id: "pendulum",
+                name: "Pendulum",
+                chords: [
+                    { numeral: "I", deg: 1 },
+                    { numeral: "IV", deg: 4 },
+                    { numeral: "I", deg: 1 },
+                    { numeral: "IV", deg: 4 }
+                ],
+                description: "Swinging back and forth between two chords. No forward motion — just oscillation. Hypnotic and groove-friendly.",
+                insight: "The I-IV pendulum is the most basic harmonic motion in rock. It creates energy through contrast without ever truly 'going' anywhere.",
+                examples: [
+                    { song: "Born in the USA", artist: "Bruce Springsteen", detail: "B-E pendulum throughout" },
+                    { song: "Margaritaville", artist: "Jimmy Buffett", detail: "I-IV-I-IV verse" },
+                    { song: "Free Fallin'", artist: "Tom Petty", detail: "I-IV oscillation" },
+                    { song: "Paperback Writer", artist: "Beatles", detail: "G-C back and forth" }
+                ]
+            },
+            {
+                id: "desc-step",
+                name: "Descending Stepwise",
+                chords: [
+                    { numeral: "V", deg: 5 },
+                    { numeral: "IV", deg: 4 },
+                    { numeral: "iii", deg: 3 },
+                    { numeral: "ii", deg: 2 }
+                ],
+                description: "Chords walk down the scale step by step. Creates a sense of descent, often melancholy or introspective. Strong melodic bass line.",
+                insight: "The descending bass line is one of the most emotionally evocative patterns in music. Each step down deepens the emotional weight.",
+                examples: [
+                    { song: "While My Guitar Gently Weeps", artist: "Beatles", detail: "Am-Am/G-Am/F#-Am/F descent" },
+                    { song: "Stairway to Heaven", artist: "Led Zeppelin", detail: "Am-G#+-C/G-D/F# intro descent" },
+                    { song: "Babe I'm Gonna Leave You", artist: "Led Zeppelin", detail: "Descending bass line" },
+                    { song: "Jolene", artist: "Dolly Parton", detail: "Stepwise verse movement" }
+                ]
+            },
+            {
+                id: "circle-fifths",
+                name: "Circle of Fifths",
+                chords: [
+                    { numeral: "vi", deg: 6 },
+                    { numeral: "ii", deg: 2 },
+                    { numeral: "V", deg: 5 },
+                    { numeral: "I", deg: 1 }
+                ],
+                description: "Each chord is a fifth above the next (or a fourth below). The strongest possible root motion in tonal harmony — every change feels inevitable.",
+                insight: "The circle of fifths progression is the backbone of jazz and classical harmony. Each chord 'wants' to move to the next, creating irresistible forward motion.",
+                examples: [
+                    { song: "Fly Me to the Moon", artist: "Frank Sinatra", detail: "Am-Dm-G-C (vi-ii-V-I)" },
+                    { song: "Autumn Leaves", artist: "Standard", detail: "Classic circle movement" },
+                    { song: "I Will Survive", artist: "Gloria Gaynor", detail: "vi-ii-V-I disco" },
+                    { song: "Beautiful", artist: "Christina Aguilera", detail: "Circle of fifths verse" }
+                ]
+            },
+            {
+                id: "static-motion",
+                name: "Static",
+                chords: [
+                    { numeral: "I", deg: 1 },
+                    { numeral: "I", deg: 1 },
+                    { numeral: "I", deg: 1 },
+                    { numeral: "I", deg: 1 }
+                ],
+                description: "No chord motion at all — the harmony stays on one chord. All interest comes from rhythm, melody, and texture.",
+                insight: "Absence of motion is itself a powerful choice. Static harmony creates a meditative or insistent quality that forces attention to other musical elements.",
+                examples: [
+                    { song: "Tomorrow Never Knows", artist: "Beatles", detail: "C chord throughout" },
+                    { song: "One Note Samba", artist: "Tom Jobim", detail: "Extended single-chord passages" },
+                    { song: "Chameleon", artist: "Herbie Hancock", detail: "Funk vamp, one chord" },
+                    { song: "So What", artist: "Miles Davis", detail: "Modal, 16 bars on Dm7" }
+                ]
+            },
+            {
+                id: "blues",
+                name: "Blues I-I-IV-I",
+                chords: [
+                    { numeral: "I", deg: 1 },
+                    { numeral: "I", deg: 1 },
+                    { numeral: "IV", deg: 4 },
+                    { numeral: "I", deg: 1 }
+                ],
+                description: "The fundamental blues phrase: sit on the tonic, lean to the IV for tension, then return. The compressed core of the 12-bar blues.",
+                insight: "The IV chord feels like a gentle lean — just enough harmonic motion to create interest without truly leaving home. Foundation of all blues-based music.",
+                examples: [
+                    { song: "Get Back", artist: "Beatles", detail: "A-A-D-A blues phrase" },
+                    { song: "Paperback Writer", artist: "Beatles", detail: "Blues-based phrasing" },
+                    { song: "Have You Ever Seen the Rain", artist: "CCR", detail: "I-I-IV-I verse phrase" },
+                    { song: "Margaritaville", artist: "Jimmy Buffett", detail: "Blues phrase in major key" },
+                    { song: "La Bamba", artist: "Ritchie Valens", detail: "I-IV-V blues variant" }
+                ]
+            },
+            {
+                id: "ascending",
+                name: "Ascending Stepwise",
+                chords: [
+                    { numeral: "I", deg: 1 },
+                    { numeral: "ii", deg: 2 },
+                    { numeral: "iii", deg: 3 },
+                    { numeral: "IV", deg: 4 }
+                ],
+                description: "Chords climb up the scale step by step. Creates a sense of building energy, rising tension, or emotional lift.",
+                insight: "The ascending bass line conveys hope, growth, or intensification. Each step up raises the emotional stakes. Often used in pre-choruses to build toward a climax.",
+                examples: [
+                    { song: "Here Comes the Sun", artist: "Beatles", detail: "A-B-C#m rising in bridge" },
+                    { song: "Let It Be", artist: "Beatles", detail: "C-Dm-Em-F ascending movement" },
+                    { song: "Creep", artist: "Radiohead", detail: "G-B-C-Cm ascending" },
+                    { song: "Pachelbel's Canon", artist: "Pachelbel", detail: "I-V-vi-iii-IV ascending bass" }
+                ]
+            }
+        ]
+    }
+};
+
+// ---- Generate all 15 canonical 4-phrase patterns ----
+
+const ALL_PHRASE_PATTERNS = [
+    ["A","A","A","A"], ["A","A","A","B"], ["A","A","B","A"], ["A","A","B","B"],
+    ["A","A","B","C"], ["A","B","A","A"], ["A","B","A","B"], ["A","B","A","C"],
+    ["A","B","B","A"], ["A","B","B","B"], ["A","B","B","C"], ["A","B","C","A"],
+    ["A","B","C","B"], ["A","B","C","C"], ["A","B","C","D"]
+];
+
+// Merge: keep existing data for patterns that have it, add stubs for the rest
+(function fillPhrasePatterns() {
+    const existing = {};
+    PATTERN_DATA.phrase.patterns.forEach(p => {
+        existing[p.letters.join('')] = p;
+    });
+    const merged = [];
+    ALL_PHRASE_PATTERNS.forEach(letters => {
+        const key = letters.join('');
+        if (existing[key]) {
+            merged.push(existing[key]);
+        } else {
+            merged.push({
+                id: key.toLowerCase(),
+                name: key,
+                letters: letters,
+                description: '',
+                insight: '',
+                songs: []
+            });
+        }
+    });
+    PATTERN_DATA.phrase.patterns = merged;
+})();
+
+// ---- Helpers ----
+
+function getExampleCount(pattern) {
+    if (pattern.examples) return pattern.examples.length;
+    if (pattern.songs) return pattern.songs.length;
+    return 0;
+}
+
+function slotLabel(slots) {
+    return Object.entries(slots).map(([letter, chords]) =>
+        letter + ': ' + chords.map(c => c.numeral).join('-')
+    ).join(' / ');
+}
+
+const CHORD_IN_C = {
+    'I': 'C', 'ii': 'Dm', 'iii': 'Em', 'IV': 'F',
+    'V': 'G', 'vi': 'Am', 'vii\u00B0': 'Bdim',
+    'V/V': 'D'
+};
+
+function chordName(numeral) {
+    return CHORD_IN_C[numeral] || numeral;
+}
+
+function youtubeSearchUrl(song, artist) {
+    const q = encodeURIComponent(song + ' ' + artist);
+    return 'https://www.youtube.com/results?search_query=' + q;
+}
+
+// ---- Rendering ----
+
+let currentCategory = 'phrase';
+let selectedPattern = null;
+let drillPattern = null;        // phrase pattern being drilled into (null = top-level)
+let selectedSong = null;        // currently selected song inside drill-down
+
+function renderPhraseBlocks(letters, container, showLabel) {
+    container.innerHTML = '';
+    letters.forEach(letter => {
+        const block = document.createElement('div');
+        block.className = `block block-${letter}`;
+        block.style.flex = '1';
+        if (showLabel) block.textContent = letter;
+        container.appendChild(block);
+    });
+}
+
+function renderHarmonicBlocks(beats, labels, container, showLabel) {
+    container.innerHTML = '';
+    beats.forEach((dur, i) => {
+        const block = document.createElement('div');
+        block.className = 'block hr-block';
+        block.style.flex = dur.toString();
+        if (showLabel && labels && labels[i]) block.textContent = labels[i];
+        container.appendChild(block);
+    });
+}
+
+function renderMotionBlocks(chords, container, showLabel) {
+    container.innerHTML = '';
+    chords.forEach(ch => {
+        const block = document.createElement('div');
+        block.className = `block deg-${ch.deg}`;
+        block.style.flex = '1';
+        if (showLabel) block.textContent = ch.numeral;
+        container.appendChild(block);
+    });
+}
+
+function renderBlocks(pattern, container, showLabel) {
+    if (currentCategory === 'phrase') {
+        renderPhraseBlocks(pattern.letters, container, showLabel);
+    } else if (currentCategory === 'harmonic') {
+        renderHarmonicBlocks(pattern.beats, pattern.labels, container, showLabel);
+    } else {
+        renderMotionBlocks(pattern.chords, container, showLabel);
+    }
+}
+
+function renderExpandedBlocks(letters, slots, container) {
+    container.innerHTML = '';
+    const row = document.createElement('div');
+    row.className = 'variant-phrase-row';
+
+    letters.forEach(letter => {
+        const chords = slots[letter];
+        if (!chords) return;
+        const group = document.createElement('div');
+        group.className = `phrase-group phrase-group-${letter}`;
+
+        const label = document.createElement('span');
+        label.className = 'phrase-group-label';
+        label.textContent = letter;
+        group.appendChild(label);
+
+        const totalDur = chords.reduce((sum, ch) => sum + (ch.dur || 1), 0);
+
+        const area = document.createElement('div');
+        area.className = 'phrase-chord-area';
+
+        // Beat lines
+        for (let i = 1; i < totalDur; i++) {
+            const line = document.createElement('div');
+            line.className = 'beat-line';
+            line.style.left = (i / totalDur * 100) + '%';
+            area.appendChild(line);
+        }
+
+        // Chord grid
+        const chordRow = document.createElement('div');
+        chordRow.className = 'chord-row';
+        chordRow.style.gridTemplateColumns = 'repeat(' + totalDur + ', 1fr)';
+
+        chords.forEach(ch => {
+            const cell = document.createElement('span');
+            cell.className = 'chord-cell deg-' + ch.deg;
+            const dur = ch.dur || 1;
+            if (dur > 1) cell.style.gridColumn = 'span ' + dur;
+            cell.textContent = chordName(ch.numeral);
+            chordRow.appendChild(cell);
+        });
+
+        area.appendChild(chordRow);
+        group.appendChild(area);
+        row.appendChild(group);
+    });
+
+    container.appendChild(row);
+}
+
+function renderGrid() {
+    const data = PATTERN_DATA[currentCategory];
+    const headerEl = document.getElementById('gridHeader');
+    const subtitleEl = document.getElementById('gridSubtitle');
+    const grid = document.getElementById('patternGrid');
+
+    // Drill-down: show songs for a phrase pattern
+    if (currentCategory === 'phrase' && drillPattern) {
+        headerEl.innerHTML = `<div class="breadcrumb">
+            <span class="breadcrumb-back" id="breadcrumbBack">\u2190 Phrase Structure</span>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">${drillPattern.name}</span>
+        </div>`;
+        subtitleEl.textContent = drillPattern.description;
+
+        grid.innerHTML = '';
+        drillPattern.songs.forEach(s => {
+            const card = document.createElement('div');
+            card.className = 'variant-card' + (selectedSong === s ? ' selected' : '');
+            card.onclick = () => selectSong(s);
+
+            const name = document.createElement('div');
+            name.className = 'card-name';
+            name.innerHTML = `<strong style="color:#e0e0e0;font-size:13px;">${s.song}</strong><br>${s.artist}`;
+
+            const blocks = document.createElement('div');
+            blocks.className = 'card-blocks';
+            blocks.style.height = 'auto';
+
+            card.appendChild(name);
+            card.appendChild(blocks);
+            grid.appendChild(card);
+
+            renderExpandedBlocks(drillPattern.letters, s.slots, blocks);
+        });
+
+        // Wire up breadcrumb back
+        document.getElementById('breadcrumbBack').onclick = () => {
+            history.back();
+        };
+        return;
+    }
+
+    // Normal top-level grid
+    headerEl.innerHTML = '';
+    headerEl.textContent = data.title;
+    subtitleEl.textContent = data.subtitle;
+
+    grid.innerHTML = '';
+
+    data.patterns.forEach(p => {
+        const count = getExampleCount(p);
+        const isEmpty = count === 0;
+        const card = document.createElement('div');
+        card.className = 'pattern-card'
+            + (selectedPattern && selectedPattern.id === p.id ? ' selected' : '')
+            + (isEmpty ? ' disabled' : '');
+        if (!isEmpty) card.onclick = () => selectPattern(p);
+
+        const name = document.createElement('div');
+        name.className = 'card-name';
+        name.textContent = p.name;
+
+        const blocks = document.createElement('div');
+        blocks.className = 'card-blocks';
+
+        const meta = document.createElement('div');
+        meta.className = 'card-meta';
+        meta.innerHTML = isEmpty
+            ? '<span>no songs yet</span>'
+            : `<span>${count}</span> song${count !== 1 ? 's' : ''}`;
+
+        card.appendChild(name);
+        card.appendChild(blocks);
+        card.appendChild(meta);
+        grid.appendChild(card);
+
+        renderBlocks(p, blocks, false);
+    });
+}
+
+function pushHash() {
+    let hash = '#' + currentCategory;
+    if (drillPattern) hash += '/' + drillPattern.id;
+    if (history.state && history.state.hash === hash) return;
+    history.pushState({ hash }, '', hash);
+}
+
+function selectPattern(pattern) {
+    // Phrase structure cards drill into songs
+    if (currentCategory === 'phrase' && pattern.songs) {
+        drillPattern = pattern;
+        selectedPattern = null;
+        selectedSong = null;
+        pushHash();
+        renderGrid();
+        renderDrillDetail();
+        return;
+    }
+    selectedPattern = pattern;
+    renderGrid();
+    renderDetail();
+}
+
+function selectSong(song) {
+    selectedSong = song;
+    renderGrid();
+    renderSongDetail();
+}
+
+function renderDrillDetail() {
+    const panel = document.getElementById('detailPanel');
+    const p = drillPattern;
+    let html = '';
+    html += `<div class="detail-name">${p.name}</div>`;
+    html += `<div class="detail-blocks" id="detailBlocks"></div>`;
+    html += `<div class="detail-desc">${p.description}</div>`;
+    html += `<div class="detail-insight"><strong>Insight:</strong> ${p.insight}</div>`;
+    html += `<div class="detail-desc" style="font-size:12px;color:#6a6a8a;">${p.songs.length} song${p.songs.length !== 1 ? 's' : ''} &mdash; click one to see its chords.</div>`;
+    panel.innerHTML = html;
+
+    const blocksEl = document.getElementById('detailBlocks');
+    if (blocksEl) renderPhraseBlocks(p.letters, blocksEl, true);
+}
+
+function renderChordTable(letters, slots) {
+    let html = '<div class="detail-chord-row">';
+    html += '<div class="key-label">in C Major</div>';
+    html += '<div class="detail-chord-table">';
+    letters.forEach(letter => {
+        const chords = slots[letter];
+        if (!chords) return;
+        html += `<div class="detail-phrase-line">`;
+        html += `<span class="detail-phrase-letter">${letter}</span>`;
+        chords.forEach((ch, i) => {
+            if (i > 0) html += `<span class="detail-chord-arrow">\u2192</span>`;
+            const durStyle = ch.dur && ch.dur > 1 ? `min-width:${ch.dur * 32}px` : '';
+            html += `<span class="detail-chord-pair" style="${durStyle}">
+                <span class="numeral deg-${ch.deg}">${ch.numeral}</span>
+                <span class="chord-name">${chordName(ch.numeral)}${ch.dur && ch.dur > 1 ? ' \u00D7' + ch.dur : ''}</span>
+            </span>`;
+        });
+        html += `</div>`;
+    });
+    html += '</div></div>';
+    return html;
+}
+
+function renderExampleList(examples) {
+    let html = `<div class="detail-examples-title">Examples (${examples.length})</div>`;
+    html += `<ul class="example-list">`;
+    examples.forEach(ex => {
+        const url = youtubeSearchUrl(ex.song, ex.artist);
+        html += `<li class="example-item">
+            <a class="song-link" href="${url}" target="_blank" rel="noopener">
+                <span>
+                    <div class="song">${ex.song}</div>
+                    <div class="artist">${ex.artist}</div>
+                    ${ex.detail ? `<div class="detail">${ex.detail}</div>` : ''}
+                </span>
+                <span class="link-icon">\u25B6</span>
+            </a>
+        </li>`;
+    });
+    html += `</ul>`;
+    return html;
+}
+
+function renderSongDetail() {
+    const panel = document.getElementById('detailPanel');
+    if (!selectedSong) {
+        renderDrillDetail();
+        return;
+    }
+
+    const s = selectedSong;
+    const letters = drillPattern.letters;
+    const url = youtubeSearchUrl(s.song, s.artist);
+    let html = '';
+    html += `<div class="detail-name" style="font-size:16px;">${s.song}</div>`;
+    html += `<div style="font-size:13px;color:#6a6a8a;margin-bottom:14px;">${s.artist}</div>`;
+    html += `<div class="detail-blocks" id="detailBlocks" style="height:auto;"></div>`;
+    html += renderChordTable(letters, s.slots);
+    html += `<a class="song-link" href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#1e1e3a;border:1px solid #2a2a4a;border-radius:6px;color:#e0e0e0;text-decoration:none;font-size:13px;transition:border-color 0.15s;">`;
+    html += `<span class="link-icon" style="opacity:0.6;">\u25B6</span> Listen on YouTube</a>`;
+
+    panel.innerHTML = html;
+
+    const blocksEl = document.getElementById('detailBlocks');
+    if (blocksEl) renderExpandedBlocks(letters, s.slots, blocksEl);
+}
+
+function renderDetail() {
+    const panel = document.getElementById('detailPanel');
+
+    if (!selectedPattern) {
+        panel.innerHTML = '<div class="detail-empty">Select a pattern<br>to see details</div>';
+        return;
+    }
+
+    const p = selectedPattern;
+    let html = '';
+
+    html += `<div class="detail-name">${p.name}</div>`;
+    html += `<div class="detail-blocks" id="detailBlocks"></div>`;
+    html += `<div class="detail-desc">${p.description}</div>`;
+    html += `<div class="detail-insight"><strong>Insight:</strong> ${p.insight}</div>`;
+    html += renderExampleList(p.examples);
+
+    panel.innerHTML = html;
+
+    const blocksEl = document.getElementById('detailBlocks');
+    if (blocksEl) renderBlocks(p, blocksEl, true);
+}
+
+// ---- Nav ----
+
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
+        currentCategory = item.dataset.cat;
+        selectedPattern = null;
+        drillPattern = null;
+        selectedSong = null;
+        pushHash();
+        renderGrid();
+        renderDetail();
+    });
+});
+
+// ---- History ----
+
+function navigateToHash(hash) {
+    const parts = (hash || '').replace('#', '').split('/');
+    const cat = parts[0] || 'phrase';
+    const patternId = parts[1] || null;
+
+    currentCategory = cat;
+    drillPattern = null;
+    selectedPattern = null;
+    selectedSong = null;
+
+    // Activate correct nav item
+    document.querySelectorAll('.nav-item').forEach(n => {
+        n.classList.toggle('active', n.dataset.cat === cat);
+    });
+
+    if (cat === 'phrase' && patternId) {
+        const pattern = PATTERN_DATA.phrase.patterns.find(p => p.id === patternId);
+        if (pattern) {
+            drillPattern = pattern;
+            renderGrid();
+            renderDrillDetail();
+            return;
+        }
+    }
+
+    renderGrid();
+    renderDetail();
+}
+
+window.addEventListener('popstate', () => {
+    navigateToHash(location.hash);
+});
+
+// ---- Init ----
+history.replaceState({ hash: '#phrase' }, '', location.hash || '#phrase');
+navigateToHash(location.hash);
+</script>
+
+</body>
+</html>

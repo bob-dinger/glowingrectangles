@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music — Glowing Gardens</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+.page {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 32px 32px;
+}
+
+.back-link {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: #4a4a6a;
+    text-decoration: none;
+    font-size: 13px;
+    z-index: 100;
+    transition: color 0.15s;
+}
+
+.back-link:hover { color: #e0e0e0; }
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #e0e0e0;
+}
+
+.header p {
+    font-size: 14px;
+    color: #6a6a8a;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 280px);
+    gap: 16px;
+    max-width: 880px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    background: #16162a;
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.card:hover {
+    border-color: #3a3a5a;
+    background: #1e1e3a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.card-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+    line-height: 1;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 6px;
+}
+
+.card-desc {
+    font-size: 12px;
+    color: #6a6a8a;
+    line-height: 1.5;
+}
+
+.card-chips {
+    display: flex;
+    gap: 4px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.chip {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 3px;
+}
+
+/* degree colors */
+.deg-1 { background: rgba(220, 60, 60, 0.25); color: #ffa0a0; }
+.deg-2 { background: rgba(230, 140, 40, 0.25); color: #ffc888; }
+.deg-3 { background: rgba(220, 200, 40, 0.25); color: #f0e888; }
+.deg-4 { background: rgba(50, 180, 80, 0.25); color: #88e8a0; }
+.deg-5 { background: rgba(60, 120, 220, 0.25); color: #90b8f8; }
+.deg-6 { background: rgba(160, 80, 220, 0.25); color: #d0a0f8; }
+
+/* phrase colors */
+.phrase-A { background: rgba(60, 120, 220, 0.2); color: #90b8f8; }
+.phrase-B { background: rgba(220, 90, 80, 0.2); color: #ffa0a0; }
+.phrase-C { background: rgba(50, 180, 80, 0.2); color: #88e8a0; }
+.phrase-D { background: rgba(230, 170, 40, 0.2); color: #f0d888; }
+
+.accent { background: rgba(99, 102, 241, 0.2); color: #a5a8fc; }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">&larr; Back</a>
+
+<div class="page">
+    <div class="header">
+        <h1>Music</h1>
+        <p>Chord progressions, patterns, and theory tools in C major</p>
+    </div>
+
+    <div class="card-grid">
+        <a href="song-browser.html" class="card">
+            <div class="card-icon">&#127925;</div>
+            <div class="card-title">Song Browser</div>
+            <div class="card-desc">Browse chord progressions from 50+ songs. See how real music uses the diatonic chords.</div>
+            <div class="card-chips">
+                <span class="chip accent">50+ songs</span>
+            </div>
+        </a>
+
+        <a href="patterns.html" class="card">
+            <div class="card-icon">&#127922;</div>
+            <div class="card-title">Patterns Explorer</div>
+            <div class="card-desc">Phrase structures (AABA, ABAC...), harmonic rhythm, and chord motion patterns across songs.</div>
+            <div class="card-chips">
+                <span class="chip phrase-A">A</span>
+                <span class="chip phrase-B">B</span>
+                <span class="chip phrase-A">A</span>
+                <span class="chip phrase-C">C</span>
+            </div>
+        </a>
+
+        <a href="phrase-patterns.html" class="card">
+            <div class="card-icon">&#127932;</div>
+            <div class="card-title">Phrase Patterns</div>
+            <div class="card-desc">15 ways to arrange 4 two-measure phrases across 8 measures. AAAA to ABCD.</div>
+            <div class="card-chips">
+                <span class="chip phrase-A">A</span>
+                <span class="chip phrase-B">B</span>
+                <span class="chip phrase-C">C</span>
+                <span class="chip phrase-D">D</span>
+            </div>
+        </a>
+
+        <a href="permutations.html" class="card">
+            <div class="card-icon">&#127924;</div>
+            <div class="card-title">Chord Permutations</div>
+            <div class="card-desc">All combinations and orderings of the 6 diatonic chords. From 15 pairs to 720 six-chord sequences.</div>
+            <div class="card-chips">
+                <span class="chip deg-1">I</span>
+                <span class="chip deg-4">IV</span>
+                <span class="chip deg-5">V</span>
+                <span class="chip deg-6">vi</span>
+            </div>
+        </a>
+
+        <a href="nineteen.html" class="card">
+            <div class="card-icon">&#127929;</div>
+            <div class="card-title">Nineteen</div>
+            <div class="card-desc">Play all 360 permutations of a 16-measure ABAC verse template. Beat grid and Tone.js playback.</div>
+            <div class="card-chips">
+                <span class="chip deg-1">C</span>
+                <span class="chip deg-2">Dm</span>
+                <span class="chip deg-4">F</span>
+                <span class="chip deg-5">G</span>
+            </div>
+        </a>
+
+        <a href="piano.html" class="card">
+            <div class="card-icon">&#127928;</div>
+            <div class="card-title">Piano Chords</div>
+            <div class="card-desc">Visual piano keyboard showing chord shapes, inversions, and voicings for each diatonic chord.</div>
+            <div class="card-chips">
+                <span class="chip deg-1">C</span>
+                <span class="chip deg-5">G</span>
+                <span class="chip deg-6">Am</span>
+            </div>
+        </a>
+
+        <a href="keys.html" class="card">
+            <div class="card-icon">&#127932;</div>
+            <div class="card-title">Chords by Key</div>
+            <div class="card-desc">The 6 diatonic triads for all 12 major keys. Listen to each chord and see its notes.</div>
+            <div class="card-chips">
+                <span class="chip deg-1">I</span>
+                <span class="chip deg-2">ii</span>
+                <span class="chip deg-3">iii</span>
+                <span class="chip deg-4">IV</span>
+                <span class="chip deg-5">V</span>
+                <span class="chip deg-6">vi</span>
+            </div>
+        </a>
+
+        <a href="../guitar.html" class="card">
+            <div class="card-icon">&#127928;</div>
+            <div class="card-title">Guitar Fretboard</div>
+            <div class="card-desc">Interactive fretboard visualizer with practice mode and classic riffs.</div>
+            <div class="card-chips">
+                <span class="chip accent">fretboard</span>
+            </div>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>
