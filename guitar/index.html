@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guitar — Glowing Rectangles</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    padding: 48px 32px 64px;
+}
+.back-link {
+    position: fixed; top: 20px; left: 20px;
+    color: #4a4a6a; text-decoration: none; font-size: 13px;
+    z-index: 100; transition: color 0.15s;
+}
+.back-link:hover { color: #e0e0e0; }
+.header { text-align: center; margin-bottom: 40px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; color: #e0e0e0; }
+.header p { font-size: 14px; color: #6a6a8a; }
+.section-title {
+    max-width: 880px; margin: 32px auto 12px; font-size: 12px;
+    color: #6a6a8a; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+}
+.card-grid {
+    display: grid; grid-template-columns: repeat(3, 280px); gap: 16px;
+    max-width: 880px; margin: 0 auto;
+}
+.card {
+    display: flex; flex-direction: column;
+    background: #16162a; border: 1px solid #2a2a4a; border-radius: 10px;
+    padding: 20px; text-decoration: none; color: inherit;
+    transition: all 0.2s; cursor: pointer;
+}
+.card:hover {
+    border-color: #3a3a5a; background: #1e1e3a;
+    transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.card-icon { font-size: 28px; margin-bottom: 12px; line-height: 1; }
+.card-title { font-size: 16px; font-weight: 600; color: #e0e0e0; margin-bottom: 6px; }
+.card-desc { font-size: 12px; color: #6a6a8a; line-height: 1.5; }
+.card-chips { display: flex; gap: 4px; margin-top: 12px; flex-wrap: wrap; }
+.chip {
+    font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 3px;
+    background: rgba(99,102,241,0.2); color: #a5a8fc;
+}
+.list-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px; max-width: 880px; margin: 0 auto;
+}
+.list-cell {
+    background: #16162a; border: 1px solid #2a2a4a; border-radius: 6px;
+    padding: 12px 8px; text-align: center; text-decoration: none; color: #e0e0e0;
+    font-size: 13px; font-weight: 500; transition: all 0.15s;
+}
+.list-cell:hover { background: #1e1e3a; border-color: #5060a0; color: #fff; }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">&larr; Back</a>
+
+<div class="header">
+    <h1>Guitar</h1>
+    <p>Song analysis tools, curated lists, and section explorers</p>
+</div>
+
+<div class="section-title">Section analysis</div>
+<div class="card-grid">
+    <a href="../_music/eight-bar-sections.html" class="card">
+        <div class="card-icon">&#127932;</div>
+        <div class="card-title">8-Bar Sections</div>
+        <div class="card-desc">Every 8-measure section with a melody, deduped — chord progression colored by degree, melody notes colored by scale degree.</div>
+        <div class="card-chips"><span class="chip">1,638 sections</span></div>
+    </a>
+    <a href="../_music/sections-studied.html" class="card">
+        <div class="card-icon">&#127911;</div>
+        <div class="card-title">Sections — Studied 50</div>
+        <div class="card-desc">Chord patterns across the Guitar 50 curated learning list.</div>
+    </a>
+    <a href="../_music/sections-other.html" class="card">
+        <div class="card-icon">&#127925;</div>
+        <div class="card-title">Sections — Other</div>
+        <div class="card-desc">Chord patterns from the broader song library.</div>
+    </a>
+</div>
+
+<div class="section-title">Curated song lists</div>
+<div class="list-grid">
+    <a href="../_music/Guitar50.html"  class="list-cell">Guitar 50</a>
+    <a href="../_music/Guitar100.html" class="list-cell">Guitar 100</a>
+    <a href="../_music/Guitar150.html" class="list-cell">Guitar 150</a>
+    <a href="../_music/Guitar200.html" class="list-cell">Guitar 200</a>
+    <a href="../_music/Guitar250.html" class="list-cell">Guitar 250</a>
+    <a href="../_music/Guitar300.html" class="list-cell">Guitar 300</a>
+    <a href="../_music/Guitar350.html" class="list-cell">Guitar 350</a>
+    <a href="../_music/Guitar400.html" class="list-cell">Guitar 400</a>
+    <a href="../_music/Guitar450.html" class="list-cell">Guitar 450</a>
+    <a href="../_music/Guitar500.html" class="list-cell">Guitar 500</a>
+    <a href="../_music/Guitar550.html" class="list-cell">Guitar 550</a>
+</div>
+
+<div class="section-title">Reference & tools</div>
+<div class="card-grid">
+    <a href="../guitar.html" class="card">
+        <div class="card-icon">&#127928;</div>
+        <div class="card-title">Fretboard</div>
+        <div class="card-desc">Guitar fretboard visualizer with practice mode and classic riffs.</div>
+    </a>
+    <a href="../_music/song-browser.html" class="card">
+        <div class="card-icon">&#127925;</div>
+        <div class="card-title">Song Browser</div>
+        <div class="card-desc">Browse chord progressions across the full song library.</div>
+    </a>
+    <a href="../_music/chord-chart-visualizer.html" class="card">
+        <div class="card-icon">&#127908;</div>
+        <div class="card-title">Chord Chart Visualizer</div>
+        <div class="card-desc">Paste a chord chart, get a Hookpad-paste-compatible JSON.</div>
+    </a>
+    <a href="../_music/keys.html" class="card">
+        <div class="card-icon">&#127929;</div>
+        <div class="card-title">Diatonic Chords by Key</div>
+        <div class="card-desc">All 12 keys laid out with their diatonic chord palettes.</div>
+    </a>
+    <a href="../_music/piano.html" class="card">
+        <div class="card-icon">&#127929;</div>
+        <div class="card-title">Piano Chords</div>
+        <div class="card-desc">Interactive chord shapes on a piano keyboard.</div>
+    </a>
+    <a href="../_music/patterns.html" class="card">
+        <div class="card-icon">&#127922;</div>
+        <div class="card-title">Patterns Explorer</div>
+        <div class="card-desc">Phrase structures (AABA, ABAC...), harmonic rhythm, chord motion.</div>
+    </a>
+    <a href="../_music/phrase-patterns.html" class="card">
+        <div class="card-icon">&#127932;</div>
+        <div class="card-title">Phrase Patterns</div>
+        <div class="card-desc">15 ways to arrange 4 two-measure phrases across 8 measures.</div>
+    </a>
+</div>
+
+<div class="section-title">Ear training</div>
+<div class="card-grid">
+    <a href="../_music/chord-quiz.html" class="card">
+        <div class="card-icon">&#127919;</div>
+        <div class="card-title">Chord Quiz</div>
+        <div class="card-desc">Test your chord recognition.</div>
+    </a>
+    <a href="../_music/key-quiz.html" class="card">
+        <div class="card-icon">&#127919;</div>
+        <div class="card-title">Key Quiz</div>
+        <div class="card-desc">Identify keys by ear.</div>
+    </a>
+    <a href="../_music/chord-change-ear.html" class="card">
+        <div class="card-icon">&#128266;</div>
+        <div class="card-title">Chord Change Ear Training</div>
+        <div class="card-desc">Hear chord changes and identify them.</div>
+    </a>
+</div>
+
+</body>
+</html>

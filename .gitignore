@@ -19,3 +19,16 @@ d3_bubble_force/
 .idea/
 *.swp
 *.swo
+
+# Secrets / API tokens
+.env
+*.env
+.ug_auth.json
+
+# Python caches
+__pycache__/
+*.pyc
+.venv/
+
+# Claude workspace
+.claude/

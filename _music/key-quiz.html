@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Key? — Key Recognition Quiz</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+.layout {
+    display: flex;
+    height: 100vh;
+}
+
+/* sidebar */
+.sidebar {
+    width: 220px;
+    min-width: 220px;
+    background: #16162a;
+    border-right: 1px solid #2a2a4a;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+}
+
+.sidebar-section {
+    padding: 0 16px 18px;
+}
+
+.sidebar-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #6a6a8a;
+    margin-bottom: 10px;
+}
+
+.diff-row {
+    display: flex;
+    gap: 6px;
+}
+
+.diff-btn {
+    flex: 1;
+    padding: 8px 0;
+    background: #1e1e3a;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    color: #b0b0cc;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.diff-btn:hover { background: #22224a; }
+.diff-btn.active {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: #fff;
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    cursor: pointer;
+    font-size: 13px;
+    color: #b0b0cc;
+}
+
+.toggle-row input { cursor: pointer; }
+
+.score-block {
+    margin-top: auto;
+    padding: 18px 16px;
+    border-top: 1px solid #2a2a4a;
+}
+
+.score-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.score-label { color: #6a6a8a; }
+.score-value { color: #e0e0e0; font-weight: 600; }
+.score-value.streak { color: #fbbf24; }
+
+.sidebar-footer {
+    padding: 12px 16px 0;
+    font-size: 11px;
+    color: #4a4a6a;
+}
+
+.sidebar-footer a {
+    color: #6366f1;
+    text-decoration: none;
+}
+
+/* center */
+.center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 36px;
+    overflow: hidden;
+}
+
+.prompt {
+    font-size: 13px;
+    color: #6a6a8a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+}
+
+.color-legend {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 18px;
+}
+
+.legend-swatch {
+    flex: 1;
+    padding: 6px 0;
+    text-align: center;
+    border-radius: 4px;
+    font-weight: 700;
+    border: 1px solid;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chord-row {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 28px;
+    min-height: 110px;
+    align-items: center;
+}
+
+.chord-display {
+    background: #1e1e3a;
+    border: 2px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 22px 28px;
+    min-width: 110px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+/* Background color = role in the guessed key (applied after guess) */
+.chord-display.role-1 { background: hsl(0,   55%, 26%); border-color: hsl(0,   65%, 44%); }
+.chord-display.role-2 { background: hsl(28,  55%, 26%); border-color: hsl(28,  65%, 44%); }
+.chord-display.role-3 { background: hsl(52,  55%, 26%); border-color: hsl(52,  65%, 44%); }
+.chord-display.role-4 { background: hsl(130, 45%, 22%); border-color: hsl(130, 55%, 38%); }
+.chord-display.role-5 { background: hsl(215, 55%, 26%); border-color: hsl(215, 65%, 44%); }
+.chord-display.role-6 { background: hsl(275, 45%, 26%); border-color: hsl(275, 55%, 44%); }
+
+.chord-display.role-1 .name { color: hsl(0,   80%, 86%); }
+.chord-display.role-2 .name { color: hsl(28,  80%, 86%); }
+.chord-display.role-3 .name { color: hsl(52,  75%, 82%); }
+.chord-display.role-4 .name { color: hsl(130, 60%, 82%); }
+.chord-display.role-5 .name { color: hsl(215, 80%, 86%); }
+.chord-display.role-6 .name { color: hsl(275, 70%, 86%); }
+
+.chord-display.revealed {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+}
+
+.chord-display .name {
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.chord-display .role {
+    font-size: 12px;
+    font-weight: 700;
+    color: #6a6a8a;
+    margin-top: 6px;
+    min-height: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.chord-display.role-revealed .role {
+    color: var(--role-color, #6a6a8a);
+}
+
+.section-label {
+    font-size: 13px;
+    color: #6a6a8a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.play-btn {
+    background: #2a2a4a;
+    border: none;
+    border-radius: 4px;
+    color: #b0b0cc;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.play-btn:hover { background: #3a3a5a; color: #e0e0e0; }
+
+.key-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    max-width: 660px;
+    margin-bottom: 24px;
+}
+
+.key-btn {
+    padding: 14px 0;
+    background: #1e1e3a;
+    border: 2px solid #2a2a4a;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.key-btn:hover {
+    background: #22224a;
+    border-color: #6366f1;
+}
+
+.key-btn.correct {
+    background: rgba(34, 197, 94, 0.25);
+    border-color: #22c55e;
+    color: #86efac;
+}
+
+.key-btn.wrong {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: #ef4444;
+    color: #fca5a5;
+}
+
+.key-btn:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.key-btn.correct:disabled, .key-btn.wrong:disabled { opacity: 1; }
+
+.feedback {
+    background: #16162a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    min-height: 90px;
+    font-size: 14px;
+    color: #b0b0cc;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+
+.feedback .verdict {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.feedback .verdict.right { color: #86efac; }
+.feedback .verdict.bad { color: #fca5a5; }
+
+.feedback .roles {
+    color: #8888aa;
+    line-height: 1.6;
+}
+
+.feedback .roles .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 12px;
+    margin: 0 4px;
+}
+
+.next-btn-row {
+    margin-bottom: 14px;
+    min-height: 0;
+}
+
+.next-btn {
+    padding: 11px 28px;
+    background: #6366f1;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.next-btn:hover { background: #818cf8; }
+
+/* degree colors */
+.deg-1 { background: rgba(220, 60, 60, 0.25); color: #ffa0a0; }
+.deg-2 { background: rgba(230, 140, 40, 0.25); color: #ffc888; }
+.deg-3 { background: rgba(220, 200, 40, 0.25); color: #f0e888; }
+.deg-4 { background: rgba(50, 180, 80, 0.25); color: #88e8a0; }
+.deg-5 { background: rgba(60, 120, 220, 0.25); color: #90b8f8; }
+.deg-6 { background: rgba(160, 80, 220, 0.25); color: #d0a0f8; }
+
+.role-1 { --role-color: #ffa0a0; }
+.role-2 { --role-color: #ffc888; }
+.role-3 { --role-color: #f0e888; }
+.role-4 { --role-color: #88e8a0; }
+.role-5 { --role-color: #90b8f8; }
+.role-6 { --role-color: #d0a0f8; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+    <div class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-title">Chords per round</div>
+            <div class="diff-row" id="diffRow">
+                <button class="diff-btn" data-n="1">1</button>
+                <button class="diff-btn active" data-n="2">2</button>
+                <button class="diff-btn" data-n="3">3</button>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-title">Always include</div>
+            <label class="toggle-row">
+                <input type="checkbox" id="needFifth">
+                V (dominant)
+            </label>
+        </div>
+
+        <div class="score-block">
+            <div class="score-row">
+                <span class="score-label">Streak</span>
+                <span class="score-value streak" id="streak">0</span>
+            </div>
+            <div class="score-row">
+                <span class="score-label">Score</span>
+                <span class="score-value" id="score">0/0</span>
+            </div>
+            <div class="score-row">
+                <span class="score-label">Accuracy</span>
+                <span class="score-value" id="accuracy">—</span>
+            </div>
+        </div>
+
+        <div class="sidebar-footer"><a href="index.html">&larr; Music Hub</a></div>
+    </div>
+
+    <div class="center">
+        <div class="prompt">Identify the key of these chords</div>
+
+        <div class="color-legend" id="colorLegend"></div>
+
+        <div class="section-label">
+            Chords
+            <button class="play-btn" id="playBtn">&#9654; Play</button>
+        </div>
+        <div class="chord-row" id="chordRow"></div>
+
+        <div class="section-label">Pick the major key</div>
+        <div class="key-grid" id="keyGrid"></div>
+
+        <div class="next-btn-row" id="nextBtnRow"></div>
+
+        <div class="feedback" id="feedback">
+            <div class="verdict" style="color:#6a6a8a;">Pick a key to begin.</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.3.5/Tone.js"></script>
+<script>
+// ----- Music theory -----
+const NOTE_NAMES = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+const KEY_DISPLAY = {
+    0:  ['C','D','E','F','G','A','B'],
+    1:  ['Db','Eb','F','Gb','Ab','Bb','C'],
+    2:  ['D','E','F#','G','A','B','C#'],
+    3:  ['Eb','F','G','Ab','Bb','C','D'],
+    4:  ['E','F#','G#','A','B','C#','D#'],
+    5:  ['F','G','A','Bb','C','D','E'],
+    6:  ['F#','G#','A#','B','C#','D#','E#'],
+    7:  ['G','A','B','C','D','E','F#'],
+    8:  ['Ab','Bb','C','Db','Eb','F','G'],
+    9:  ['A','B','C#','D','E','F#','G#'],
+    10: ['Bb','C','D','Eb','F','G','A'],
+    11: ['B','C#','D#','E','F#','G#','A#']
+};
+const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
+const NUMERALS = ['I','ii','iii','IV','V','vi'];
+const QUALITIES = ['major','minor','minor','major','major','minor'];
+
+// Only the 6 most common guitar/piano major keys
+const KEYS = [
+    {root:0,name:'C'},{root:2,name:'D'},{root:4,name:'E'},
+    {root:5,name:'F'},{root:7,name:'G'},{root:9,name:'A'}
+];
+
+function buildChords(rootIdx) {
+    const scale = KEY_DISPLAY[rootIdx];
+    return [0,1,2,3,4,5].map(deg => {
+        const r = scale[deg];
+        const t = scale[(deg+2)%7];
+        const f = scale[(deg+4)%7];
+        const q = QUALITIES[deg];
+        const rootMidi = (rootIdx + MAJOR_INTERVALS[deg]) % 12;
+        const thirdMidi = (rootIdx + MAJOR_INTERVALS[(deg+2)%7]) % 12;
+        const fifthMidi = (rootIdx + MAJOR_INTERVALS[(deg+4)%7]) % 12;
+        let thirdOct = 4, fifthOct = 4;
+        if (thirdMidi <= rootMidi) thirdOct = 5;
+        if (fifthMidi <= rootMidi) fifthOct = 5;
+        return {
+            deg: deg+1,
+            numeral: NUMERALS[deg],
+            display: r + (q==='minor' ? 'm' : ''),
+            quality: q,
+            toneNotes: [r+'4', t+(thirdOct===5?'5':'4'), f+(fifthOct===5?'5':'4')],
+            bass: r+'3'
+        };
+    });
+}
+
+// ----- State -----
+let nChords = 2;
+let needFifth = false;
+let currentKeyIdx = 0;
+let currentChords = [];   // array of degree indices (0-5)
+let answered = false;
+let streak = 0;
+let correct = 0;
+let total = 0;
+
+// ----- Audio -----
+let synth = null, bassSynth = null;
+function ensureSynths() {
+    if (synth) return;
+    synth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'triangle' },
+        envelope: { attack: 0.02, decay: 0.3, sustain: 0.4, release: 0.8 },
+        volume: -10
+    }).toDestination();
+    bassSynth = new Tone.Synth({
+        oscillator: { type: 'triangle' },
+        envelope: { attack: 0.02, decay: 0.4, sustain: 0.5, release: 1.0 },
+        volume: -14
+    }).toDestination();
+}
+
+async function playChords() {
+    await Tone.start();
+    ensureSynths();
+    const chs = buildChords(currentKeyIdx);
+    currentChords.forEach((degIdx, i) => {
+        const c = chs[degIdx];
+        setTimeout(() => {
+            synth.triggerAttackRelease(c.toneNotes, '2n');
+            bassSynth.triggerAttackRelease(c.bass, '2n');
+        }, i * 750);
+    });
+}
+
+// ----- Quiz logic -----
+function pickKey() {
+    return KEYS[Math.floor(Math.random() * KEYS.length)].root;
+}
+
+function pickChords(keyIdx, n) {
+    // Never include I (would be red and give away the key instantly)
+    const pool = [1,2,3,4,5];   // ii, iii, IV, V, vi
+    const required = [];
+    if (needFifth) required.push(4);
+    const remaining = pool.filter(d => !required.includes(d));
+    for (let i = remaining.length-1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i+1));
+        [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+    }
+    const picked = required.concat(remaining).slice(0, n);
+    for (let i = picked.length-1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i+1));
+        [picked[i], picked[j]] = [picked[j], picked[i]];
+    }
+    return picked;
+}
+
+function newRound() {
+    currentKeyIdx = pickKey();
+    currentChords = pickChords(currentKeyIdx, nChords);
+    answered = false;
+    renderChords();
+    renderKeys();
+    document.getElementById('feedback').innerHTML =
+        '<div class="verdict" style="color:#6a6a8a;">Pick a key.</div>';
+    document.getElementById('nextBtnRow').innerHTML = '';
+}
+
+function renderChords() {
+    const row = document.getElementById('chordRow');
+    row.innerHTML = '';
+    const chs = buildChords(currentKeyIdx);
+    currentChords.forEach(degIdx => {
+        const c = chs[degIdx];
+        const div = document.createElement('div');
+        div.className = `chord-display role-${c.deg}`;
+        div.innerHTML = `<div class="name">${c.display}</div><div class="role"></div>`;
+        row.appendChild(div);
+    });
+}
+
+function renderKeys() {
+    const grid = document.getElementById('keyGrid');
+    grid.innerHTML = '';
+    KEYS.forEach(k => {
+        const btn = document.createElement('button');
+        btn.className = 'key-btn';
+        btn.textContent = k.name;
+        btn.dataset.root = k.root;
+        btn.addEventListener('click', () => guess(k.root));
+        grid.appendChild(btn);
+    });
+}
+
+// Enharmonic normalization for comparing chord names across keys
+const ENHARMONIC = {
+    'C#':'Db','D#':'Eb','F#':'F#','Gb':'F#','G#':'Ab','A#':'Bb',
+    'Db':'Db','Eb':'Eb','Ab':'Ab','Bb':'Bb','E#':'F','B#':'C',
+    'C':'C','D':'D','E':'E','F':'F','G':'G','A':'A','B':'B'
+};
+function normalize(chord) {
+    const isMin = chord.endsWith('m');
+    const root = isMin ? chord.slice(0,-1) : chord;
+    return (ENHARMONIC[root] || root) + (isMin ? 'm' : '');
+}
+
+// Find every key (within KEYS) where all currently-shown chords are diatonic
+function validKeysFor(shownNormalized) {
+    return KEYS.filter(k => {
+        const dia = buildChords(k.root).map(c => normalize(c.display));
+        return shownNormalized.every(n => dia.includes(n));
+    }).map(k => k.root);
+}
+
+function guess(rootIdx) {
+    if (answered) return;
+    answered = true;
+    total++;
+
+    const sourceChs = buildChords(currentKeyIdx);
+    const shownNormalized = currentChords.map(degIdx => normalize(sourceChs[degIdx].display));
+    const valid = validKeysFor(shownNormalized);
+    const isCorrect = valid.includes(rootIdx);
+
+    if (isCorrect) {
+        correct++;
+        streak++;
+    } else {
+        streak = 0;
+    }
+
+    // mark buttons: every valid key gets a green tint, the guess gets red if not in valid
+    document.querySelectorAll('.key-btn').forEach(b => {
+        const r = parseInt(b.dataset.root);
+        if (valid.includes(r)) b.classList.add('correct');
+        if (r === rootIdx && !isCorrect) b.classList.add('wrong');
+        b.disabled = true;
+    });
+
+    // reveal chord roles in user's guessed key (or original if wrong)
+    const revealKey = isCorrect ? rootIdx : currentKeyIdx;
+    const revealChs = buildChords(revealKey);
+    document.querySelectorAll('.chord-display').forEach((el, i) => {
+        const targetName = shownNormalized[i];
+        const match = revealChs.find(c => normalize(c.display) === targetName);
+        // remove any prior role class, add new one
+        for (let d = 1; d <= 6; d++) el.classList.remove(`role-${d}`);
+        el.classList.add('revealed');
+        if (match) {
+            el.classList.add(`role-${match.deg}`);
+            el.querySelector('.role').textContent = match.numeral;
+        } else {
+            el.querySelector('.role').textContent = 'not in key';
+        }
+    });
+
+    // feedback
+    const fb = document.getElementById('feedback');
+
+    let html = '';
+    if (isCorrect) {
+        const keyName = KEYS.find(k => k.root === rootIdx).name + ' major';
+        const otherValid = valid.filter(r => r !== rootIdx)
+            .map(r => KEYS.find(k => k.root === r).name).join(', ');
+        const rolesHtml = revealChs
+            ? currentChords.map((degIdx, i) => {
+                const targetName = shownNormalized[i];
+                const m = revealChs.find(c => normalize(c.display) === targetName);
+                return `<span class="pill deg-${m.deg}">${m.display} = ${m.numeral}</span>`;
+              }).join(' ')
+            : '';
+        html = `<div class="verdict right">✓ ${keyName}</div>
+                <div class="roles">${rolesHtml}</div>`;
+        if (otherValid) {
+            html += `<div class="roles" style="font-size:12px;color:#6a6a8a;">Also valid: ${otherValid}</div>`;
+        }
+    } else {
+        const validNames = valid.map(r => KEYS.find(k => k.root === r).name).join(', ');
+        const wrongChs = buildChords(rootIdx);
+        const inWrongKey = shownNormalized.map(targetName => {
+            const m = wrongChs.find(c => normalize(c.display) === targetName);
+            const display = sourceChs.find(s => normalize(s.display) === targetName)?.display || targetName;
+            if (m) return `<span class="pill deg-${m.deg}">${display}=${m.numeral}</span>`;
+            return `<span class="pill" style="background:#3a3a5a;color:#888;">${display} not in ${KEYS.find(k => k.root === rootIdx).name}</span>`;
+        }).join(' ');
+        html = `<div class="verdict bad">✗ Valid keys: ${validNames}</div>
+                <div class="roles"><b>In ${KEYS.find(k => k.root === rootIdx).name} (your guess):</b> ${inWrongKey}</div>`;
+    }
+    fb.innerHTML = html;
+    document.getElementById('nextBtnRow').innerHTML =
+        '<button class="next-btn" onclick="newRound()">Next →</button>';
+
+    updateScore();
+    playChords();
+}
+
+function updateScore() {
+    document.getElementById('streak').textContent = streak;
+    document.getElementById('score').textContent = `${correct}/${total}`;
+    document.getElementById('accuracy').textContent =
+        total > 0 ? Math.round(correct/total*100) + '%' : '—';
+}
+
+// ----- Settings wiring -----
+document.querySelectorAll('.diff-btn').forEach(b => {
+    b.addEventListener('click', () => {
+        document.querySelectorAll('.diff-btn').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        nChords = parseInt(b.dataset.n);
+        newRound();
+    });
+});
+document.getElementById('needFifth').addEventListener('change', e => {
+    needFifth = e.target.checked; newRound();
+});
+document.getElementById('playBtn').addEventListener('click', playChords);
+
+// keyboard nav
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+        if (answered) { e.preventDefault(); newRound(); }
+    }
+});
+
+// render role-color legend at top
+function renderLegend() {
+    const wrap = document.getElementById('colorLegend');
+    wrap.innerHTML = '';
+    const roles = [
+        ['I',   'tonic'],
+        ['ii',  '+2 down'],
+        ['iii', '+3 down'],
+        ['IV',  '+5 down'],
+        ['V',   '+5 up'],
+        ['vi',  '+m3 up']
+    ];
+    roles.forEach(([num, hint], i) => {
+        const sw = document.createElement('div');
+        sw.className = `legend-swatch role-${i+1}`;
+        sw.innerHTML = `<div style="font-size:14px;">${num}</div><div style="font-size:10px;opacity:0.7;font-weight:500;text-transform:none;letter-spacing:0;">${hint}</div>`;
+        wrap.appendChild(sw);
+    });
+}
+
+// init
+renderLegend();
+newRound();
+updateScore();
+</script>
+
+</body>
+</html>

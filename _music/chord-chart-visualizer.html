@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Chord Chart Visualizer</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #e0e0e0; font-size: 13px; }
+.layout { display: flex; height: 100vh; }
+.sidebar { width: 340px; min-width: 340px; background: #16162a; border-right: 1px solid #2a2a4a; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+.center { flex: 1; padding: 18px 24px; overflow: hidden; display: flex; flex-direction: column; }
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 11px; color: #6a6a8a; text-transform: uppercase; letter-spacing: 1px; }
+.field input, .field textarea, .field select {
+    background: #1e1e3a; border: 1px solid #2a2a4a; border-radius: 6px;
+    color: #e0e0e0; padding: 8px; font-family: ui-monospace, monospace; font-size: 12px;
+}
+.field textarea { resize: vertical; min-height: 140px; }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+button.primary { padding: 10px; background: #6366f1; border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer; }
+button.primary:hover { background: #818cf8; }
+
+h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.subtitle { font-size: 12px; color: #6a6a8a; margin-bottom: 12px; }
+
+.summary { background: #16162a; padding: 8px 12px; border-radius: 6px; margin-bottom: 10px; font-size: 12px; color: #8888aa; display: flex; gap: 18px; flex-wrap: wrap; }
+.summary b { color: #e0e0e0; }
+
+.timeline { flex: 1; overflow-y: auto; padding-right: 6px; }
+.section-row { margin-bottom: 12px; }
+.section-label { font-size: 11px; color: #b0b0cc; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; display: flex; gap: 10px; }
+.section-label .bars { color: #6a6a8a; }
+.bars-strip { display: flex; gap: 2px; }
+.bar-cell {
+    flex: 1; min-width: 0; height: 56px; border-radius: 4px; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    border: 1px solid #2a2a4a; font-weight: 700; font-size: 14px; padding: 2px;
+}
+.bar-cell.held { opacity: 0.55; }
+.bar-cell .deg { font-size: 9px; opacity: 0.85; margin-top: 2px; font-weight: 500; }
+.bar-cell .num { position: absolute; font-size: 8px; opacity: 0.5; }
+
+/* Role colors — diatonic in major key */
+.deg-1 { background: hsl(0,   55%, 28%); border-color: hsl(0,   65%, 44%); color: hsl(0, 80%, 88%); }
+.deg-2 { background: hsl(28,  55%, 28%); border-color: hsl(28,  65%, 44%); color: hsl(28, 80%, 88%); }
+.deg-3 { background: hsl(52,  55%, 28%); border-color: hsl(52,  65%, 44%); color: hsl(52, 75%, 84%); }
+.deg-4 { background: hsl(130, 45%, 24%); border-color: hsl(130, 55%, 40%); color: hsl(130, 60%, 84%); }
+.deg-5 { background: hsl(215, 55%, 28%); border-color: hsl(215, 65%, 44%); color: hsl(215, 80%, 88%); }
+.deg-6 { background: hsl(275, 45%, 28%); border-color: hsl(275, 55%, 44%); color: hsl(275, 70%, 88%); }
+.deg-7 { background: hsl(325, 50%, 28%); border-color: hsl(325, 60%, 44%); color: hsl(325, 75%, 88%); }
+.deg-out { background: #2a2a4a; border-color: #4a4a6a; color: #c0c0d8; }
+</style>
+</head>
+<body>
+<div class="layout">
+    <div class="sidebar">
+        <div>
+            <h1>Chord Chart Visualizer</h1>
+            <div class="subtitle">Paste a chord chart; preview the song timeline.</div>
+        </div>
+
+        <div class="row3">
+            <div class="field"><label>Key</label><input id="key" value="G"></input></div>
+            <div class="field"><label>BPM</label><input id="bpm" value="133" type="number"></input></div>
+            <div class="field"><label>Mode</label><select id="mode"><option value="major">major</option><option value="minor">minor</option></select></div>
+        </div>
+
+        <div class="field"><label>Default measures per section</label>
+            <div class="row3">
+                <input id="defIntro" value="8" placeholder="intro"></input>
+                <input id="defVerse" value="16" placeholder="verse"></input>
+                <input id="defChorus" value="16" placeholder="chorus"></input>
+            </div>
+            <div class="row3" style="margin-top:6px;">
+                <input id="defInterlude" value="8" placeholder="interlude"></input>
+                <input id="defBridge" value="8" placeholder="bridge"></input>
+                <input id="defOutro" value="12" placeholder="outro"></input>
+            </div>
+        </div>
+
+        <div class="field"><label>Chord chart</label>
+            <textarea id="chart" spellcheck="false" placeholder="[Verse 1]&#10;G  C  G  D&#10;..."></textarea>
+        </div>
+
+        <button class="primary" onclick="render()">Render</button>
+    </div>
+
+    <div class="center">
+        <div class="summary" id="summary"></div>
+        <div class="timeline" id="timeline"></div>
+        <div style="margin-top: 10px; display: flex; gap: 8px; align-items: center;">
+            <button class="primary" onclick="generateHookpad()">Generate Hookpad paste-JSON</button>
+            <button onclick="copyHookpad()" style="padding:10px 14px;background:#2a2a4a;border:none;border-radius:6px;color:#e0e0e0;cursor:pointer;">Copy to clipboard</button>
+            <span id="copyStatus" style="font-size:12px;color:#86efac;"></span>
+        </div>
+        <textarea id="hookpadOut" readonly style="margin-top:8px;width:100%;min-height:140px;background:#1e1e3a;border:1px solid #2a2a4a;border-radius:6px;color:#a0a0c0;padding:8px;font-family:ui-monospace,monospace;font-size:10px;resize:vertical;" placeholder="Click 'Generate' — output appears here, ready to paste into Hookpad"></textarea>
+    </div>
+</div>
+
+<script>
+// Chord name → {pitch_class, quality, originalName, suffix}
+const NOTE_PC = {'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11};
+const MAJOR_SCALE = [0, 2, 4, 5, 7, 9, 11];
+const MINOR_SCALE = [0, 2, 3, 5, 7, 8, 10];
+
+function parseChord(name) {
+    // Strip slash bass
+    const slashIdx = name.indexOf('/');
+    const main = slashIdx >= 0 ? name.slice(0, slashIdx) : name;
+    const bass = slashIdx >= 0 ? name.slice(slashIdx+1) : null;
+    // Root note
+    const m = main.match(/^([A-G][#b]?)(.*)$/);
+    if (!m) return null;
+    const root = m[1];
+    const suffix = m[2] || '';
+    // Quality: minor if suffix starts with 'm' but not 'maj'
+    const isMinor = /^m(?!aj)/i.test(suffix);
+    return { root, pitch: NOTE_PC[root], suffix, isMinor, bass, name };
+}
+
+function chordDegreeInKey(chord, keyTonic, keyMode) {
+    const keyPc = NOTE_PC[keyTonic];
+    if (keyPc === undefined || !chord) return null;
+    const offset = (chord.pitch - keyPc + 12) % 12;
+    const scale = keyMode === 'minor' ? MINOR_SCALE : MAJOR_SCALE;
+    const idx = scale.indexOf(offset);
+    if (idx >= 0) return idx + 1;   // 1-7
+    return null;   // out-of-key
+}
+
+// Strict chord regex: root, optional quality suffix, optional number, optional slash bass.
+// Captures only real chord tokens; rejects lyric words like "City" or "And".
+const CHORD_TOKEN = /^[A-G][#b]?(?:maj|min|m|M|dim|aug|sus|add|°)?\d*(?:[#b]\d+)?(?:\/[A-G][#b]?)?$/;
+
+function parseChart(text) {
+    const lines = text.split('\n');
+    const sections = [];
+    let current = null;
+    for (const line of lines) {
+        const m = line.match(/^\s*\[([^\]]+)\]\s*$/);
+        if (m) {
+            current = { name: m[1].trim(), chords: [] };
+            sections.push(current);
+            continue;
+        }
+        if (!current) {
+            current = { name: 'Section', chords: [] };
+            sections.push(current);
+        }
+        const words = line.trim().split(/\s+/).filter(Boolean);
+        if (!words.length) continue;
+        // Chord line = every word matches the strict chord regex
+        const allChords = words.every(w => CHORD_TOKEN.test(w));
+        if (allChords) {
+            for (const w of words) {
+                const ch = parseChord(w);
+                if (ch) current.chords.push(ch);
+            }
+        }
+    }
+    return sections;
+}
+
+function defaultMeasuresFor(sectionName) {
+    const n = sectionName.toLowerCase();
+    if (n.includes('chorus')) return parseInt(document.getElementById('defChorus').value) || 16;
+    if (n.includes('verse')) return parseInt(document.getElementById('defVerse').value) || 16;
+    if (n.includes('bridge')) return parseInt(document.getElementById('defBridge').value) || 8;
+    if (n.includes('intro')) return parseInt(document.getElementById('defIntro').value) || 8;
+    if (n.includes('interlude')) return parseInt(document.getElementById('defInterlude').value) || 8;
+    if (n.includes('outro')) return parseInt(document.getElementById('defOutro').value) || 12;
+    return 8;
+}
+
+function distributeChordsAcrossBars(chords, nBars) {
+    // Goal: distribute the chord sequence across nBars measures.
+    // Simple approach: each chord gets ceil(nBars / nChords) bars, but balanced.
+    if (!chords.length || nBars <= 0) return [];
+    const out = [];   // array of length nBars, each is {chord, isHeld}
+    if (chords.length >= nBars) {
+        // More chords than bars — truncate (chord per bar)
+        for (let i = 0; i < nBars; i++) out.push({chord: chords[i], isHeld: false});
+        return out;
+    }
+    // Fewer chords than bars: distribute, hold remainder
+    const base = Math.floor(nBars / chords.length);
+    let extra = nBars - base * chords.length;   // these chords get one extra bar
+    let idx = 0;
+    for (let c = 0; c < chords.length; c++) {
+        const dur = base + (extra > 0 ? 1 : 0);
+        if (extra > 0) extra--;
+        for (let k = 0; k < dur; k++) {
+            out.push({chord: chords[c], isHeld: k > 0});
+        }
+    }
+    return out;
+}
+
+function render() {
+    const keyTonic = document.getElementById('key').value.trim();
+    const keyMode = document.getElementById('mode').value;
+    const bpm = parseFloat(document.getElementById('bpm').value) || 120;
+    const chartText = document.getElementById('chart').value;
+
+    const sections = parseChart(chartText);
+    const tl = document.getElementById('timeline');
+    tl.innerHTML = '';
+
+    let totalBars = 0;
+    for (const sec of sections) {
+        const nBars = defaultMeasuresFor(sec.name);
+        const bars = distributeChordsAcrossBars(sec.chords, nBars);
+        totalBars += nBars;
+
+        const row = document.createElement('div');
+        row.className = 'section-row';
+
+        const label = document.createElement('div');
+        label.className = 'section-label';
+        label.innerHTML = `<span><b style="color:#e0e0e0">${sec.name}</b></span><span class="bars">${nBars} bars · ${sec.chords.length} chord changes</span>`;
+        row.appendChild(label);
+
+        const strip = document.createElement('div');
+        strip.className = 'bars-strip';
+        bars.forEach((b, i) => {
+            const cell = document.createElement('div');
+            const deg = chordDegreeInKey(b.chord, keyTonic, keyMode);
+            cell.className = 'bar-cell ' + (deg ? `deg-${deg}` : 'deg-out') + (b.isHeld ? ' held' : '');
+            cell.innerHTML = `
+                <div>${b.chord.name}</div>
+                <div class="deg">${deg ? romanFor(deg, b.chord.isMinor) : '—'}</div>
+            `;
+            strip.appendChild(cell);
+        });
+        row.appendChild(strip);
+        tl.appendChild(row);
+    }
+
+    const beats = totalBars * 4;
+    const duration = beats * 60 / bpm;
+    const mm = Math.floor(duration / 60), ss = Math.round(duration - mm*60);
+    document.getElementById('summary').innerHTML =
+        `<span><b>${sections.length}</b> sections</span>` +
+        `<span><b>${totalBars}</b> bars</span>` +
+        `<span><b>${beats}</b> beats</span>` +
+        `<span>at ${bpm} BPM → <b>${mm}:${String(ss).padStart(2,'0')}</b></span>`;
+}
+
+const ROMAN_UP = ['I','II','III','IV','V','VI','VII'];
+const ROMAN_LO = ['i','ii','iii','iv','v','vi','vii'];
+function romanFor(deg, isMinor) {
+    return isMinor ? ROMAN_LO[deg-1] : ROMAN_UP[deg-1];
+}
+
+// ============ Hookpad JSON generation ============
+
+// Map a parsed chord into Hookpad's {root, type, borrowed, applied} fields.
+// Strategy: try to fit chord as diatonic; if not, mark borrowed='minor' for flat-degrees,
+// or applied dominant for V/x relationships. Keep it simple — user can fix in Hookpad.
+function chordToHookpad(chord, keyTonic, keyMode) {
+    const keyPc = NOTE_PC[keyTonic];
+    const offset = (chord.pitch - keyPc + 12) % 12;
+    const scale = keyMode === 'minor' ? MINOR_SCALE : MAJOR_SCALE;
+    const idx = scale.indexOf(offset);
+
+    let root, borrowed = '', applied = 0;
+    if (idx >= 0) {
+        root = idx + 1;
+    } else {
+        // Try parallel-minor borrowing first (most common): minor scale has b3, b6, b7
+        const minorOffsets = [0, 2, 3, 5, 7, 8, 10];
+        const mIdx = minorOffsets.indexOf(offset);
+        if (mIdx >= 0) {
+            root = mIdx + 1;
+            borrowed = 'minor';
+        } else {
+            // Fallback: closest scale degree
+            root = 1;
+        }
+    }
+
+    // Detect 7th chord by suffix
+    let type = 5;
+    if (/^(7|maj7|m7|M7)$/.test(chord.suffix)) type = 7;
+
+    // Major-on-minor-degree → applied dominant heuristic
+    // (e.g., A major in G major — A is degree 2, but it's major not minor → V/V)
+    if (!chord.isMinor && (idx === 1 || idx === 2 || idx === 5)) {
+        // ii, iii, vi are minor diatonically; if MAJOR, it's a secondary dominant
+        applied = idx === 1 ? 5 : (idx === 2 ? 6 : 2);
+        type = 7;   // typically dominant 7
+    }
+
+    return { root, type, borrowed, applied };
+}
+
+// Build the full Hookpad JSON object (key order matters for SHA-1 fp)
+function buildHookpadJson(sections, keyTonic, keyMode, bpm) {
+    const keyPc = NOTE_PC[keyTonic];
+    const tonicName = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'][keyPc] || 'C';
+
+    const chords = [];
+    let beat = 1;
+    const sectionEvents = [];
+
+    for (const sec of sections) {
+        sectionEvents.push({ beat, name: sec.name });
+        for (const ch of sec.chords) {
+            const m = chordToHookpad(ch, keyTonic, keyMode);
+            chords.push({
+                root: m.root,
+                beat: beat,
+                duration: 4,
+                type: m.type,
+                inversion: 0,
+                applied: m.applied,
+                adds: [], omits: [], alterations: [], suspensions: [], substitutions: [],
+                pedal: null, alternate: '', borrowed: m.borrowed,
+                isRest: false, recordingEndBeat: null
+            });
+            beat += 4;
+        }
+    }
+    const endBeat = beat;
+
+    return {
+        version: 1,   // bypasses fp validation; also we compute it for compatibility
+        chords,
+        notes: [],
+        keys: [{ beat: 1, scale: keyMode, tonic: tonicName }],
+        tempos: [{ beat: 1, bpm: bpm, swingFactor: 0, swingBeat: 0.5 }],
+        meters: [{ beat: 1, numBeats: 4, beatUnit: 1 }],
+        breaks: [],
+        sections: sectionEvents,
+        endBeat: endBeat,
+        audioTracks: []
+    };
+}
+
+// SHA-1 via browser Web Crypto
+async function sha1Hex(str) {
+    const buf = new TextEncoder().encode(str);
+    const hash = await crypto.subtle.digest('SHA-1', buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function generateHookpad() {
+    const keyTonic = document.getElementById('key').value.trim();
+    const keyMode = document.getElementById('mode').value;
+    const bpm = parseFloat(document.getElementById('bpm').value) || 120;
+    const sections = parseChart(document.getElementById('chart').value);
+    const obj = buildHookpadJson(sections, keyTonic, keyMode, bpm);
+
+    // Compact JSON for hashing (no fp)
+    const compact = JSON.stringify(obj);
+    const fp = await sha1Hex(compact);
+    obj.fp = fp;
+
+    const out = JSON.stringify(obj);
+    document.getElementById('hookpadOut').value = out;
+    document.getElementById('copyStatus').textContent = `${chordCount(sections)} chords, ${sections.length} sections, fp=${fp.slice(0,8)}...`;
+}
+
+function chordCount(sections) {
+    return sections.reduce((a, s) => a + s.chords.length, 0);
+}
+
+function copyHookpad() {
+    const ta = document.getElementById('hookpadOut');
+    if (!ta.value) { document.getElementById('copyStatus').textContent = 'generate first'; return; }
+    ta.select();
+    navigator.clipboard.writeText(ta.value);
+    document.getElementById('copyStatus').textContent = '✓ copied — paste into Hookpad';
+    setTimeout(() => document.getElementById('copyStatus').textContent = '', 3000);
+}
+
+render();
+</script>
+</body>
+</html>

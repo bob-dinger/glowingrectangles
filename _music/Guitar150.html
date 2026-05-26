@@ -1,0 +1,119 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>Guitar 150</title>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #1a1a2e; color: #e0e0e0; font-family: -apple-system, sans-serif; font-size: 13px; overflow: hidden; }
+.topnav { display: flex; gap: 2px; background: #0f0f1f; padding: 6px 10px; border-bottom: 1px solid #2a2a4a; flex-wrap: wrap; }
+.topnav a { color: #8a8ab0; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: 500; }
+.topnav a:hover { color: #e0e0e0; background: #1e1e3a; }
+.topnav a.active { background: #1e1e3a; color: #e0e0e0; border-bottom: 2px solid #6366f1; border-radius: 4px 4px 0 0; }
+.layout { display: flex; height: calc(100vh - 36px); }
+.sidebar { width: 260px; min-width: 260px; background: #16162a; border-right: 1px solid #2a2a4a; display: flex; flex-direction: column; }
+.search { padding: 10px; border-bottom: 1px solid #2a2a4a; }
+.search input { width: 100%; padding: 8px; background: #1e1e3a; border: 1px solid #2a2a4a; border-radius: 4px; color: #e0e0e0; outline: none; font-size: 12px; }
+.search input:focus { border-color: #6366f1; }
+.songlist { overflow-y: auto; flex: 1; }
+.song-item { padding: 7px 10px; cursor: pointer; border-bottom: 1px solid rgba(42,42,74,0.4); border-left: 3px solid transparent; }
+.song-item:hover { background: #1e1e3a; }
+.song-item.active { background: #1e1e3a; border-left-color: #6366f1; }
+.song-item .title { font-weight: 600; color: #e0e0e0; font-size: 12px; }
+.song-item .artist { font-size: 10px; color: #6a6a8a; }
+.song-item.missing { opacity: 0.4; }
+
+.center { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.song-header { display: flex; gap: 18px; align-items: baseline; padding: 14px 24px 10px; border-bottom: 1px solid #2a2a4a; flex-wrap: wrap; }
+.song-header h1 { font-size: 20px; font-weight: 700; margin: 0; }
+.song-header .artist { font-size: 13px; color: #8a8ab0; }
+.song-header .meta { font-size: 12px; color: #8a8ab0; margin-left: auto; }
+.song-header .meta b { color: #e0e0e0; }
+.song-header .transport { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+.song-header .transport button { background: #2a2a4a; color: #e0e0e0; border: 1px solid #3a3a5a; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; }
+.song-header .transport button:hover { background: #3a3a5a; }
+.song-header .transport button.playing { background: #6e16a5; border-color: #8e26c5; }
+.song-header .transport .tempo-input { width: 50px; background: #16162a; color: #e0e0e0; border: 1px solid #3a3a5a; border-radius: 4px; padding: 4px; text-align: center; font-size: 12px; }
+.song-header .transport label { font-size: 11px; color: #8a8ab0; display: flex; align-items: center; gap: 4px; }
+
+.main { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px; }
+</style>
+</head><body>
+<div class="topnav"><a href="Beatles-Study.html">Beatles</a><a href="Guitar50.html">Guitar 50</a><a href="Guitar100.html">Guitar 100</a><a href="Guitar150.html" class="active">Guitar 150</a><a href="Guitar200.html">Guitar 200</a><a href="Guitar250.html">Guitar 250</a><a href="Guitar300.html">Guitar 300</a><a href="Guitar350.html">Guitar 350</a><a href="Guitar400.html">Guitar 400</a><a href="Guitar450.html">Guitar 450</a><a href="Guitar500.html">Guitar 500</a><a href="Guitar550.html">Guitar 550</a><a href="studied-songs.html">Studied</a></div>
+<div class="layout">
+  <div class="sidebar">
+    <div class="search"><input id="search" placeholder="Filter songs..." spellcheck="false"></div>
+    <div class="songlist" id="songlist"></div>
+  </div>
+  <div class="center">
+    <div class="song-header">
+      <h1 id="songTitle">select a song</h1>
+      <div class="artist" id="songArtist"></div>
+      <div class="meta" id="songMeta"></div>
+      <div class="transport">
+        <button id="playBtn">▶ Play</button>
+        <button id="stopBtn">■ Stop</button>
+        <label>BPM <input type="number" id="tempoInput" class="tempo-input" min="40" max="240"></label>
+        <label>show
+          <select id="displaySelect" class="tempo-input" style="width:auto">
+            <option value="chord">chord names</option>
+            <option value="roman">roman</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <div class="main" id="main"><div class="status">select a song from the sidebar</div></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
+<script src="song_viewer.js"></script>
+<script>
+const SONGS = [{"title":"100 years","artist":"five for fighting","slug":"five-for-fighting_100-years_o"},{"title":"6th avenue heartache","artist":"wallflowers","slug":"wallflowers_6th-avenue-heartache"},{"title":"africa","artist":"toto","slug":"toto_africa_o"},{"title":"american pie","artist":"don mclean","slug":"don-mclean_american-pie_o"},{"title":"baby's got her blue jeans on","artist":"mel mcdaniel","slug":"mel-mcdaniel_babys-got-her-blue-jeans-on"},{"title":"billie jean","artist":"michael jackson","slug":"michael-jackson_billie-jean_o_c_ly"},{"title":"blank space","artist":"taylor swift","slug":"taylor-swift_blank-space"},{"title":"centerfold","artist":"j geils band","slug":"j-geils-band_centerfold_j"},{"title":"closing time","artist":"semisonic","slug":"semisonic_closing-time_o_c_ly"},{"title":"complicated","artist":"avril lavigne","slug":"avril-lavigne_complicated_o"},{"title":"dreams","artist":"fleetwood mac","slug":"fleetwood-mac_dreams_o_c_ly"},{"title":"everlong","artist":"foo fighters","slug":"foo-fighters_everlong_o"},{"title":"fernando","artist":"abba","slug":"abba_fernando_ly_o"},{"title":"friday i'm in love","artist":"the cure","slug":"cure_friday-im-in-love"},{"title":"give a little bit","artist":"supertramp","slug":"supertramp_give-a-little-bit_o"},{"title":"heart of gold","artist":"neil young","slug":"neil-young_heart-of-gold_o"},{"title":"hey brother","artist":"avicii","slug":"avicii_hey-brother_o"},{"title":"its the end of the world as we know it","artist":"rem","slug":"rem_its-the-end-of-the-world-as-we-know-it_o_c_ly"},{"title":"jaded","artist":"aerosmith","slug":"aerosmith_jaded"},{"title":"jane says","artist":"janes addiction","slug":"janes-addiction_jane-says"},{"title":"just like heaven","artist":"the cure","slug":"cure_just-like-heaven_o_c_ly"},{"title":"landslide","artist":"fleetwood mac","slug":"fleetwood-mac_landslide_o_c_ly"},{"title":"let the mystery be","artist":"iris dement","slug":"iris-dement_let-the-mystery-be_ly_o"},{"title":"limelight","artist":"rush","slug":"rush_limelight_o_c_ly"},{"title":"lithium","artist":"nirvana","slug":"nirvana_lithium"},{"title":"logical song","artist":"supertramp","slug":"supertramp_logical-song_o"},{"title":"longview","artist":"green day","slug":"green-day_longview_o_c_ly"},{"title":"love song","artist":"sara bareilles","slug":"taylor-swift_love-song-6bdd66"},{"title":"malibu","artist":"miley cyrus","slug":"hole_malibu-690f3e"},{"title":"my girl","artist":"temptations","slug":"temptations_my-girl_o"},{"title":"mykonos","artist":"fleet foxes","slug":"fleet-foxes_mykonos"},{"title":"november rain","artist":"guns n roses","slug":"guns-n-roses_november-rain_o"},{"title":"over the hills and far away","artist":"led zeppelin","slug":"led-zeppelin_over-the-hills-and-far-away_o"},{"title":"piano man","artist":"billy joel","slug":"billy-joel_piano-man_o_c_ly"},{"title":"rock around the clock","artist":"bill haley","slug":"bill-haley_rockaroundtheclock_o"},{"title":"rolling in the deep","artist":"adele","slug":"adele_rolling-in-the-deep_o"},{"title":"shake it off","artist":"taylor swift","slug":"taylor-swift_shake-it-off"},{"title":"silver springs","artist":"fleetwood mac","slug":"fleetwood-mac_silver-springs_o"},{"title":"sleepwalker","artist":"wallflowers","slug":"wallflowers_sleepwalker"},{"title":"smile like you mean it","artist":"the killers","slug":"killers_smile-like-you-mean-it"},{"title":"sour girl","artist":"stone temple pilots","slug":"stone-temple-pilots_sour-girl_o"},{"title":"southern cross","artist":"crosby still nash","slug":"crosby-still-nash_southern-cross_o"},{"title":"spiderwebs","artist":"no doubt","slug":"no-doubt_spiderwebs_o"},{"title":"stairway to heaven","artist":"led zeppelin","slug":"led-zeppelin_stairway-to-heaven_o_c_ly"},{"title":"the high road","artist":"broken bells","slug":"broken-bells_the-high-road_ly_o"},{"title":"time to pretend","artist":"mgmt","slug":"mgmt_time-to-pretend"},{"title":"too little too late","artist":"jojo","slug":"jojo_too-little-too-late_ly_o"},{"title":"top of the world","artist":"juliana theory","slug":"juliana-theory_top-of-the-world"},{"title":"two princes","artist":"spin doctors","slug":"spin-doctors_two-princes_o"},{"title":"walking on a dream","artist":"empire of the sun","slug":"empire-of-the-sun_walking-on-a-dream_ly_o"}];
+const sb = window.supabase.createClient('https://eazzqlyfcnnlplobgaas.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhenpxbHlmY25ubHBsb2JnYWFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTI4MTkxMzAsImV4cCI6MjAwODM5NTEzMH0.3SUQeAewAyOzlNCUGTLx8E1hnDg7oD2CwymuK3s4wxE');
+const viewer = new SongViewer({
+  supabase: sb,
+  mainEl: '#main',
+  headerEls: { title: '#songTitle', artist: '#songArtist', meta: '#songMeta' },
+  transport: { playBtn: '#playBtn', stopBtn: '#stopBtn', tempoInput: '#tempoInput', displaySelect: '#displaySelect' },
+});
+
+function renderList(filter) {
+  const list = document.getElementById('songlist');
+  const norm = filter ? filter.toLowerCase().trim() : '';
+  list.innerHTML = SONGS.map((s, i) => {
+    const text = `${s.title} ${s.artist}`.toLowerCase();
+    if (norm && !text.includes(norm)) return '';
+    return `<div class="song-item ${s.slug ? '' : 'missing'}" data-idx="${i}">
+      <div class="title">${s.title}</div>
+      <div class="artist">${s.artist}${s.slug ? '' : ' · missing'}</div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('search').oninput = (e) => renderList(e.target.value);
+
+document.getElementById('songlist').addEventListener('click', (e) => {
+  const item = e.target.closest('.song-item');
+  if (!item) return;
+  const idx = parseInt(item.dataset.idx);
+  const song = SONGS[idx];
+  document.querySelectorAll('.song-item.active').forEach(el => el.classList.remove('active'));
+  item.classList.add('active');
+  if (!song.slug) {
+    document.getElementById('main').innerHTML = `<div class="status"><b>${song.title}</b> by ${song.artist}<br><br>not in library yet.</div>`;
+    document.getElementById('songTitle').textContent = song.title;
+    document.getElementById('songArtist').textContent = song.artist;
+    document.getElementById('songMeta').textContent = '';
+    return;
+  }
+  viewer.load(song.slug);
+});
+
+renderList('');
+// Auto-load first available song
+const firstWithSlug = SONGS.findIndex(s => s.slug);
+if (firstWithSlug >= 0) {
+  document.querySelectorAll('.song-item')[firstWithSlug]?.click();
+}
+</script>
+</body></html>

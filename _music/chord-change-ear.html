@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chord Change Ear Training</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+.layout {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 220px;
+    min-width: 220px;
+    background: #16162a;
+    border-right: 1px solid #2a2a4a;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+}
+
+.sidebar-section { padding: 0 16px 18px; }
+
+.sidebar-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #6a6a8a;
+    margin-bottom: 10px;
+}
+
+.toggle-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 0; font-size: 13px; color: #b0b0cc;
+    cursor: pointer;
+}
+
+.score-block {
+    margin-top: auto;
+    padding: 18px 16px;
+    border-top: 1px solid #2a2a4a;
+}
+
+.score-row {
+    display: flex; justify-content: space-between;
+    font-size: 13px; margin-bottom: 6px;
+}
+
+.score-label { color: #6a6a8a; }
+.score-value { color: #e0e0e0; font-weight: 600; }
+.score-value.streak { color: #fbbf24; }
+
+.sidebar-footer { padding: 12px 16px 0; font-size: 11px; color: #4a4a6a; }
+.sidebar-footer a { color: #6366f1; text-decoration: none; }
+
+.center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 36px;
+}
+
+.prompt {
+    font-size: 13px;
+    color: #6a6a8a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+}
+
+.play-area {
+    background: #16162a;
+    border-radius: 12px;
+    padding: 36px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    min-height: 180px;
+}
+
+.play-btn {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: #6366f1;
+    border: none;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.play-btn:hover { background: #818cf8; transform: scale(1.04); }
+.play-btn.playing { background: #4ade80; animation: pulse 0.6s infinite; }
+
+@keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5); }
+    50%     { box-shadow: 0 0 0 14px rgba(74, 222, 128, 0); }
+}
+
+.chord-pair {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
+}
+
+.chord-card {
+    background: #1e1e3a;
+    border: 2px solid #2a2a4a;
+    border-radius: 10px;
+    padding: 18px 28px;
+    min-width: 110px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.chord-card.role-1 { background: hsl(0,   55%, 26%); border-color: hsl(0,   65%, 44%); }
+.chord-card.role-2 { background: hsl(28,  55%, 26%); border-color: hsl(28,  65%, 44%); }
+.chord-card.role-3 { background: hsl(52,  55%, 26%); border-color: hsl(52,  65%, 44%); }
+.chord-card.role-4 { background: hsl(130, 45%, 22%); border-color: hsl(130, 55%, 38%); }
+.chord-card.role-5 { background: hsl(215, 55%, 26%); border-color: hsl(215, 65%, 44%); }
+.chord-card.role-6 { background: hsl(275, 45%, 26%); border-color: hsl(275, 55%, 44%); }
+
+.chord-card .name {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.chord-card .role {
+    font-size: 12px;
+    font-weight: 700;
+    color: #b0b0cc;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    min-height: 14px;
+}
+
+.chord-card.hidden .name { color: #4a4a6a; }
+.chord-card.playing { transform: scale(1.06); box-shadow: 0 0 0 3px rgba(255,255,255,0.2); }
+.chord-card.flash { box-shadow: 0 0 0 4px rgba(255,255,255,0.4); }
+
+.arrow {
+    font-size: 22px;
+    color: #6a6a8a;
+}
+
+.section-label {
+    font-size: 13px;
+    color: #6a6a8a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+.choices {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    max-width: 720px;
+    margin-bottom: 14px;
+}
+
+.choice-btn {
+    padding: 18px 0;
+    border-radius: 8px;
+    border: 2px solid;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 700;
+    font-size: 18px;
+    color: white;
+}
+
+.choice-btn.role-1 { background: hsl(0,   55%, 30%); border-color: hsl(0,   65%, 48%); }
+.choice-btn.role-2 { background: hsl(28,  55%, 30%); border-color: hsl(28,  65%, 48%); }
+.choice-btn.role-3 { background: hsl(52,  55%, 30%); border-color: hsl(52,  65%, 48%); }
+.choice-btn.role-4 { background: hsl(130, 45%, 26%); border-color: hsl(130, 55%, 42%); }
+.choice-btn.role-5 { background: hsl(215, 55%, 30%); border-color: hsl(215, 65%, 48%); }
+.choice-btn.role-6 { background: hsl(275, 45%, 30%); border-color: hsl(275, 55%, 48%); }
+
+.choice-btn:hover { transform: translateY(-2px); filter: brightness(1.25); }
+.choice-btn.selected { box-shadow: 0 0 0 3px #fbbf24; transform: translateY(-2px); }
+.choice-btn:disabled { cursor: default; transform: none; }
+.choice-btn:disabled:not(.correct):not(.wrong):not(.selected) { opacity: 0.45; }
+.choice-btn.correct { box-shadow: 0 0 0 4px #22c55e; }
+.choice-btn.wrong { box-shadow: 0 0 0 4px #ef4444; }
+
+.feedback {
+    background: #16162a;
+    border-radius: 10px;
+    padding: 14px 20px;
+    min-height: 70px;
+    font-size: 14px;
+    color: #b0b0cc;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.feedback .verdict {
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.feedback .verdict.right { color: #86efac; }
+.feedback .verdict.bad { color: #fca5a5; }
+
+.feedback .detail {
+    color: #8888aa;
+}
+
+.next-btn {
+    margin-left: auto;
+    padding: 10px 24px;
+    background: #6366f1;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.next-btn:hover { background: #818cf8; }
+
+</style>
+</head>
+<body>
+
+<div class="layout">
+    <div class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-title">Mode</div>
+            <label class="toggle-row">
+                <input type="radio" name="mode" value="from-i" checked>
+                Always I → ?
+            </label>
+            <label class="toggle-row">
+                <input type="radio" name="mode" value="any">
+                Any → ? (advanced)
+            </label>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-title">Hint</div>
+            <label class="toggle-row">
+                <input type="checkbox" id="showFirst">
+                Show first chord
+            </label>
+        </div>
+
+        <div class="score-block">
+            <div class="score-row"><span class="score-label">Streak</span><span class="score-value streak" id="streak">0</span></div>
+            <div class="score-row"><span class="score-label">Score</span><span class="score-value" id="score">0/0</span></div>
+            <div class="score-row"><span class="score-label">Accuracy</span><span class="score-value" id="accuracy">—</span></div>
+        </div>
+        <div class="sidebar-footer"><a href="index.html">&larr; Music Hub</a></div>
+    </div>
+
+    <div class="center">
+        <div class="prompt">Press play. Then identify the move.</div>
+
+        <div class="play-area">
+            <button class="play-btn" id="playBtn" title="Play / replay">▶</button>
+            <div class="chord-pair">
+                <div class="chord-card hidden" id="chord1">
+                    <div class="name">?</div><div class="role"></div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="chord-card hidden" id="chord2">
+                    <div class="name">?</div><div class="role"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">First chord</div>
+        <div class="choices" id="choices1"></div>
+
+        <div class="section-label">Second chord</div>
+        <div class="choices" id="choices2"></div>
+
+        <div class="feedback" id="feedback">
+            <div class="verdict" style="color:#6a6a8a;">Press play to begin.</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.3.5/Tone.js"></script>
+<script>
+const KEY_DISPLAY = {
+    0:  ['C','D','E','F','G','A','B'],
+    2:  ['D','E','F#','G','A','B','C#'],
+    4:  ['E','F#','G#','A','B','C#','D#'],
+    5:  ['F','G','A','Bb','C','D','E'],
+    7:  ['G','A','B','C','D','E','F#'],
+    9:  ['A','B','C#','D','E','F#','G#']
+};
+const KEY_NAMES = { 0:'C', 2:'D', 4:'E', 5:'F', 7:'G', 9:'A' };
+const ALLOWED_KEYS = [0, 2, 4, 5, 7, 9];
+const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
+const NUMERALS = ['I','ii','iii','IV','V','vi'];
+const QUALITIES = ['major','minor','minor','major','major','minor'];
+
+function buildChord(rootIdx, deg) {
+    const scale = KEY_DISPLAY[rootIdx];
+    const r = scale[deg];
+    const t = scale[(deg+2)%7];
+    const f = scale[(deg+4)%7];
+    const q = QUALITIES[deg];
+    const rootMidi = (rootIdx + MAJOR_INTERVALS[deg]) % 12;
+    const thirdMidi = (rootIdx + MAJOR_INTERVALS[(deg+2)%7]) % 12;
+    const fifthMidi = (rootIdx + MAJOR_INTERVALS[(deg+4)%7]) % 12;
+    let to3=4, to5=4;
+    if (thirdMidi <= rootMidi) to3 = 5;
+    if (fifthMidi <= rootMidi) to5 = 5;
+    return {
+        deg: deg+1,
+        numeral: NUMERALS[deg],
+        display: r + (q==='minor'?'m':''),
+        toneNotes: [r+'4', t+(to3===5?'5':'4'), f+(to5===5?'5':'4')],
+        bass: r+'3'
+    };
+}
+
+// All 6 diatonic roles (deg index 0-5; role number 1-6)
+const CHOICES = [
+    { deg: 0, label: 'I',   role: 1 },
+    { deg: 1, label: 'ii',  role: 2 },
+    { deg: 2, label: 'iii', role: 3 },
+    { deg: 3, label: 'IV',  role: 4 },
+    { deg: 4, label: 'V',   role: 5 },
+    { deg: 5, label: 'vi',  role: 6 }
+];
+
+let synth = null, bassSynth = null;
+function ensureSynth() {
+    if (synth) return;
+    synth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'triangle' },
+        envelope: { attack: 0.02, decay: 0.3, sustain: 0.5, release: 1.0 },
+        volume: -10
+    }).toDestination();
+    bassSynth = new Tone.Synth({
+        oscillator: { type: 'triangle' },
+        envelope: { attack: 0.02, decay: 0.4, sustain: 0.5, release: 1.2 },
+        volume: -14
+    }).toDestination();
+}
+
+let currentKey = 0;
+let firstDeg = 0;
+let secondDeg = 0;
+let pickedFirst = null;    // user's selection for chord 1
+let pickedSecond = null;   // user's selection for chord 2
+let answered = false;
+let streak = 0, correct = 0, total = 0;
+let mode = 'from-i';
+
+function renderChoices() {
+    [['choices1', 1], ['choices2', 2]].forEach(([id, slot]) => {
+        const wrap = document.getElementById(id);
+        wrap.innerHTML = '';
+        CHOICES.forEach(ch => {
+            const btn = document.createElement('button');
+            btn.className = `choice-btn role-${ch.role}`;
+            btn.dataset.deg = ch.deg;
+            btn.dataset.slot = slot;
+            btn.textContent = ch.label;
+            btn.addEventListener('click', () => pickChoice(slot, ch.deg));
+            wrap.appendChild(btn);
+        });
+    });
+}
+
+function pickChoice(slot, deg) {
+    if (answered) return;
+    if (slot === 1) pickedFirst = deg;
+    else pickedSecond = deg;
+    // visually mark the selected button in this slot
+    document.querySelectorAll(`.choice-btn[data-slot="${slot}"]`).forEach(b => {
+        b.classList.toggle('selected', parseInt(b.dataset.deg) === deg);
+    });
+    // when both selected, auto-evaluate
+    if (pickedFirst !== null && pickedSecond !== null) {
+        evaluate();
+    }
+}
+
+function newRound() {
+    currentKey = ALLOWED_KEYS[Math.floor(Math.random() * ALLOWED_KEYS.length)];
+    if (mode === 'from-i') {
+        firstDeg = 0;
+    } else {
+        firstDeg = Math.floor(Math.random() * 6);
+    }
+    do {
+        secondDeg = Math.floor(Math.random() * 6);
+    } while (secondDeg === firstDeg);
+    answered = false;
+    pickedFirst = null;
+    pickedSecond = null;
+
+    // reset chord cards
+    const showFirst = document.getElementById('showFirst').checked;
+    const c1 = document.getElementById('chord1');
+    const c2 = document.getElementById('chord2');
+    c1.classList.remove('role-1','role-2','role-3','role-4','role-5','role-6','playing','flash');
+    c2.classList.remove('role-1','role-2','role-3','role-4','role-5','role-6','playing','flash');
+    if (showFirst) {
+        const ch1 = buildChord(currentKey, firstDeg);
+        c1.classList.remove('hidden');
+        c1.classList.add(`role-${firstDeg+1}`);
+        c1.querySelector('.name').textContent = ch1.display;
+        c1.querySelector('.role').textContent = ch1.numeral;
+    } else {
+        c1.classList.add('hidden');
+        c1.querySelector('.name').textContent = '?';
+        c1.querySelector('.role').textContent = '';
+    }
+    c2.classList.add('hidden');
+    c2.querySelector('.name').textContent = '?';
+    c2.querySelector('.role').textContent = '';
+
+    document.querySelectorAll('.choice-btn').forEach(b => {
+        b.classList.remove('correct','wrong','selected');
+        b.disabled = false;
+    });
+
+    document.getElementById('feedback').innerHTML =
+        '<div class="verdict" style="color:#6a6a8a;">Press play, then pick both chords.</div>';
+}
+
+async function playSequence() {
+    await Tone.start();
+    ensureSynth();
+    const ch1 = buildChord(currentKey, firstDeg);
+    const ch2 = buildChord(currentKey, secondDeg);
+    const playBtn = document.getElementById('playBtn');
+    playBtn.classList.add('playing');
+
+    const c1el = document.getElementById('chord1');
+    const c2el = document.getElementById('chord2');
+
+    // Play first chord
+    synth.triggerAttackRelease(ch1.toneNotes, '2n');
+    bassSynth.triggerAttackRelease(ch1.bass, '2n');
+    c1el.classList.add('playing');
+    setTimeout(() => c1el.classList.remove('playing'), 800);
+
+    // Then second chord after a beat
+    setTimeout(() => {
+        synth.triggerAttackRelease(ch2.toneNotes, '2n');
+        bassSynth.triggerAttackRelease(ch2.bass, '2n');
+        c2el.classList.add('playing');
+        setTimeout(() => c2el.classList.remove('playing'), 800);
+    }, 850);
+
+    setTimeout(() => playBtn.classList.remove('playing'), 1700);
+}
+
+function evaluate() {
+    if (answered) return;
+    answered = true;
+    total++;
+
+    const firstRight  = (pickedFirst  === firstDeg);
+    const secondRight = (pickedSecond === secondDeg);
+    const bothRight = firstRight && secondRight;
+    if (bothRight) { correct++; streak++; } else { streak = 0; }
+
+    // Reveal both chords
+    const ch1 = buildChord(currentKey, firstDeg);
+    const ch2 = buildChord(currentKey, secondDeg);
+    const c1el = document.getElementById('chord1');
+    const c2el = document.getElementById('chord2');
+    c1el.classList.remove('hidden');
+    c1el.classList.add(`role-${firstDeg+1}`);
+    c1el.querySelector('.name').textContent = ch1.display;
+    c1el.querySelector('.role').textContent = ch1.numeral;
+    c2el.classList.remove('hidden');
+    c2el.classList.add(`role-${secondDeg+1}`);
+    c2el.querySelector('.name').textContent = ch2.display;
+    c2el.querySelector('.role').textContent = ch2.numeral;
+
+    // Mark choice buttons in each slot
+    [[1, firstDeg, pickedFirst], [2, secondDeg, pickedSecond]].forEach(([slot, correctDeg, pickedDeg]) => {
+        document.querySelectorAll(`.choice-btn[data-slot="${slot}"]`).forEach(b => {
+            const d = parseInt(b.dataset.deg);
+            b.classList.remove('selected');
+            if (d === correctDeg) b.classList.add('correct');
+            else if (d === pickedDeg) b.classList.add('wrong');
+            b.disabled = true;
+        });
+    });
+
+    const fb = document.getElementById('feedback');
+    let verdictText, verdictClass;
+    if (bothRight) {
+        verdictText = '✓ Both right';
+        verdictClass = 'right';
+    } else if (firstRight) {
+        verdictText = '½ Second wrong';
+        verdictClass = 'bad';
+    } else if (secondRight) {
+        verdictText = '½ First wrong';
+        verdictClass = 'bad';
+    } else {
+        verdictText = '✗ Both wrong';
+        verdictClass = 'bad';
+    }
+    let html = `<div class="verdict ${verdictClass}">${verdictText}</div>
+                <div class="detail">${ch1.display} → ${ch2.display} in ${KEY_NAMES[currentKey]} major (${ch1.numeral} → ${ch2.numeral})</div>
+                <button class="next-btn" onclick="newRound()">Next →</button>`;
+    fb.innerHTML = html;
+
+    document.getElementById('streak').textContent = streak;
+    document.getElementById('score').textContent = `${correct}/${total}`;
+    document.getElementById('accuracy').textContent = total>0 ? Math.round(correct/total*100)+'%' : '—';
+}
+
+document.getElementById('playBtn').addEventListener('click', playSequence);
+document.getElementById('showFirst').addEventListener('change', () => newRound());
+document.querySelectorAll('input[name="mode"]').forEach(r => {
+    r.addEventListener('change', e => { mode = e.target.value; newRound(); });
+});
+
+document.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+        e.preventDefault();
+        if (answered) newRound(); else playSequence();
+    } else if (e.key === 'Enter' && answered) {
+        newRound();
+    }
+});
+
+renderChoices();
+newRound();
+</script>
+
+</body>
+</html>

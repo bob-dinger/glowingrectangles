@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chord Quiz — Fill In The Section</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    color: #6a6a8a;
+    margin-bottom: 24px;
+    font-size: 14px;
+}
+
+.song-select {
+    margin-bottom: 20px;
+}
+
+.song-select select {
+    padding: 10px 16px;
+    font-size: 15px;
+    background: #16162a;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    color: #e0e0e0;
+    min-width: 250px;
+}
+
+.song-info {
+    background: #16162a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.song-title {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.song-meta {
+    color: #6a6a8a;
+    font-size: 13px;
+}
+
+.score {
+    text-align: right;
+}
+
+.score-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #6366f1;
+}
+
+.score-label {
+    font-size: 11px;
+    color: #6a6a8a;
+}
+
+/* The grid showing all measures */
+.section-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.measure {
+    background: #1e1e3a;
+    border: 2px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 12px;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.measure:hover {
+    border-color: #6366f1;
+    background: #252550;
+}
+
+.measure.selected {
+    border-color: #6366f1;
+    background: #2a2a5a;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+.measure.filled {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: #4a4a7a;
+}
+
+.measure.correct {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: #22c55e;
+    color: #86efac;
+}
+
+.measure.wrong {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #fca5a5;
+}
+
+.measure-num {
+    position: absolute;
+    top: 4px;
+    left: 8px;
+    font-size: 10px;
+    color: #4a4a6a;
+    font-weight: 400;
+}
+
+.measure {
+    position: relative;
+}
+
+/* Chord palette */
+.chord-palette {
+    background: #16162a;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.palette-label {
+    font-size: 12px;
+    color: #6a6a8a;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.chord-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chord-btn {
+    padding: 10px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    background: #2a2a4a;
+    border: 2px solid #3a3a5a;
+    border-radius: 6px;
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.chord-btn:hover {
+    background: #3a3a5a;
+    border-color: #6366f1;
+}
+
+.chord-btn.used {
+    opacity: 0.5;
+}
+
+/* Buttons */
+.buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.btn-primary {
+    background: #6366f1;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #818cf8;
+}
+
+.btn-secondary {
+    background: #2a2a4a;
+    color: #a0a0c0;
+}
+
+.btn-secondary:hover {
+    background: #3a3a5a;
+}
+
+.result-msg {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: none;
+}
+
+.result-msg.show {
+    display: block;
+}
+
+.result-msg.success {
+    background: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+}
+
+.result-msg.partial {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fde047;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Chord Quiz</h1>
+    <p class="subtitle">Fill in every chord of the section</p>
+
+    <div class="song-select">
+        <select id="songSelect">
+            <option value="">Select a song...</option>
+        </select>
+    </div>
+
+    <div class="song-info">
+        <div>
+            <div class="song-title" id="songTitle">Select a song to begin</div>
+            <div class="song-meta" id="songMeta"></div>
+        </div>
+        <div class="score">
+            <div class="score-number" id="scoreNum">0%</div>
+            <div class="score-label">accuracy</div>
+        </div>
+    </div>
+
+    <div class="section-grid" id="sectionGrid"></div>
+
+    <div class="chord-palette">
+        <div class="palette-label">Click a measure, then click a chord</div>
+        <div class="chord-options" id="chordOptions"></div>
+    </div>
+
+    <div class="buttons">
+        <button class="btn btn-primary" id="checkBtn">Check Answers</button>
+        <button class="btn btn-secondary" id="clearBtn">Clear All</button>
+        <button class="btn btn-secondary" id="nextBtn">Next Section</button>
+    </div>
+
+    <div class="result-msg" id="resultMsg"></div>
+</div>
+
+<script>
+const SONGS = [
+    {
+        name: "Fire Escape",
+        artist: "Fastball",
+        key: "G",
+        sections: [
+            {
+                name: "Verse",
+                measures: 8,
+                chords: ["D", "C", "Bm", "Am", "D", "C", "Bm", "Am"],
+                pattern: "AABA"
+            }
+        ]
+    },
+    {
+        name: "Help!",
+        artist: "Beatles",
+        key: "A",
+        sections: [
+            {
+                name: "Verse",
+                measures: 8,
+                chords: ["Bm", "Bm", "G", "G", "E", "E", "A", "A"],
+                pattern: "ABAB"
+            },
+            {
+                name: "Chorus",
+                measures: 8,
+                chords: ["A", "A", "C#m", "C#m", "F#m", "F#m", "D", "G", "A"],
+                pattern: "ABCD"
+            }
+        ]
+    },
+    {
+        name: "Have You Ever Seen The Rain",
+        artist: "CCR",
+        key: "C",
+        sections: [
+            {
+                name: "Verse",
+                measures: 8,
+                chords: ["Am", "Am", "F", "C", "G", "C", "G", "C"],
+                pattern: "AABA"
+            },
+            {
+                name: "Chorus",
+                measures: 8,
+                chords: ["F", "G", "C", "Am", "F", "G", "C", "C"],
+                pattern: "ABCC"
+            }
+        ]
+    },
+    {
+        name: "Losing My Religion",
+        artist: "R.E.M.",
+        key: "Am",
+        sections: [
+            {
+                name: "Verse",
+                measures: 8,
+                chords: ["Am", "Am", "Em", "Em", "Am", "Am", "Em", "Em"],
+                pattern: "ABAB"
+            },
+            {
+                name: "Chorus",
+                measures: 8,
+                chords: ["F", "F", "Dm", "G", "Am", "Am", "G", "G"],
+                pattern: "AABC"
+            }
+        ]
+    },
+    {
+        name: "In My Life",
+        artist: "Beatles",
+        key: "A",
+        sections: [
+            {
+                name: "Verse",
+                measures: 8,
+                chords: ["A", "E", "A", "E", "F#m", "A7", "D", "Dm"],
+                pattern: "ABAB"
+            }
+        ]
+    },
+    {
+        name: "Eight Days A Week",
+        artist: "Beatles",
+        key: "D",
+        sections: [
+            {
+                name: "Verse",
+                measures: 4,
+                chords: ["D", "E", "G", "D"],
+                pattern: "ABCA"
+            },
+            {
+                name: "Bridge",
+                measures: 4,
+                chords: ["Bm", "G", "Bm", "E"],
+                pattern: "ABAB"
+            }
+        ]
+    },
+    {
+        name: "Day Tripper",
+        artist: "Beatles",
+        key: "E",
+        sections: [
+            {
+                name: "Verse",
+                measures: 8,
+                chords: ["E7", "E7", "E7", "E7", "A7", "A7", "E7", "E7"],
+                pattern: "AABA"
+            }
+        ]
+    },
+    {
+        name: "Ticket To Ride",
+        artist: "Beatles",
+        key: "A",
+        sections: [
+            {
+                name: "Verse",
+                measures: 8,
+                chords: ["A", "A", "Bm", "E", "A", "A", "Bm", "E"],
+                pattern: "ABAB"
+            }
+        ]
+    }
+];
+
+let currentSong = null;
+let currentSection = null;
+let userAnswers = [];
+let selectedMeasure = null;
+let totalCorrect = 0;
+let totalAnswered = 0;
+
+function populateSongSelect() {
+    const select = document.getElementById('songSelect');
+    SONGS.forEach((song, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${song.name} - ${song.artist}`;
+        select.appendChild(opt);
+    });
+}
+
+function startSong(songIndex) {
+    currentSong = SONGS[songIndex];
+    currentSection = currentSong.sections[Math.floor(Math.random() * currentSong.sections.length)];
+    userAnswers = new Array(currentSection.chords.length).fill(null);
+    selectedMeasure = null;
+
+    document.getElementById('songTitle').textContent = `${currentSong.name} - ${currentSection.name}`;
+    document.getElementById('songMeta').textContent = `Key: ${currentSong.key} • ${currentSection.measures} measures • ${currentSection.pattern}`;
+
+    renderGrid();
+    renderPalette();
+    clearResults();
+}
+
+function renderGrid() {
+    const grid = document.getElementById('sectionGrid');
+    grid.innerHTML = '';
+
+    currentSection.chords.forEach((chord, i) => {
+        const measure = document.createElement('div');
+        measure.className = 'measure';
+        if (userAnswers[i]) {
+            measure.classList.add('filled');
+            measure.textContent = userAnswers[i];
+        } else {
+            measure.textContent = '?';
+        }
+        if (selectedMeasure === i) {
+            measure.classList.add('selected');
+        }
+
+        const num = document.createElement('span');
+        num.className = 'measure-num';
+        num.textContent = i + 1;
+        measure.appendChild(num);
+
+        measure.addEventListener('click', () => selectMeasure(i));
+        grid.appendChild(measure);
+    });
+}
+
+function renderPalette() {
+    const palette = document.getElementById('chordOptions');
+    palette.innerHTML = '';
+
+    // Get all unique chords from the song
+    const allChords = new Set();
+    currentSong.sections.forEach(section => {
+        section.chords.forEach(chord => allChords.add(chord));
+    });
+
+    // Add some common distractors
+    const distractors = ['C', 'G', 'Am', 'F', 'D', 'Em', 'A', 'E', 'Bm', 'Dm', 'B7', 'E7', 'A7'];
+    distractors.forEach(c => allChords.add(c));
+
+    const sortedChords = Array.from(allChords).sort();
+
+    sortedChords.forEach(chord => {
+        const btn = document.createElement('button');
+        btn.className = 'chord-btn';
+        btn.textContent = chord;
+        btn.addEventListener('click', () => placeChord(chord));
+        palette.appendChild(btn);
+    });
+}
+
+function selectMeasure(index) {
+    selectedMeasure = index;
+    renderGrid();
+}
+
+function placeChord(chord) {
+    if (selectedMeasure !== null) {
+        userAnswers[selectedMeasure] = chord;
+        // Move to next empty measure
+        let next = selectedMeasure + 1;
+        while (next < userAnswers.length && userAnswers[next] !== null) {
+            next++;
+        }
+        selectedMeasure = next < userAnswers.length ? next : null;
+        renderGrid();
+    }
+}
+
+function checkAnswers() {
+    const grid = document.getElementById('sectionGrid');
+    const measures = grid.querySelectorAll('.measure');
+    let correct = 0;
+    let answered = 0;
+
+    currentSection.chords.forEach((chord, i) => {
+        measures[i].classList.remove('correct', 'wrong', 'filled', 'selected');
+        if (userAnswers[i]) {
+            answered++;
+            if (userAnswers[i] === chord) {
+                measures[i].classList.add('correct');
+                correct++;
+            } else {
+                measures[i].classList.add('wrong');
+                measures[i].textContent = `${userAnswers[i]} → ${chord}`;
+            }
+        }
+    });
+
+    totalCorrect += correct;
+    totalAnswered += answered;
+
+    const pct = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
+    document.getElementById('scoreNum').textContent = pct + '%';
+
+    const msg = document.getElementById('resultMsg');
+    msg.classList.add('show');
+    if (correct === currentSection.chords.length) {
+        msg.className = 'result-msg show success';
+        msg.textContent = `Perfect! ${correct}/${currentSection.chords.length} correct`;
+    } else {
+        msg.className = 'result-msg show partial';
+        msg.textContent = `${correct}/${currentSection.chords.length} correct. Study the red ones!`;
+    }
+
+    selectedMeasure = null;
+}
+
+function clearAll() {
+    userAnswers = new Array(currentSection.chords.length).fill(null);
+    selectedMeasure = 0;
+    renderGrid();
+    clearResults();
+}
+
+function clearResults() {
+    document.getElementById('resultMsg').classList.remove('show');
+}
+
+function nextSection() {
+    if (currentSong.sections.length > 1) {
+        const others = currentSong.sections.filter(s => s !== currentSection);
+        currentSection = others[Math.floor(Math.random() * others.length)];
+    }
+    userAnswers = new Array(currentSection.chords.length).fill(null);
+    selectedMeasure = 0;
+
+    document.getElementById('songTitle').textContent = `${currentSong.name} - ${currentSection.name}`;
+    document.getElementById('songMeta').textContent = `Key: ${currentSong.key} • ${currentSection.measures} measures • ${currentSection.pattern}`;
+
+    renderGrid();
+    clearResults();
+}
+
+// Event listeners
+document.getElementById('songSelect').addEventListener('change', (e) => {
+    if (e.target.value !== '') {
+        startSong(parseInt(e.target.value));
+    }
+});
+
+document.getElementById('checkBtn').addEventListener('click', checkAnswers);
+document.getElementById('clearBtn').addEventListener('click', clearAll);
+document.getElementById('nextBtn').addEventListener('click', nextSection);
+
+// Initialize
+populateSongSelect();
+</script>
+
+</body>
+</html>
