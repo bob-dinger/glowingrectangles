@@ -33,6 +33,17 @@
     'harmonicMinor':    ['m','d','a','m','M','M','d'],
     'phrygianDominant': ['M','M','d','m','d','M','m'],
   };
+  const MODE_INT = {
+    'major':            [0,2,4,5,7,9,11],
+    'minor':            [0,2,3,5,7,8,10],
+    'dorian':           [0,2,3,5,7,9,10],
+    'mixolydian':       [0,2,4,5,7,9,10],
+    'lydian':           [0,2,4,6,7,9,11],
+    'phrygian':         [0,1,3,5,7,8,10],
+    'locrian':          [0,1,3,5,6,8,10],
+    'harmonicMinor':    [0,2,3,5,7,8,11],
+    'phrygianDominant': [0,1,4,5,7,8,10],
+  };
 
   function tonicSemis(t) {
     let i = NOTES_SHARP.indexOf(t); if (i >= 0) return i;
@@ -43,13 +54,26 @@
     while (rs.length && (rs[0] === 'b' || rs[0] === '#')) { acc += rs[0] === 'b' ? -1 : 1; rs = rs.slice(1); }
     return { acc, rs };
   }
-  function chordRootPc(root, keyTonic, keyScale) {
-    const { acc, rs } = stripAcc(root);
+  function degToPc(rootStr, keyTonic, mode) {
+    const { acc, rs } = stripAcc(rootStr);
     if (!/^\d+$/.test(rs)) return null;
     const deg = parseInt(rs);
     if (deg < 1 || deg > 7) return null;
-    const intervals = keyScale === 'minor' ? MINOR_INT : MAJOR_INT;
+    const intervals = MODE_INT[mode] || MODE_INT['major'];
     return (((tonicSemis(keyTonic) + intervals[deg-1] + acc) % 12) + 12) % 12;
+  }
+  function chordRootPc(c, keyTonic, keyScale) {
+    // Accept a bare root string/number for callers that just want degree→pc lookup.
+    if (typeof c !== 'object' || c === null) return degToPc(String(c), keyTonic, keyScale);
+    // Applied chord: re-anchor to the applied target as new tonic (treated as major).
+    if (c.applied) {
+      const tgtPc = degToPc(String(c.applied), keyTonic, keyScale);
+      if (tgtPc == null) return null;
+      return degToPc(String(c.root), NOTES_SHARP[tgtPc], 'major');
+    }
+    const borrowed = typeof c.borrowed === 'string' ? c.borrowed : '';
+    const mode = MODE_INT[borrowed] ? borrowed : keyScale;
+    return degToPc(String(c.root), keyTonic, mode);
   }
   function noteMidi(n, keyTonic, keyScale) {
     const { acc, rs } = stripAcc(n.sd ?? '1');
@@ -68,7 +92,7 @@
     return ((n.octave ?? 0) * 12) + MAJOR_INT[deg-1] + acc;
   }
   function chordMidiPitches(c, keyTonic, keyScale) {
-    const pc = chordRootPc(c.root, keyTonic, keyScale);
+    const pc = chordRootPc(c, keyTonic, keyScale);
     if (pc == null) return [];
     const root = 48 + pc;
     const { rs } = stripAcc(c.root);
@@ -121,7 +145,7 @@
     const chordBlocks = chords.filter(c => !c.isRest && c.beat != null).map(c => {
       const k = keyAtBeat(keys, c.beat);
       const tonic = k.tonic || 'C', scale = k.scale || 'major';
-      const pc = chordRootPc(c.root, tonic, scale);
+      const pc = chordRootPc(c, tonic, scale);
       const midi = chordMidiPitches(c, tonic, scale);
       return {
         b: c.beat, d: c.duration ?? bpb, pc, midi,
@@ -175,7 +199,7 @@
     return qualities[chordDeg(c) - 1];
   }
   function chordLabelChord(c, keyTonic, keyScale) {
-    const pc = chordRootPc(c.root, keyTonic, keyScale);
+    const pc = chordRootPc(c, keyTonic, keyScale);
     if (pc == null) return '?';
     const q = chordQuality(c, keyScale);
     let name = NOTES_SHARP[pc];
@@ -362,7 +386,7 @@
             const remainingDur = (rowEndBeat - c.b);
             const dur = Math.min(c.d, remainingDur);
             const w = Math.max(8, dur * pxPerBeat - 1);
-            const cls = (c.deg >= 1 && c.deg <= 7) ? `deg-${c.deg}` : 'pc-unknown';
+            const cls = (c.pc != null) ? `pc-${c.pc}` : 'pc-unknown';
             const label = mode === 'roman' ? c.labelRoman : c.labelChord;
             chHtml += `<div class="chord-block ${cls}" style="left:${left}px;width:${w}px"
                              title="${c.labelChord} · ${c.labelRoman}">${label}</div>`;
