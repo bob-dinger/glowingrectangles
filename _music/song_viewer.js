@@ -147,11 +147,13 @@
       const tonic = k.tonic || 'C', scale = k.scale || 'major';
       const pc = chordRootPc(c, tonic, scale);
       const midi = chordMidiPitches(c, tonic, scale);
+      const { acc } = stripAcc(c.root);
+      const borrowedStr = typeof c.borrowed === 'string' ? c.borrowed : '';
+      const isDiatonic = !c.applied && !borrowedStr && acc === 0;
       return {
         b: c.beat, d: c.duration ?? bpb, pc, midi,
-        root: c.root, type: c.type,
-        borrowed: typeof c.borrowed === 'string' ? c.borrowed : '',
-        deg: chordDeg(c),
+        root: c.root, type: c.type, borrowed: borrowedStr,
+        deg: chordDeg(c), isDiatonic,
         quality: chordQuality(c, scale),
         labelChord: chordLabelChord(c, tonic, scale),
         labelRoman: chordLabelRoman(c, scale),
@@ -386,7 +388,9 @@
             const remainingDur = (rowEndBeat - c.b);
             const dur = Math.min(c.d, remainingDur);
             const w = Math.max(8, dur * pxPerBeat - 1);
-            const cls = (c.pc != null) ? `pc-${c.pc}` : 'pc-unknown';
+            const cls = c.isDiatonic && c.deg >= 1 && c.deg <= 7
+              ? `deg-${c.deg}`
+              : (c.pc != null ? `pc-${c.pc}` : 'pc-unknown');
             const label = mode === 'roman' ? c.labelRoman : c.labelChord;
             chHtml += `<div class="chord-block ${cls}" style="left:${left}px;width:${w}px"
                              title="${c.labelChord} · ${c.labelRoman}">${label}</div>`;
