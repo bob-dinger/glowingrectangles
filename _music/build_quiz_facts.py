@@ -109,16 +109,19 @@ TEMPLATE = r"""<!doctype html>
   .artist { font-size:16px; color:#8a8ab0; margin-bottom:32px; }
   .question { font-size:20px; margin-bottom:18px; line-height:1.4; }
   .question .hl { color:#a5b4fc; font-weight:600; }
-  .answer-row { display:flex; gap:10px; justify-content:center; align-items:center; }
-  input[type=text] { background:#16162a; border:2px solid #44446a; color:#e0e0e0; padding:10px 14px; font-size:18px; border-radius:6px; width:160px; text-align:center; font-family:inherit; }
-  input[type=text]:focus { outline:none; border-color:#6366f1; }
-  button.primary { background:#6366f1; color:#fff; border:none; padding:10px 20px; font-size:14px; border-radius:6px; cursor:pointer; font-weight:600; }
+  .reveal-area { margin-top:24px; min-height:120px; display:flex; flex-direction:column; justify-content:center; align-items:center; }
+  .reveal-btn { background:#2a2a4a; border:2px dashed #44446a; color:#a5b4fc; padding:24px 40px; font-size:18px; border-radius:8px; cursor:pointer; font-family:inherit; min-width:280px; }
+  .reveal-btn:hover { background:#33335a; border-color:#6366f1; }
+  .answer { font-size:42px; font-weight:700; color:#a5b4fc; margin-bottom:8px; line-height:1.1; }
+  .scorer { display:flex; gap:10px; margin-top:18px; }
+  button.primary { background:#6366f1; color:#fff; border:none; padding:10px 20px; font-size:14px; border-radius:6px; cursor:pointer; font-weight:600; font-family:inherit; }
   button.primary:hover { background:#5258e8; }
-  .feedback { margin-top:24px; min-height:56px; font-size:16px; }
-  .feedback.correct { color:#4ade80; }
-  .feedback.wrong { color:#f87171; }
-  .feedback .answer { font-size:22px; font-weight:700; margin-top:6px; }
+  button.got    { background:#16a34a; color:#fff; border:none; padding:12px 28px; font-size:15px; border-radius:6px; cursor:pointer; font-weight:700; font-family:inherit; }
+  button.got:hover    { background:#15803d; }
+  button.missed { background:#dc2626; color:#fff; border:none; padding:12px 28px; font-size:15px; border-radius:6px; cursor:pointer; font-weight:700; font-family:inherit; }
+  button.missed:hover { background:#b91c1c; }
   .next-hint { margin-top:12px; font-size:12px; color:#8a8ab0; }
+  kbd { background:#16162a; border:1px solid #44446a; padding:1px 6px; border-radius:3px; font-family:monospace; font-size:11px; }
   .empty { color:#8a8ab0; font-size:14px; }
 </style>
 </head>
@@ -146,45 +149,12 @@ TEMPLATE = r"""<!doctype html>
 <script>
 const SONGS = __DATA__;
 
-const NOTES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-const NOTES_FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
-const ENH = Object.fromEntries(NOTES_SHARP.map((s,i)=>[s.toLowerCase(),NOTES_FLAT[i].toLowerCase()]));
-
-function normKey(s) {
-  s = s.trim().toLowerCase().replace(/\s+/g,'');
-  s = s.replace(/major$/,'').replace(/maj$/,'').replace(/m\b$/,'__MIN__').replace(/minor$/,'__MIN__').replace(/min$/,'__MIN__');
-  const isMin = s.includes('__MIN__');
-  s = s.replace('__MIN__','');
-  if (!s) return null;
-  // Handle ♭ / ♯ symbols
-  s = s.replace('♭','b').replace('♯','#');
-  // Single char like "g"
-  let tonic = s.charAt(0).toUpperCase();
-  if (!/[A-G]/.test(tonic)) return null;
-  let acc = '';
-  if (s.length > 1 && (s[1]==='#' || s[1]==='b')) acc = s[1];
-  return { tonic: tonic + acc, isMin };
-}
-
-function keysMatch(userStr, songTonic, songScale) {
-  const u = normKey(userStr);
-  if (!u) return false;
-  if (u.isMin !== (songScale === 'minor')) return false;
-  // normalize both tonics through pitch class
-  const pcOf = (t) => {
-    let i = NOTES_SHARP.indexOf(t); if (i>=0) return i;
-    i = NOTES_FLAT.indexOf(t); return i;
-  };
-  return pcOf(u.tonic) >= 0 && pcOf(u.tonic) === pcOf(songTonic);
-}
-
 function pickSongsAndQuestion() {
   const qTypes = [...document.querySelectorAll('#qfilters input:checked')].map(i=>i.value);
   const pools = [...document.querySelectorAll('#pfilters input:checked')].map(i=>i.value);
   if (!qTypes.length || !pools.length) return null;
   const eligible = SONGS.filter(s => s.pages.some(p => pools.includes(p)));
   if (!eligible.length) return null;
-  // Try up to 50 times to find a song+question combo that's answerable
   for (let attempt = 0; attempt < 50; attempt++) {
     const s = eligible[Math.floor(Math.random()*eligible.length)];
     const qt = qTypes[Math.floor(Math.random()*qTypes.length)];
@@ -194,7 +164,7 @@ function pickSongsAndQuestion() {
   return null;
 }
 
-let state = { correct: 0, total: 0, current: null, answered: false };
+let state = { correct: 0, total: 0, current: null, revealed: false };
 
 function render() {
   const main = document.getElementById('main');
@@ -205,16 +175,28 @@ function render() {
       c.section = c.song.sections[Math.floor(Math.random()*c.song.sections.length)];
     }
     state.current = c;
-    state.answered = false;
+    state.revealed = false;
   }
-  const {song, qType, section} = state.current;
+  const {song, qType, section, revealed} = {...state.current, revealed: state.revealed};
   let questionHtml;
   if (qType === 'tempo') questionHtml = `What's the <span class="hl">tempo</span> (BPM)?`;
   else if (qType === 'key') questionHtml = `What's the <span class="hl">key</span>?`;
   else questionHtml = `How many <span class="hl">measures</span> is the <span class="hl">${section.name}</span>?`;
 
-  const inputType = qType === 'key' ? 'text' : 'number';
-  const placeholder = qType === 'tempo' ? 'e.g. 120' : qType === 'key' ? 'e.g. G or Am' : 'e.g. 8';
+  let answerStr;
+  if (qType === 'tempo') answerStr = `${song.bpm} BPM`;
+  else if (qType === 'key') answerStr = `${song.tonic}${song.scale === 'minor' ? ' minor' : ''}`;
+  else answerStr = `${section.bars} measures`;
+
+  const revealHtml = revealed
+    ? `<div class="answer">${answerStr}</div>
+       <div class="scorer">
+         <button class="missed" id="missedBtn">Missed ✗</button>
+         <button class="got" id="gotBtn">Got it ✓</button>
+       </div>
+       <div class="next-hint"><kbd>J</kbd> missed · <kbd>K</kbd> got it</div>`
+    : `<button class="reveal-btn" id="revealBtn">Reveal answer</button>
+       <div class="next-hint"><kbd>Space</kbd> reveal · <kbd>→</kbd> skip</div>`;
 
   main.innerHTML = `
     <div class="card">
@@ -222,52 +204,27 @@ function render() {
       <div class="song">${song.title}</div>
       <div class="artist">${song.artist}</div>
       <div class="question">${questionHtml}</div>
-      <div class="answer-row">
-        <input id="ans" type="${inputType}" placeholder="${placeholder}" autocomplete="off" autofocus>
-        <button class="primary" id="submitBtn">Check</button>
-      </div>
-      <div class="feedback" id="fb"></div>
-      <div class="next-hint" id="hint"></div>
+      <div class="reveal-area">${revealHtml}</div>
     </div>
   `;
-  const ans = document.getElementById('ans');
-  ans.focus();
-  ans.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSubmit(); });
-  document.getElementById('submitBtn').addEventListener('click', handleSubmit);
+  if (!revealed) document.getElementById('revealBtn').addEventListener('click', reveal);
+  else {
+    document.getElementById('gotBtn').addEventListener('click', () => score(true));
+    document.getElementById('missedBtn').addEventListener('click', () => score(false));
+  }
 }
 
-function handleSubmit() {
-  if (state.answered) { nextQuestion(); return; }
-  const ans = document.getElementById('ans').value.trim();
-  if (!ans) return;
-  const {song, qType, section} = state.current;
-  let correct = false, correctStr = '';
-  if (qType === 'tempo') {
-    const n = parseInt(ans, 10);
-    correctStr = `${song.bpm} BPM`;
-    correct = !isNaN(n) && Math.abs(n - song.bpm) <= 2;
-  } else if (qType === 'key') {
-    correctStr = `${song.tonic}${song.scale === 'minor' ? ' minor' : ''}`;
-    correct = keysMatch(ans, song.tonic, song.scale);
-  } else {
-    const n = parseInt(ans, 10);
-    correctStr = `${section.bars} measures`;
-    correct = !isNaN(n) && n === section.bars;
-  }
+function reveal() {
+  state.revealed = true;
+  render();
+}
+function score(got) {
   state.total += 1;
-  if (correct) state.correct += 1;
-  state.answered = true;
+  if (got) state.correct += 1;
   document.getElementById('correct').textContent = state.correct;
   document.getElementById('total').textContent = state.total;
-  const fb = document.getElementById('fb');
-  fb.className = 'feedback ' + (correct ? 'correct' : 'wrong');
-  fb.innerHTML = correct
-    ? `✓ correct<div class="answer">${correctStr}</div>`
-    : `✗ <span style="color:#e0e0e0">answer:</span><div class="answer">${correctStr}</div>`;
-  document.getElementById('hint').textContent = 'Press Enter for next →';
-  document.getElementById('submitBtn').textContent = 'Next ↵';
+  nextQuestion();
 }
-
 function nextQuestion() {
   state.current = null;
   render();
@@ -278,9 +235,12 @@ document.querySelectorAll('#qfilters input, #pfilters input').forEach(el => {
   el.addEventListener('change', () => { state.current = null; render(); });
 });
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && state.answered) { e.preventDefault(); nextQuestion(); }
+  if (e.target.tagName === 'INPUT') return;
+  if (!state.revealed && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); reveal(); }
+  else if (state.revealed && (e.key === 'k' || e.key === 'K' || e.key === 'Enter')) { e.preventDefault(); score(true); }
+  else if (state.revealed && (e.key === 'j' || e.key === 'J')) { e.preventDefault(); score(false); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); nextQuestion(); }
 });
-
 render();
 </script>
 </body>
