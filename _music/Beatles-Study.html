@@ -1,0 +1,119 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>Beatles</title>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #1a1a2e; color: #e0e0e0; font-family: -apple-system, sans-serif; font-size: 13px; overflow: hidden; }
+.topnav { display: flex; gap: 2px; background: #0f0f1f; padding: 6px 10px; border-bottom: 1px solid #2a2a4a; flex-wrap: wrap; }
+.topnav a { color: #8a8ab0; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: 500; }
+.topnav a:hover { color: #e0e0e0; background: #1e1e3a; }
+.topnav a.active { background: #1e1e3a; color: #e0e0e0; border-bottom: 2px solid #6366f1; border-radius: 4px 4px 0 0; }
+.layout { display: flex; height: calc(100vh - 36px); }
+.sidebar { width: 260px; min-width: 260px; background: #16162a; border-right: 1px solid #2a2a4a; display: flex; flex-direction: column; }
+.search { padding: 10px; border-bottom: 1px solid #2a2a4a; }
+.search input { width: 100%; padding: 8px; background: #1e1e3a; border: 1px solid #2a2a4a; border-radius: 4px; color: #e0e0e0; outline: none; font-size: 12px; }
+.search input:focus { border-color: #6366f1; }
+.songlist { overflow-y: auto; flex: 1; }
+.song-item { padding: 7px 10px; cursor: pointer; border-bottom: 1px solid rgba(42,42,74,0.4); border-left: 3px solid transparent; }
+.song-item:hover { background: #1e1e3a; }
+.song-item.active { background: #1e1e3a; border-left-color: #6366f1; }
+.song-item .title { font-weight: 600; color: #e0e0e0; font-size: 12px; }
+.song-item .artist { font-size: 10px; color: #6a6a8a; }
+.song-item.missing { opacity: 0.4; }
+
+.center { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.song-header { display: flex; gap: 18px; align-items: baseline; padding: 14px 24px 10px; border-bottom: 1px solid #2a2a4a; flex-wrap: wrap; }
+.song-header h1 { font-size: 20px; font-weight: 700; margin: 0; }
+.song-header .artist { font-size: 13px; color: #8a8ab0; }
+.song-header .meta { font-size: 12px; color: #8a8ab0; margin-left: auto; }
+.song-header .meta b { color: #e0e0e0; }
+.song-header .transport { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+.song-header .transport button { background: #2a2a4a; color: #e0e0e0; border: 1px solid #3a3a5a; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; }
+.song-header .transport button:hover { background: #3a3a5a; }
+.song-header .transport button.playing { background: #6e16a5; border-color: #8e26c5; }
+.song-header .transport .tempo-input { width: 50px; background: #16162a; color: #e0e0e0; border: 1px solid #3a3a5a; border-radius: 4px; padding: 4px; text-align: center; font-size: 12px; }
+.song-header .transport label { font-size: 11px; color: #8a8ab0; display: flex; align-items: center; gap: 4px; }
+
+.main { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px; }
+</style>
+</head><body>
+<div class="topnav"><a href="Beatles-Study.html" class="active">Beatles</a><a href="Guitar50.html">Guitar 50</a><a href="Guitar100.html">Guitar 100</a><a href="Guitar150.html">Guitar 150</a><a href="Guitar200.html">Guitar 200</a><a href="Guitar250.html">Guitar 250</a><a href="Guitar300.html">Guitar 300</a><a href="Guitar350.html">Guitar 350</a><a href="Guitar400.html">Guitar 400</a><a href="Guitar450.html">Guitar 450</a><a href="Guitar500.html">Guitar 500</a><a href="Guitar550.html">Guitar 550</a><a href="studied-songs.html">Studied</a></div>
+<div class="layout">
+  <div class="sidebar">
+    <div class="search"><input id="search" placeholder="Filter songs..." spellcheck="false"></div>
+    <div class="songlist" id="songlist"></div>
+  </div>
+  <div class="center">
+    <div class="song-header">
+      <h1 id="songTitle">select a song</h1>
+      <div class="artist" id="songArtist"></div>
+      <div class="meta" id="songMeta"></div>
+      <div class="transport">
+        <button id="playBtn">▶ Play</button>
+        <button id="stopBtn">■ Stop</button>
+        <label>BPM <input type="number" id="tempoInput" class="tempo-input" min="40" max="240"></label>
+        <label>show
+          <select id="displaySelect" class="tempo-input" style="width:auto">
+            <option value="chord">chord names</option>
+            <option value="roman">roman</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <div class="main" id="main"><div class="status">select a song from the sidebar</div></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
+<script src="song_viewer.js"></script>
+<script>
+const SONGS = [{"title":"A Day in the Life","artist":"The Beatles","slug":"beatles_a-day-in-the-life"},{"title":"A Hard Day's Night","artist":"The Beatles","slug":"beatles_a-hard-days-night"},{"title":"a hard days night","artist":"beatles","slug":"beatles_a-hard-days-night"},{"title":"Across the Universe","artist":"The Beatles","slug":"beatles_across-the-universe"},{"title":"all ive gotta do","artist":"beatles","slug":"beatles_all-ive-gotta-do_ly_o"},{"title":"All My Loving","artist":"The Beatles","slug":"beatles_all-my-loving"},{"title":"All My Loving","artist":"beatles","slug":"beatles_all-my-loving"},{"title":"all my loving-Right","artist":"beatles","slug":"beatles_all-my-loving-right"},{"title":"All You Need Is Love","artist":"The Beatles","slug":"beatles_all-you-need-is-love"},{"title":"And I Love Her","artist":"The Beatles","slug":"beatles_and-i-love-her"},{"title":"And Your Bird Can Sing","artist":"The Beatles","slug":"beatles_and-your-bird-can-sing"},{"title":"anna","artist":"beatles","slug":"beatles_anna"},{"title":"Baby You're a Rich Man","artist":"The Beatles","slug":"beatles_baby-you-re-a-rich-man"},{"title":"Back in the U.S.S.R.","artist":"The Beatles","slug":"beatles_back-in-the-ussr_o"},{"title":"Back In The USSR","artist":"beatles","slug":"beatles_back-in-the-ussr_o"},{"title":"Being for the Benefit of Mr. Kite!","artist":"The Beatles","slug":"beatles_being-for-the-benefit-of-mr-kite"},{"title":"benefit of mr. kite","artist":"beatles","slug":"beatles_benefit-of-mr-kite"},{"title":"Blackbird","artist":"The Beatles","slug":"beatles_blackbird"},{"title":"Can't Buy Me Love","artist":"The Beatles","slug":"beatles_can-t-buy-me-love"},{"title":"Come Together","artist":"The Beatles","slug":"beatles_come-together"},{"title":"Day Tripper","artist":"The Beatles","slug":"beatles_day-tripper"},{"title":"Day Tripper","artist":"beatles","slug":"beatles_day-tripper"},{"title":"Dear Prudence","artist":"beatles","slug":"beatles_dear-prudence_o"},{"title":"Dear Prudence","artist":"The Beatles","slug":"beatles_dear-prudence_o"},{"title":"Don't Bother Me","artist":"The Beatles","slug":"beatles_dont-bother-me"},{"title":"dr robert","artist":"beatles","slug":"beatles_dr-robert_o"},{"title":"dr robert","artist":"beatles","slug":"beatles_dr-robert_o"},{"title":"Drive My Car","artist":"The Beatles","slug":"beatles_drive-my-car"},{"title":"Eight Days a Week","artist":"The Beatles","slug":"beatles_eight-days-a-week"},{"title":"eight days a week","artist":"beatles","slug":"beatles_eight-days-a-week"},{"title":"Eleanor Rigby","artist":"The Beatles","slug":"beatles_eleanor-rigby"},{"title":"Eleanor Rigby","artist":"beatles","slug":"beatles_eleanor-rigby"},{"title":"Fixing a Hole","artist":"The Beatles","slug":"beatles_fixing-a-hole"},{"title":"For No One","artist":"The Beatles","slug":"beatles_for-no-one_o"},{"title":"for no one","artist":"beatles","slug":"beatles_for-no-one_o"},{"title":"From Me to You","artist":"The Beatles","slug":"beatles_from-me-to-you"},{"title":"Get Back","artist":"The Beatles","slug":"beatles_get-back"},{"title":"get back2","artist":"beatles","slug":"beatles_get-back2"},{"title":"getback2","artist":"beatles","slug":"beatles_get-back2-3bccef"},{"title":"Getting Better","artist":"The Beatles","slug":"beatles_getting-better"},{"title":"Girl","artist":"The Beatles","slug":"beatles_girl"},{"title":"Glass Onion","artist":"The Beatles","slug":"beatles_glass-onion"},{"title":"Good Day Sunshine","artist":"The Beatles","slug":"beatles_good-day-sunshine_o"},{"title":"Good Day Sunshine","artist":"beatles","slug":"beatles_good-day-sunshine_o"},{"title":"good morning","artist":"beatles","slug":"beatles_good-morning"},{"title":"Got to Get You into My Life","artist":"The Beatles","slug":"beatles_got-to-get-you-into-my-life"},{"title":"Happiness Is a Warm Gun","artist":"The Beatles","slug":"beatles_happiness-is-a-warm-gun"},{"title":"Hello, Goodbye","artist":"The Beatles","slug":"beatles_hello-goodbye"},{"title":"help","artist":"beatles","slug":"beatles_help"},{"title":"Help!","artist":"The Beatles","slug":"beatles_help"},{"title":"Here Comes the Sun","artist":"The Beatles","slug":"beatles_here-comes-the-sun"},{"title":"Here There And Everywhere","artist":"beatles","slug":"beatles_here-there-and-everywhere_o"},{"title":"Here, There and Everywhere","artist":"The Beatles","slug":"beatles_here-there-and-everywhere_o"},{"title":"Hey Jude","artist":"The Beatles","slug":"beatles_hey-jude_o"},{"title":"Hey Jude","artist":"beatles","slug":"beatles_hey-jude_o"},{"title":"I Am the Walrus","artist":"The Beatles","slug":"beatles_i-am-the-walrus"},{"title":"I Feel Fine","artist":"The Beatles","slug":"beatles_i-feel-fine"},{"title":"I Me Mine","artist":"The Beatles","slug":"beatles_i-me-mine"},{"title":"I Saw Her Standing There","artist":"The Beatles","slug":"beatles_i-saw-her-standing-there"},{"title":"I Should Have Known Better","artist":"The Beatles","slug":"beatles_i-should-have-known-better"},{"title":"I Want to Hold Your Hand","artist":"The Beatles","slug":"beatles_i-want-to-hold-your-hand"},{"title":"I Want to Tell You","artist":"The Beatles","slug":"beatles_i-want-to-tell-you"},{"title":"I'm a Loser","artist":"The Beatles","slug":"beatles_im-a-loser"},{"title":"I'm Happy Just To Dance With You","artist":"beatles","slug":"beatles_im-happy-just-to-dance-with-you-b4e471"},{"title":"I'm Happy Just to Dance with You","artist":"The Beatles","slug":"beatles_im-happy-just-to-dance-with-you-eab7ee"},{"title":"I'm Looking Through You","artist":"The Beatles","slug":"beatles_im-looking-through-you"},{"title":"I'm Only Sleeping","artist":"The Beatles","slug":"beatles_i-m-only-sleeping"},{"title":"I'm So Tired","artist":"The Beatles","slug":"beatles_im-so-tired_o"},{"title":"I'm so tired","artist":"beatles","slug":"beatles_im-so-tired_o"},{"title":"If I Fell","artist":"The Beatles","slug":"beatles_if-i-fell"},{"title":"If I Needed Someone","artist":"The Beatles","slug":"beatles_if-i-needed-someone"},{"title":"im a loser","artist":"beatles","slug":"beatles_im-a-loser"},{"title":"im a loser_ly_o_COMPLETED","artist":"beatles","slug":"beatles_im-a-loser_ly_o_completed"},{"title":"In My Life","artist":"The Beatles","slug":"beatles_in-my-life"},{"title":"Lady Madonna","artist":"The Beatles","slug":"beatles_lady-madonna"},{"title":"lady madonna","artist":"beatles","slug":"beatles_lady-madonna"},{"title":"Let It Be","artist":"The Beatles","slug":"beatles_let-it-be"},{"title":"Love Me Do","artist":"The Beatles","slug":"beatles_love-me-do"},{"title":"Lovely Rita","artist":"The Beatles","slug":"beatles_lovely-rita_ly_o"},{"title":"lovely rita","artist":"beatles","slug":"beatles_lovely-rita_ly_o"},{"title":"Lucy in the Sky with Diamonds","artist":"The Beatles","slug":"beatles_lucy-in-the-sky-with-diamonds"},{"title":"Lucy In The Sky With Diamonds","artist":"beatles","slug":"beatles_lucy-in-the-sky-with-diamonds"},{"title":"Magical Mystery Tour","artist":"The Beatles","slug":"beatles_magical-mystery-tour_o"},{"title":"Martha My Dear","artist":"The Beatles","slug":"beatles_martha-my-dear"},{"title":"Maxwell's Silver Hammer","artist":"The Beatles","slug":"beatles_maxwell-s-silver-hammer"},{"title":"Michelle","artist":"The Beatles","slug":"beatles_michelle"},{"title":"No Reply","artist":"The Beatles","slug":"beatles_no-reply"},{"title":"Norwegian Wood","artist":"The Beatles","slug":"beatles_norwegian-wood"},{"title":"Nowhere Man","artist":"The Beatles","slug":"beatles_nowhere-man"},{"title":"Ob-La-Di, Ob-La-Da","artist":"The Beatles","slug":"beatles_obladioblada"},{"title":"obladioblada","artist":"beatles","slug":"beatles_obladioblada"},{"title":"Oh! Darling","artist":"The Beatles","slug":"beatles_oh-darling"},{"title":"Paperback Writer","artist":"The Beatles","slug":"beatles_paperback-writer"},{"title":"paperback writer","artist":"beatles","slug":"beatles_paperback-writer"},{"title":"Penny Lane","artist":"beatles","slug":"beatles_penny-lane_ly_o"},{"title":"Penny Lane","artist":"The Beatles","slug":"beatles_penny-lane_ly_o"},{"title":"Piggies","artist":"The Beatles","slug":"beatles_piggies"},{"title":"Please Please Me","artist":"The Beatles","slug":"beatles_please-please-me"},{"title":"rain","artist":"beatles","slug":"beatles_rain"},{"title":"Rain","artist":"The Beatles","slug":"beatles_rain"},{"title":"revolution","artist":"beatles","slug":"beatles_revolution"},{"title":"Run for Your Life","artist":"The Beatles","slug":"beatles_run-for-your-life"},{"title":"Sexy Sadie","artist":"The Beatles","slug":"beatles_sexy-sadie_o"},{"title":"sgt peppers","artist":"beatles","slug":"beatles_sgt-peppers_o"},{"title":"She Loves You","artist":"The Beatles","slug":"beatles_she-loves-you"},{"title":"she loves you","artist":"beatles","slug":"beatles_she-loves-you"},{"title":"She Said She Said","artist":"The Beatles","slug":"beatles_she-said-she-said_ly"},{"title":"She's a Woman","artist":"The Beatles","slug":"beatles_shes-a-woman_o"},{"title":"She's Leaving Home","artist":"The Beatles","slug":"beatles_she-s-leaving-home_o"},{"title":"She's Leaving Home","artist":"beatles","slug":"beatles_she-s-leaving-home_o-7a1691"},{"title":"Something","artist":"The Beatles","slug":"beatles_something"},{"title":"Strawberry Fields Forever","artist":"The Beatles","slug":"beatles_strawberry-fields-forever_o"},{"title":"Strawberry Fields Forever","artist":"beatles","slug":"beatles_strawberry-fields-forever_o"},{"title":"Taxman","artist":"The Beatles","slug":"beatles_taxman"},{"title":"The Ballad of John and Yoko","artist":"The Beatles","slug":"beatles_the-ballad-of-john-and-yoko"},{"title":"The Continuing Story of Bungalow Bill","artist":"The Beatles","slug":"beatles_the-continuing-story-of-bungalow-bill"},{"title":"The Night Before","artist":"beatles","slug":"beatles_the-night-before_o"},{"title":"The Night Before","artist":"The Beatles","slug":"beatles_the-night-before_o"},{"title":"The Word","artist":"The Beatles","slug":"beatles_the-word"},{"title":"Think for Yourself","artist":"The Beatles","slug":"beatles_think-for-yourself"},{"title":"Ticket to Ride","artist":"The Beatles","slug":"beatles_ticket-to-ride"},{"title":"Ticket to Ride","artist":"beatles","slug":"beatles_ticket-to-ride"},{"title":"Twist and Shout","artist":"The Beatles","slug":"beatles_twist-and-shout_ly_o"},{"title":"Wait","artist":"The Beatles","slug":"beatles_wait"},{"title":"wait-right","artist":"beatles","slug":"beatles_wait-right"},{"title":"we can work it out","artist":"beatles","slug":"beatles_we-can-work-it-out"},{"title":"We Can Work It Out","artist":"The Beatles","slug":"beatles_we-can-work-it-out"},{"title":"What Goes On","artist":"The Beatles","slug":"beatles_what-goes-on"},{"title":"When I'm Sixty-Four","artist":"The Beatles","slug":"beatles_when-i-m-sixty-four"},{"title":"While My Guitar Gently Weeps","artist":"The Beatles","slug":"beatles_while-my-guitar-gently-weeps"},{"title":"With a Little Help from My Friends","artist":"The Beatles","slug":"beatles_with-a-little-help-from-my-friends"},{"title":"With A Little Help From My Friends","artist":"beatles","slug":"beatles_with-a-little-help-from-my-friends"},{"title":"with a little help from my friends2","artist":"beatles","slug":"beatles_with-a-little-help-from-my-friends2"},{"title":"Yellow Submarine","artist":"The Beatles","slug":"beatles_yellow-submarine"},{"title":"Yellow Submarine","artist":"beatles","slug":"beatles_yellow-submarine"},{"title":"Yesterday","artist":"The Beatles","slug":"beatles_yesterday"},{"title":"You Won't See Me","artist":"The Beatles","slug":"beatles_you-wont-see-me"},{"title":"You've Got to Hide Your Love Away","artist":"The Beatles","slug":"beatles_you-ve-got-to-hide-your-love-away"}];
+const sb = window.supabase.createClient('https://eazzqlyfcnnlplobgaas.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhenpxbHlmY25ubHBsb2JnYWFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTI4MTkxMzAsImV4cCI6MjAwODM5NTEzMH0.3SUQeAewAyOzlNCUGTLx8E1hnDg7oD2CwymuK3s4wxE');
+const viewer = new SongViewer({
+  supabase: sb,
+  mainEl: '#main',
+  headerEls: { title: '#songTitle', artist: '#songArtist', meta: '#songMeta' },
+  transport: { playBtn: '#playBtn', stopBtn: '#stopBtn', tempoInput: '#tempoInput', displaySelect: '#displaySelect' },
+});
+
+function renderList(filter) {
+  const list = document.getElementById('songlist');
+  const norm = filter ? filter.toLowerCase().trim() : '';
+  list.innerHTML = SONGS.map((s, i) => {
+    const text = `${s.title} ${s.artist}`.toLowerCase();
+    if (norm && !text.includes(norm)) return '';
+    return `<div class="song-item ${s.slug ? '' : 'missing'}" data-idx="${i}">
+      <div class="title">${s.title}</div>
+      <div class="artist">${s.artist}${s.slug ? '' : ' · missing'}</div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('search').oninput = (e) => renderList(e.target.value);
+
+document.getElementById('songlist').addEventListener('click', (e) => {
+  const item = e.target.closest('.song-item');
+  if (!item) return;
+  const idx = parseInt(item.dataset.idx);
+  const song = SONGS[idx];
+  document.querySelectorAll('.song-item.active').forEach(el => el.classList.remove('active'));
+  item.classList.add('active');
+  if (!song.slug) {
+    document.getElementById('main').innerHTML = `<div class="status"><b>${song.title}</b> by ${song.artist}<br><br>not in library yet.</div>`;
+    document.getElementById('songTitle').textContent = song.title;
+    document.getElementById('songArtist').textContent = song.artist;
+    document.getElementById('songMeta').textContent = '';
+    return;
+  }
+  viewer.load(song.slug);
+});
+
+renderList('');
+// Auto-load first available song
+const firstWithSlug = SONGS.findIndex(s => s.slug);
+if (firstWithSlug >= 0) {
+  document.querySelectorAll('.song-item')[firstWithSlug]?.click();
+}
+</script>
+</body></html>
