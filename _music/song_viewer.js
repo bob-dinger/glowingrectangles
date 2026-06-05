@@ -150,10 +150,13 @@
       const { acc } = stripAcc(c.root);
       const borrowedStr = typeof c.borrowed === 'string' ? c.borrowed : '';
       const isDiatonic = !c.applied && !borrowedStr && acc === 0;
+      const deg = chordDeg(c);
+      // Minor-key chords use the relative-major degree color (i=purple, III=red, etc.)
+      const colorDeg = scale === 'minor' ? ((deg + 4) % 7) + 1 : deg;
       return {
         b: c.beat, d: c.duration ?? bpb, pc, midi,
         root: c.root, type: c.type, borrowed: borrowedStr,
-        deg: chordDeg(c), isDiatonic,
+        deg, colorDeg, isDiatonic,
         quality: chordQuality(c, scale),
         labelChord: chordLabelChord(c, tonic, scale),
         labelRoman: chordLabelRoman(c, scale),
@@ -388,8 +391,8 @@
             const remainingDur = (rowEndBeat - c.b);
             const dur = Math.min(c.d, remainingDur);
             const w = Math.max(8, dur * pxPerBeat - 1);
-            const cls = c.isDiatonic && c.deg >= 1 && c.deg <= 7
-              ? `deg-${c.deg}`
+            const cls = c.isDiatonic && c.colorDeg >= 1 && c.colorDeg <= 7
+              ? `deg-${c.colorDeg}`
               : (c.pc != null ? `pc-${c.pc}` : 'pc-unknown');
             const label = mode === 'roman' ? c.labelRoman : c.labelChord;
             chHtml += `<div class="chord-block ${cls}" style="left:${left}px;width:${w}px"
