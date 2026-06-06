@@ -47,9 +47,7 @@ def measure_boxes_html(pattern, beats_per_chord=4):
         chords_per_measure = bpm // beats_per_chord
         items = [tuple(seq[i:i+chords_per_measure]) for i in range(0, len(seq), chords_per_measure)]
 
-    n_measures = len(items)
-    cols = n_measures if n_measures <= 8 else 4
-    html = [f'<div class="measures" style="grid-template-columns:repeat({cols},1fr)">']
+    html = ['<div class="measures">']
     for measure_idx, chords_in_measure in enumerate(items):
         if len(chords_in_measure) == 1:
             L = chords_in_measure[0]
@@ -141,7 +139,7 @@ HTML = '''<!doctype html>
   .cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; }
   .card { background:#16162a; border:1px solid #2a2a4a; border-radius:8px; padding:14px; }
   .card-label { font-weight:700; color:#e0e0e0; margin-bottom:10px; font-size:14px; }
-  .measures { display:grid; gap:2px; margin-bottom:10px; }
+  .measures { display:grid; grid-template-columns:repeat(8,1fr); gap:2px; margin-bottom:10px; }
   .m { height:36px; border-radius:3px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:11px; text-shadow:0 1px 0 rgba(0,0,0,0.6); }
   .m-split { display:flex; gap:1px; padding:0; background:transparent !important; }
   .sub { flex:1; height:36px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:9px; }
