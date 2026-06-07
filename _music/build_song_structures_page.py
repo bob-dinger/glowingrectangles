@@ -273,7 +273,7 @@ HTML_TEMPLATE = r'''<!doctype html>
 
   .sections { display:flex; flex-direction:column; gap:8px; }
   .section-row { display:flex; align-items:center; gap:10px; }
-  .section-row .label { width:140px; flex-shrink:0; padding:8px 12px; border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:42px; }
+  .section-row .label { width:140px; flex-shrink:0; padding:0 12px; border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; height:42px; box-sizing:border-box; }
   .section-row .label .name { font-size:15px; color:#fff; font-weight:700; text-transform:capitalize; letter-spacing:0.3px; line-height:1.1; }
   .section-row .label .bars { font-size:11px; color:rgba(255,255,255,0.75); font-family: ui-monospace, Menlo, monospace; margin-top:2px; }
   .label-intro     { background:#3a3a5a; }
@@ -286,8 +286,8 @@ HTML_TEMPLATE = r'''<!doctype html>
   .label-interlude { background:#44446a; }
   .label-generic   { background:#a01b6b; }
   .label-other     { background:#44446a; }
-  .measures-strip { display:flex; gap:1px; height:32px; border-radius:3px; overflow:hidden; }
-  .mc { height:32px; }
+  .measures-strip { display:flex; gap:1px; height:42px; border-radius:3px; overflow:hidden; }
+  .mc { height:42px; }
   .deg-1 { background:#a01e1e; } .deg-2 { background:#b35610; } .deg-3 { background:#957e0c; }
   .deg-4 { background:#25a838; } .deg-5 { background:#3050d0; } .deg-6 { background:#6e16a5; }
   .deg-7 { background:#a01b6b; }
