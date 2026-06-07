@@ -138,7 +138,7 @@ function render(slug) {
     body = `<div class="placeholder" style="margin-top:40px">— no sections found —</div>`;
   } else {
     const totalBars = s.sections.reduce((a, b) => a + b.bars, 0);
-    const pxPerBar = 22;
+    const pxPerBar = 48;
     body = `<div class="sections">${s.sections.map(sec => {
       const cellsHtml = (sec.cells || []).map(cls =>
         `<div class="mc ${cls}" style="width:${pxPerBar - 1}px"></div>`
