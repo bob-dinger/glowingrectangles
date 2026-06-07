@@ -150,6 +150,9 @@ HTML_TEMPLATE = r'''<!doctype html>
 
   .layout { flex:1; display:flex; min-height:0; }
   .sidebar { width:340px; min-width:340px; background:#16162a; border-right:1px solid #2a2a4a; overflow-y:auto; }
+  .pool-pills { position:sticky; top:0; z-index:3; padding:8px 12px; background:#16162a; border-bottom:1px solid #2a2a4a; display:flex; gap:6px; flex-wrap:wrap; }
+  .pool-pill { padding:5px 12px; background:#20203a; color:#e0e0e0; border:1px solid #2a2a4a; border-radius:14px; font-size:11px; font-weight:600; cursor:pointer; text-decoration:none; }
+  .pool-pill:hover { background:#3050d0; border-color:#3050d0; }
   .pool-group { border-bottom:1px solid #20203a; }
   .pool-header { padding:10px 16px; background:#20203a; font-size:11px; color:#a5a8fc; text-transform:uppercase; letter-spacing:1.2px; font-weight:700; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:2; }
   .pool-count { color:#6a6a8a; font-weight:400; font-size:10px; }
@@ -207,6 +210,12 @@ HTML_TEMPLATE = r'''<!doctype html>
 </header>
 <div class="layout">
   <aside class="sidebar" id="sidebar">
+    <div class="pool-pills">
+      <a class="pool-pill" data-pool="Beatles">Beatles</a>
+      <a class="pool-pill" data-pool="G50">G50</a>
+      <a class="pool-pill" data-pool="G100">G100</a>
+      <a class="pool-pill" data-pool="G150">G150</a>
+    </div>
     __SIDEBAR__
   </aside>
   <main class="main" id="main">
@@ -267,6 +276,13 @@ function render(slug) {
     ${body}
   `;
 }
+
+document.querySelectorAll('.pool-pill').forEach(p => {
+  p.addEventListener('click', () => {
+    const target = document.querySelector(`.pool-group[data-pool="${p.dataset.pool}"]`);
+    if (target) target.scrollIntoView({behavior: 'smooth', block: 'start'});
+  });
+});
 
 document.querySelectorAll('.song-item').forEach(li => {
   li.addEventListener('click', () => {
