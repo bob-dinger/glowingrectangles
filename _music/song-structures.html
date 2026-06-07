@@ -48,21 +48,21 @@
   .flag-few-sections { background:#d97706; }
 
   .sections { display:flex; flex-direction:column; gap:8px; }
-  .section-row { display:flex; align-items:center; gap:12px; }
-  .section-row .label { width:140px; flex-shrink:0; text-align:right; }
-  .section-row .label .name { font-size:13px; color:#e0e0e0; font-weight:600; display:block; }
-  .section-row .label .bars { font-size:11px; color:#8a8ab0; font-family: ui-monospace, Menlo, monospace; }
-  .measures-strip { display:flex; gap:1px; height:32px; border-left:3px solid; padding-left:0; border-radius:2px; overflow:hidden; }
-  .strip-intro { border-left-color:#3a3a5a; }
-  .strip-verse { border-left-color:#1e4a73; }
-  .strip-prechorus { border-left-color:#3a5a4a; }
-  .strip-chorus { border-left-color:#a01e1e; }
-  .strip-bridge { border-left-color:#6e16a5; }
-  .strip-solo { border-left-color:#957e0c; }
-  .strip-outro { border-left-color:#3a3a5a; }
-  .strip-interlude { border-left-color:#44446a; }
-  .strip-generic { border-left-color:#a01b6b; }
-  .strip-other { border-left-color:#44446a; }
+  .section-row { display:flex; align-items:center; gap:10px; }
+  .section-row .label { width:140px; flex-shrink:0; padding:8px 12px; border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:42px; }
+  .section-row .label .name { font-size:15px; color:#fff; font-weight:700; text-transform:capitalize; letter-spacing:0.3px; line-height:1.1; }
+  .section-row .label .bars { font-size:11px; color:rgba(255,255,255,0.75); font-family: ui-monospace, Menlo, monospace; margin-top:2px; }
+  .label-intro     { background:#3a3a5a; }
+  .label-verse     { background:#1e4a73; }
+  .label-prechorus { background:#3a5a4a; }
+  .label-chorus    { background:#a01e1e; }
+  .label-bridge    { background:#6e16a5; }
+  .label-solo      { background:#957e0c; }
+  .label-outro     { background:#3a3a5a; }
+  .label-interlude { background:#44446a; }
+  .label-generic   { background:#a01b6b; }
+  .label-other     { background:#44446a; }
+  .measures-strip { display:flex; gap:1px; height:32px; border-radius:3px; overflow:hidden; }
   .mc { height:32px; }
   .deg-1 { background:#a01e1e; } .deg-2 { background:#b35610; } .deg-3 { background:#957e0c; }
   .deg-4 { background:#25a838; } .deg-5 { background:#3050d0; } .deg-6 { background:#6e16a5; }
@@ -143,9 +143,10 @@ function render(slug) {
       const cellsHtml = (sec.cells || []).map(cls =>
         `<div class="mc ${cls}" style="width:${pxPerBar - 1}px"></div>`
       ).join('');
+      const cls = classOf(sec.name);
       return `<div class="section-row">
-        <div class="label"><span class="name">${escapeHtml(sec.name)}</span><span class="bars">${sec.bars} bars</span></div>
-        <div class="measures-strip strip-${classOf(sec.name)}" style="width:${sec.bars * pxPerBar}px">${cellsHtml}</div>
+        <div class="label label-${cls}"><span class="name">${escapeHtml(sec.name)}</span><span class="bars">${sec.bars} bars</span></div>
+        <div class="measures-strip" style="width:${sec.bars * pxPerBar}px">${cellsHtml}</div>
       </div>`;
     }).join('')}</div>
     <div class="totals" style="margin-left:152px;max-width:${Math.max(...s.sections.map(x=>x.bars)) * pxPerBar}px"><span>${s.sections.length} sections</span><span>${totalBars} bars</span></div>`;
