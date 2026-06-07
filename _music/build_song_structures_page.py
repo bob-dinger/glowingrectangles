@@ -63,8 +63,56 @@ def deg_to_pc(root, tonic, mode):
     return ((tonic_semis(tonic) + intervals[deg-1] + acc) % 12 + 12) % 12
 
 
+MODE_QUALITIES = {
+    'major':            ['M','m','m','M','M','m','d'],
+    'minor':            ['m','d','M','m','m','M','M'],
+    'dorian':           ['m','m','M','M','m','d','M'],
+    'mixolydian':       ['M','m','d','M','m','m','M'],
+    'lydian':           ['M','M','m','d','M','m','m'],
+    'phrygian':         ['m','M','M','m','d','M','m'],
+    'locrian':          ['d','M','m','m','M','M','m'],
+    'harmonicMinor':    ['m','d','a','m','M','M','d'],
+    'phrygianDominant': ['M','M','d','m','d','M','m'],
+}
+
+
+def chord_quality(c, scale):
+    if c.get('applied'): return 'M'
+    typ = c.get('type', '')
+    if typ in ('m', 'min'): return 'm'
+    borrowed = c.get('borrowed') if isinstance(c.get('borrowed'), str) else ''
+    mode = borrowed if borrowed in MODE_QUALITIES else scale
+    acc, rs = strip_acc(c.get('root', ''))
+    if not rs.isdigit(): return 'M'
+    deg = int(rs)
+    return MODE_QUALITIES.get(mode, MODE_QUALITIES['major'])[deg-1]
+
+
+def effective_pc(c, tonic, scale):
+    """Pitch class of the chord's actual root (handles applied + borrowed)."""
+    if c.get('applied'):
+        tgt_pc = deg_to_pc(str(c['applied']), tonic, scale)
+        if tgt_pc is None: return None
+        return deg_to_pc(str(c.get('root', '1')), NOTES[tgt_pc], 'major')
+    borrowed = c.get('borrowed') if isinstance(c.get('borrowed'), str) else ''
+    mode = borrowed if borrowed in MODE_INT else scale
+    return deg_to_pc(str(c.get('root', '1')), tonic, mode)
+
+
+def chord_name(c, tonic, scale):
+    """Return absolute chord name like 'C', 'Am', 'G7', 'Bb', 'F#dim'."""
+    pc = effective_pc(c, tonic, scale)
+    if pc is None: return '?'
+    name = NOTES[pc]
+    q = chord_quality(c, scale)
+    if q == 'm':   name += 'm'
+    elif q == 'd': name += '°'
+    elif q == 'a': name += '+'
+    if c.get('type') in (7, '7'): name += '7'
+    return name
+
+
 def chord_color_class(c, tonic, scale):
-    """Return CSS class: 'deg-N' for diatonic, 'pc-N' for chromatic/applied/borrowed."""
     if not c: return 'pc-unknown'
     acc, rs = strip_acc(c.get('root', ''))
     if not rs.isdigit(): return 'pc-unknown'
@@ -73,22 +121,14 @@ def chord_color_class(c, tonic, scale):
     borrowed = c.get('borrowed') if isinstance(c.get('borrowed'), str) else ''
     is_diatonic = not c.get('applied') and not borrowed and acc == 0
     if is_diatonic:
-        # Minor mode: shift to relative-major degree color (i->vi color, III->I color, etc.)
         color_deg = ((deg + 4) % 7) + 1 if scale == 'minor' else deg
         return f'deg-{color_deg}'
-    # Chromatic: pitch class
-    if c.get('applied'):
-        tgt_pc = deg_to_pc(str(c['applied']), tonic, scale)
-        if tgt_pc is None: return 'pc-unknown'
-        pc = deg_to_pc(str(c.get('root', '1')), NOTES[tgt_pc], 'major')
-    else:
-        mode = borrowed if borrowed in MODE_INT else scale
-        pc = deg_to_pc(str(c.get('root', '1')), tonic, mode)
+    pc = effective_pc(c, tonic, scale)
     return f'pc-{pc}' if pc is not None else 'pc-unknown'
 
 
-def per_measure_chord_classes(chords, start, end, bpb, tonic, scale):
-    """Return one color class per measure in [start, end)."""
+def per_measure_chord_data(chords, start, end, bpb, tonic, scale):
+    """Return list of {cls, name} per measure in [start, end)."""
     n_bars = round((end - start) / bpb)
     measures = [None] * n_bars
     for c in sorted(chords, key=lambda x: x.get('beat', 0)):
@@ -99,9 +139,9 @@ def per_measure_chord_classes(chords, start, end, bpb, tonic, scale):
         last_m = min(n_bars - 1, int((cb + cd - 1e-9 - start) / bpb))
         for m in range(first_m, last_m + 1):
             if measures[m] is None:
-                measures[m] = chord_color_class(c, tonic, scale)
-    # carry forward
-    last = 'pc-unknown'
+                measures[m] = {'cls': chord_color_class(c, tonic, scale),
+                               'name': chord_name(c, tonic, scale)}
+    last = {'cls': 'pc-unknown', 'name': ''}
     for i in range(n_bars):
         if measures[i] is None: measures[i] = last
         else: last = measures[i]
@@ -124,7 +164,7 @@ def section_breakdown(d):
         end = sections[i+1]['beat'] if i+1 < len(sections) else end_beat
         bars = round((end - start) / bpb)
         if bars < 1: continue
-        cells = per_measure_chord_classes(chords, start, end, bpb, tonic, scale)
+        cells = per_measure_chord_data(chords, start, end, bpb, tonic, scale)
         out.append({'name': name, 'bars': bars, 'cells': cells})
     return out
 
@@ -276,18 +316,18 @@ HTML_TEMPLATE = r'''<!doctype html>
   .section-row .label { width:140px; flex-shrink:0; padding:0 12px; border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; height:42px; box-sizing:border-box; }
   .section-row .label .name { font-size:15px; color:#fff; font-weight:700; text-transform:capitalize; letter-spacing:0.3px; line-height:1.1; }
   .section-row .label .bars { font-size:11px; color:rgba(255,255,255,0.75); font-family: ui-monospace, Menlo, monospace; margin-top:2px; }
-  .label-intro     { background:#3a3a5a; }
-  .label-verse     { background:#1e4a73; }
-  .label-prechorus { background:#3a5a4a; }
-  .label-chorus    { background:#a01e1e; }
-  .label-bridge    { background:#6e16a5; }
-  .label-solo      { background:#957e0c; }
-  .label-outro     { background:#3a3a5a; }
-  .label-interlude { background:#44446a; }
-  .label-generic   { background:#a01b6b; }
-  .label-other     { background:#44446a; }
+  .label-intro     { background:#0ea5e9; }
+  .label-verse     { background:#2563eb; }
+  .label-prechorus { background:#14b8a6; }
+  .label-chorus    { background:#dc2626; }
+  .label-bridge    { background:#9333ea; }
+  .label-solo      { background:#f59e0b; }
+  .label-outro     { background:#475569; }
+  .label-interlude { background:#6366f1; }
+  .label-generic   { background:#ec4899; }
+  .label-other     { background:#64748b; }
   .measures-strip { display:flex; gap:1px; height:42px; border-radius:3px; overflow:hidden; }
-  .mc { height:42px; }
+  .mc { height:42px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:13px; text-shadow:0 1px 0 rgba(0,0,0,0.6), 1px 0 0 rgba(0,0,0,0.4); font-family: ui-monospace, Menlo, monospace; }
   .deg-1 { background:#a01e1e; } .deg-2 { background:#b35610; } .deg-3 { background:#957e0c; }
   .deg-4 { background:#25a838; } .deg-5 { background:#3050d0; } .deg-6 { background:#6e16a5; }
   .deg-7 { background:#a01b6b; }
@@ -361,8 +401,8 @@ function render(slug) {
     const totalBars = s.sections.reduce((a, b) => a + b.bars, 0);
     const pxPerBar = 48;
     body = `<div class="sections">${s.sections.map(sec => {
-      const cellsHtml = (sec.cells || []).map(cls =>
-        `<div class="mc ${cls}" style="width:${pxPerBar - 1}px"></div>`
+      const cellsHtml = (sec.cells || []).map(cell =>
+        `<div class="mc ${cell.cls}" style="width:${pxPerBar - 1}px">${escapeHtml(cell.name || '')}</div>`
       ).join('');
       const cls = classOf(sec.name);
       return `<div class="section-row">
