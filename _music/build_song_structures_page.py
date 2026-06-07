@@ -26,10 +26,96 @@ def slugs_from_page(fn):
             for s in json.loads(m.group(1)) if s.get('slug')]
 
 
+MAJOR_INT = [0,2,4,5,7,9,11]
+MODE_INT = {
+    'major':[0,2,4,5,7,9,11], 'minor':[0,2,3,5,7,8,10],
+    'dorian':[0,2,3,5,7,9,10], 'mixolydian':[0,2,4,5,7,9,10],
+    'lydian':[0,2,4,6,7,9,11], 'phrygian':[0,1,3,5,7,8,10],
+    'locrian':[0,1,3,5,6,8,10], 'harmonicMinor':[0,2,3,5,7,8,11],
+    'phrygianDominant':[0,1,4,5,7,8,10],
+}
+NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']
+
+
+def strip_acc(s):
+    s = str(s or ''); acc = 0
+    while s and s[0] in 'b#':
+        acc += -1 if s[0]=='b' else 1; s = s[1:]
+    return acc, s
+
+
+def tonic_semis(t):
+    t = (t or 'C')
+    for i, n in enumerate(NOTES):
+        if n == t: return i
+    flats = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B']
+    for i, n in enumerate(flats):
+        if n == t: return i
+    return 0
+
+
+def deg_to_pc(root, tonic, mode):
+    acc, rs = strip_acc(root)
+    if not rs.isdigit(): return None
+    deg = int(rs)
+    if deg < 1 or deg > 7: return None
+    intervals = MODE_INT.get(mode, MAJOR_INT)
+    return ((tonic_semis(tonic) + intervals[deg-1] + acc) % 12 + 12) % 12
+
+
+def chord_color_class(c, tonic, scale):
+    """Return CSS class: 'deg-N' for diatonic, 'pc-N' for chromatic/applied/borrowed."""
+    if not c: return 'pc-unknown'
+    acc, rs = strip_acc(c.get('root', ''))
+    if not rs.isdigit(): return 'pc-unknown'
+    deg = int(rs)
+    if deg < 1 or deg > 7: return 'pc-unknown'
+    borrowed = c.get('borrowed') if isinstance(c.get('borrowed'), str) else ''
+    is_diatonic = not c.get('applied') and not borrowed and acc == 0
+    if is_diatonic:
+        # Minor mode: shift to relative-major degree color (i->vi color, III->I color, etc.)
+        color_deg = ((deg + 4) % 7) + 1 if scale == 'minor' else deg
+        return f'deg-{color_deg}'
+    # Chromatic: pitch class
+    if c.get('applied'):
+        tgt_pc = deg_to_pc(str(c['applied']), tonic, scale)
+        if tgt_pc is None: return 'pc-unknown'
+        pc = deg_to_pc(str(c.get('root', '1')), NOTES[tgt_pc], 'major')
+    else:
+        mode = borrowed if borrowed in MODE_INT else scale
+        pc = deg_to_pc(str(c.get('root', '1')), tonic, mode)
+    return f'pc-{pc}' if pc is not None else 'pc-unknown'
+
+
+def per_measure_chord_classes(chords, start, end, bpb, tonic, scale):
+    """Return one color class per measure in [start, end)."""
+    n_bars = round((end - start) / bpb)
+    measures = [None] * n_bars
+    for c in sorted(chords, key=lambda x: x.get('beat', 0)):
+        if c.get('isRest'): continue
+        cb = c.get('beat', 0); cd = c.get('duration', 0)
+        if cb + cd <= start or cb >= end: continue
+        first_m = max(0, int((cb - start) / bpb))
+        last_m = min(n_bars - 1, int((cb + cd - 1e-9 - start) / bpb))
+        for m in range(first_m, last_m + 1):
+            if measures[m] is None:
+                measures[m] = chord_color_class(c, tonic, scale)
+    # carry forward
+    last = 'pc-unknown'
+    for i in range(n_bars):
+        if measures[i] is None: measures[i] = last
+        else: last = measures[i]
+    return measures
+
+
 def section_breakdown(d):
     sections = sorted(d.get('sections') or [], key=lambda s: s.get('beat', 0))
     bpb = ((d.get('meters') or [{}])[0].get('numBeats')) or 4
     end_beat = d.get('endBeat') or 0
+    key0 = (d.get('keys') or [{}])[0]
+    tonic = key0.get('tonic') or 'C'
+    scale = key0.get('scale') or 'major'
+    chords = d.get('chords') or []
     out = []
     for i, s in enumerate(sections):
         name = (s.get('name') or '').strip()
@@ -38,7 +124,8 @@ def section_breakdown(d):
         end = sections[i+1]['beat'] if i+1 < len(sections) else end_beat
         bars = round((end - start) / bpb)
         if bars < 1: continue
-        out.append({'name': name, 'bars': bars})
+        cells = per_measure_chord_classes(chords, start, end, bpb, tonic, scale)
+        out.append({'name': name, 'bars': bars, 'cells': cells})
     return out
 
 
@@ -184,20 +271,34 @@ HTML_TEMPLATE = r'''<!doctype html>
   .flag-only-generic { background:#ea580c; }
   .flag-few-sections { background:#d97706; }
 
-  .sections { display:flex; flex-direction:column; gap:6px; max-width:520px; }
-  .section { display:flex; align-items:center; padding:10px 16px; border-radius:6px; }
-  .section .name { flex:1; font-size:14px; color:#fff; font-weight:600; }
-  .section .bars { font-family: ui-monospace, Menlo, monospace; font-size:13px; color:#fff; background:rgba(0,0,0,0.3); padding:2px 10px; border-radius:11px; font-weight:700; }
-  .sec-intro { background:#3a3a5a; }
-  .sec-verse { background:#1e4a73; }
-  .sec-prechorus { background:#3a5a4a; }
-  .sec-chorus { background:#a01e1e; }
-  .sec-bridge { background:#6e16a5; }
-  .sec-solo { background:#957e0c; }
-  .sec-outro { background:#3a3a5a; }
-  .sec-interlude { background:#44446a; }
-  .sec-generic { background:#a01b6b; }
-  .sec-other { background:#44446a; }
+  .sections { display:flex; flex-direction:column; gap:8px; }
+  .section-row { display:flex; align-items:center; gap:12px; }
+  .section-row .label { width:140px; flex-shrink:0; text-align:right; }
+  .section-row .label .name { font-size:13px; color:#e0e0e0; font-weight:600; display:block; }
+  .section-row .label .bars { font-size:11px; color:#8a8ab0; font-family: ui-monospace, Menlo, monospace; }
+  .measures-strip { display:flex; gap:1px; height:32px; border-left:3px solid; padding-left:0; border-radius:2px; overflow:hidden; }
+  .strip-intro { border-left-color:#3a3a5a; }
+  .strip-verse { border-left-color:#1e4a73; }
+  .strip-prechorus { border-left-color:#3a5a4a; }
+  .strip-chorus { border-left-color:#a01e1e; }
+  .strip-bridge { border-left-color:#6e16a5; }
+  .strip-solo { border-left-color:#957e0c; }
+  .strip-outro { border-left-color:#3a3a5a; }
+  .strip-interlude { border-left-color:#44446a; }
+  .strip-generic { border-left-color:#a01b6b; }
+  .strip-other { border-left-color:#44446a; }
+  .mc { height:32px; }
+  .deg-1 { background:#a01e1e; } .deg-2 { background:#b35610; } .deg-3 { background:#957e0c; }
+  .deg-4 { background:#25a838; } .deg-5 { background:#3050d0; } .deg-6 { background:#6e16a5; }
+  .deg-7 { background:#a01b6b; }
+  .pc-0 { background:#a01e1e; } .pc-1 { background:repeating-linear-gradient(135deg,#a01e1e 0 5px,#b35610 5px 10px); }
+  .pc-2 { background:#b35610; } .pc-3 { background:repeating-linear-gradient(135deg,#b35610 0 5px,#957e0c 5px 10px); }
+  .pc-4 { background:#957e0c; } .pc-5 { background:#25a838; }
+  .pc-6 { background:repeating-linear-gradient(135deg,#25a838 0 5px,#3050d0 5px 10px); }
+  .pc-7 { background:#3050d0; } .pc-8 { background:repeating-linear-gradient(135deg,#3050d0 0 5px,#6e16a5 5px 10px); }
+  .pc-9 { background:#6e16a5; } .pc-10 { background:repeating-linear-gradient(135deg,#6e16a5 0 5px,#a01b6b 5px 10px); }
+  .pc-11 { background:#a01b6b; }
+  .pc-unknown { background:#44446a; }
 
   .totals { margin-top:18px; font-size:12px; color:#8a8ab0; max-width:520px; display:flex; justify-content:space-between; padding:0 6px; }
 </style>
@@ -258,13 +359,17 @@ function render(slug) {
     body = `<div class="placeholder" style="margin-top:40px">— no sections found —</div>`;
   } else {
     const totalBars = s.sections.reduce((a, b) => a + b.bars, 0);
-    body = `<div class="sections">${s.sections.map(sec => `
-      <div class="section sec-${classOf(sec.name)}">
-        <span class="name">${escapeHtml(sec.name)}</span>
-        <span class="bars">${sec.bars}</span>
-      </div>
-    `).join('')}</div>
-    <div class="totals"><span>${s.sections.length} sections</span><span>${totalBars} bars</span></div>`;
+    const pxPerBar = 22;
+    body = `<div class="sections">${s.sections.map(sec => {
+      const cellsHtml = (sec.cells || []).map(cls =>
+        `<div class="mc ${cls}" style="width:${pxPerBar - 1}px"></div>`
+      ).join('');
+      return `<div class="section-row">
+        <div class="label"><span class="name">${escapeHtml(sec.name)}</span><span class="bars">${sec.bars} bars</span></div>
+        <div class="measures-strip strip-${classOf(sec.name)}" style="width:${sec.bars * pxPerBar}px">${cellsHtml}</div>
+      </div>`;
+    }).join('')}</div>
+    <div class="totals" style="margin-left:152px;max-width:${Math.max(...s.sections.map(x=>x.bars)) * pxPerBar}px"><span>${s.sections.length} sections</span><span>${totalBars} bars</span></div>`;
   }
   main.innerHTML = `
     <div class="song-head">
