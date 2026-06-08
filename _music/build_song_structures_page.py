@@ -15,6 +15,14 @@ PAGES = [
     ('G50', 'Guitar50.html'),
     ('G100', 'Guitar100.html'),
     ('G150', 'Guitar150.html'),
+    ('G200', 'Guitar200.html'),
+    ('G250', 'Guitar250.html'),
+    ('G300', 'Guitar300.html'),
+    ('G350', 'Guitar350.html'),
+    ('G400', 'Guitar400.html'),
+    ('G450', 'Guitar450.html'),
+    ('G500', 'Guitar500.html'),
+    ('G550', 'Guitar550.html'),
 ]
 
 
@@ -254,7 +262,9 @@ def main():
             f'</div>'
         )
 
+    pills_html = ''.join(f'<a class="pool-pill" data-pool="{label}">{label}</a>' for label, _ in PAGES)
     html = HTML_TEMPLATE.replace('__SIDEBAR__', '\n'.join(sidebar_html))
+    html = html.replace('__PILLS__', pills_html)
     html = html.replace('__DATA__', json.dumps(songs_json, ensure_ascii=False, separators=(',', ':')))
     open(OUT, 'w').write(html)
     print(f"wrote {OUT}")
@@ -351,12 +361,7 @@ HTML_TEMPLATE = r'''<!doctype html>
 </header>
 <div class="layout">
   <aside class="sidebar" id="sidebar">
-    <div class="pool-pills">
-      <a class="pool-pill" data-pool="Beatles">Beatles</a>
-      <a class="pool-pill" data-pool="G50">G50</a>
-      <a class="pool-pill" data-pool="G100">G100</a>
-      <a class="pool-pill" data-pool="G150">G150</a>
-    </div>
+    <div class="pool-pills">__PILLS__</div>
     __SIDEBAR__
   </aside>
   <main class="main" id="main">
