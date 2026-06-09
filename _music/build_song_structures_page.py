@@ -9,7 +9,7 @@ load_dotenv('/Users/robert/Desktop/themap/themap_claude/.env')
 from supabase import create_client
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, 'song-structures.html')
+OUT = os.path.join(HERE, 'songs.html')
 PAGES = [
     ('Beatles', 'Beatles-Study.html'),
     ('G50', 'Guitar50.html'),
@@ -276,14 +276,17 @@ HTML_TEMPLATE = r'''<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Song Structures — Glowing Gardens</title>
+<title>Songs — Glowing Gardens</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#1a1a2e; color:#e0e0e0; margin:0; padding:0; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
   .back-link { position:fixed; top:18px; left:20px; color:#6a6a8a; text-decoration:none; font-size:13px; z-index:50; }
   .back-link:hover { color:#e0e0e0; }
-  header { padding:18px 24px 12px 60px; border-bottom:1px solid #2a2a4a; }
+  header { padding:14px 24px 12px 60px; border-bottom:1px solid #2a2a4a; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
   header h1 { font-size:18px; font-weight:700; margin:0; }
-  header p { font-size:11px; color:#8a8ab0; margin:3px 0 0; }
+  .view-toggle { display:flex; gap:4px; background:#16162a; padding:3px; border:1px solid #2a2a4a; border-radius:18px; }
+  .view-toggle button { background:transparent; border:none; color:#8a8ab0; padding:5px 14px; border-radius:14px; cursor:pointer; font-size:12px; font-weight:600; }
+  .view-toggle button.active { background:#3050d0; color:#fff; }
+  .view-toggle button:hover:not(.active) { color:#e0e0e0; }
 
   .layout { flex:1; display:flex; min-height:0; }
   .sidebar { width:340px; min-width:340px; background:#16162a; border-right:1px solid #2a2a4a; overflow-y:auto; }
@@ -307,8 +310,28 @@ HTML_TEMPLATE = r'''<!doctype html>
   .song-item .song-title { font-size:13px; color:#e0e0e0; font-weight:500; grid-column:1 / -1; }
   .song-item .song-artist { font-size:10px; color:#8a8ab0; grid-column:1 / -1; }
 
-  .main { flex:1; overflow-y:auto; padding:24px 36px; }
-  .placeholder { color:#6a6a8a; text-align:center; margin-top:120px; font-size:14px; }
+  .main { flex:1; overflow-y:auto; padding:0; display:flex; flex-direction:column; }
+  .structure-pane, .expanded-pane { display:none; flex:1; }
+  .structure-pane.active, .expanded-pane.active { display:flex; flex-direction:column; }
+  .structure-pane { padding:24px 36px; }
+  .placeholder { color:#6a6a8a; text-align:center; margin-top:120px; font-size:14px; padding:0 36px; }
+  .filter-box { padding:8px 12px; border-bottom:1px solid #2a2a4a; background:#16162a; }
+  .filter-box input { width:100%; padding:7px 10px; background:#1e1e3a; border:1px solid #2a2a4a; border-radius:6px; color:#e0e0e0; outline:none; font-size:12px; box-sizing:border-box; }
+  .filter-box input:focus { border-color:#6366f1; }
+
+  /* Expanded (song_viewer.js) DOM mirroring the Guitar*.html pages */
+  .exp-song-header { display:flex; gap:18px; align-items:baseline; padding:14px 24px 10px; border-bottom:1px solid #2a2a4a; flex-wrap:wrap; }
+  .exp-song-header h1 { font-size:20px; font-weight:700; margin:0; }
+  .exp-song-header .artist { font-size:13px; color:#8a8ab0; }
+  .exp-song-header .meta { font-size:12px; color:#8a8ab0; }
+  .exp-song-header .meta b { color:#e0e0e0; }
+  .exp-song-header .transport { display:flex; gap:6px; align-items:center; margin-left:auto; }
+  .exp-song-header .transport button { background:#2a2a4a; color:#e0e0e0; border:1px solid #3a3a5a; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600; }
+  .exp-song-header .transport button:hover { background:#3a3a5a; }
+  .exp-song-header .transport button.playing { background:#6e16a5; border-color:#8e26c5; }
+  .exp-song-header .transport .tempo-input { width:50px; background:#16162a; color:#e0e0e0; border:1px solid #3a3a5a; border-radius:4px; padding:4px; text-align:center; font-size:12px; }
+  .exp-song-header .transport label { font-size:11px; color:#8a8ab0; display:flex; align-items:center; gap:4px; }
+  .exp-canvas-host { flex:1; overflow:auto; padding:12px; }
   .song-head { margin-bottom:24px; }
   .song-head .title { font-size:24px; font-weight:700; color:#e0e0e0; margin-bottom:4px; }
   .song-head .artist { font-size:14px; color:#8a8ab0; }
@@ -356,21 +379,59 @@ HTML_TEMPLATE = r'''<!doctype html>
 <body>
 <a href="index.html" class="back-link">&larr; Music</a>
 <header>
-  <h1>Song Structures</h1>
-  <p>Click a song on the left to see its sections. Dots = flag (red=no sections, orange=only generic, amber=few sections, gray=OK).</p>
+  <h1>Songs</h1>
+  <div class="view-toggle">
+    <button data-mode="structure">Structure</button>
+    <button data-mode="expanded">Expanded</button>
+  </div>
 </header>
 <div class="layout">
   <aside class="sidebar" id="sidebar">
+    <div class="filter-box"><input id="filter" placeholder="Filter songs…" spellcheck="false"></div>
     <div class="pool-pills">__PILLS__</div>
     __SIDEBAR__
   </aside>
-  <main class="main" id="main">
-    <div class="placeholder">Click a song from the left to see its sections.</div>
+  <main class="main">
+    <div class="structure-pane" id="structurePane">
+      <div class="placeholder">Click a song from the left to see its sections.</div>
+    </div>
+    <div class="expanded-pane" id="expandedPane">
+      <div class="exp-song-header">
+        <h1 id="expTitle">select a song</h1>
+        <div class="artist" id="expArtist"></div>
+        <div class="meta" id="expMeta"></div>
+        <div class="transport">
+          <button id="expPlayBtn">▶ Play</button>
+          <button id="expStopBtn">■ Stop</button>
+          <label>BPM <input type="number" id="expTempoInput" class="tempo-input" min="40" max="240"></label>
+          <label>show
+            <select id="expDisplaySelect" class="tempo-input" style="width:auto">
+              <option value="chord">chord names</option>
+              <option value="roman">roman</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div class="exp-canvas-host" id="expMain"><div class="placeholder">Click a song to load it.</div></div>
+    </div>
   </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
+<script src="song_viewer.js"></script>
+
 <script>
 const SONGS = __DATA__;
+const SUPABASE_URL = 'https://eazzqlyfcnnlplobgaas.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhenpxbHlmY25ubHBsb2JnYWFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTI4MTkxMzAsImV4cCI6MjAwODM5NTEzMH0.3SUQeAewAyOzlNCUGTLx8E1hnDg7oD2CwymuK3s4wxE';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const viewer = new SongViewer({
+  supabase: sb,
+  mainEl: '#expMain',
+  headerEls: { title: '#expTitle', artist: '#expArtist', meta: '#expMeta' },
+  transport: { playBtn: '#expPlayBtn', stopBtn: '#expStopBtn', tempoInput: '#expTempoInput', displaySelect: '#expDisplaySelect' },
+});
 
 function classOf(name) {
   const n = name.toLowerCase().trim();
@@ -385,15 +446,17 @@ function classOf(name) {
   if (n === 'section' || n.startsWith('section ')) return 'generic';
   return 'other';
 }
-
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-function render(slug) {
+let currentSlug = null;
+let currentMode = localStorage.getItem('songsViewMode') || 'structure';
+
+function renderStructure(slug) {
   const s = SONGS[slug];
   if (!s) return;
-  const main = document.getElementById('main');
+  const pane = document.getElementById('structurePane');
   const flagLabels = {
     'ok': 'OK', 'no-data': 'NO HOOKPAD DATA',
     'no-sections': 'NO SECTIONS', 'only-generic': 'ONLY GENERIC',
@@ -417,7 +480,7 @@ function render(slug) {
     }).join('')}</div>
     <div class="totals" style="margin-left:152px;max-width:${Math.max(...s.sections.map(x=>x.bars)) * pxPerBar}px"><span>${s.sections.length} sections</span><span>${totalBars} bars</span></div>`;
   }
-  main.innerHTML = `
+  pane.innerHTML = `
     <div class="song-head">
       <div class="title">${escapeHtml(s.title)}</div>
       <div class="artist">${escapeHtml(s.artist)}</div>
@@ -428,25 +491,57 @@ function render(slug) {
   `;
 }
 
+function showMode(mode) {
+  currentMode = mode;
+  localStorage.setItem('songsViewMode', mode);
+  document.querySelectorAll('.view-toggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  document.getElementById('structurePane').classList.toggle('active', mode === 'structure');
+  document.getElementById('expandedPane').classList.toggle('active', mode === 'expanded');
+}
+
+function selectSong(slug) {
+  currentSlug = slug;
+  document.querySelectorAll('.song-item.active').forEach(x => x.classList.remove('active'));
+  const item = document.querySelector(`.song-item[data-slug="${slug}"]`);
+  if (item) { item.classList.add('active'); item.scrollIntoView({block:'nearest'}); }
+  if (currentMode === 'structure') renderStructure(slug);
+  else viewer.load(slug);
+}
+
+document.querySelectorAll('.view-toggle button').forEach(b => {
+  b.addEventListener('click', () => {
+    showMode(b.dataset.mode);
+    if (currentSlug) {
+      if (b.dataset.mode === 'structure') renderStructure(currentSlug);
+      else viewer.load(currentSlug);
+    }
+  });
+});
 document.querySelectorAll('.pool-pill').forEach(p => {
   p.addEventListener('click', () => {
     const target = document.querySelector(`.pool-group[data-pool="${p.dataset.pool}"]`);
     if (target) target.scrollIntoView({behavior: 'smooth', block: 'start'});
   });
 });
-
 document.querySelectorAll('.song-item').forEach(li => {
-  li.addEventListener('click', () => {
-    document.querySelectorAll('.song-item.active').forEach(x => x.classList.remove('active'));
-    li.classList.add('active');
-    render(li.dataset.slug);
-    li.scrollIntoView({block: 'nearest'});
+  li.addEventListener('click', () => selectSong(li.dataset.slug));
+});
+
+// Filter songs
+document.getElementById('filter').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll('.song-item').forEach(li => {
+    const s = SONGS[li.dataset.slug];
+    const text = `${s.title} ${s.artist}`.toLowerCase();
+    li.style.display = (!q || text.includes(q)) ? '' : 'none';
   });
 });
 
-// auto-select first item
+showMode(currentMode);
 const first = document.querySelector('.song-item');
-if (first) first.click();
+if (first) selectSong(first.dataset.slug);
 </script>
 </body>
 </html>
