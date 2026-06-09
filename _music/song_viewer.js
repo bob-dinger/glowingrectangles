@@ -269,7 +269,7 @@
       this.stop();
       this.mainEl.innerHTML = '<div class="status">loading song…</div>';
       const { data, error } = await this.sb.schema('parcels').from('songs')
-        .select('title,artist,key_tonic,key_scale,bpm,hookpad_json,hookpad_url')
+        .select('title,artist,key_tonic,key_scale,bpm,hookpad_json,hookpad_url,ug_url')
         .eq('slug', slug).limit(1);
       if (error) { this.mainEl.innerHTML = `<div class="status">error: ${error.message}</div>`; return; }
       const row = data?.[0];
@@ -279,6 +279,7 @@
       this.song = {
         title: row.title, artist: row.artist,
         hookpadUrl: row.hookpad_url || null,
+        ugUrl: row.ug_url || null,
         raw: row.hookpad_json,
         derived: buildSongData(row.hookpad_json),
       };
@@ -293,11 +294,15 @@
       if (this.headerEls.title) this.headerEls.title.textContent = this.song.title;
       if (this.headerEls.artist) this.headerEls.artist.textContent = this.song.artist || '';
       if (this.headerEls.meta) {
+        const linkStyle = 'color:#a5b4fc;text-decoration:none;font-weight:600';
         const hookpadLink = this.song.hookpadUrl
-          ? ` · <a href="${this.song.hookpadUrl}" target="_blank" rel="noopener" style="color:#a5b4fc;text-decoration:none;font-weight:600">Open in Hookpad ↗</a>`
+          ? ` · <a href="${this.song.hookpadUrl}" target="_blank" rel="noopener" style="${linkStyle}">Open in Hookpad ↗</a>`
+          : '';
+        const ugLink = this.song.ugUrl
+          ? ` · <a href="${this.song.ugUrl}" target="_blank" rel="noopener" style="${linkStyle}">UG ↗</a>`
           : '';
         this.headerEls.meta.innerHTML =
-          `<b>${derived.keyStr}</b> · ${derived.bpm} BPM · ${derived.bpb}/4 · ${derived.totalBars} bars${hookpadLink}`;
+          `<b>${derived.keyStr}</b> · ${derived.bpm} BPM · ${derived.bpb}/4 · ${derived.totalBars} bars${hookpadLink}${ugLink}`;
       }
       if (this.transport.tempoInput) this.transport.tempoInput.value = derived.bpm;
     }
