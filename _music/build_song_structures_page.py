@@ -228,13 +228,11 @@ def main():
     for s in song_meta.values():
         s['flag'] = flag(s.get('sections'))
 
-    # Sort each pool list: flagged first, then alphabetical by artist+title
-    flag_order = {'no-data':0,'no-sections':1,'only-generic':2,'few-sections':3,'ok':4}
+    # Sort each pool list alphabetically by title
     for label in pool_lists:
         pool_lists[label].sort(key=lambda slug: (
-            flag_order.get(song_meta[slug]['flag'], 99),
-            song_meta[slug]['artist'].lower(),
             song_meta[slug]['title'].lower(),
+            song_meta[slug]['artist'].lower(),
         ))
 
     # Build the inline data
@@ -281,12 +279,15 @@ HTML_TEMPLATE = r'''<!doctype html>
   body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#1a1a2e; color:#e0e0e0; margin:0; padding:0; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
   .back-link { position:fixed; top:18px; left:20px; color:#6a6a8a; text-decoration:none; font-size:13px; z-index:50; }
   .back-link:hover { color:#e0e0e0; }
-  header { padding:14px 24px 12px 60px; border-bottom:1px solid #2a2a4a; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  header { padding:12px 24px 12px 60px; border-bottom:1px solid #2a2a4a; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
   header h1 { font-size:18px; font-weight:700; margin:0; }
   .view-toggle { display:flex; gap:4px; background:#16162a; padding:3px; border:1px solid #2a2a4a; border-radius:18px; }
   .view-toggle button { background:transparent; border:none; color:#8a8ab0; padding:5px 14px; border-radius:14px; cursor:pointer; font-size:12px; font-weight:600; }
   .view-toggle button.active { background:#3050d0; color:#fff; }
   .view-toggle button:hover:not(.active) { color:#e0e0e0; }
+  .nav-pool-pills { display:flex; gap:4px; flex-wrap:wrap; margin-left:auto; }
+  .nav-pool-pills .pool-pill { padding:4px 10px; background:#20203a; color:#e0e0e0; border:1px solid #2a2a4a; border-radius:12px; font-size:11px; font-weight:600; cursor:pointer; text-decoration:none; }
+  .nav-pool-pills .pool-pill:hover { background:#3050d0; border-color:#3050d0; }
 
   .layout { flex:1; display:flex; min-height:0; }
   .sidebar { width:340px; min-width:340px; background:#16162a; border-right:1px solid #2a2a4a; overflow-y:auto; }
@@ -384,11 +385,11 @@ HTML_TEMPLATE = r'''<!doctype html>
     <button data-mode="structure">Structure</button>
     <button data-mode="expanded">Expanded</button>
   </div>
+  <div class="nav-pool-pills">__PILLS__</div>
 </header>
 <div class="layout">
   <aside class="sidebar" id="sidebar">
     <div class="filter-box"><input id="filter" placeholder="Filter songs…" spellcheck="false"></div>
-    <div class="pool-pills">__PILLS__</div>
     __SIDEBAR__
   </aside>
   <main class="main">
@@ -522,7 +523,10 @@ document.querySelectorAll('.view-toggle button').forEach(b => {
 document.querySelectorAll('.pool-pill').forEach(p => {
   p.addEventListener('click', () => {
     const target = document.querySelector(`.pool-group[data-pool="${p.dataset.pool}"]`);
-    if (target) target.scrollIntoView({behavior: 'smooth', block: 'start'});
+    if (!target) return;
+    const sidebar = document.getElementById('sidebar');
+    // Instant jump — set scrollTop directly so the pool header lands at the top of the sidebar.
+    sidebar.scrollTop = target.offsetTop - sidebar.querySelector('.filter-box').offsetHeight;
   });
 });
 document.querySelectorAll('.song-item').forEach(li => {
