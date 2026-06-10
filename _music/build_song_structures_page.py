@@ -214,10 +214,16 @@ def main():
         rows = (sb.schema('parcels').table('songs')
                 .select('slug,hookpad_json,hookpad_url,ug_url').in_('slug', chunk).execute().data)
         for r in rows:
-            secs = section_breakdown(r['hookpad_json']) if r.get('hookpad_json') else None
+            d = r.get('hookpad_json')
+            secs = section_breakdown(d) if d else None
             song_meta[r['slug']]['sections'] = secs
             song_meta[r['slug']]['hookpadUrl'] = r.get('hookpad_url')
             song_meta[r['slug']]['ugUrl'] = r.get('ug_url')
+            if d:
+                t = (d.get('tempos') or [{}])[0]
+                k = (d.get('keys') or [{}])[0]
+                song_meta[r['slug']]['bpm'] = round(t.get('bpm')) if t.get('bpm') else None
+                song_meta[r['slug']]['keyStr'] = (k.get('tonic') or '') + (' min' if k.get('scale') == 'minor' else '')
 
     # Flag computation
     def flag(secs):
@@ -242,6 +248,7 @@ def main():
         'title': m['title'], 'artist': m['artist'], 'pools': m['pools'],
         'flag': m['flag'], 'sections': m.get('sections') or [],
         'hookpadUrl': m.get('hookpadUrl'), 'ugUrl': m.get('ugUrl'),
+        'bpm': m.get('bpm'), 'keyStr': m.get('keyStr'),
     } for slug, m in song_meta.items()}
     pool_json = {label: pool_lists[label] for label, _ in PAGES}
 
@@ -487,13 +494,20 @@ function renderStructure(slug) {
   const linkStyle = 'color:#a5b4fc;text-decoration:none;font-weight:600;font-size:12px;margin-right:14px';
   const hookpadLink = s.hookpadUrl ? `<a href="${s.hookpadUrl}" target="_blank" rel="noopener" style="${linkStyle}">Open in Hookpad ↗</a>` : '';
   const ugLink      = s.ugUrl      ? `<a href="${s.ugUrl}"      target="_blank" rel="noopener" style="${linkStyle}">UG ↗</a>` : '';
-  const linkBar = (hookpadLink || ugLink) ? `<div style="margin-top:8px">${hookpadLink}${ugLink}</div>` : '';
+  const metaBits = [];
+  if (s.keyStr) metaBits.push(`<b style="color:#e0e0e0">${escapeHtml(s.keyStr)}</b>`);
+  if (s.bpm)    metaBits.push(`${s.bpm} BPM`);
+  const metaBar = metaBits.length
+    ? `<div style="margin-top:8px;font-size:12px;color:#8a8ab0">${metaBits.join(' · ')}</div>`
+    : '';
+  const linkBar = (hookpadLink || ugLink) ? `<div style="margin-top:6px">${hookpadLink}${ugLink}</div>` : '';
   pane.innerHTML = `
     <div class="song-head">
       <div class="title">${escapeHtml(s.title)}</div>
       <div class="artist">${escapeHtml(s.artist)}</div>
       <div class="pools">${s.pools.map(p => `<span class="pool-tag">${p}</span>`).join('')}</div>
       <div class="flag flag-${s.flag}">${flagLabels[s.flag] || s.flag}</div>
+      ${metaBar}
       ${linkBar}
     </div>
     ${body}
