@@ -206,16 +206,18 @@ def main():
             if slug not in pool_lists[label]:
                 pool_lists[label].append(slug)
 
-    # Fetch hookpad_json for every slug, batched
+    # Fetch hookpad_json + URLs for every slug, batched
     all_slugs = list(song_meta.keys())
     print(f"loading {len(all_slugs)} songs...")
     for i in range(0, len(all_slugs), 100):
         chunk = all_slugs[i:i+100]
         rows = (sb.schema('parcels').table('songs')
-                .select('slug,hookpad_json').in_('slug', chunk).execute().data)
+                .select('slug,hookpad_json,hookpad_url,ug_url').in_('slug', chunk).execute().data)
         for r in rows:
             secs = section_breakdown(r['hookpad_json']) if r.get('hookpad_json') else None
             song_meta[r['slug']]['sections'] = secs
+            song_meta[r['slug']]['hookpadUrl'] = r.get('hookpad_url')
+            song_meta[r['slug']]['ugUrl'] = r.get('ug_url')
 
     # Flag computation
     def flag(secs):
@@ -239,6 +241,7 @@ def main():
     songs_json = {slug: {
         'title': m['title'], 'artist': m['artist'], 'pools': m['pools'],
         'flag': m['flag'], 'sections': m.get('sections') or [],
+        'hookpadUrl': m.get('hookpadUrl'), 'ugUrl': m.get('ugUrl'),
     } for slug, m in song_meta.items()}
     pool_json = {label: pool_lists[label] for label, _ in PAGES}
 
@@ -481,12 +484,17 @@ function renderStructure(slug) {
     }).join('')}</div>
     <div class="totals" style="margin-left:152px;max-width:${Math.max(...s.sections.map(x=>x.bars)) * pxPerBar}px"><span>${s.sections.length} sections</span><span>${totalBars} bars</span></div>`;
   }
+  const linkStyle = 'color:#a5b4fc;text-decoration:none;font-weight:600;font-size:12px;margin-right:14px';
+  const hookpadLink = s.hookpadUrl ? `<a href="${s.hookpadUrl}" target="_blank" rel="noopener" style="${linkStyle}">Open in Hookpad ↗</a>` : '';
+  const ugLink      = s.ugUrl      ? `<a href="${s.ugUrl}"      target="_blank" rel="noopener" style="${linkStyle}">UG ↗</a>` : '';
+  const linkBar = (hookpadLink || ugLink) ? `<div style="margin-top:8px">${hookpadLink}${ugLink}</div>` : '';
   pane.innerHTML = `
     <div class="song-head">
       <div class="title">${escapeHtml(s.title)}</div>
       <div class="artist">${escapeHtml(s.artist)}</div>
       <div class="pools">${s.pools.map(p => `<span class="pool-tag">${p}</span>`).join('')}</div>
       <div class="flag flag-${s.flag}">${flagLabels[s.flag] || s.flag}</div>
+      ${linkBar}
     </div>
     ${body}
   `;
