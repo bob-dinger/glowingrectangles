@@ -297,7 +297,8 @@ HTML_TEMPLATE = r'''<!doctype html>
   .view-toggle button:hover:not(.active) { color:#e0e0e0; }
   .nav-pool-pills { display:flex; gap:4px; flex-wrap:wrap; margin-left:auto; }
   .nav-pool-pills .pool-pill { padding:4px 10px; background:#20203a; color:#e0e0e0; border:1px solid #2a2a4a; border-radius:12px; font-size:11px; font-weight:600; cursor:pointer; text-decoration:none; }
-  .nav-pool-pills .pool-pill:hover { background:#3050d0; border-color:#3050d0; }
+  .nav-pool-pills .pool-pill:hover { background:#2a3a7a; }
+  .nav-pool-pills .pool-pill.active { background:#3050d0; border-color:#3050d0; color:#fff; }
 
   .layout { flex:1; display:flex; min-height:0; }
   .sidebar { width:340px; min-width:340px; background:#16162a; border-right:1px solid #2a2a4a; overflow-y:auto; }
@@ -542,14 +543,22 @@ document.querySelectorAll('.view-toggle button').forEach(b => {
     }
   });
 });
-document.querySelectorAll('.pool-pill').forEach(p => {
-  p.addEventListener('click', () => {
-    const target = document.querySelector(`.pool-group[data-pool="${p.dataset.pool}"]`);
-    if (!target) return;
-    const sidebar = document.getElementById('sidebar');
-    // Instant jump — set scrollTop directly so the pool header lands at the top of the sidebar.
-    sidebar.scrollTop = target.offsetTop - sidebar.querySelector('.filter-box').offsetHeight;
+function showPool(label, autoSelect) {
+  localStorage.setItem('songsActivePool', label);
+  document.querySelectorAll('.pool-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.pool === label);
   });
+  document.querySelectorAll('.pool-group').forEach(g => {
+    g.style.display = g.dataset.pool === label ? '' : 'none';
+  });
+  document.getElementById('sidebar').scrollTop = 0;
+  if (autoSelect) {
+    const firstVisible = document.querySelector(`.pool-group[data-pool="${label}"] .song-item`);
+    if (firstVisible) selectSong(firstVisible.dataset.slug);
+  }
+}
+document.querySelectorAll('.pool-pill').forEach(p => {
+  p.addEventListener('click', () => showPool(p.dataset.pool, true));
 });
 document.querySelectorAll('.song-item').forEach(li => {
   li.addEventListener('click', () => selectSong(li.dataset.slug));
@@ -566,8 +575,10 @@ document.getElementById('filter').addEventListener('input', (e) => {
 });
 
 showMode(currentMode);
-const first = document.querySelector('.song-item');
-if (first) selectSong(first.dataset.slug);
+showPool(localStorage.getItem('songsActivePool') || 'Beatles', false);
+// auto-select the first visible song
+const firstVisible = document.querySelector('.pool-group:not([style*="display: none"]) .song-item');
+if (firstVisible) selectSong(firstVisible.dataset.slug);
 </script>
 </body>
 </html>
