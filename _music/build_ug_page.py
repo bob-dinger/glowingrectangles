@@ -34,10 +34,21 @@ def norm(s):
     return re.sub(r"[^a-z0-9]", "", (s or '').lower())
 
 
+# Map our internal pool labels (Beatles / G50 / G100 / …) to folder names
+# under hookpad_images/ that the user actually uses (beatles / guitar50 / guitar100 / …).
+POOL_FOLDER = {
+    'Beatles': 'beatles',
+    'G50': 'guitar50', 'G100': 'guitar100', 'G150': 'guitar150',
+    'G200': 'guitar200', 'G250': 'guitar250', 'G300': 'guitar300',
+    'G350': 'guitar350', 'G400': 'guitar400', 'G450': 'guitar450',
+    'G500': 'guitar500', 'G550': 'guitar550',
+}
+
+
 def find_images(pool_label, artist, title):
-    """Look under hookpad_images/{pool_lower}/* for a folder matching artist_title.
+    """Look under hookpad_images/<folder>/* for a folder matching artist_title.
     Return list of {name, path} for any .png/.jpg files inside."""
-    pool_dir = os.path.join(IMG_ROOT, pool_label.lower())
+    pool_dir = os.path.join(IMG_ROOT, POOL_FOLDER.get(pool_label, pool_label.lower()))
     if not os.path.isdir(pool_dir):
         return []
     target_key = norm(artist) + norm(title)
