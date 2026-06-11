@@ -1,11 +1,12 @@
-"""Build _music/ug.html — mobile page: pool selector + alphabetical song list with UG links."""
-import os, re, json
+"""Build _music/ug.html — mobile page: pool selector + alphabetical song list with UG links + per-section Hookpad screenshots."""
+import os, re, json, glob
 from dotenv import load_dotenv
 load_dotenv('/Users/robert/Desktop/themap/themap_claude/.env')
 from supabase import create_client
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'ug.html')
+IMG_ROOT = os.path.join(os.path.dirname(HERE), 'hookpad_images')   # repo-root /hookpad_images/
 PAGES = [
     ('Beatles', 'Beatles-Study.html'),
     ('G50', 'Guitar50.html'),
@@ -29,6 +30,31 @@ def slugs_from_page(fn):
     return [s['slug'] for s in json.loads(m.group(1)) if s.get('slug')]
 
 
+def norm(s):
+    return re.sub(r"[^a-z0-9]", "", (s or '').lower())
+
+
+def find_images(pool_label, artist, title):
+    """Look under hookpad_images/{pool_lower}/* for a folder matching artist_title.
+    Return list of {name, path} for any .png/.jpg files inside."""
+    pool_dir = os.path.join(IMG_ROOT, pool_label.lower())
+    if not os.path.isdir(pool_dir):
+        return []
+    target_key = norm(artist) + norm(title)
+    for entry in os.listdir(pool_dir):
+        full = os.path.join(pool_dir, entry)
+        if not os.path.isdir(full): continue
+        if norm(entry.replace('_', ' ')) != target_key: continue
+        files = []
+        for img in sorted(glob.glob(os.path.join(full, '*.png')) + glob.glob(os.path.join(full, '*.jpg'))):
+            name = os.path.splitext(os.path.basename(img))[0]
+            # path relative to repo root (so the served URL works on GH Pages)
+            rel = os.path.relpath(img, os.path.dirname(HERE))
+            files.append({'name': name, 'path': '../' + rel.replace(os.sep, '/')})
+        return files
+    return []
+
+
 def main():
     sb = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_SERVICE_ROLE_KEY'])
     pools = {}
@@ -46,18 +72,27 @@ def main():
             rows[row['slug']] = row
     pool_data = {}
     total_with_url = 0
+    total_with_images = 0
     for label, slugs in pools.items():
         items = []
         for slug in slugs:
             r = rows.get(slug)
             if not r: continue
-            items.append({'title': r.get('title') or '', 'artist': r.get('artist') or '', 'ug_url': r.get('ug_url')})
+            imgs = find_images(label, r.get('artist'), r.get('title'))
+            if imgs: total_with_images += 1
+            items.append({
+                'title': r.get('title') or '',
+                'artist': r.get('artist') or '',
+                'ug_url': r.get('ug_url'),
+                'images': imgs,
+            })
         items.sort(key=lambda s: s['title'].lower())
         pool_data[label] = items
         n_url = sum(1 for x in items if x['ug_url'])
         total_with_url += n_url
-        print(f"  {label}: {len(items)} songs, {n_url} with ug_url")
-    print(f"total UG links: {total_with_url}")
+        n_img = sum(1 for x in items if x['images'])
+        print(f"  {label}: {len(items)} songs, {n_url} with ug_url, {n_img} with images")
+    print(f"total UG links: {total_with_url}, songs with images: {total_with_images}")
 
     html = HTML.replace('__DATA__', json.dumps(pool_data, ensure_ascii=False, separators=(',', ':')))
     html = html.replace('__POOLS__', json.dumps(list(pool_data.keys())))
@@ -83,13 +118,23 @@ HTML = r'''<!doctype html>
   .count { font-size:12px; color:#8a8ab0; margin-top:8px; }
   ul.songs { list-style:none; margin:0; padding:0; }
   ul.songs li { border-bottom:1px solid #1e1e3a; }
-  ul.songs li a { display:block; padding:14px 16px; color:#e0e0e0; text-decoration:none; }
-  ul.songs li a:active { background:#1e1e3a; }
-  ul.songs li.no-url { padding:14px 16px; color:#6a6a8a; }
+  ul.songs li { padding:12px 16px; }
+  ul.songs li .song-link, ul.songs li.no-url { color:#e0e0e0; text-decoration:none; display:block; }
+  ul.songs li .song-link:active { background:#1e1e3a; }
+  ul.songs li.no-url { color:#6a6a8a; }
   .title { font-size:16px; font-weight:600; color:#e0e0e0; }
   .artist { font-size:13px; color:#8a8ab0; margin-top:2px; }
   .no-url .artist { color:#5a5a7a; }
   .arrow { float:right; color:#6366f1; font-size:14px; }
+  .images { display:flex; gap:8px; overflow-x:auto; margin-top:10px; padding-bottom:4px; -webkit-overflow-scrolling:touch; }
+  .images .thumb { flex:0 0 auto; cursor:pointer; }
+  .images img { display:block; height:90px; border-radius:6px; border:1px solid #2a2a4a; }
+  .images .label { font-size:10px; color:#8a8ab0; text-align:center; margin-top:3px; text-transform:capitalize; }
+  .lightbox { position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:100; display:none; align-items:center; justify-content:center; padding:10px; flex-direction:column; }
+  .lightbox.open { display:flex; }
+  .lightbox img { max-width:100%; max-height:90vh; border-radius:6px; }
+  .lightbox .close { position:absolute; top:14px; right:16px; color:#fff; font-size:30px; cursor:pointer; }
+  .lightbox .cap { color:#fff; font-size:14px; margin-top:10px; text-transform:capitalize; }
 </style>
 </head>
 <body>
@@ -99,6 +144,11 @@ HTML = r'''<!doctype html>
   <div class="count" id="count"></div>
 </header>
 <ul class="songs" id="songs"></ul>
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <span class="close">×</span>
+  <img alt="">
+  <div class="cap"></div>
+</div>
 
 <script>
 const DATA = __DATA__;
@@ -113,12 +163,27 @@ function pickPool(label) {
   const withUrl = items.filter(x => x.ug_url).length;
   document.getElementById('count').textContent = `${withUrl} of ${items.length} have a UG link`;
   const list = document.getElementById('songs');
-  list.innerHTML = items.map(s => s.ug_url
-    ? `<li><a href="${s.ug_url}" target="_blank" rel="noopener"><div class="title">${escapeHtml(s.title)} <span class="arrow">↗</span></div><div class="artist">${escapeHtml(s.artist)}</div></a></li>`
-    : `<li class="no-url"><div class="title">${escapeHtml(s.title)}</div><div class="artist">${escapeHtml(s.artist)} · no UG link</div></li>`
-  ).join('');
+  list.innerHTML = items.map(s => {
+    const head = s.ug_url
+      ? `<a class="song-link" href="${s.ug_url}" target="_blank" rel="noopener"><div class="title">${escapeHtml(s.title)} <span class="arrow">↗</span></div><div class="artist">${escapeHtml(s.artist)}</div></a>`
+      : `<div class="title">${escapeHtml(s.title)}</div><div class="artist">${escapeHtml(s.artist)} · no UG link</div>`;
+    const imgs = (s.images && s.images.length)
+      ? `<div class="images">${s.images.map(img => `<div class="thumb" data-img="${escapeHtml(img.path)}" data-cap="${escapeHtml(img.name)}"><img src="${escapeHtml(img.path)}" loading="lazy" alt=""><div class="label">${escapeHtml(img.name)}</div></div>`).join('')}</div>`
+      : '';
+    const cls = s.ug_url ? '' : ' class="no-url"';
+    return `<li${cls}>${head}${imgs}</li>`;
+  }).join('');
+  // Bind lightbox openers
+  document.querySelectorAll('#songs .thumb').forEach(t => t.addEventListener('click', () => openLightbox(t.dataset.img, t.dataset.cap)));
   window.scrollTo(0, 0);
 }
+function openLightbox(src, cap) {
+  const lb = document.getElementById('lightbox');
+  lb.querySelector('img').src = src;
+  lb.querySelector('.cap').textContent = cap || '';
+  lb.classList.add('open');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 document.getElementById('pillBar').innerHTML = POOLS.map(p => `<div class="pill" data-pool="${p}">${p}</div>`).join('');
