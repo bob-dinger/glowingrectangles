@@ -7,44 +7,55 @@
 <style>
   :root { font-size:16px; }
   * { box-sizing:border-box; }
-  body { margin:0; background:#0f0f1f; color:#e0e0e0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; min-height:100vh; display:flex; flex-direction:column; }
-  header { padding:14px 16px; border-bottom:1px solid #2a2a4a; display:flex; align-items:center; gap:14px; }
-  header h1 { font-size:17px; font-weight:700; margin:0; }
-  .score { font-size:13px; color:#8a8ab0; margin-left:auto; font-family:ui-monospace,monospace; }
+  body { margin:0; background:#0f0f1f; color:#e0e0e0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; min-height:100vh; display:flex; flex-direction:column; -webkit-tap-highlight-color:transparent; }
+  header { padding:12px 14px; border-bottom:1px solid #2a2a4a; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  header h1 { font-size:16px; font-weight:700; margin:0; }
+  .score { font-size:13px; color:#8a8ab0; margin-left:auto; font-family:ui-monospace,monospace; white-space:nowrap; }
   .score b { color:#e0e0e0; }
   .streak { color:#f59e0b; font-weight:700; }
 
-  main { flex:1; padding:24px 16px; max-width:540px; margin:0 auto; width:100%; }
-  .prompt { font-size:13px; color:#8a8ab0; text-align:center; margin-bottom:8px; }
+  main { flex:1; padding:14px; max-width:540px; margin:0 auto; width:100%; }
+  .prompt { font-size:13px; color:#8a8ab0; text-align:center; margin-bottom:10px; }
 
-  /* ASCII tab */
-  .tab { background:#1a1a2e; border:1px solid #2a2a4a; border-radius:10px; padding:18px 14px; margin-bottom:18px; overflow-x:auto; font-family:ui-monospace,Menlo,monospace; font-size:17px; line-height:1.7; color:#e0e0e0; white-space:pre; -webkit-font-smoothing:antialiased; }
+  /* ASCII tab — fluid font size so the 24-char block always fits */
+  .tab { background:#1a1a2e; border:1px solid #2a2a4a; border-radius:10px; padding:14px 10px; margin-bottom:16px; font-family:ui-monospace,Menlo,monospace; font-size:clamp(13px, 3.4vw, 17px); line-height:1.75; color:#e0e0e0; white-space:pre; text-align:center; -webkit-font-smoothing:antialiased; }
   .tab .num { color:#fbbf24; font-weight:700; }
 
   /* answer buttons */
-  .choices { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; }
-  .choice { background:#2a2a4a; color:#e0e0e0; border:1px solid #3a3a5a; border-radius:10px; height:54px; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; cursor:pointer; user-select:none; transition:transform 0.1s, background 0.15s; font-family:ui-monospace,Menlo,monospace; letter-spacing:0.5px; }
+  .choices { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+  .choice { background:#2a2a4a; color:#e0e0e0; border:1px solid #3a3a5a; border-radius:10px; height:54px; display:flex; align-items:center; justify-content:center; font-size:clamp(15px, 4.2vw, 18px); font-weight:700; cursor:pointer; user-select:none; transition:transform 0.1s, background 0.15s; font-family:ui-monospace,Menlo,monospace; letter-spacing:0.5px; }
   .choice:hover { background:#3a3a5a; }
   .choice:active { transform:scale(0.96); }
   .choice.correct { background:#16a34a; border-color:#22c55e; color:#fff; }
   .choice.wrong { background:#dc2626; border-color:#ef4444; color:#fff; }
   .choice.faded { opacity:0.3; }
 
-  .actions { margin-top:18px; display:flex; gap:10px; justify-content:center; }
-  .btn { background:#3050d0; color:#fff; border:none; padding:12px 28px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; }
+  .actions { margin-top:16px; display:flex; gap:10px; justify-content:center; }
+  .btn { background:#3050d0; color:#fff; border:none; padding:14px 32px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; min-width:140px; }
   .btn:disabled { background:#2a2a4a; color:#5a5a7a; cursor:default; }
 
-  .feedback { text-align:center; margin-top:14px; min-height:24px; font-size:14px; font-weight:600; }
+  .feedback { text-align:center; margin-top:12px; min-height:24px; font-size:14px; font-weight:600; }
   .feedback.correct { color:#4ade80; }
   .feedback.wrong { color:#f87171; }
 
   /* settings */
-  .settings { padding:10px 16px; border-top:1px solid #2a2a4a; font-size:12px; color:#8a8ab0; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-  .settings label { display:flex; align-items:center; gap:4px; cursor:pointer; }
-  .settings input[type="number"] { width:50px; background:#1a1a2e; color:#e0e0e0; border:1px solid #3a3a5a; border-radius:4px; padding:3px; font-family:ui-monospace,monospace; text-align:center; }
+  .settings { padding:10px 14px; border-top:1px solid #2a2a4a; font-size:12px; color:#8a8ab0; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .settings label { display:flex; align-items:center; gap:5px; cursor:pointer; }
+  .settings input[type="number"] { width:54px; background:#1a1a2e; color:#e0e0e0; border:1px solid #3a3a5a; border-radius:4px; padding:5px; font-family:ui-monospace,monospace; text-align:center; }
+  .settings .tip { display:none; }
+  @media (min-width: 540px) { .settings .tip { display:inline; margin-left:auto; color:#5a5a7a; } }
 
   a.back { color:#6a6a8a; text-decoration:none; font-size:13px; }
   a.back:hover { color:#e0e0e0; }
+
+  /* extra-narrow phones */
+  @media (max-width: 360px) {
+    header { gap:8px; padding:10px 12px; }
+    header h1 { font-size:15px; }
+    main { padding:12px 10px; }
+    .choices { gap:6px; }
+    .choice { height:48px; }
+  }
 </style>
 </head>
 <body>
@@ -67,8 +78,7 @@
 </main>
 <div class="settings">
   <label>max fret <input type="number" id="maxFret" value="12" min="1" max="24"></label>
-  <label><input type="checkbox" id="enharm"> show sharps only (no flats)</label>
-  <span style="margin-left:auto;color:#5a5a7a">Tip: Enter for next</span>
+  <span class="tip">Tip: Enter for next</span>
 </div>
 
 <script>
