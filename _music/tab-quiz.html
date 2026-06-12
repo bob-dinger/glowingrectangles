@@ -102,7 +102,7 @@ function drawTab(stringIdx, fret) {
     if (i === stringIdx) {
       line = line.slice(0, pos) + `<span class="num">${numStr}</span>` + line.slice(pos + numStr.length);
     }
-    return `${s.name}|${line}|`;
+    return `|${line}|`;
   }).join('\n');
 }
 
