@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Tab Quiz — Glowing Gardens</title>
+<style>
+  :root { font-size:16px; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#0f0f1f; color:#e0e0e0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+  header { padding:14px 16px; border-bottom:1px solid #2a2a4a; display:flex; align-items:center; gap:14px; }
+  header h1 { font-size:17px; font-weight:700; margin:0; }
+  .score { font-size:13px; color:#8a8ab0; margin-left:auto; font-family:ui-monospace,monospace; }
+  .score b { color:#e0e0e0; }
+  .streak { color:#f59e0b; font-weight:700; }
+
+  main { flex:1; padding:24px 16px; max-width:540px; margin:0 auto; width:100%; }
+  .prompt { font-size:13px; color:#8a8ab0; text-align:center; margin-bottom:8px; }
+
+  /* ASCII tab */
+  .tab { background:#1a1a2e; border:1px solid #2a2a4a; border-radius:10px; padding:18px 14px; margin-bottom:18px; overflow-x:auto; font-family:ui-monospace,Menlo,monospace; font-size:17px; line-height:1.7; color:#e0e0e0; white-space:pre; -webkit-font-smoothing:antialiased; }
+  .tab .num { color:#fbbf24; font-weight:700; }
+
+  /* answer buttons */
+  .choices { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+  .choice { background:#2a2a4a; color:#e0e0e0; border:1px solid #3a3a5a; border-radius:8px; padding:14px 0; font-size:15px; font-weight:700; cursor:pointer; user-select:none; }
+  .choice:active { background:#3a3a5a; }
+  .choice.correct { background:#16a34a; border-color:#16a34a; color:#fff; }
+  .choice.wrong { background:#dc2626; border-color:#dc2626; color:#fff; }
+  .choice.faded { opacity:0.35; }
+
+  .actions { margin-top:18px; display:flex; gap:10px; justify-content:center; }
+  .btn { background:#3050d0; color:#fff; border:none; padding:12px 28px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; }
+  .btn:disabled { background:#2a2a4a; color:#5a5a7a; cursor:default; }
+
+  .feedback { text-align:center; margin-top:14px; min-height:24px; font-size:14px; font-weight:600; }
+  .feedback.correct { color:#4ade80; }
+  .feedback.wrong { color:#f87171; }
+
+  /* settings */
+  .settings { padding:10px 16px; border-top:1px solid #2a2a4a; font-size:12px; color:#8a8ab0; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .settings label { display:flex; align-items:center; gap:4px; cursor:pointer; }
+  .settings input[type="number"] { width:50px; background:#1a1a2e; color:#e0e0e0; border:1px solid #3a3a5a; border-radius:4px; padding:3px; font-family:ui-monospace,monospace; text-align:center; }
+
+  a.back { color:#6a6a8a; text-decoration:none; font-size:13px; }
+  a.back:hover { color:#e0e0e0; }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html" class="back">&larr; Music</a>
+  <h1>Tab → Note</h1>
+  <div class="score">
+    <b id="correctScore">0</b>/<b id="totalScore">0</b>
+    <span id="streakSpan" style="margin-left:10px"></span>
+  </div>
+</header>
+<main>
+  <div class="prompt" id="prompt">What note is shown?</div>
+  <div class="tab" id="tab"></div>
+  <div class="choices" id="choices"></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="actions">
+    <button class="btn" id="nextBtn">Next →</button>
+  </div>
+</main>
+<div class="settings">
+  <label>max fret <input type="number" id="maxFret" value="12" min="1" max="24"></label>
+  <label><input type="checkbox" id="enharm"> show sharps only (no flats)</label>
+  <span style="margin-left:auto;color:#5a5a7a">Tip: Enter for next</span>
+</div>
+
+<script>
+const STRINGS = [
+  { name: 'E', pc: 4, octave: 4 },   // high E (top of tab notation)
+  { name: 'B', pc: 11, octave: 3 },
+  { name: 'G', pc: 7,  octave: 3 },
+  { name: 'D', pc: 2,  octave: 3 },
+  { name: 'A', pc: 9,  octave: 2 },
+  { name: 'E', pc: 4,  octave: 2 },   // low E
+];
+const NOTES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const NOTES_FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+
+const state = { correct: 0, total: 0, streak: 0, best: 0, current: null, answered: false };
+
+function notePc(stringIdx, fret) {
+  return (STRINGS[stringIdx].pc + fret) % 12;
+}
+function noteName(pc) {
+  return NOTES_SHARP[pc];
+}
+
+function drawTab(stringIdx, fret) {
+  // Render an ASCII-tab style block, one fret number on one string
+  const WIDTH = 24;                                    // chars between pipes
+  const numStr = String(fret);
+  const pos = 5 + Math.floor(Math.random() * (WIDTH - numStr.length - 8));
+  const tabEl = document.getElementById('tab');
+  tabEl.innerHTML = STRINGS.map((s, i) => {
+    let line = '-'.repeat(WIDTH);
+    if (i === stringIdx) {
+      line = line.slice(0, pos) + `<span class="num">${numStr}</span>` + line.slice(pos + numStr.length);
+    }
+    return `${s.name}|${line}|`;
+  }).join('\n');
+}
+
+function newQuestion() {
+  const maxFret = parseInt(document.getElementById('maxFret').value) || 12;
+  const stringIdx = Math.floor(Math.random() * 6);
+  const fret = Math.floor(Math.random() * (maxFret + 1));
+  state.current = { stringIdx, fret, answerPc: notePc(stringIdx, fret) };
+  state.answered = false;
+  drawTab(stringIdx, fret);
+  // Build choices: correct answer + 7 random wrong answers
+  const correctName = noteName(state.current.answerPc);
+  const wrongs = [];
+  while (wrongs.length < 7) {
+    const r = NOTES_SHARP[Math.floor(Math.random() * 12)];
+    if (r !== correctName && !wrongs.includes(r)) wrongs.push(r);
+  }
+  const choices = [...wrongs, correctName].sort(() => Math.random() - 0.5);
+  const ch = document.getElementById('choices');
+  ch.innerHTML = choices.map(n => `<div class="choice" data-note="${n}">${n}</div>`).join('');
+  ch.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => answer(b)));
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+}
+
+function answer(btn) {
+  if (state.answered) return;
+  state.answered = true;
+  const picked = btn.dataset.note;
+  const correctName = noteName(state.current.answerPc);
+  const isRight = picked === correctName;
+  state.total += 1;
+  if (isRight) {
+    state.correct += 1; state.streak += 1;
+    if (state.streak > state.best) state.best = state.streak;
+  } else {
+    state.streak = 0;
+  }
+  // Mark buttons
+  document.querySelectorAll('.choice').forEach(b => {
+    if (b.dataset.note === correctName) b.classList.add('correct');
+    else if (b === btn) b.classList.add('wrong');
+    else b.classList.add('faded');
+  });
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback ' + (isRight ? 'correct' : 'wrong');
+  fb.textContent = isRight ? '✓ correct' : `✗ that was ${correctName}`;
+  updateScore();
+  localStorage.setItem('tabQuiz', JSON.stringify({ best: state.best }));
+}
+
+function updateScore() {
+  document.getElementById('correctScore').textContent = state.correct;
+  document.getElementById('totalScore').textContent = state.total;
+  document.getElementById('streakSpan').innerHTML = state.streak
+    ? `<span class="streak">🔥 ${state.streak}</span>`
+    : (state.best > 0 ? `<span style="color:#5a5a7a">best ${state.best}</span>` : '');
+}
+
+document.getElementById('nextBtn').addEventListener('click', newQuestion);
+window.addEventListener('keydown', e => { if (e.key === 'Enter' && state.answered) newQuestion(); });
+document.getElementById('maxFret').addEventListener('change', newQuestion);
+
+const saved = JSON.parse(localStorage.getItem('tabQuiz') || '{}');
+if (saved.best) state.best = saved.best;
+updateScore();
+newQuestion();
+</script>
+</body>
+</html>
