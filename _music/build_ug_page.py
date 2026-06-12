@@ -129,77 +129,135 @@ HTML = r'''<!doctype html>
   .count { font-size:12px; color:#8a8ab0; margin-top:8px; }
   ul.songs { list-style:none; margin:0; padding:0; }
   ul.songs li { border-bottom:1px solid #1e1e3a; }
-  ul.songs li { padding:12px 16px; }
-  ul.songs li .song-link, ul.songs li.no-url { color:#e0e0e0; text-decoration:none; display:block; }
-  ul.songs li .song-link:active { background:#1e1e3a; }
-  ul.songs li.no-url { color:#6a6a8a; }
-  .title { font-size:16px; font-weight:600; color:#e0e0e0; }
-  .artist { font-size:13px; color:#8a8ab0; margin-top:2px; }
-  .no-url .artist { color:#5a5a7a; }
-  .arrow { float:right; color:#6366f1; font-size:14px; }
-  .images { display:flex; gap:8px; overflow-x:auto; margin-top:10px; padding-bottom:4px; -webkit-overflow-scrolling:touch; }
-  .images .thumb { flex:0 0 auto; cursor:pointer; }
-  .images img { display:block; height:90px; border-radius:6px; border:1px solid #2a2a4a; }
-  .images .label { font-size:10px; color:#8a8ab0; text-align:center; margin-top:3px; text-transform:capitalize; }
-  .lightbox { position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:100; display:none; align-items:center; justify-content:center; padding:10px; flex-direction:column; }
-  .lightbox.open { display:flex; }
-  .lightbox img { max-width:100%; max-height:90vh; border-radius:6px; }
-  .lightbox .close { position:absolute; top:14px; right:16px; color:#fff; font-size:30px; cursor:pointer; }
-  .lightbox .cap { color:#fff; font-size:14px; margin-top:10px; text-transform:capitalize; }
+  ul.songs li { padding:12px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #1e1e3a; }
+  ul.songs li .song-meta { flex:1; min-width:0; }
+  ul.songs li .title { font-size:15px; font-weight:600; color:#e0e0e0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  ul.songs li .artist { font-size:12px; color:#8a8ab0; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:700; text-decoration:none; min-width:48px; height:36px; box-sizing:border-box; flex-shrink:0; user-select:none; }
+  .btn-hp { background:#3050d0; color:#fff; }
+  .btn-hp.disabled { background:#1e1e3a; color:#5a5a7a; pointer-events:none; }
+  .btn-ug { background:#a01e1e; color:#fff; }
+  .btn-ug.disabled { background:#1e1e3a; color:#5a5a7a; pointer-events:none; }
+
+  /* Song-detail view (per-song image page) */
+  .detail-view { display:none; }
+  .detail-view.active { display:block; }
+  .list-view.hidden { display:none; }
+  .detail-header { padding:14px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #2a2a4a; position:sticky; top:0; background:#0f0f1f; z-index:5; }
+  .back-btn { background:transparent; border:none; color:#a5b4fc; font-size:15px; font-weight:600; cursor:pointer; padding:0; }
+  .detail-title { font-size:16px; font-weight:700; color:#e0e0e0; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .detail-images { padding:12px; display:flex; flex-direction:column; gap:14px; }
+  .detail-images .section { background:#16162a; border:1px solid #2a2a4a; border-radius:8px; overflow:hidden; }
+  .detail-images .section .label { padding:8px 12px; font-size:13px; font-weight:600; color:#a5b4fc; text-transform:capitalize; border-bottom:1px solid #2a2a4a; }
+  .detail-images .section img { display:block; width:100%; height:auto; }
+  .detail-images .empty { color:#6a6a8a; text-align:center; padding:40px 16px; font-size:13px; }
 </style>
 </head>
 <body>
-<header>
-  <h1>UG quick links</h1>
-  <div class="pool-pills" id="pillBar"></div>
-  <div class="count" id="count"></div>
-</header>
-<ul class="songs" id="songs"></ul>
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <span class="close">×</span>
-  <img alt="">
-  <div class="cap"></div>
+<div class="list-view" id="listView">
+  <header>
+    <h1>Songs</h1>
+    <div class="pool-pills" id="pillBar"></div>
+    <div class="count" id="count"></div>
+  </header>
+  <ul class="songs" id="songs"></ul>
+</div>
+<div class="detail-view" id="detailView">
+  <div class="detail-header">
+    <button class="back-btn" id="backBtn">← Back</button>
+    <div class="detail-title" id="detailTitle"></div>
+    <a id="detailUg" class="btn btn-ug" target="_blank" rel="noopener">UG ↗</a>
+  </div>
+  <div class="detail-images" id="detailImages"></div>
 </div>
 
 <script>
 const DATA = __DATA__;
 const POOLS = __POOLS__;
 
+let currentPool = null;
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
 function pickPool(label) {
+  currentPool = label;
   localStorage.setItem('ugPool', label);
   document.querySelectorAll('#pillBar .pill').forEach(p => {
     p.classList.toggle('active', p.dataset.pool === label);
   });
   const items = DATA[label] || [];
   const withUrl = items.filter(x => x.ug_url).length;
-  document.getElementById('count').textContent = `${withUrl} of ${items.length} have a UG link`;
-  const list = document.getElementById('songs');
-  list.innerHTML = items.map(s => {
-    const head = s.ug_url
-      ? `<a class="song-link" href="${s.ug_url}" target="_blank" rel="noopener"><div class="title">${escapeHtml(s.title)} <span class="arrow">↗</span></div><div class="artist">${escapeHtml(s.artist)}</div></a>`
-      : `<div class="title">${escapeHtml(s.title)}</div><div class="artist">${escapeHtml(s.artist)} · no UG link</div>`;
-    const imgs = (s.images && s.images.length)
-      ? `<div class="images">${s.images.map(img => `<div class="thumb" data-img="${escapeHtml(img.path)}" data-cap="${escapeHtml(img.name)}"><img src="${escapeHtml(img.path)}" loading="lazy" alt=""><div class="label">${escapeHtml(img.name)}</div></div>`).join('')}</div>`
-      : '';
-    const cls = s.ug_url ? '' : ' class="no-url"';
-    return `<li${cls}>${head}${imgs}</li>`;
+  const withImg = items.filter(x => x.images && x.images.length).length;
+  document.getElementById('count').textContent = `${items.length} songs · ${withUrl} UG · ${withImg} HP`;
+  document.getElementById('songs').innerHTML = items.map((s, i) => {
+    const hpBtn = (s.images && s.images.length)
+      ? `<a class="btn btn-hp" href="#${encodeURIComponent(label)}/${i}">HP</a>`
+      : `<span class="btn btn-hp disabled">HP</span>`;
+    const ugBtn = s.ug_url
+      ? `<a class="btn btn-ug" href="${s.ug_url}" target="_blank" rel="noopener">UG</a>`
+      : `<span class="btn btn-ug disabled">UG</span>`;
+    return `<li>
+      <div class="song-meta">
+        <div class="title">${escapeHtml(s.title)}</div>
+        <div class="artist">${escapeHtml(s.artist)}</div>
+      </div>
+      ${hpBtn}${ugBtn}
+    </li>`;
   }).join('');
-  // Bind lightbox openers
-  document.querySelectorAll('#songs .thumb').forEach(t => t.addEventListener('click', () => openLightbox(t.dataset.img, t.dataset.cap)));
   window.scrollTo(0, 0);
 }
-function openLightbox(src, cap) {
-  const lb = document.getElementById('lightbox');
-  lb.querySelector('img').src = src;
-  lb.querySelector('.cap').textContent = cap || '';
-  lb.classList.add('open');
+
+function showDetail(poolLabel, idx) {
+  const items = DATA[poolLabel] || [];
+  const s = items[idx];
+  if (!s) { goHome(); return; }
+  document.getElementById('listView').classList.add('hidden');
+  document.getElementById('detailView').classList.add('active');
+  document.getElementById('detailTitle').innerHTML = `${escapeHtml(s.title)} <span style="font-weight:400;color:#8a8ab0;font-size:13px"> — ${escapeHtml(s.artist)}</span>`;
+  const ugA = document.getElementById('detailUg');
+  if (s.ug_url) { ugA.href = s.ug_url; ugA.classList.remove('disabled'); }
+  else { ugA.removeAttribute('href'); ugA.classList.add('disabled'); }
+  const div = document.getElementById('detailImages');
+  if (!s.images || !s.images.length) {
+    div.innerHTML = `<div class="empty">No Hookpad screenshots yet.</div>`;
+  } else {
+    div.innerHTML = s.images.map(img => `<div class="section"><div class="label">${escapeHtml(img.name)}</div><img src="${escapeHtml(img.path)}" loading="lazy" alt=""></div>`).join('');
+  }
+  window.scrollTo(0, 0);
 }
-function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
-function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function goHome() {
+  document.getElementById('listView').classList.remove('hidden');
+  document.getElementById('detailView').classList.remove('active');
+}
+
+function handleHash() {
+  const h = decodeURIComponent(location.hash.replace(/^#/, ''));
+  if (!h) { goHome(); return; }
+  const parts = h.split('/');
+  if (parts.length === 2) {
+    const pool = parts[0];
+    const idx = parseInt(parts[1], 10);
+    if (DATA[pool] && !isNaN(idx)) {
+      if (currentPool !== pool) pickPool(pool);
+      showDetail(pool, idx);
+      return;
+    }
+  }
+  goHome();
+}
 
 document.getElementById('pillBar').innerHTML = POOLS.map(p => `<div class="pill" data-pool="${p}">${p}</div>`).join('');
-document.querySelectorAll('#pillBar .pill').forEach(p => p.addEventListener('click', () => pickPool(p.dataset.pool)));
+document.querySelectorAll('#pillBar .pill').forEach(p => p.addEventListener('click', () => {
+  pickPool(p.dataset.pool);
+  if (location.hash) history.pushState(null, '', location.pathname);
+  goHome();
+}));
+document.getElementById('backBtn').addEventListener('click', () => history.back());
+window.addEventListener('hashchange', handleHash);
+window.addEventListener('popstate', handleHash);
+
 pickPool(localStorage.getItem('ugPool') || POOLS[0]);
+handleHash();
 </script>
 </body>
 </html>
