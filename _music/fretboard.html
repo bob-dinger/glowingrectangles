@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fretboard — Glowing Gardens</title>
+<style>
+  :root { font-size:16px; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#1a1a2e; color:#e0e0e0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; min-height:100vh; }
+  header { padding:14px 16px; border-bottom:1px solid #2a2a4a; display:flex; align-items:center; gap:14px; }
+  header h1 { font-size:17px; font-weight:700; margin:0; }
+  a.back { color:#6a6a8a; text-decoration:none; font-size:13px; }
+  a.back:hover { color:#e0e0e0; }
+
+  main { padding:16px; max-width:1200px; margin:0 auto; }
+  .row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .row .label { font-size:11px; color:#8a8ab0; text-transform:uppercase; letter-spacing:1px; min-width:42px; }
+  .pills { display:flex; gap:4px; flex-wrap:wrap; }
+  .pill { padding:5px 10px; background:#20203a; color:#e0e0e0; border:1px solid #2a2a4a; border-radius:14px; font-size:12px; font-weight:600; cursor:pointer; user-select:none; }
+  .pill.active { background:#3050d0; border-color:#3050d0; color:#fff; }
+  .pill:hover:not(.active) { background:#2a3a7a; }
+
+  .fretboard-wrap { background:#16162a; border:1px solid #2a2a4a; border-radius:8px; padding:14px; margin-top:14px; overflow-x:auto; }
+  .fretboard { display:grid; gap:0; }
+  .fret-cell { position:relative; height:42px; border-right:2px solid #44446a; display:flex; align-items:center; justify-content:center; }
+  .fret-cell.string-label { border-right:none; font-family:ui-monospace,Menlo,monospace; font-size:13px; font-weight:700; color:#a5b4fc; padding-right:6px; justify-content:flex-end; }
+  .fret-cell.head { border-right:4px solid #6a6a8a; }
+  .fret-cell.has-string::before { content:''; position:absolute; left:0; right:0; top:50%; height:2px; background:#5a5a7a; transform:translateY(-50%); z-index:0; }
+  .fret-cell.has-string.thick::before { height:3px; }
+  .dot { position:relative; z-index:1; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; text-shadow:0 1px 0 rgba(0,0,0,0.6); cursor:default; }
+  .deg-1 { background:#a01e1e; } .deg-2 { background:#b35610; } .deg-3 { background:#957e0c; }
+  .deg-4 { background:#25a838; } .deg-5 { background:#3050d0; } .deg-6 { background:#6e16a5; }
+  .deg-7 { background:#a01b6b; }
+  .dot.is-root { box-shadow:0 0 0 3px #fff; }
+
+  .fret-num-row { display:grid; gap:0; margin-top:6px; font-size:10px; color:#5a5a7a; font-family:ui-monospace,Menlo,monospace; text-align:center; }
+  .fret-num-row .num { display:flex; align-items:center; justify-content:center; height:18px; }
+  .dot-marker { width:5px; height:5px; background:#3a3a5a; border-radius:50%; margin:0 auto; }
+
+  .legend { margin-top:18px; display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:#8a8ab0; }
+  .legend .swatch { display:inline-flex; align-items:center; gap:6px; }
+  .legend .sw { width:14px; height:14px; border-radius:50%; }
+
+  .toggle-row { font-size:12px; color:#8a8ab0; display:flex; gap:14px; align-items:center; }
+  .toggle-row label { display:flex; align-items:center; gap:5px; cursor:pointer; }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html" class="back">&larr; Music</a>
+  <h1>Fretboard</h1>
+</header>
+<main>
+  <div class="row">
+    <span class="label">Root</span>
+    <div class="pills" id="rootPills"></div>
+  </div>
+  <div class="row">
+    <span class="label">Mode</span>
+    <div class="pills" id="modePills"></div>
+  </div>
+  <div class="row toggle-row">
+    <label><input type="checkbox" id="labelToggle"> show scale degrees instead of note names</label>
+    <label>frets <input type="number" id="fretCount" value="15" min="5" max="24" style="width:50px;background:#1a1a2e;color:#e0e0e0;border:1px solid #2a2a4a;border-radius:4px;padding:3px;text-align:center;font-family:ui-monospace,monospace;"></label>
+  </div>
+
+  <div class="fretboard-wrap">
+    <div class="fretboard" id="fretboard"></div>
+    <div class="fret-num-row" id="fretNumRow"></div>
+  </div>
+
+  <div class="legend">
+    <span class="swatch"><span class="sw deg-1"></span>1 root</span>
+    <span class="swatch"><span class="sw deg-2"></span>2</span>
+    <span class="swatch"><span class="sw deg-3"></span>3</span>
+    <span class="swatch"><span class="sw deg-4"></span>4</span>
+    <span class="swatch"><span class="sw deg-5"></span>5</span>
+    <span class="swatch"><span class="sw deg-6"></span>6</span>
+    <span class="swatch"><span class="sw deg-7"></span>7</span>
+  </div>
+</main>
+
+<script>
+const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const STRINGS = [   // top of display = high E (tab convention)
+  { name:'e', pc:4 },
+  { name:'B', pc:11 },
+  { name:'G', pc:7 },
+  { name:'D', pc:2 },
+  { name:'A', pc:9 },
+  { name:'E', pc:4 },
+];
+const MODE_INT = {
+  major:           [0,2,4,5,7,9,11],
+  minor:           [0,2,3,5,7,8,10],
+  dorian:          [0,2,3,5,7,9,10],
+  mixolydian:      [0,2,4,5,7,9,10],
+  lydian:          [0,2,4,6,7,9,11],
+  phrygian:        [0,1,3,5,7,8,10],
+  locrian:         [0,1,3,5,6,8,10],
+  harmonicMinor:   [0,2,3,5,7,8,11],
+  pentatonicMajor: [0,2,4,7,9],
+  pentatonicMinor: [0,3,5,7,10],
+  blues:           [0,3,5,6,7,10],
+};
+const FRET_MARKERS = [3, 5, 7, 9, 15, 17, 19, 21];   // single dot
+const FRET_MARKERS_DOUBLE = [12, 24];                // double dot
+
+const state = {
+  rootPc: 0,                                          // C
+  mode: 'major',
+  showDegrees: false,
+};
+
+function noteName(pc) { return NOTES[pc]; }
+function pcAt(stringIdx, fret) { return (STRINGS[stringIdx].pc + fret) % 12; }
+function degOf(pc) {
+  const ints = MODE_INT[state.mode];
+  const interval = (pc - state.rootPc + 12) % 12;
+  const idx = ints.indexOf(interval);
+  return idx >= 0 ? idx + 1 : null;
+}
+
+function render() {
+  const nFrets = parseInt(document.getElementById('fretCount').value) || 15;
+  const fb = document.getElementById('fretboard');
+  fb.style.gridTemplateColumns = `34px repeat(${nFrets + 1}, minmax(36px,1fr))`;
+  let html = '';
+  STRINGS.forEach((s, sIdx) => {
+    html += `<div class="fret-cell string-label">${s.name}</div>`;
+    for (let f = 0; f <= nFrets; f++) {
+      const pc = pcAt(sIdx, f);
+      const deg = degOf(pc);
+      const cls = `fret-cell has-string${sIdx>=4?' thick':''}${f===0?' head':''}`;
+      let inner = '';
+      if (deg !== null) {
+        const label = state.showDegrees ? deg : noteName(pc);
+        const rootCls = pc === state.rootPc ? ' is-root' : '';
+        inner = `<div class="dot deg-${deg}${rootCls}">${label}</div>`;
+      }
+      html += `<div class="${cls}">${inner}</div>`;
+    }
+  });
+  fb.innerHTML = html;
+  // Fret number row
+  const numEl = document.getElementById('fretNumRow');
+  numEl.style.gridTemplateColumns = fb.style.gridTemplateColumns;
+  let nums = `<div></div>`;
+  for (let f = 0; f <= nFrets; f++) {
+    let mark = '';
+    if (FRET_MARKERS_DOUBLE.includes(f)) mark = `<div style="display:flex;gap:4px;justify-content:center;align-items:center"><span class="dot-marker"></span><span class="dot-marker"></span></div>`;
+    else if (FRET_MARKERS.includes(f))   mark = `<div class="dot-marker"></div>`;
+    nums += `<div class="num">${f}${mark ? '<br>' + mark : ''}</div>`;
+  }
+  numEl.innerHTML = nums;
+}
+
+function buildPills() {
+  document.getElementById('rootPills').innerHTML = NOTES.map((n, i) =>
+    `<div class="pill" data-pc="${i}">${n}</div>`).join('');
+  document.getElementById('modePills').innerHTML = Object.keys(MODE_INT).map(m =>
+    `<div class="pill" data-mode="${m}">${m}</div>`).join('');
+  document.querySelectorAll('#rootPills .pill').forEach(p => p.addEventListener('click', () => {
+    state.rootPc = parseInt(p.dataset.pc); localStorage.setItem('fbRoot', state.rootPc);
+    updatePillUI(); render();
+  }));
+  document.querySelectorAll('#modePills .pill').forEach(p => p.addEventListener('click', () => {
+    state.mode = p.dataset.mode; localStorage.setItem('fbMode', state.mode);
+    updatePillUI(); render();
+  }));
+}
+function updatePillUI() {
+  document.querySelectorAll('#rootPills .pill').forEach(p => p.classList.toggle('active', parseInt(p.dataset.pc) === state.rootPc));
+  document.querySelectorAll('#modePills .pill').forEach(p => p.classList.toggle('active', p.dataset.mode === state.mode));
+}
+
+document.getElementById('labelToggle').addEventListener('change', e => { state.showDegrees = e.target.checked; localStorage.setItem('fbDeg', state.showDegrees ? '1' : ''); render(); });
+document.getElementById('fretCount').addEventListener('change', render);
+
+// restore
+const savedRoot = parseInt(localStorage.getItem('fbRoot')); if (!isNaN(savedRoot)) state.rootPc = savedRoot;
+const savedMode = localStorage.getItem('fbMode'); if (savedMode && MODE_INT[savedMode]) state.mode = savedMode;
+if (localStorage.getItem('fbDeg')) { state.showDegrees = true; document.getElementById('labelToggle').checked = true; }
+buildPills();
+updatePillUI();
+render();
+</script>
+</body>
+</html>
