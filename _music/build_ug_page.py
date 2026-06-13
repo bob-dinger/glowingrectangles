@@ -238,7 +238,7 @@ function showDetail(poolLabel, idx) {
   if (!s.images || !s.images.length) {
     div.innerHTML = `<div class="empty">No Hookpad screenshots yet.</div>`;
   } else {
-    div.innerHTML = s.images.map(img => `<div class="section"><div class="label">${escapeHtml(img.name)}</div><img src="${escapeHtml(img.path)}" loading="lazy" alt=""></div>`).join('');
+    div.innerHTML = s.images.map(img => `<div class="section"><img src="${escapeHtml(img.path)}" loading="lazy" alt=""></div>`).join('');
   }
   window.scrollTo(0, 0);
 }
