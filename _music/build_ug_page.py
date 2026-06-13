@@ -78,7 +78,7 @@ def main():
     rows = {}
     for i in range(0, len(all_slugs), 100):
         chunk = list(all_slugs)[i:i+100]
-        r = sb.schema('parcels').table('songs').select('slug,artist,title,ug_url').in_('slug', chunk).execute().data
+        r = sb.schema('parcels').table('songs').select('slug,artist,title,ug_url,bpm,key_tonic,key_scale,hookpad_url').in_('slug', chunk).execute().data
         for row in r:
             rows[row['slug']] = row
     pool_data = {}
@@ -91,10 +91,15 @@ def main():
             if not r: continue
             imgs = find_images(label, r.get('artist'), r.get('title'))
             if imgs: total_with_images += 1
+            bpm = r.get('bpm')
+            key = (r.get('key_tonic') or '') + (' min' if r.get('key_scale') == 'minor' else '')
             items.append({
                 'title': r.get('title') or '',
                 'artist': r.get('artist') or '',
                 'ug_url': r.get('ug_url'),
+                'hookpad_url': r.get('hookpad_url'),
+                'bpm': round(bpm) if bpm else None,
+                'key': key.strip() or None,
                 'images': imgs,
             })
         items.sort(key=lambda s: s['title'].lower())
@@ -146,6 +151,11 @@ HTML = r'''<!doctype html>
   .detail-header { padding:14px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #2a2a4a; position:sticky; top:0; background:#0f0f1f; z-index:5; }
   .back-btn { background:transparent; border:none; color:#a5b4fc; font-size:15px; font-weight:600; cursor:pointer; padding:0; }
   .detail-title { font-size:16px; font-weight:700; color:#e0e0e0; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .detail-meta { padding:10px 16px; background:#16162a; border-bottom:1px solid #2a2a4a; display:flex; gap:14px; align-items:center; flex-wrap:wrap; font-size:13px; color:#8a8ab0; }
+  .detail-meta .chip { background:#20203a; color:#e0e0e0; padding:4px 10px; border-radius:11px; font-size:12px; font-weight:600; }
+  .detail-meta .key { background:#3050d0; color:#fff; font-family:ui-monospace,monospace; }
+  .detail-meta .bpm { background:#a01e1e; color:#fff; }
+  .detail-meta a { color:#a5b4fc; text-decoration:none; font-weight:700; margin-left:auto; }
   .detail-images { padding:12px; display:flex; flex-direction:column; gap:14px; }
   .detail-images .section { background:#16162a; border:1px solid #2a2a4a; border-radius:8px; overflow:hidden; }
   .detail-images .section .label { padding:8px 12px; font-size:13px; font-weight:600; color:#a5b4fc; text-transform:capitalize; border-bottom:1px solid #2a2a4a; }
@@ -168,6 +178,7 @@ HTML = r'''<!doctype html>
     <div class="detail-title" id="detailTitle"></div>
     <a id="detailUg" class="btn btn-ug" target="_blank" rel="noopener">UG ↗</a>
   </div>
+  <div class="detail-meta" id="detailMeta"></div>
   <div class="detail-images" id="detailImages"></div>
 </div>
 
@@ -216,6 +227,13 @@ function showDetail(poolLabel, idx) {
   const ugA = document.getElementById('detailUg');
   if (s.ug_url) { ugA.href = s.ug_url; ugA.classList.remove('disabled'); }
   else { ugA.removeAttribute('href'); ugA.classList.add('disabled'); }
+  const meta = document.getElementById('detailMeta');
+  const bits = [];
+  if (s.key) bits.push(`<span class="chip key">${escapeHtml(s.key)}</span>`);
+  if (s.bpm) bits.push(`<span class="chip bpm">${s.bpm} BPM</span>`);
+  if (s.hookpad_url) bits.push(`<a href="${s.hookpad_url}" target="_blank" rel="noopener">Open in Hookpad ↗</a>`);
+  meta.innerHTML = bits.join('');
+  meta.style.display = bits.length ? '' : 'none';
   const div = document.getElementById('detailImages');
   if (!s.images || !s.images.length) {
     div.innerHTML = `<div class="empty">No Hookpad screenshots yet.</div>`;
