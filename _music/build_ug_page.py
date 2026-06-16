@@ -138,11 +138,13 @@ HTML = r'''<!doctype html>
   ul.songs li .song-meta { flex:1; min-width:0; }
   ul.songs li .title { font-size:15px; font-weight:600; color:#e0e0e0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   ul.songs li .artist { font-size:12px; color:#8a8ab0; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .btn { display:inline-flex; align-items:center; justify-content:center; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:700; text-decoration:none; min-width:48px; height:36px; box-sizing:border-box; flex-shrink:0; user-select:none; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; padding:8px 10px; border-radius:8px; font-size:12px; font-weight:700; text-decoration:none; min-width:42px; height:36px; box-sizing:border-box; flex-shrink:0; user-select:none; }
   .btn-hp { background:#3050d0; color:#fff; }
   .btn-hp.disabled { background:#1e1e3a; color:#5a5a7a; pointer-events:none; }
   .btn-ug { background:#a01e1e; color:#fff; }
   .btn-ug.disabled { background:#1e1e3a; color:#5a5a7a; pointer-events:none; }
+  .btn-sp { background:#1db954; color:#fff; }
+  ul.songs li { gap:6px; }
 
   /* Song-detail view (per-song image page) */
   .detail-view { display:none; }
@@ -176,7 +178,8 @@ HTML = r'''<!doctype html>
   <div class="detail-header">
     <button class="back-btn" id="backBtn">← Back</button>
     <div class="detail-title" id="detailTitle"></div>
-    <a id="detailUg" class="btn btn-ug" target="_blank" rel="noopener">UG ↗</a>
+    <a id="detailUg" class="btn btn-ug" target="_blank" rel="noopener">UG</a>
+    <a id="detailSp" class="btn btn-sp" target="_blank" rel="noopener">SP</a>
   </div>
   <div class="detail-meta" id="detailMeta"></div>
   <div class="detail-images" id="detailImages"></div>
@@ -206,12 +209,14 @@ function pickPool(label) {
     const ugBtn = s.ug_url
       ? `<a class="btn btn-ug" href="${s.ug_url}" target="_blank" rel="noopener">UG</a>`
       : `<span class="btn btn-ug disabled">UG</span>`;
+    const spQuery = encodeURIComponent(`${s.artist} ${s.title}`);
+    const spBtn = `<a class="btn btn-sp" href="https://open.spotify.com/search/${spQuery}" target="_blank" rel="noopener">SP</a>`;
     return `<li>
       <div class="song-meta">
         <div class="title">${escapeHtml(s.title)}</div>
         <div class="artist">${escapeHtml(s.artist)}</div>
       </div>
-      ${hpBtn}${ugBtn}
+      ${hpBtn}${ugBtn}${spBtn}
     </li>`;
   }).join('');
   window.scrollTo(0, 0);
@@ -227,6 +232,7 @@ function showDetail(poolLabel, idx) {
   const ugA = document.getElementById('detailUg');
   if (s.ug_url) { ugA.href = s.ug_url; ugA.classList.remove('disabled'); }
   else { ugA.removeAttribute('href'); ugA.classList.add('disabled'); }
+  document.getElementById('detailSp').href = `https://open.spotify.com/search/${encodeURIComponent(s.artist + ' ' + s.title)}`;
   const meta = document.getElementById('detailMeta');
   const bits = [];
   if (s.key) bits.push(`<span class="chip key">${escapeHtml(s.key)}</span>`);
