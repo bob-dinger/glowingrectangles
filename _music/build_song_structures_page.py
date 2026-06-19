@@ -135,25 +135,40 @@ def chord_color_class(c, tonic, scale):
     return f'pc-{pc}' if pc is not None else 'pc-unknown'
 
 
-def per_measure_chord_data(chords, start, end, bpb, tonic, scale):
-    """Return list of {cls, name} per measure in [start, end)."""
+def per_measure_chord_data(chords, start, end, bpb, tonic, scale, subdivs_per_bar=2):
+    """Return list of {cls, name} per sub-measure cell in [start, end).
+    With subdivs_per_bar=2 (default), each bar gets 2 cells (half-measure resolution).
+    For each cell: prefer a chord whose ONSET falls in the cell (so push/halver patterns
+    show both chord changes); else use whichever chord is actually sounding at cell start."""
     n_bars = round((end - start) / bpb)
-    measures = [None] * n_bars
-    for c in sorted(chords, key=lambda x: x.get('beat', 0)):
-        if c.get('isRest'): continue
-        cb = c.get('beat', 0); cd = c.get('duration', 0)
-        if cb + cd <= start or cb >= end: continue
-        first_m = max(0, int((cb - start) / bpb))
-        last_m = min(n_bars - 1, int((cb + cd - 1e-9 - start) / bpb))
-        for m in range(first_m, last_m + 1):
-            if measures[m] is None:
-                measures[m] = {'cls': chord_color_class(c, tonic, scale),
-                               'name': chord_name(c, tonic, scale)}
-    last = {'cls': 'pc-unknown', 'name': ''}
-    for i in range(n_bars):
-        if measures[i] is None: measures[i] = last
-        else: last = measures[i]
-    return measures
+    sub_dur = bpb / subdivs_per_bar
+    n_cells = n_bars * subdivs_per_bar
+    chords_sorted = sorted([c for c in chords if not c.get('isRest')],
+                           key=lambda x: x.get('beat', 0))
+    onset_in_cell = {}
+    for c in chords_sorted:
+        cb = c.get('beat', 0)
+        if cb < start or cb >= end: continue
+        idx = int((cb - start) / sub_dur)
+        if 0 <= idx < n_cells and idx not in onset_in_cell:
+            onset_in_cell[idx] = c
+    cells = []
+    for i in range(n_cells):
+        cell_start = start + i * sub_dur
+        c = onset_in_cell.get(i)
+        if c is None:
+            for cc in chords_sorted:
+                cb = cc.get('beat', 0); cd = cc.get('duration', 0)
+                if cb <= cell_start < cb + cd:
+                    c = cc
+                    break
+                if cb > cell_start: break
+        if c:
+            cells.append({'cls': chord_color_class(c, tonic, scale),
+                          'name': chord_name(c, tonic, scale)})
+        else:
+            cells.append({'cls': 'pc-unknown', 'name': ''})
+    return cells
 
 
 def section_breakdown(d):
@@ -479,11 +494,15 @@ function renderStructure(slug) {
     body = `<div class="placeholder" style="margin-top:40px">— no sections found —</div>`;
   } else {
     const totalBars = s.sections.reduce((a, b) => a + b.bars, 0);
-    const pxPerBar = 48;
+    const pxPerBar = 88;
     body = `<div class="sections">${s.sections.map(sec => {
-      const cellsHtml = (sec.cells || []).map(cell =>
-        `<div class="mc ${cell.cls}" style="width:${pxPerBar - 1}px">${escapeHtml(cell.name || '')}</div>`
-      ).join('');
+      const cellsPerBar = sec.bars > 0 ? Math.max(1, Math.round((sec.cells || []).length / sec.bars)) : 1;
+      const pxPerCell = pxPerBar / cellsPerBar;
+      const cellsHtml = (sec.cells || []).map((cell, i) => {
+        const isBarStart = cellsPerBar > 1 && (i % cellsPerBar === 0) && i > 0;
+        const sep = isBarStart ? 'border-left:2px solid rgba(0,0,0,0.35);' : '';
+        return `<div class="mc ${cell.cls}" style="width:${pxPerCell - 1}px;${sep}">${escapeHtml(cell.name || '')}</div>`;
+      }).join('');
       const cls = classOf(sec.name);
       return `<div class="section-row">
         <div class="label label-${cls}"><span class="name">${escapeHtml(sec.name)}</span><span class="bars">${sec.bars} bars</span></div>
