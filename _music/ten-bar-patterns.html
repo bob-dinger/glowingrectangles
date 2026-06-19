@@ -70,9 +70,31 @@
   .deg-6 { background: rgba(160, 80, 220, 0.35); color: #d0a0f8; }
   .deg-7 { background: rgba(224, 112, 176, 0.35); color: #f0a8d0; }
   .deg-other { background: rgba(80, 80, 100, 0.35); color: #a0a0c0; }
+
+  .bar-nav { display:flex; align-items:center; gap:6px; margin-bottom:12px; font-size:11px; flex-wrap:wrap; }
+  .bar-nav .label { color:#6a6a8a; text-transform:uppercase; letter-spacing:0.8px; font-weight:600; margin-right:2px; }
+  .bar-nav .nav-pill { padding:4px 10px; background:#22223e; color:#a0a0c0; border:1px solid #2a2a4a; border-radius:11px; text-decoration:none; font-size:11px; font-weight:600; }
+  .bar-nav .nav-pill:hover { background:#3a3a5a; color:#e0e0e0; }
+  .bar-nav .nav-pill.current { background:#3050d0; color:#fff; border-color:#3050d0; }
+  .bar-nav .sep { width:1px; height:14px; background:#2a2a4a; margin:0 6px; }
 </style>
 </head>
 <body>
+<div class="bar-nav">
+<span class="label">Sections</span>
+<a href="eight-bar-sections.html" class="nav-pill">8</a>
+<a href="ten-bar-sections.html" class="nav-pill">10</a>
+<a href="twelve-bar-sections.html" class="nav-pill">12</a>
+<a href="sixteen-bar-sections.html" class="nav-pill">16</a>
+<span class="sep"></span>
+<span class="label">Patterns</span>
+<a href="eight-bar-patterns.html" class="nav-pill">8</a>
+<a href="ten-bar-patterns.html" class="nav-pill current">10</a>
+<a href="twelve-bar-patterns.html" class="nav-pill">12</a>
+<a href="fourteen-bar-patterns.html" class="nav-pill">14</a>
+<a href="sixteen-bar-patterns.html" class="nav-pill">16</a>
+<a href="twenty-four-bar-patterns.html" class="nav-pill">24</a>
+</div>
 <h1>10-bar sections by pattern <span style="color:#6a6a8a;font-weight:400;font-size:11px;">— click a section to play</span></h1>
 <div class="meta" id="meta">loading…</div>
 <div class="filter-row">
@@ -223,6 +245,7 @@ async function playSection(section, el) {
 }
 </script>
 
+<script src="chord-label.js"></script>
 <script>
 const PAGE_SIZE = 50;
 let DATA = [];
@@ -234,22 +257,8 @@ let filterText = '';
 const NUMERALS = ['I','II','III','IV','V','VI','VII'];
 
 function romanLabel(c, scale) {
-  const root = c.r;
-  if (!root || root < 1 || root > 7) return '?';
-  let base = NUMERALS[root - 1];
-  if (scale === 'major' && (root === 2 || root === 3 || root === 6) && !c.bor && c.t !== 7) {
-    base = base.toLowerCase();
-  } else if (scale === 'minor' && (root === 1 || root === 4 || root === 5)) {
-    base = base.toLowerCase();
-  }
-  if (c.t === 7) base += '7';
-  if (c.app) base = 'V/' + (NUMERALS[c.app - 1] || '?');
-  if (c.bor) {
-    if (c.bor === 'minor' && (root === 3 || root === 6 || root === 7)) base = 'b' + base;
-  }
-  if (c.adds && c.adds.length) base += '+' + c.adds.join(',');
-  if (c.sus && c.sus.length) base += 'sus' + c.sus.join('');
-  return base;
+  // Delegates to the canonical labeler in chord-label.js (shared with the spreadsheet + show_song.py).
+  return chordLabel(c, scale);
 }
 
 function renderSection(s) {
