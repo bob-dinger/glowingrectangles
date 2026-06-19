@@ -326,7 +326,7 @@ HTML_TEMPLATE = r'''<!doctype html>
   body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#1a1a2e; color:#e0e0e0; margin:0; padding:0; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
   .back-link { position:fixed; top:18px; left:20px; color:#6a6a8a; text-decoration:none; font-size:13px; z-index:50; }
   .back-link:hover { color:#e0e0e0; }
-  header { padding:12px 24px 12px 60px; border-bottom:1px solid #2a2a4a; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  header { padding:12px 24px 12px 100px; border-bottom:1px solid #2a2a4a; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
   header h1 { font-size:18px; font-weight:700; margin:0; }
   .view-toggle { display:flex; gap:4px; background:#16162a; padding:3px; border:1px solid #2a2a4a; border-radius:18px; }
   .view-toggle button { background:transparent; border:none; color:#8a8ab0; padding:5px 14px; border-radius:14px; cursor:pointer; font-size:12px; font-weight:600; }
@@ -438,7 +438,7 @@ HTML_TEMPLATE = r'''<!doctype html>
 </header>
 <div class="layout">
   <aside class="sidebar" id="sidebar">
-    <div class="filter-box"><input id="filter" placeholder="Filter songs…" spellcheck="false"></div>
+    <div class="filter-box"><input id="filter" placeholder="Search all songs…" spellcheck="false"></div>
     __SIDEBAR__
   </aside>
   <main class="main">
@@ -609,13 +609,26 @@ document.querySelectorAll('.song-item').forEach(li => {
   li.addEventListener('click', () => selectSong(li.dataset.slug));
 });
 
-// Filter songs
+// Filter songs — searches ALL pools when a query is present; reverts to active pool when empty
 document.getElementById('filter').addEventListener('input', (e) => {
   const q = e.target.value.trim().toLowerCase();
-  document.querySelectorAll('.song-item').forEach(li => {
-    const s = SONGS[li.dataset.slug];
-    const text = `${s.title} ${s.artist}`.toLowerCase();
-    li.style.display = (!q || text.includes(q)) ? '' : 'none';
+  if (!q) {
+    showPool(localStorage.getItem('songsActivePool') || 'Beatles', false);
+    document.querySelectorAll('.song-item').forEach(li => li.style.display = '');
+    return;
+  }
+  document.querySelectorAll('.pool-group').forEach(g => g.style.display = '');
+  document.querySelectorAll('.pool-pill').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.pool-group').forEach(g => {
+    let any = false;
+    g.querySelectorAll('.song-item').forEach(li => {
+      const s = SONGS[li.dataset.slug];
+      const text = `${s.title} ${s.artist}`.toLowerCase();
+      const match = text.includes(q);
+      li.style.display = match ? '' : 'none';
+      if (match) any = true;
+    });
+    g.style.display = any ? '' : 'none';
   });
 });
 
