@@ -135,40 +135,59 @@ def chord_color_class(c, tonic, scale):
     return f'pc-{pc}' if pc is not None else 'pc-unknown'
 
 
-def per_measure_chord_data(chords, start, end, bpb, tonic, scale, subdivs_per_bar=2):
-    """Return list of {cls, name} per sub-measure cell in [start, end).
-    With subdivs_per_bar=2 (default), each bar gets 2 cells (half-measure resolution).
-    For each cell: prefer a chord whose ONSET falls in the cell (so push/halver patterns
-    show both chord changes); else use whichever chord is actually sounding at cell start."""
+def build_section_rows(chords, start, end, bpb, tonic, scale, all_breaks):
+    """Lay out a section as rows of cells.
+    Cell width is proportional to the chord's duration; cells split at measure
+    boundaries so bar lines stay visible. Row breaks come from Hookpad's `breaks`
+    field if any fall in the section, else default-wrap at 8 bars."""
     n_bars = round((end - start) / bpb)
-    sub_dur = bpb / subdivs_per_bar
-    n_cells = n_bars * subdivs_per_bar
+    if n_bars < 1: return []
     chords_sorted = sorted([c for c in chords if not c.get('isRest')],
                            key=lambda x: x.get('beat', 0))
-    onset_in_cell = {}
+    # Row boundaries inside section
+    section_breaks = sorted([b for b in all_breaks if start < b < end])
+    if not section_breaks and n_bars > 8:
+        section_breaks = [start + i * bpb for i in range(8, n_bars, 8)]
+    row_bounds = [start] + section_breaks + [end]
+    # Chord events clipped to [start, end)
+    events = []
     for c in chords_sorted:
-        cb = c.get('beat', 0)
-        if cb < start or cb >= end: continue
-        idx = int((cb - start) / sub_dur)
-        if 0 <= idx < n_cells and idx not in onset_in_cell:
-            onset_in_cell[idx] = c
-    cells = []
-    for i in range(n_cells):
-        cell_start = start + i * sub_dur
-        c = onset_in_cell.get(i)
-        if c is None:
-            for cc in chords_sorted:
-                cb = cc.get('beat', 0); cd = cc.get('duration', 0)
-                if cb <= cell_start < cb + cd:
-                    c = cc
-                    break
-                if cb > cell_start: break
-        if c:
-            cells.append({'cls': chord_color_class(c, tonic, scale),
-                          'name': chord_name(c, tonic, scale)})
-        else:
-            cells.append({'cls': 'pc-unknown', 'name': ''})
-    return cells
+        cb = c.get('beat', 0); cd = c.get('duration', 0); ce = cb + cd
+        if ce <= start or cb >= end: continue
+        events.append({'beat': max(cb, start), 'end': min(ce, end),
+                       'cls': chord_color_class(c, tonic, scale),
+                       'name': chord_name(c, tonic, scale)})
+    # If section starts mid-chord (no onset at start), prepend a carry-over cell
+    if events and events[0]['beat'] > start:
+        for c in chords_sorted:
+            cb = c.get('beat', 0); cd = c.get('duration', 0)
+            if cb < start < cb + cd:
+                events.insert(0, {'beat': start,
+                                  'end': min(cb + cd, events[0]['beat']),
+                                  'cls': chord_color_class(c, tonic, scale),
+                                  'name': chord_name(c, tonic, scale)})
+                break
+    rows = []
+    for i in range(len(row_bounds) - 1):
+        rs, re_ = row_bounds[i], row_bounds[i+1]
+        bar_breaks = [rs + j * bpb for j in range(1, int(round((re_ - rs) / bpb)))]
+        splits = [rs] + bar_breaks + [re_]
+        cells = []
+        for ev in events:
+            if ev['end'] <= rs: continue
+            if ev['beat'] >= re_: break
+            cs = max(ev['beat'], rs); ce = min(ev['end'], re_)
+            inner = [s for s in splits if cs < s < ce]
+            seg_starts = [cs] + inner
+            seg_ends = inner + [ce]
+            for k in range(len(seg_starts)):
+                beats = seg_ends[k] - seg_starts[k]
+                if beats < 1e-9: continue
+                cells.append({'cls': ev['cls'],
+                              'name': ev['name'] if abs(seg_starts[k] - ev['beat']) < 1e-9 else '',
+                              'beats': round(beats * 1000) / 1000})
+        rows.append({'bars': round((re_ - rs) / bpb), 'cells': cells})
+    return rows
 
 
 def section_breakdown(d):
@@ -179,6 +198,7 @@ def section_breakdown(d):
     tonic = key0.get('tonic') or 'C'
     scale = key0.get('scale') or 'major'
     chords = d.get('chords') or []
+    all_breaks = [b.get('beat') for b in (d.get('breaks') or []) if b.get('beat') is not None]
     out = []
     for i, s in enumerate(sections):
         name = (s.get('name') or '').strip()
@@ -187,8 +207,8 @@ def section_breakdown(d):
         end = sections[i+1]['beat'] if i+1 < len(sections) else end_beat
         bars = round((end - start) / bpb)
         if bars < 1: continue
-        cells = per_measure_chord_data(chords, start, end, bpb, tonic, scale)
-        out.append({'name': name, 'bars': bars, 'cells': cells})
+        rows = build_section_rows(chords, start, end, bpb, tonic, scale, all_breaks)
+        out.append({'name': name, 'bars': bars, 'rows': rows})
     return out
 
 
@@ -237,8 +257,10 @@ def main():
             if d:
                 t = (d.get('tempos') or [{}])[0]
                 k = (d.get('keys') or [{}])[0]
+                m = (d.get('meters') or [{}])[0]
                 song_meta[r['slug']]['bpm'] = round(t.get('bpm')) if t.get('bpm') else None
                 song_meta[r['slug']]['keyStr'] = (k.get('tonic') or '') + (' min' if k.get('scale') == 'minor' else '')
+                song_meta[r['slug']]['bpb'] = m.get('numBeats') or 4
 
     # Flag computation
     def flag(secs):
@@ -263,7 +285,7 @@ def main():
         'title': m['title'], 'artist': m['artist'], 'pools': m['pools'],
         'flag': m['flag'], 'sections': m.get('sections') or [],
         'hookpadUrl': m.get('hookpadUrl'), 'ugUrl': m.get('ugUrl'),
-        'bpm': m.get('bpm'), 'keyStr': m.get('keyStr'),
+        'bpm': m.get('bpm'), 'keyStr': m.get('keyStr'), 'bpb': m.get('bpb') or 4,
     } for slug, m in song_meta.items()}
     pool_json = {label: pool_lists[label] for label, _ in PAGES}
 
@@ -372,8 +394,9 @@ HTML_TEMPLATE = r'''<!doctype html>
   .flag-few-sections { background:#d97706; }
 
   .sections { display:flex; flex-direction:column; gap:8px; }
-  .section-row { display:flex; align-items:center; gap:10px; }
+  .section-row { display:flex; align-items:flex-start; gap:10px; }
   .section-row .label { width:140px; flex-shrink:0; padding:0 12px; border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; height:42px; box-sizing:border-box; }
+  .rows-stack { display:flex; flex-direction:column; gap:3px; }
   .section-row .label .name { font-size:15px; color:#fff; font-weight:700; text-transform:capitalize; letter-spacing:0.3px; line-height:1.1; }
   .section-row .label .bars { font-size:11px; color:rgba(255,255,255,0.75); font-family: ui-monospace, Menlo, monospace; margin-top:2px; }
   .label-intro     { background:#0ea5e9; }
@@ -494,19 +517,22 @@ function renderStructure(slug) {
     body = `<div class="placeholder" style="margin-top:40px">— no sections found —</div>`;
   } else {
     const totalBars = s.sections.reduce((a, b) => a + b.bars, 0);
-    const pxPerBar = 88;
+    const pxPerBar = 48;
+    const bpb = s.bpb || 4;
     body = `<div class="sections">${s.sections.map(sec => {
-      const cellsPerBar = sec.bars > 0 ? Math.max(1, Math.round((sec.cells || []).length / sec.bars)) : 1;
-      const pxPerCell = pxPerBar / cellsPerBar;
-      const cellsHtml = (sec.cells || []).map((cell, i) => {
-        const isBarStart = cellsPerBar > 1 && (i % cellsPerBar === 0) && i > 0;
-        const sep = isBarStart ? 'border-left:2px solid rgba(0,0,0,0.35);' : '';
-        return `<div class="mc ${cell.cls}" style="width:${pxPerCell - 1}px;${sep}">${escapeHtml(cell.name || '')}</div>`;
-      }).join('');
+      const rows = sec.rows || [{bars: sec.bars, cells: sec.cells || []}];
       const cls = classOf(sec.name);
+      const rowsHtml = rows.map(row => {
+        const cellsHtml = (row.cells || []).map(cell => {
+          const cellBeats = cell.beats != null ? cell.beats : bpb;
+          const w = Math.max(8, pxPerBar * cellBeats / bpb - 1);
+          return `<div class="mc ${cell.cls}" style="width:${w}px">${escapeHtml(cell.name || '')}</div>`;
+        }).join('');
+        return `<div class="measures-strip" style="width:${row.bars * pxPerBar}px">${cellsHtml}</div>`;
+      }).join('');
       return `<div class="section-row">
         <div class="label label-${cls}"><span class="name">${escapeHtml(sec.name)}</span><span class="bars">${sec.bars} bars</span></div>
-        <div class="measures-strip" style="width:${sec.bars * pxPerBar}px">${cellsHtml}</div>
+        <div class="rows-stack">${rowsHtml}</div>
       </div>`;
     }).join('')}</div>
     <div class="totals" style="margin-left:152px;max-width:${Math.max(...s.sections.map(x=>x.bars)) * pxPerBar}px"><span>${s.sections.length} sections</span><span>${totalBars} bars</span></div>`;
