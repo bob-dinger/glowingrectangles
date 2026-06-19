@@ -517,7 +517,7 @@ function renderStructure(slug) {
     body = `<div class="placeholder" style="margin-top:40px">— no sections found —</div>`;
   } else {
     const totalBars = s.sections.reduce((a, b) => a + b.bars, 0);
-    const pxPerBar = 48;
+    const pxPerBar = 96;
     const bpb = s.bpb || 4;
     body = `<div class="sections">${s.sections.map(sec => {
       const rows = sec.rows || [{bars: sec.bars, cells: sec.cells || []}];
