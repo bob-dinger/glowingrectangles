@@ -83,6 +83,17 @@
   .pool-pill { padding:4px 10px; background:#22223e; color:#a0a0c0; border:1px solid #2a2a4a; border-radius:11px; cursor:pointer; font-size:11px; font-weight:600; user-select:none; }
   .pool-pill:hover { background:#3a3a5a; color:#e0e0e0; }
   .pool-pill.active { background:#3050d0; color:#fff; border-color:#3050d0; }
+
+  html, body { height:100%; overflow:hidden; }
+  body { display:flex; flex-direction:column; }
+  .layout { flex:1; display:flex; gap:14px; min-height:0; margin-top:6px; }
+  .song-sidebar { width:240px; flex-shrink:0; background:#16162a; border:1px solid #2a2a4a; border-radius:6px; overflow-y:auto; padding:6px 0; }
+  .song-link { padding:5px 12px; cursor:pointer; font-size:12px; color:#a0a0c0; border-left:3px solid transparent; line-height:1.35; }
+  .song-link .artist { color:#6a6a8a; font-size:10px; display:block; }
+  .song-link:hover { background:#22223e; color:#e0e0e0; }
+  .song-link.active { border-left-color:#3050d0; color:#fff; background:#22223e; }
+  .song-link .count { color:#5a5a7a; font-size:9px; margin-left:4px; }
+  .right-pane { flex:1; overflow-y:auto; padding-right:8px; }
 </style>
 </head>
 <body>
@@ -108,8 +119,11 @@
   <span class="filter-clear" id="clear">clear</span>
 </div>
 <div class="pool-pills" id="poolPills"><div class="pool-pill active" data-pool="__all__">all</div><div class="pool-pill" data-pool="Beatles">Beatles</div><div class="pool-pill" data-pool="G50">G50</div><div class="pool-pill" data-pool="G100">G100</div><div class="pool-pill" data-pool="G150">G150</div><div class="pool-pill" data-pool="G200">G200</div><div class="pool-pill" data-pool="G250">G250</div><div class="pool-pill" data-pool="G300">G300</div><div class="pool-pill" data-pool="G350">G350</div><div class="pool-pill" data-pool="G400">G400</div><div class="pool-pill" data-pool="G450">G450</div><div class="pool-pill" data-pool="G500">G500</div><div class="pool-pill" data-pool="G550">G550</div></div>
-<div class="pills" id="pills"></div>
-<div id="list"></div>
+<div id="pagination-stub" style="display:none"></div>
+<div class="layout">
+  <aside class="song-sidebar" id="songSidebar"></aside>
+  <main class="right-pane" id="list"></main>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
 <script>
@@ -334,8 +348,7 @@ function renderSection(s) {
 }
 
 function render() {
-  const start = page * PAGE_SIZE;
-  const slice = VIEW.slice(start, start + PAGE_SIZE);
+  const slice = VIEW;
   const list = document.getElementById('list');
   list.innerHTML = slice.map((s, i) => `
     <div class="section" data-idx="${i}">
@@ -352,9 +365,6 @@ function render() {
       playSection(slice[idx], el);
     });
   });
-  // Pills active state
-  document.querySelectorAll('.pill').forEach((el, i) => el.classList.toggle('active', i === page));
-  window.scrollTo(0, 0);
 }
 
 function buildPills() {
@@ -376,6 +386,35 @@ function buildPills() {
   }
 }
 
+
+function buildSongSidebar() {
+  const seen = new Map();   // key → { first_idx, count }
+  VIEW.forEach((s, i) => {
+    const k = s.artist + '|' + s.title;
+    const cur = seen.get(k);
+    if (cur) cur.count++;
+    else seen.set(k, { artist: s.artist, title: s.title, firstIdx: i, count: 1, slug: s.slug });
+  });
+  const songs = Array.from(seen.values());
+  const el = document.getElementById('songSidebar');
+  if (!el) return;
+  el.innerHTML = songs.map(s =>
+    `<div class="song-link" data-idx="${s.firstIdx}">` +
+    `<span class="artist">${s.artist}</span>${s.title}` +
+    (s.count > 1 ? `<span class="count">×${s.count}</span>` : '') +
+    '</div>'
+  ).join('');
+  el.querySelectorAll('.song-link').forEach(link => {
+    link.addEventListener('click', () => {
+      const idx = parseInt(link.dataset.idx);
+      const target = document.querySelector(`.right-pane .section[data-idx="${idx}"]`);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.querySelectorAll('.song-link').forEach(x => x.classList.remove('active'));
+      link.classList.add('active');
+    });
+  });
+}
+
 function applyFilter(q) {
   q = (q || '').trim().toLowerCase();
   document.getElementById('clear').classList.toggle('shown', !!q);
@@ -395,7 +434,7 @@ function applyFilter(q) {
   document.getElementById('meta').textContent =
     `${VIEW.length} of ${DATA.length} sections (${new Set(VIEW.map(s => s.slug)).size} songs)`;
   stopPlayback();
-  buildPills();
+  buildSongSidebar();
   render();
 }
 
