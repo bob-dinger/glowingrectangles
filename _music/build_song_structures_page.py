@@ -23,6 +23,8 @@ PAGES = [
     ('G450', 'Guitar450.html'),
     ('G500', 'Guitar500.html'),
     ('G550', 'Guitar550.html'),
+    ('G600', 'Guitar600.html'),
+    ('G650', 'Guitar650.html'),
 ]
 
 
