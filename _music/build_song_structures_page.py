@@ -133,8 +133,14 @@ def chord_color_class(c, tonic, scale):
     if is_diatonic:
         color_deg = ((deg + 4) % 7) + 1 if scale == 'minor' else deg
         return f'deg-{color_deg}'
-    pc = effective_pc(c, tonic, scale)
-    return f'pc-{pc}' if pc is not None else 'pc-unknown'
+    # Chromatic chord: color by semitone offset from the song's tonic (key-relative).
+    # Solid colors at 0,2,4,5,7,9,11 (major-scale degrees) match deg-1..deg-7;
+    # 1,3,6,8,10 get diagonal stripes between neighboring degree colors.
+    abs_pc = effective_pc(c, tonic, scale)
+    if abs_pc is None: return 'pc-unknown'
+    tonic_pc = NOTES.index(tonic) if tonic in NOTES else 0
+    rel_pc = (abs_pc - tonic_pc) % 12
+    return f'pc-{rel_pc}'
 
 
 def build_section_rows(chords, start, end, bpb, tonic, scale, all_breaks):
