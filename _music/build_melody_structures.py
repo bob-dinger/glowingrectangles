@@ -122,7 +122,44 @@ def build():
         return parsed
     sorted_patterns = sorted(pat_to_rows.keys(), key=pat_sort_key)
 
+    # Named chord-set groups. Frozenset of scale-degree roots (1-7) → group name.
+    # Order: longest-set names first so a 4-chord match takes priority over a 3-chord subset.
+    NAMED_GROUPS = [
+        (frozenset({1, 4, 5, 6}),    'axis'),         # I-V-vi-IV "axis of awesome"
+        (frozenset({1, 2, 4, 5}),    'I-ii-IV-V'),    # doo-wop without the vi
+        (frozenset({1, 3, 4, 6}),    '50s'),          # I-vi-IV-iii vicinity
+        (frozenset({1, 4, 5, 2}),    'I-ii-IV-V'),    # duplicate, kept for clarity
+        (frozenset({1, 5, 6}),       'I-V-vi'),
+        (frozenset({1, 4, 5}),       'I-IV-V'),
+        (frozenset({1, 4, 6}),       'I-IV-vi'),
+        (frozenset({1, 5, 4, 2}),    'I-ii-IV-V'),
+        (frozenset({1, 6, 4}),       'I-IV-vi'),
+        (frozenset({6, 4, 1, 5}),    'axis'),
+    ]
+    # Dedupe + canonical name per chord-set
+    chord_set_name = {}
+    for s, n in NAMED_GROUPS:
+        chord_set_name.setdefault(s, n)
+
+    def detect_chord_set(section_data):
+        if not section_data: return None, None
+        roots = set()
+        for c in section_data.get('chords', []):
+            r = c.get('r')
+            # Skip chromatic chords (applied or borrowed) when computing the set
+            if c.get('app') or c.get('bor'): continue
+            if r and 1 <= r <= 7:
+                roots.add(r)
+        if not roots: return None, None
+        fs = frozenset(roots)
+        name = chord_set_name.get(fs)
+        # Letter-form for display, e.g. {1,4,5,6} → "I-IV-V-vi"
+        DEG_LABEL = {1:'I', 2:'ii', 3:'iii', 4:'IV', 5:'V', 6:'vi', 7:'vii°'}
+        letters = '-'.join(DEG_LABEL[d] for d in sorted(roots))
+        return name, letters
+
     def render_row_data(r):
+        cs_name, cs_letters = detect_chord_set(r.get('_section_data'))
         return {
             'title': r['title'], 'artist': r['artist'], 'section': r['section'],
             'slug': r['slug'], 'hookpad_url': r.get('hookpad_url') or '',
@@ -131,6 +168,8 @@ def build():
             'patterns': [{'str': p, 'bars': parsed[0], 'split': parsed[1], 'letter': parsed[2]}
                          for p, parsed in r.get('_pats_parsed', [])],
             'data': r.get('_section_data'),
+            'chord_set_name': cs_name,
+            'chord_set_letters': cs_letters,
         }
     data = {p: [render_row_data(r) for r in pat_to_rows[p]] for p in sorted_patterns}
 
@@ -182,6 +221,9 @@ def build():
   .card-head .artist {{ color:#8a8ab0; font-size:12px; }}
   .card-head .section {{ color:#6a6a8a; font-size:11px; }}
   .card-head .key {{ color:#fbbf24; font-size:11px; font-weight:600; }}
+  .card-head .chord-set {{ font-family:ui-monospace,Menlo,monospace; font-size:10px; padding:1px 7px; border-radius:9px; }}
+  .card-head .chord-set.named {{ background:rgba(99,102,241,0.25); color:#a5b4fc; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; }}
+  .card-head .chord-set.unnamed {{ background:#22223e; color:#8a8ab0; }}
   .card-head .hp {{ color:#a5b4fc; text-decoration:none; font-size:11px; font-weight:700; margin-left:auto; padding:2px 8px; background:rgba(99,102,241,0.15); border-radius:4px; }}
   .card-head .hp:hover {{ background:rgba(99,102,241,0.3); }}
   /* piano roll */
@@ -332,12 +374,16 @@ function show(patStr) {{
     if (r.chord_shape) extras.push(`<span class="chord">${{escapeHtml(r.chord_shape)}}</span>`);
     if (r.notes_text) extras.push(`<span class="notes">${{escapeHtml(r.notes_text)}}</span>`);
     const extraHtml = extras.length ? `<div class="sub-meta">${{extras.join(' · ')}}</div>` : '';
+    let csChip = '';
+    if (r.chord_set_name) csChip = `<span class="chord-set named" title="${{escapeHtml(r.chord_set_letters || '')}}">${{escapeHtml(r.chord_set_name)}}</span>`;
+    else if (r.chord_set_letters) csChip = `<span class="chord-set unnamed">${{escapeHtml(r.chord_set_letters)}}</span>`;
     return `<div class="card">
       <div class="card-head">
         <span class="title">${{escapeHtml(r.title)}}</span>
         <span class="artist">${{escapeHtml(r.artist)}}</span>
         <span class="section">[${{escapeHtml(r.section)}}]</span>
         ${{keyStr ? `<span class="key">${{keyStr}}</span>` : ''}}
+        ${{csChip}}
         ${{hp}}
       </div>
       ${{roll}}
