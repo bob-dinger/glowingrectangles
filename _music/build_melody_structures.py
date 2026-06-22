@@ -160,6 +160,9 @@ def build():
 
     def render_row_data(r):
         cs_name, cs_letters = detect_chord_set(r.get('_section_data'))
+        # Determine primary pattern: smallest bar count
+        parsed_pats = [(p, parsed) for p, parsed in r.get('_pats_parsed', [])]
+        primary = min(parsed_pats, key=lambda x: x[1][0])[0] if parsed_pats else None
         return {
             'title': r['title'], 'artist': r['artist'], 'section': r['section'],
             'slug': r['slug'], 'hookpad_url': r.get('hookpad_url') or '',
@@ -170,6 +173,7 @@ def build():
             'data': r.get('_section_data'),
             'chord_set_name': cs_name,
             'chord_set_letters': cs_letters,
+            'primary': primary,
         }
     data = {p: [render_row_data(r) for r in pat_to_rows[p]] for p in sorted_patterns}
 
@@ -205,6 +209,12 @@ def build():
   .right {{ flex:1; overflow-y:auto; padding:14px 22px; }}
   .right h2 {{ font-size:14px; color:#e0e0e0; margin:0 0 4px; font-family:ui-monospace,Menlo,monospace; }}
   .right .meta {{ color:#6a6a8a; font-size:11px; margin-bottom:14px; }}
+  .include-pills {{ display:flex; gap:6px; flex-wrap:wrap; margin:8px 0 14px; font-size:11px; }}
+  .include-pills .lbl {{ color:#6a6a8a; padding:3px 0; }}
+  .include-pills .pill {{ padding:3px 9px; background:#22223e; color:#a0a0c0; border:1px solid #2a2a4a; border-radius:11px; cursor:pointer; font-family:ui-monospace,Menlo,monospace; }}
+  .include-pills .pill:hover {{ background:#3a3a5a; color:#e0e0e0; }}
+  .include-pills .pill.on {{ background:#3050d0; color:#fff; border-color:#3050d0; }}
+  .include-pills .pill .ct {{ color:rgba(255,255,255,0.6); margin-left:5px; font-size:10px; }}
   .pat-blocks {{ display:flex; gap:3px; height:32px; margin-bottom:18px; max-width:540px; }}
   .pat-blocks .ph {{ position:relative; display:flex; align-items:center; justify-content:flex-start; padding-left:8px; border-radius:4px; }}
   .pat-blocks .ph .lt {{ font-weight:700; font-size:12px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,0.5); }}
@@ -353,14 +363,41 @@ function renderRoll(d, pattern) {{
   return html;
 }}
 
+// Per-pattern include-set state: which "other primary" patterns are toggled on.
+const INCLUDES = {{}};   // patStr → Set of primary patterns to include in addition to default
+
 function show(patStr) {{
-  const items = DATA[patStr] || [];
+  const allItems = DATA[patStr] || [];
   const right = document.getElementById('right');
-  // Find the first item's parsed pattern matching patStr for the header block
-  const headerPattern = items.length && items[0].patterns.find(p => p.str === patStr);
+  // Default: only melodies whose primary is patStr.
+  // Plus: any whose primary is in INCLUDES[patStr].
+  const includes = INCLUDES[patStr] || new Set();
+  const items = allItems.filter(r => r.primary === patStr || includes.has(r.primary));
+  // Other primaries available to toggle (for melodies tagged with patStr but smaller primary)
+  const otherPrimaries = new Map();   // primary → count
+  for (const r of allItems) {{
+    if (r.primary !== patStr) {{
+      otherPrimaries.set(r.primary, (otherPrimaries.get(r.primary) || 0) + 1);
+    }}
+  }}
+  const headerPattern = (items[0] && items[0].patterns.find(p => p.str === patStr))
+                       || (allItems[0] && allItems[0].patterns.find(p => p.str === patStr));
   const headerBlocks = headerPattern ? renderPatBlocks(headerPattern) : '';
-  const head = `<h2>${{escapeHtml(patStr)}}</h2><div class="meta">${{items.length}} melod${{items.length===1?'y':'ies'}}</div>${{headerBlocks}}`;
-  if (!items.length) {{ right.innerHTML = head + '<div class="placeholder">no entries</div>'; return; }}
+  // Build pills row
+  let pillsHtml = '';
+  if (otherPrimaries.size) {{
+    const pills = Array.from(otherPrimaries.entries())
+      .sort((a, b) => (parseInt(a[0]) || 0) - (parseInt(b[0]) || 0))
+      .map(([prim, ct]) => {{
+        const on = includes.has(prim);
+        return `<span class="pill ${{on ? 'on' : ''}}" data-prim="${{escapeHtml(prim)}}">+${{escapeHtml(prim)}}<span class="ct">${{ct}}</span></span>`;
+      }}).join('');
+    pillsHtml = `<div class="include-pills"><span class="lbl">also tagged here (whose primary is smaller):</span>${{pills}}</div>`;
+  }}
+  const head = `<h2>${{escapeHtml(patStr)}}</h2>` +
+    `<div class="meta">${{items.length}} of ${{allItems.length}} melod${{allItems.length===1?'y':'ies'}}` +
+    ` shown · default = primary tag only</div>${{headerBlocks}}${{pillsHtml}}`;
+  if (!items.length) {{ right.innerHTML = head + '<div class="placeholder">no entries with this as primary tag</div>'; wirePills(patStr); return; }}
   const cards = items.map(r => {{
     const thisPat = r.patterns.find(p => p.str === patStr) || r.patterns[0];
     const roll = renderRoll(r.data, thisPat);
@@ -393,11 +430,23 @@ function show(patStr) {{
   }}).join('');
   right.innerHTML = head + cards;
   document.querySelectorAll('.pat-link').forEach(p => p.classList.toggle('active', p.dataset.pat === patStr));
-  // wire up cross-pattern links inside cards
   right.querySelectorAll('.all-patterns .pat').forEach(el => {{
     el.addEventListener('click', () => show(el.dataset.pat));
   }});
+  wirePills(patStr);
   localStorage.setItem('melodyPat', patStr);
+}}
+
+function wirePills(patStr) {{
+  document.querySelectorAll('#right .include-pills .pill').forEach(el => {{
+    el.addEventListener('click', () => {{
+      if (!INCLUDES[patStr]) INCLUDES[patStr] = new Set();
+      const prim = el.dataset.prim;
+      if (INCLUDES[patStr].has(prim)) INCLUDES[patStr].delete(prim);
+      else INCLUDES[patStr].add(prim);
+      show(patStr);
+    }});
+  }});
 }}
 
 document.querySelectorAll('.pat-link').forEach(p => {{
