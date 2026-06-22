@@ -291,23 +291,104 @@ def main():
     } for slug, m in song_meta.items()}
     pool_json = {label: pool_lists[label] for label, _ in PAGES}
 
+    # Beatles project mapping (Tuomas Eerola's 12-project chronology)
+    import csv, difflib
+    beatles_proj = {}
+    proj_csv = '/Users/robert/Desktop/beatles_by_project.csv'
+    if os.path.exists(proj_csv):
+        with open(proj_csv) as f:
+            for row in csv.DictReader(f):
+                k = re.sub(r'[^a-z0-9]+', '', re.sub(r"[''`]", '', row['title'].lower()))
+                beatles_proj[k] = (int(row['project_num']), row['project_name'])
+    PROJ_ORDER = [
+        (1, 'Please Please Me'), (2, 'With The Beatles'), (3, "A Hard Day's Night"),
+        (4, 'Beatles For Sale'), (5, 'Help!'), (6, 'Rubber Soul'),
+        (7, 'Revolver'), (8, "Sgt. Pepper's"), (9, 'Magical Mystery Tour'),
+        (10, 'White Album'), (11, 'Let It Be'), (12, 'Abbey Road'),
+    ]
+    # Manual overrides for titles the fuzzy matcher misses
+    OVERRIDES = {
+        'anna': (1, 'Please Please Me'),
+        'benefitofmrkite': (8, "Sgt. Pepper's"),
+        'goodmorning': (8, "Sgt. Pepper's"),
+        'imaloserlyocompleted': (4, 'Beatles For Sale'),
+        'norwegianwood': (6, 'Rubber Soul'),
+        'sgtpeppers': (8, "Sgt. Pepper's"),
+    }
+    def lookup_project(title):
+        nk = re.sub(r'[^a-z0-9]+', '', re.sub(r"[''`]", '', title.lower()))
+        if nk in OVERRIDES: return OVERRIDES[nk]
+        if nk in beatles_proj: return beatles_proj[nk]
+        # Try without trailing -right, 2, _ly_o_..., etc.
+        nk2 = re.sub(r'(right|completed|2|3)$', '', nk)
+        if nk2 in beatles_proj: return beatles_proj[nk2]
+        cand = difflib.get_close_matches(nk, list(beatles_proj.keys()), n=1, cutoff=0.78)
+        if cand: return beatles_proj[cand[0]]
+        return None
+
     # Sidebar HTML — pool groups with song lists
     sidebar_html = []
     for label, _ in PAGES:
-        items = ''.join(
-            f'<li class="song-item" data-slug="{slug}" data-flag="{song_meta[slug]["flag"]}">'
-            f'<span class="dot dot-{song_meta[slug]["flag"]}"></span>'
-            f'<span class="song-title">{song_meta[slug]["title"]}</span>'
-            f'<span class="song-artist">{song_meta[slug]["artist"]}</span>'
-            f'</li>'
-            for slug in pool_lists[label]
-        )
-        sidebar_html.append(
-            f'<div class="pool-group" data-pool="{label}">'
-            f'<div class="pool-header">{label} <span class="pool-count">{len(pool_lists[label])}</span></div>'
-            f'<ul class="song-list">{items}</ul>'
-            f'</div>'
-        )
+        if label == 'Beatles' and beatles_proj:
+            # Group Beatles by project
+            grouped = {p: [] for p in PROJ_ORDER}
+            unmapped = []
+            for slug in pool_lists[label]:
+                proj = lookup_project(song_meta[slug]['title'])
+                if proj and proj in grouped:
+                    grouped[proj].append(slug)
+                else:
+                    unmapped.append(slug)
+            section_html = ''
+            for (n, name) in PROJ_ORDER:
+                slugs = grouped[(n, name)]
+                if not slugs: continue
+                items = ''.join(
+                    f'<li class="song-item" data-slug="{slug}" data-flag="{song_meta[slug]["flag"]}">'
+                    f'<span class="dot dot-{song_meta[slug]["flag"]}"></span>'
+                    f'<span class="song-title">{song_meta[slug]["title"]}</span>'
+                    f'<span class="song-artist">{song_meta[slug]["artist"]}</span>'
+                    f'</li>'
+                    for slug in slugs
+                )
+                section_html += (
+                    f'<div class="proj-subhead">{n}. {name} <span class="proj-count">{len(slugs)}</span></div>'
+                    f'<ul class="song-list">{items}</ul>'
+                )
+            if unmapped:
+                items = ''.join(
+                    f'<li class="song-item" data-slug="{slug}" data-flag="{song_meta[slug]["flag"]}">'
+                    f'<span class="dot dot-{song_meta[slug]["flag"]}"></span>'
+                    f'<span class="song-title">{song_meta[slug]["title"]}</span>'
+                    f'<span class="song-artist">{song_meta[slug]["artist"]}</span>'
+                    f'</li>'
+                    for slug in unmapped
+                )
+                section_html += (
+                    f'<div class="proj-subhead">unmapped <span class="proj-count">{len(unmapped)}</span></div>'
+                    f'<ul class="song-list">{items}</ul>'
+                )
+            sidebar_html.append(
+                f'<div class="pool-group" data-pool="{label}">'
+                f'<div class="pool-header">{label} <span class="pool-count">{len(pool_lists[label])}</span></div>'
+                f'{section_html}'
+                f'</div>'
+            )
+        else:
+            items = ''.join(
+                f'<li class="song-item" data-slug="{slug}" data-flag="{song_meta[slug]["flag"]}">'
+                f'<span class="dot dot-{song_meta[slug]["flag"]}"></span>'
+                f'<span class="song-title">{song_meta[slug]["title"]}</span>'
+                f'<span class="song-artist">{song_meta[slug]["artist"]}</span>'
+                f'</li>'
+                for slug in pool_lists[label]
+            )
+            sidebar_html.append(
+                f'<div class="pool-group" data-pool="{label}">'
+                f'<div class="pool-header">{label} <span class="pool-count">{len(pool_lists[label])}</span></div>'
+                f'<ul class="song-list">{items}</ul>'
+                f'</div>'
+            )
 
     pills_html = ''.join(f'<a class="pool-pill" data-pool="{label}">{label}</a>' for label, _ in PAGES)
     html = HTML_TEMPLATE.replace('__SIDEBAR__', '\n'.join(sidebar_html))
@@ -346,6 +427,8 @@ HTML_TEMPLATE = r'''<!doctype html>
   .pool-pill:hover { background:#3050d0; border-color:#3050d0; }
   .pool-group { border-bottom:1px solid #20203a; }
   .pool-header { padding:10px 16px; background:#20203a; font-size:11px; color:#a5a8fc; text-transform:uppercase; letter-spacing:1.2px; font-weight:700; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:2; }
+  .proj-subhead { padding:7px 16px 5px 20px; background:#1a1a30; font-size:10px; color:#8a8ab0; font-weight:700; letter-spacing:0.6px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #20203a; }
+  .proj-count { color:#5a5a7a; font-weight:400; font-size:9px; }
   .pool-count { color:#6a6a8a; font-weight:400; font-size:10px; }
   .song-list { list-style:none; margin:0; padding:4px 0; }
   .song-item { padding:6px 16px 6px 28px; cursor:pointer; display:grid; grid-template-columns:auto 1fr; gap:2px 8px; align-items:baseline; position:relative; }
