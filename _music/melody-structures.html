@@ -4,62 +4,147 @@
 <meta charset="utf-8">
 <title>Melody Structures — Curated</title>
 <style>
-  body { margin:0; background:#1a1a2e; color:#e0e0e0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; padding:16px 22px; }
-  a.back { color:#6a6a8a; text-decoration:none; font-size:13px; }
-  a.back:hover { color:#e0e0e0; }
-  h1 { font-size:18px; margin:0 0 4px; }
-  .sub { font-size:12px; color:#8a8ab0; margin-bottom:18px; }
-  .group { margin-bottom:24px; }
-  .group h2 { font-size:13px; color:#a5a8fc; text-transform:uppercase; letter-spacing:1.2px; margin:0 0 10px; font-weight:700; display:flex; align-items:center; gap:8px; padding:6px 12px; background:#22223e; border-left:3px solid #6366f1; border-radius:4px; }
-  .group h2 .count { font-size:11px; color:#a5a8fc; background:rgba(99,102,241,0.2); padding:1px 8px; border-radius:10px; font-weight:600; }
-  .cards { display:flex; flex-direction:column; gap:10px; }
-  .card { background:#16162a; border:1px solid #2a2a4a; border-radius:6px; padding:10px 14px; }
-  .meta { display:flex; align-items:baseline; gap:10px; margin-bottom:8px; font-size:13px; flex-wrap:wrap; }
-  .meta .title { font-weight:700; color:#e0e0e0; }
-  .meta .artist { color:#8a8ab0; font-size:12px; }
-  .meta .section { color:#6a6a8a; font-size:11px; }
-  .meta .hp { color:#a5b4fc; text-decoration:none; font-size:11px; font-weight:700; margin-left:auto; padding:2px 8px; background:rgba(99,102,241,0.15); border-radius:4px; }
-  .meta .hp:hover { background:rgba(99,102,241,0.3); }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; background:#1a1a2e; color:#e0e0e0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:13px; overflow:hidden; }
+  .topbar { display:flex; align-items:center; gap:14px; padding:10px 16px; border-bottom:1px solid #2a2a4a; background:#0f0f1f; }
+  .topbar a.back { color:#6a6a8a; text-decoration:none; font-size:12px; }
+  .topbar a.back:hover { color:#e0e0e0; }
+  .topbar h1 { font-size:14px; font-weight:700; margin:0; }
+  .topbar .sub { color:#6a6a8a; font-size:11px; margin-left:auto; }
+  .layout { display:flex; height:calc(100vh - 42px); }
+  .sidebar { width:240px; flex-shrink:0; background:#16162a; border-right:1px solid #2a2a4a; overflow-y:auto; padding:6px 0 20px; }
+  .bars-header { padding:8px 14px 4px; color:#a5a8fc; font-size:10px; text-transform:uppercase; letter-spacing:1.2px; font-weight:700; background:#1a1a30; margin-top:4px; }
+  .pat-link { padding:6px 16px; cursor:pointer; font-family:ui-monospace,Menlo,monospace; font-size:12px; color:#a0a0c0; border-left:3px solid transparent; display:flex; align-items:baseline; }
+  .pat-link:hover { background:#22223e; color:#e0e0e0; }
+  .pat-link.active { background:#22223e; color:#fff; border-left-color:#3050d0; }
+  .pat-link .ct { margin-left:auto; color:#5a5a7a; font-size:10px; }
+  .right { flex:1; overflow-y:auto; padding:18px 24px; }
+  .right h2 { font-size:14px; color:#e0e0e0; margin:0 0 4px; font-family:ui-monospace,Menlo,monospace; }
+  .right .meta { color:#6a6a8a; font-size:11px; margin-bottom:14px; }
+  .card { background:#16162a; border:1px solid #2a2a4a; border-radius:6px; padding:10px 14px; margin-bottom:10px; }
+  .card-head { display:flex; align-items:baseline; gap:10px; margin-bottom:8px; font-size:13px; flex-wrap:wrap; }
+  .card-head .title { font-weight:700; color:#e0e0e0; }
+  .card-head .artist { color:#8a8ab0; font-size:12px; }
+  .card-head .section { color:#6a6a8a; font-size:11px; }
+  .card-head .hp { color:#a5b4fc; text-decoration:none; font-size:11px; font-weight:700; margin-left:auto; padding:2px 8px; background:rgba(99,102,241,0.15); border-radius:4px; }
+  .card-head .hp:hover { background:rgba(99,102,241,0.3); }
   .blocks { display:flex; gap:3px; height:44px; }
   .ph { position:relative; display:flex; align-items:stretch; border-radius:4px; overflow:hidden; min-width:30px; }
   .ph .lt { position:absolute; top:3px; left:6px; font-weight:700; font-size:13px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,0.5); z-index:2; }
-  .ph-A { background:rgba(60, 120, 220, 0.85); }
-  .ph-B { background:rgba(220, 90, 80, 0.85); }
-  .ph-C { background:rgba(50, 180, 80, 0.85); }
-  .ph-D { background:rgba(230, 170, 40, 0.85); }
-  .ph-E { background:rgba(160, 80, 220, 0.85); }
-  .ph-F { background:rgba(220, 70, 200, 0.85); }
+  .ph-A { background:rgba(60,120,220,0.85); }
+  .ph-B { background:rgba(220,90,80,0.85); }
+  .ph-C { background:rgba(50,180,80,0.85); }
+  .ph-D { background:rgba(230,170,40,0.85); }
+  .ph-E { background:rgba(160,80,220,0.85); }
+  .ph-F { background:rgba(220,70,200,0.85); }
   .ph-X { background:#3a3a5a; }
-  .sub { flex:1; border-left:1px dashed rgba(255,255,255,0.35); display:flex; align-items:flex-end; justify-content:center; font-size:10px; color:rgba(255,255,255,0.8); font-weight:600; padding-bottom:3px; }
-  .sub:first-child { border-left:none; }
-  .sub-meta { font-size:11px; color:#8a8ab0; margin-top:8px; display:flex; gap:14px; flex-wrap:wrap; }
+  .all-patterns { font-family:ui-monospace,Menlo,monospace; font-size:10px; color:#8a8ab0; margin-top:6px; }
+  .all-patterns .pat { background:#22223e; padding:1px 6px; border-radius:3px; margin-right:5px; }
+  .sub-meta { font-size:11px; color:#8a8ab0; margin-top:6px; display:flex; gap:14px; flex-wrap:wrap; }
   .sub-meta .chord { color:#fbbf24; font-weight:600; }
   .sub-meta .notes { color:#8a8ab0; font-style:italic; }
+  .placeholder { color:#5a5a7a; text-align:center; margin-top:80px; font-size:13px; }
 </style>
 </head>
 <body>
-<a href="index.html" class="back">&larr; Music</a>
-<h1>Melody Structures (curated)</h1>
-<div class="sub">20 hand-picked sections grouped by bar count + phrase shape. Source: <code>~/Desktop/melodies_curated.xlsx</code></div>
-<section class="group"><h2>8 bars · 4+4 · AA <span class="count">5</span></h2><div class="cards"><div class="card">  <div class="meta">    <span class="title">A Higher Place</span>    <span class="artist">Tom Petty</span>    <span class="section">[verse]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=ZbgOG-qZwgn" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div></div>  </div>
-<div class="card">  <div class="meta">    <span class="title">a long december</span>    <span class="artist">counting crows</span>    <span class="section">[verse]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=WeglMwLaxrY" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div></div>  </div>
-<div class="card">  <div class="meta">    <span class="title">Maggie May</span>    <span class="artist">Rod Stewart</span>    <span class="section">[verse]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=WeglKKwNLmr" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div></div>  </div>
-<div class="card">  <div class="meta">    <span class="title">Smells Like Teen Spirit</span>    <span class="artist">Nirvana</span>    <span class="section">[verse]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=VMgJjXRkgqK" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:1">A</div><div class="sub" style="flex:1">B</div><div class="sub" style="flex:1">C</div><div class="sub" style="flex:1">B</div></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:1">A</div><div class="sub" style="flex:1">B</div><div class="sub" style="flex:1">C</div><div class="sub" style="flex:1">B</div></div></div>  <div class="sub-meta"><span class="chord">push</span> · <span class="notes">each A has internal structure ~ABCB' (1-bar phrases)</span></div></div>
-<div class="card">  <div class="meta">    <span class="title">louisiana saturday night</span>    <span class="artist">mel mcdaniel</span>    <span class="section">[chorus]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=VMgJXZGJVoq" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:2">A</div><div class="sub" style="flex:2">B</div></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:2">A</div><div class="sub" style="flex:2">B</div></div></div>  <div class="sub-meta"><span class="notes">each A is 22 AB → at the 2-bar level reads as 2222 ABAB</span></div></div></div></section>
-<section class="group"><h2>8 bars · 4+4 (each A = 112) · AA <span class="count">3</span></h2><div class="cards"><div class="card">  <div class="meta">    <span class="title">adams song</span>    <span class="artist">blink 182</span>    <span class="section">[verse]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=RPxe-ydyexb" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:1"></div><div class="sub" style="flex:1"></div><div class="sub" style="flex:2"></div></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:1"></div><div class="sub" style="flex:1"></div><div class="sub" style="flex:2"></div></div></div>  <div class="sub-meta"><span class="notes">each A internally 1+1+2</span></div></div>
-<div class="card">  <div class="meta">    <span class="title">Birthday</span>    <span class="artist">Katy Perry</span>    <span class="section">[pre-chorus]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=ZbgORzYpmnY" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:1"></div><div class="sub" style="flex:1"></div><div class="sub" style="flex:2"></div></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:1"></div><div class="sub" style="flex:1"></div><div class="sub" style="flex:2"></div></div></div>  <div class="sub-meta"><span class="notes">each A internally 1+1+2; same shape as Adams Song</span></div></div>
-<div class="card">  <div class="meta">    <span class="title">Birthday</span>    <span class="artist">Katy Perry</span>    <span class="section">[chorus]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=ZbgORzYpmnY" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:1"></div><div class="sub" style="flex:1"></div><div class="sub" style="flex:2"></div></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:1"></div><div class="sub" style="flex:1"></div><div class="sub" style="flex:2"></div></div></div>  <div class="sub-meta"><span class="notes">each A internally 1+1+2; same shape as Adams Song</span></div></div></div></section>
-<section class="group"><h2>8 bars · 224 <span class="count">3</span></h2><div class="cards"><div class="card">  <div class="meta">    <span class="title">island in the sun</span>    <span class="artist">weezer</span>    <span class="section">[chorus]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=ANmpnEKdxyM" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-X" style="flex:2"><span class="lt"></span></div><div class="ph ph-X" style="flex:2"><span class="lt"></span></div><div class="ph ph-X" style="flex:4"><span class="lt"></span></div></div>  </div>
-<div class="card">  <div class="meta">    <span class="title">Maggie May</span>    <span class="artist">Rod Stewart</span>    <span class="section">[pre-chorus]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=WeglKKwNLmr" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-X" style="flex:2"><span class="lt"></span></div><div class="ph ph-X" style="flex:2"><span class="lt"></span></div><div class="ph ph-X" style="flex:4"><span class="lt"></span></div></div>  </div>
-<div class="card">  <div class="meta">    <span class="title">Maggie May</span>    <span class="artist">Rod Stewart</span>    <span class="section">[chorus]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=WeglKKwNLmr" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-X" style="flex:2"><span class="lt"></span></div><div class="ph ph-X" style="flex:2"><span class="lt"></span></div><div class="ph ph-X" style="flex:4"><span class="lt"></span></div></div>  </div></div></section>
-<section class="group"><h2>8 bars · 2222 · ABBC <span class="count">1</span></h2><div class="cards"><div class="card">  <div class="meta">    <span class="title">No Rain</span>    <span class="artist">Blind Melon</span>    <span class="section">[verse]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=QLgnGWMEx-V" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:2"><span class="lt">A</span></div><div class="ph ph-B" style="flex:2"><span class="lt">B</span></div><div class="ph ph-B" style="flex:2"><span class="lt">B</span></div><div class="ph ph-C" style="flex:2"><span class="lt">C</span></div></div>  <div class="sub-meta"><span class="chord">push</span> · <span class="notes">pedal-on-1 opener (A); B & B' descend 4→3→2→1→6̲ over V/IV→F; C falls to low 5</span></div></div></div></section>
-<section class="group"><h2>16 bars · 4444 · AAAA <span class="count">1</span></h2><div class="cards"><div class="card">  <div class="meta">    <span class="title">Sunny Came Home</span>    <span class="artist">Shawn Colvin</span>    <span class="section">[verse]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=nvgyJDNzxkA" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div></div>  </div></div></section>
-<section class="group"><h2>16 bars · 4444 · AAAB <span class="count">1</span></h2><div class="cards"><div class="card">  <div class="meta">    <span class="title">little talks</span>    <span class="artist">of monsters and men</span>    <span class="section">[verse]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=kwxAyLJWxKG" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:2">A</div><div class="sub" style="flex:2">B</div></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:2">A</div><div class="sub" style="flex:2">B</div></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:2">A</div><div class="sub" style="flex:2">B</div></div><div class="ph ph-B" style="flex:4"><span class="lt">B</span><div class="sub" style="flex:2">A</div><div class="sub" style="flex:2">B</div></div></div>  <div class="sub-meta"><span class="chord">back-runner</span> · <span class="notes">each A is a 2+2 (AA' or AB depending on lens)</span></div></div></div></section>
-<section class="group"><h2>16 bars · 4444 · AABA <span class="count">5</span></h2><div class="cards"><div class="card">  <div class="meta">    <span class="title">shadow of the day</span>    <span class="artist">linkin park</span>    <span class="section">[chorus]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=bWgMPOlzmlX" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-B" style="flex:4"><span class="lt">B</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div></div>  </div>
-<div class="card">  <div class="meta">    <span class="title">Eight Days a Week</span>    <span class="artist">The Beatles</span>    <span class="section">[verse]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=veoYBNzamdn" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-B" style="flex:4"><span class="lt">B</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div></div>  </div>
-<div class="card">  <div class="meta">    <span class="title">I'm Looking Through You</span>    <span class="artist">The Beatles</span>    <span class="section">[verse]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=RzojXrOAgDe" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-B" style="flex:4"><span class="lt">B</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div></div>  </div>
-<div class="card">  <div class="meta">    <span class="title">The Night Before</span>    <span class="artist">beatles</span>    <span class="section">[verse]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=AaoGBXPAxeQ" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-B" style="flex:4"><span class="lt">B</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div></div>  </div>
-<div class="card">  <div class="meta">    <span class="title">Help!</span>    <span class="artist">The Beatles</span>    <span class="section">[chorus]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=YAg-PkLDmle" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div><div class="ph ph-B" style="flex:4"><span class="lt">B</span></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span></div></div>  </div></div></section>
-<section class="group"><h2>16 bars · 4444 · ABAB <span class="count">1</span></h2><div class="cards"><div class="card">  <div class="meta">    <span class="title">she's in love with the boy</span>    <span class="artist">trisha yearwood</span>    <span class="section">[verse]</span>    <a class="hp" href="https://hookpad.hooktheory.com/?idOfUserSong=LAgQEkEegyO" target="_blank" rel="noopener">HP↗</a>  </div>  <div class="blocks"><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:2"></div><div class="sub" style="flex:2"></div></div><div class="ph ph-B" style="flex:4"><span class="lt">B</span><div class="sub" style="flex:2"></div><div class="sub" style="flex:2"></div></div><div class="ph ph-A" style="flex:4"><span class="lt">A</span><div class="sub" style="flex:2"></div><div class="sub" style="flex:2"></div></div><div class="ph ph-B" style="flex:4"><span class="lt">B</span><div class="sub" style="flex:2"></div><div class="sub" style="flex:2"></div></div></div>  <div class="sub-meta"><span class="notes">each 4-bar phrase splits 2+2</span></div></div></div></section>
+<div class="topbar">
+  <a class="back" href="index.html">&larr; Music</a>
+  <h1>Melody Structures (curated)</h1>
+  <div class="sub">20 melodies · 11 unique patterns · source: <code>~/Desktop/melodies_curated.xlsx</code></div>
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="bars-header">4 bars</div>
+<div class="pat-link" data-pat="4-1111-ABCB'">4-1111-ABCB'<span class="ct">1</span></div>
+<div class="pat-link" data-pat="4-112">4-112<span class="ct">3</span></div>
+<div class="pat-link" data-pat="4-22">4-22<span class="ct">1</span></div>
+<div class="pat-link" data-pat="4-22-AB">4-22-AB<span class="ct">2</span></div>
+<div class="bars-header">8 bars</div>
+<div class="pat-link" data-pat="8-2222-ABBC">8-2222-ABBC<span class="ct">1</span></div>
+<div class="pat-link" data-pat="8-224">8-224<span class="ct">3</span></div>
+<div class="pat-link" data-pat="8-44-AA">8-44-AA<span class="ct">8</span></div>
+<div class="bars-header">16 bars</div>
+<div class="pat-link" data-pat="16-4444-AAAA">16-4444-AAAA<span class="ct">1</span></div>
+<div class="pat-link" data-pat="16-4444-AAAB">16-4444-AAAB<span class="ct">1</span></div>
+<div class="pat-link" data-pat="16-4444-AABA">16-4444-AABA<span class="ct">5</span></div>
+<div class="pat-link" data-pat="16-4444-ABAB">16-4444-ABAB<span class="ct">1</span></div>
+  </aside>
+  <main class="right" id="right">
+    <div class="placeholder">— pick a pattern on the left —</div>
+  </main>
+</div>
+
+<script>
+const DATA = {"4-1111-ABCB'": [{"title": "Smells Like Teen Spirit", "artist": "Nirvana", "section": "verse", "slug": "nirvana_smells-like-teen-spirit", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=VMgJjXRkgqK", "chord_shape": "push", "notes": "each A has internal structure ~ABCB' (1-bar phrases)", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}, {"str": "4-1111-ABCB'", "bars": 4, "split": "1111", "letter": "ABCB'"}]}], "4-112": [{"title": "adams song", "artist": "blink 182", "section": "verse", "slug": "blink-182_adams-song", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=RPxe-ydyexb", "chord_shape": "", "notes": "each A internally 1+1+2", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}, {"str": "4-112", "bars": 4, "split": "112", "letter": ""}]}, {"title": "Birthday", "artist": "Katy Perry", "section": "pre-chorus", "slug": "katy-perry_birthday", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=ZbgORzYpmnY", "chord_shape": "", "notes": "each A internally 1+1+2; same shape as Adams Song", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}, {"str": "4-112", "bars": 4, "split": "112", "letter": ""}]}, {"title": "Birthday", "artist": "Katy Perry", "section": "chorus", "slug": "katy-perry_birthday", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=ZbgORzYpmnY", "chord_shape": "", "notes": "each A internally 1+1+2; same shape as Adams Song", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}, {"str": "4-112", "bars": 4, "split": "112", "letter": ""}]}], "4-22": [{"title": "she's in love with the boy", "artist": "trisha yearwood", "section": "verse", "slug": "trisha-yearwood_shes-in-love-with-the-boy", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=LAgQEkEegyO", "chord_shape": "", "notes": "each 4-bar phrase splits 2+2", "patterns": [{"str": "16-4444-ABAB", "bars": 16, "split": "4444", "letter": "ABAB"}, {"str": "4-22", "bars": 4, "split": "22", "letter": ""}]}], "4-22-AB": [{"title": "little talks", "artist": "of monsters and men", "section": "verse", "slug": "of-monsters-and-men_little-talks", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=kwxAyLJWxKG", "chord_shape": "back-runner", "notes": "each A is a 2+2 (AA' or AB depending on lens)", "patterns": [{"str": "16-4444-AAAB", "bars": 16, "split": "4444", "letter": "AAAB"}, {"str": "4-22-AB", "bars": 4, "split": "22", "letter": "AB"}]}, {"title": "louisiana saturday night", "artist": "mel mcdaniel", "section": "chorus", "slug": "alabama_louisiana-saturday-night", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=VMgJXZGJVoq", "chord_shape": "", "notes": "each A is 22 AB → at the 2-bar level reads as 2222 ABAB", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}, {"str": "4-22-AB", "bars": 4, "split": "22", "letter": "AB"}]}], "8-2222-ABBC": [{"title": "No Rain", "artist": "Blind Melon", "section": "verse", "slug": "blind-melon_no-rain_o", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=QLgnGWMEx-V", "chord_shape": "push", "notes": "pedal-on-1 opener (A); B & B' descend 4→3→2→1→6̲ over V/IV→F; C falls to low 5", "patterns": [{"str": "8-2222-ABBC", "bars": 8, "split": "2222", "letter": "ABBC"}]}], "8-224": [{"title": "island in the sun", "artist": "weezer", "section": "chorus", "slug": "weezer_island-in-the-sun", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=ANmpnEKdxyM", "chord_shape": "", "notes": "", "patterns": [{"str": "8-224", "bars": 8, "split": "224", "letter": ""}]}, {"title": "Maggie May", "artist": "Rod Stewart", "section": "pre-chorus", "slug": "rod-stewart_maggie-may", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=WeglKKwNLmr", "chord_shape": "", "notes": "", "patterns": [{"str": "8-224", "bars": 8, "split": "224", "letter": ""}]}, {"title": "Maggie May", "artist": "Rod Stewart", "section": "chorus", "slug": "rod-stewart_maggie-may", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=WeglKKwNLmr", "chord_shape": "", "notes": "", "patterns": [{"str": "8-224", "bars": 8, "split": "224", "letter": ""}]}], "8-44-AA": [{"title": "A Higher Place", "artist": "Tom Petty", "section": "verse", "slug": "tom-petty_-a-higher-place", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=ZbgOG-qZwgn", "chord_shape": "", "notes": "", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}]}, {"title": "a long december", "artist": "counting crows", "section": "verse", "slug": "counting-crows_a-long-december-81cd3f", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=WeglMwLaxrY", "chord_shape": "", "notes": "", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}]}, {"title": "Maggie May", "artist": "Rod Stewart", "section": "verse", "slug": "rod-stewart_maggie-may", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=WeglKKwNLmr", "chord_shape": "", "notes": "", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}]}, {"title": "adams song", "artist": "blink 182", "section": "verse", "slug": "blink-182_adams-song", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=RPxe-ydyexb", "chord_shape": "", "notes": "each A internally 1+1+2", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}, {"str": "4-112", "bars": 4, "split": "112", "letter": ""}]}, {"title": "Birthday", "artist": "Katy Perry", "section": "pre-chorus", "slug": "katy-perry_birthday", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=ZbgORzYpmnY", "chord_shape": "", "notes": "each A internally 1+1+2; same shape as Adams Song", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}, {"str": "4-112", "bars": 4, "split": "112", "letter": ""}]}, {"title": "Birthday", "artist": "Katy Perry", "section": "chorus", "slug": "katy-perry_birthday", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=ZbgORzYpmnY", "chord_shape": "", "notes": "each A internally 1+1+2; same shape as Adams Song", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}, {"str": "4-112", "bars": 4, "split": "112", "letter": ""}]}, {"title": "Smells Like Teen Spirit", "artist": "Nirvana", "section": "verse", "slug": "nirvana_smells-like-teen-spirit", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=VMgJjXRkgqK", "chord_shape": "push", "notes": "each A has internal structure ~ABCB' (1-bar phrases)", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}, {"str": "4-1111-ABCB'", "bars": 4, "split": "1111", "letter": "ABCB'"}]}, {"title": "louisiana saturday night", "artist": "mel mcdaniel", "section": "chorus", "slug": "alabama_louisiana-saturday-night", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=VMgJXZGJVoq", "chord_shape": "", "notes": "each A is 22 AB → at the 2-bar level reads as 2222 ABAB", "patterns": [{"str": "8-44-AA", "bars": 8, "split": "44", "letter": "AA"}, {"str": "4-22-AB", "bars": 4, "split": "22", "letter": "AB"}]}], "16-4444-AAAA": [{"title": "Sunny Came Home", "artist": "Shawn Colvin", "section": "verse", "slug": "shawn-colvin_sunny-came-home", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=nvgyJDNzxkA", "chord_shape": "", "notes": "", "patterns": [{"str": "16-4444-AAAA", "bars": 16, "split": "4444", "letter": "AAAA"}]}], "16-4444-AAAB": [{"title": "little talks", "artist": "of monsters and men", "section": "verse", "slug": "of-monsters-and-men_little-talks", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=kwxAyLJWxKG", "chord_shape": "back-runner", "notes": "each A is a 2+2 (AA' or AB depending on lens)", "patterns": [{"str": "16-4444-AAAB", "bars": 16, "split": "4444", "letter": "AAAB"}, {"str": "4-22-AB", "bars": 4, "split": "22", "letter": "AB"}]}], "16-4444-AABA": [{"title": "shadow of the day", "artist": "linkin park", "section": "chorus", "slug": "linkin-park_shadow-of-the-day_o_c_ly", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=bWgMPOlzmlX", "chord_shape": "", "notes": "", "patterns": [{"str": "16-4444-AABA", "bars": 16, "split": "4444", "letter": "AABA"}]}, {"title": "Eight Days a Week", "artist": "The Beatles", "section": "verse", "slug": "beatles_eight-days-a-week", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=veoYBNzamdn", "chord_shape": "", "notes": "", "patterns": [{"str": "16-4444-AABA", "bars": 16, "split": "4444", "letter": "AABA"}]}, {"title": "I'm Looking Through You", "artist": "The Beatles", "section": "verse", "slug": "beatles_im-looking-through-you", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=RzojXrOAgDe", "chord_shape": "", "notes": "", "patterns": [{"str": "16-4444-AABA", "bars": 16, "split": "4444", "letter": "AABA"}]}, {"title": "The Night Before", "artist": "beatles", "section": "verse", "slug": "beatles_the-night-before_o", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=AaoGBXPAxeQ", "chord_shape": "", "notes": "", "patterns": [{"str": "16-4444-AABA", "bars": 16, "split": "4444", "letter": "AABA"}]}, {"title": "Help!", "artist": "The Beatles", "section": "chorus", "slug": "beatles_help", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=YAg-PkLDmle", "chord_shape": "", "notes": "", "patterns": [{"str": "16-4444-AABA", "bars": 16, "split": "4444", "letter": "AABA"}]}], "16-4444-ABAB": [{"title": "she's in love with the boy", "artist": "trisha yearwood", "section": "verse", "slug": "trisha-yearwood_shes-in-love-with-the-boy", "hookpad_url": "https://hookpad.hooktheory.com/?idOfUserSong=LAgQEkEegyO", "chord_shape": "", "notes": "each 4-bar phrase splits 2+2", "patterns": [{"str": "16-4444-ABAB", "bars": 16, "split": "4444", "letter": "ABAB"}, {"str": "4-22", "bars": 4, "split": "22", "letter": ""}]}]};
+
+function splitToWidths(split) {
+  if (split.includes('+')) return split.split('+').filter(s => /^\d+$/.test(s)).map(Number);
+  if (/^\d+$/.test(split)) return split.split('').map(Number);
+  return [];
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+function renderBlocks(pattern) {
+  const widths = splitToWidths(pattern.split);
+  const letters = (pattern.letter || '').split('');
+  return '<div class="blocks">' + widths.map((w, i) => {
+    const lt = letters[i] || '';
+    const lt_norm = lt.toUpperCase().replace(/[^A-F]/g, '').slice(0,1) || 'X';
+    return `<div class="ph ph-${lt_norm}" style="flex:${w}">` +
+           (lt ? `<span class="lt">${escapeHtml(lt)}</span>` : '') +
+           `</div>`;
+  }).join('') + '</div>';
+}
+
+function show(patStr) {
+  const items = DATA[patStr] || [];
+  const right = document.getElementById('right');
+  const head = `<h2>${escapeHtml(patStr)}</h2><div class="meta">${items.length} melod${items.length===1?'y':'ies'}</div>`;
+  if (!items.length) { right.innerHTML = head + '<div class="placeholder">no entries</div>'; return; }
+  const cards = items.map(r => {
+    // Render blocks for THIS pattern specifically (find matching)
+    const thisPat = r.patterns.find(p => p.str === patStr) || r.patterns[0];
+    const blocks = renderBlocks(thisPat);
+    const hp = r.hookpad_url ? `<a class="hp" href="${r.hookpad_url}" target="_blank" rel="noopener">HP↗</a>` : '';
+    const allPats = r.patterns.length > 1
+      ? `<div class="all-patterns">all: ${r.patterns.map(p => `<span class="pat">${escapeHtml(p.str)}</span>`).join('')}</div>`
+      : '';
+    const extras = [];
+    if (r.chord_shape) extras.push(`<span class="chord">${escapeHtml(r.chord_shape)}</span>`);
+    if (r.notes) extras.push(`<span class="notes">${escapeHtml(r.notes)}</span>`);
+    const extraHtml = extras.length ? `<div class="sub-meta">${extras.join(' · ')}</div>` : '';
+    return `<div class="card">
+      <div class="card-head">
+        <span class="title">${escapeHtml(r.title)}</span>
+        <span class="artist">${escapeHtml(r.artist)}</span>
+        <span class="section">[${escapeHtml(r.section)}]</span>
+        ${hp}
+      </div>
+      ${blocks}
+      ${allPats}
+      ${extraHtml}
+    </div>`;
+  }).join('');
+  right.innerHTML = head + cards;
+  document.querySelectorAll('.pat-link').forEach(p => p.classList.toggle('active', p.dataset.pat === patStr));
+  localStorage.setItem('melodyPat', patStr);
+}
+
+document.querySelectorAll('.pat-link').forEach(p => {
+  p.addEventListener('click', () => show(p.dataset.pat));
+});
+
+// Restore last selected pattern
+const last = localStorage.getItem('melodyPat');
+if (last && DATA[last]) show(last);
+else {
+  // pick first
+  const first = document.querySelector('.pat-link');
+  if (first) show(first.dataset.pat);
+}
+</script>
 </body>
 </html>
