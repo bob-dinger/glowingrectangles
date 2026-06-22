@@ -427,8 +427,8 @@ HTML_TEMPLATE = r'''<!doctype html>
   .pool-pill:hover { background:#3050d0; border-color:#3050d0; }
   .pool-group { border-bottom:1px solid #20203a; }
   .pool-header { padding:10px 16px; background:#20203a; font-size:11px; color:#a5a8fc; text-transform:uppercase; letter-spacing:1.2px; font-weight:700; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:2; }
-  .proj-subhead { padding:7px 16px 5px 20px; background:#1a1a30; font-size:10px; color:#8a8ab0; font-weight:700; letter-spacing:0.6px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #20203a; }
-  .proj-count { color:#5a5a7a; font-weight:400; font-size:9px; }
+  .proj-subhead { padding:9px 16px 8px 16px; background:#2d2d52; font-size:12px; color:#fff; font-weight:700; text-transform:uppercase; letter-spacing:1px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3a3a5a; border-left:3px solid #6366f1; }
+  .proj-count { color:#a5a8fc; font-weight:600; font-size:10px; background:rgba(99,102,241,0.18); padding:1px 7px; border-radius:9px; }
   .pool-count { color:#6a6a8a; font-weight:400; font-size:10px; }
   .song-list { list-style:none; margin:0; padding:4px 0; }
   .song-item { padding:6px 16px 6px 28px; cursor:pointer; display:grid; grid-template-columns:auto 1fr; gap:2px 8px; align-items:baseline; position:relative; }
