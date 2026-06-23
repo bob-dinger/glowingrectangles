@@ -54,8 +54,9 @@ def fetch_section_data(slug, section_name):
     def section_matches(name):
         n = norm_name(name)
         if n == target: return True
-        # 'verse' matches 'verse1', 'verse2', etc.
-        if n.rstrip('0123456789') == target: return True
+        # 'verse' matches 'verse1', 'verse2', 'versei', 'verseii', etc.
+        stripped = re.sub(r'(?:[0-9]+|i+|iv|v|vi+)$', '', n)
+        if stripped == target: return True
         return False
     for i, s in enumerate(sections):
         if section_matches(s.get('name') or s.get('label')):
