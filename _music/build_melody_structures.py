@@ -1,21 +1,23 @@
-"""Build _music/melody-structures.html from ~/Desktop/melodies_curated.xlsx.
+"""Build _music/melody-structures.html from parcels.melodies in Supabase.
 
 For each curated melody, pulls the actual chord + note data from
-Supabase so the page can render a per-melody piano roll.
+parcels.songs.hookpad_json so the page can render a per-melody piano roll.
 
-xlsx schema:
-  slug, artist, title, section, patterns, chord_shape, notes, hookpad_url
+Source of truth: parcels.melodies table.
+Edit via ~/Desktop/melodies_curated.xlsx + run sync_melodies_to_supabase.py
+to push changes, then run this script to rebuild the page.
+
+melodies schema:
+  slug, section, patterns, chord_shape, notes
 `patterns` is a comma-separated list of pattern strings like
   "8-2222-ABBC", "4-112", "16-4444-AABA"
 """
 import os, json, re
 from collections import defaultdict
-from openpyxl import load_workbook
 from dotenv import load_dotenv
 load_dotenv('/Users/robert/Desktop/themap/themap_claude/.env')
 from supabase import create_client
 
-XLSX = os.path.expanduser('~/Desktop/melodies_curated.xlsx')
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'melody-structures.html')
 
 sb = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_SERVICE_ROLE_KEY'])
@@ -86,13 +88,27 @@ def fetch_section_data(slug, section_name):
 
 
 def build():
-    wb = load_workbook(XLSX)
-    ws = wb['melodies']
-    headers = [c.value for c in ws[1]]
+    # Pull curated melodies from Supabase
+    mel_rows = sb.schema('parcels').table('melodies').select('*').execute().data
+    # Join with songs for artist/title/hookpad_url
+    slugs = list({r['slug'] for r in mel_rows})
+    song_meta = {}
+    for i in range(0, len(slugs), 100):
+        chunk = slugs[i:i+100]
+        sr = sb.schema('parcels').table('songs').select('slug,artist,title,hookpad_url').in_('slug', chunk).execute().data
+        for s in sr: song_meta[s['slug']] = s
     rows = []
-    for r in ws.iter_rows(min_row=2, values_only=True):
-        if not r[0]: continue
-        rows.append(dict(zip(headers, r)))
+    for r in mel_rows:
+        s = song_meta.get(r['slug']) or {}
+        rows.append({
+            'slug': r['slug'], 'section': r['section'],
+            'patterns': r.get('patterns') or '',
+            'chord_shape': r.get('chord_shape') or '',
+            'notes': r.get('notes') or '',
+            'artist': s.get('artist') or '?',
+            'title': s.get('title') or '?',
+            'hookpad_url': s.get('hookpad_url') or '',
+        })
     print(f"loaded {len(rows)} curated melodies; fetching section data…")
 
     # Pull section data for each row (cache by (slug, section))
@@ -281,9 +297,11 @@ def build():
 const DATA = {json.dumps(data, ensure_ascii=False)};
 
 function splitToWidths(split) {{
-  if (split.includes('+')) return split.split('+').filter(s => /^\\d+$/.test(s)).map(Number);
-  if (/^\\d+$/.test(split)) return split.split('').map(Number);
-  return [];
+  if (split.includes('/')) return split.split('/').filter(s => /^\\d*\\.?\\d+$/.test(s)).map(parseFloat);
+  if (split.includes('+')) return split.split('+').filter(s => /^\\d*\\.?\\d+$/.test(s)).map(parseFloat);
+  // 2222 → [2,2,2,2]; .5.5.5.5 → [.5,.5,.5,.5]; 1.5.5 → [1,.5,.5]
+  const nums = split.match(/\\.\\d+|\\d+\\.?\\d*/g) || [];
+  return nums.map(parseFloat);
 }}
 
 function escapeHtml(s) {{
