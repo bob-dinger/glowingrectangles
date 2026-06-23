@@ -116,12 +116,12 @@ def fetch_section_data(slug, section_name, pickup_beats=0):
 def build():
     # Pull curated melodies from Supabase
     mel_rows = sb.schema('parcels').table('melodies').select('*').execute().data
-    # Join with songs for artist/title/hookpad_url
+    # Join with songs for artist/title/hookpad_url/tags
     slugs = list({r['slug'] for r in mel_rows})
     song_meta = {}
     for i in range(0, len(slugs), 100):
         chunk = slugs[i:i+100]
-        sr = sb.schema('parcels').table('songs').select('slug,artist,title,hookpad_url').in_('slug', chunk).execute().data
+        sr = sb.schema('parcels').table('songs').select('slug,artist,title,hookpad_url,tags').in_('slug', chunk).execute().data
         for s in sr: song_meta[s['slug']] = s
     rows = []
     for r in mel_rows:
@@ -135,6 +135,7 @@ def build():
             'artist': s.get('artist') or '?',
             'title': s.get('title') or '?',
             'hookpad_url': s.get('hookpad_url') or '',
+            'song_tags': s.get('tags') or [],
         })
     print(f"loaded {len(rows)} curated melodies; fetching section data…")
 
@@ -204,7 +205,6 @@ def build():
 
     def render_row_data(r):
         cs_name, cs_letters = detect_chord_set(r.get('_section_data'))
-        # Determine primary pattern: smallest bar count
         parsed_pats = [(p, parsed) for p, parsed in r.get('_pats_parsed', [])]
         primary = min(parsed_pats, key=lambda x: x[1][0])[0] if parsed_pats else None
         return {
@@ -217,6 +217,7 @@ def build():
             'data': r.get('_section_data'),
             'chord_set_name': cs_name,
             'chord_set_letters': cs_letters,
+            'song_tags': r.get('song_tags') or [],
             'primary': primary,
         }
     data = {p: [render_row_data(r) for r in pat_to_rows[p]] for p in sorted_patterns}
@@ -280,6 +281,7 @@ def build():
   .card-head .chord-set.unnamed {{ background:#22223e; color:#8a8ab0; }}
   .card-head .pickup-chip {{ font-size:10px; padding:1px 7px; border-radius:9px; background:rgba(99,102,241,0.18); color:#a5b4fc; font-weight:600; font-family:ui-monospace,Menlo,monospace; }}
   .card-head .meter-chip {{ font-size:10px; padding:1px 7px; border-radius:9px; background:rgba(251,191,36,0.18); color:#fbbf24; font-weight:600; font-family:ui-monospace,Menlo,monospace; }}
+  .card-head .song-tag-chip {{ font-size:10px; padding:1px 7px; border-radius:9px; background:rgba(34,197,94,0.18); color:#4ade80; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; font-family:ui-monospace,Menlo,monospace; }}
   .card-head .hp {{ color:#a5b4fc; text-decoration:none; font-size:11px; font-weight:700; margin-left:auto; padding:2px 8px; background:rgba(99,102,241,0.15); border-radius:4px; }}
   .card-head .hp:hover {{ background:rgba(99,102,241,0.3); }}
   /* piano roll */
@@ -484,6 +486,10 @@ function show(patStr) {{
       const labels = r.data.mixed_meter_bars.map(b => `${{b.numBeats}}/4`).join(', ');
       meterChip = `<span class="meter-chip" title="non-main meter bar(s) in this section">⚠ ${{labels}}</span>`;
     }}
+    let songTagChips = '';
+    if (r.song_tags && r.song_tags.length) {{
+      songTagChips = r.song_tags.map(t => `<span class="song-tag-chip" title="song tag">${{escapeHtml(t)}}</span>`).join('');
+    }}
     return `<div class="card">
       <div class="card-head">
         <span class="title">${{escapeHtml(r.title)}}</span>
@@ -491,6 +497,7 @@ function show(patStr) {{
         <span class="section">[${{escapeHtml(r.section)}}]</span>
         ${{keyStr ? `<span class="key">${{keyStr}}</span>` : ''}}
         ${{csChip}}
+        ${{songTagChips}}
         ${{pickupChip}}
         ${{meterChip}}
         ${{hp}}
