@@ -35,8 +35,10 @@ def norm_name(s):
     return re.sub(r'[^a-z0-9]+', '', (s or '').lower())
 
 
-def fetch_section_data(slug, section_name):
-    """Return {chords, notes, start, end, bpm, key} for the named section, or None."""
+def fetch_section_data(slug, section_name, pickup_beats=0):
+    """Return {chords, notes, start, end, bpm, key, pickup_beats, pickup_note_count}
+    for the named section, or None. Pickup notes (those starting in
+    [start - pickup_beats, start)) are included with NEGATIVE beat offsets."""
     rows = sb.schema('parcels').table('songs').select(
         'slug,hookpad_json'
     ).eq('slug', slug).limit(1).execute().data
@@ -52,11 +54,9 @@ def fetch_section_data(slug, section_name):
     scale = keys[0].get('scale') or 'major'
     tempos = d.get('tempos') or [{}]
     bpm = tempos[0].get('bpm') or 120
-    # Find first section whose normalized name matches (exact, then prefix)
     def section_matches(name):
         n = norm_name(name)
         if n == target: return True
-        # 'verse' matches 'verse1', 'verse2', 'versei', 'verseii', etc.
         stripped = re.sub(r'(?:[0-9]+|i+|iv|v|vi+)$', '', n)
         if stripped == target: return True
         return False
@@ -64,14 +64,17 @@ def fetch_section_data(slug, section_name):
         if section_matches(s.get('name') or s.get('label')):
             start = s.get('beat', 0)
             end = sections[i+1]['beat'] if i+1 < len(sections) else end_beat
+            fetch_start = start - (pickup_beats or 0)
             chs = [c for c in (d.get('chords') or [])
-                   if c.get('beat') is not None and start <= c['beat'] < end]
+                   if c.get('beat') is not None and fetch_start <= c['beat'] < end]
             nts = [n for n in (d.get('notes') or [])
-                   if n.get('beat') is not None and start <= n['beat'] < end]
-            # Compact + zero-based beats
+                   if n.get('beat') is not None and fetch_start <= n['beat'] < end]
+            pickup_note_count = sum(1 for n in nts if n.get('beat', 0) < start)
             return {
                 'start': start, 'end': end, 'bpb': bpb, 'bpm': bpm,
                 'key': tonic, 'scale': scale,
+                'pickup_beats': pickup_beats or 0,
+                'pickup_note_count': pickup_note_count,
                 'chords': [{'r': c.get('root'), 't': c.get('type', 0),
                             'b': round(c['beat'] - start, 3),
                             'd': round(c.get('duration', 1), 3),
@@ -105,18 +108,19 @@ def build():
             'patterns': r.get('patterns') or '',
             'chord_shape': r.get('chord_shape') or '',
             'notes': r.get('notes') or '',
+            'pickup_beats': float(r.get('pickup_beats') or 0),
             'artist': s.get('artist') or '?',
             'title': s.get('title') or '?',
             'hookpad_url': s.get('hookpad_url') or '',
         })
     print(f"loaded {len(rows)} curated melodies; fetching section data…")
 
-    # Pull section data for each row (cache by (slug, section))
+    # Pull section data for each row (cache by (slug, section, pickup))
     cache = {}
     for r in rows:
-        key = (r['slug'], r['section'])
+        key = (r['slug'], r['section'], r['pickup_beats'])
         if key not in cache:
-            cache[key] = fetch_section_data(r['slug'], r['section'])
+            cache[key] = fetch_section_data(r['slug'], r['section'], r['pickup_beats'])
         if cache[key] is None:
             print(f"  ! no section data for {r['slug']} / {r['section']}")
         r['_section_data'] = cache[key]
@@ -251,12 +255,15 @@ def build():
   .card-head .chord-set {{ font-family:ui-monospace,Menlo,monospace; font-size:10px; padding:1px 7px; border-radius:9px; }}
   .card-head .chord-set.named {{ background:rgba(99,102,241,0.25); color:#a5b4fc; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; }}
   .card-head .chord-set.unnamed {{ background:#22223e; color:#8a8ab0; }}
+  .card-head .pickup-chip {{ font-size:10px; padding:1px 7px; border-radius:9px; background:rgba(99,102,241,0.18); color:#a5b4fc; font-weight:600; font-family:ui-monospace,Menlo,monospace; }}
   .card-head .hp {{ color:#a5b4fc; text-decoration:none; font-size:11px; font-weight:700; margin-left:auto; padding:2px 8px; background:rgba(99,102,241,0.15); border-radius:4px; }}
   .card-head .hp:hover {{ background:rgba(99,102,241,0.3); }}
   /* piano roll */
   .roll {{ position:relative; height:80px; background:#0d0d1d; border-radius:4px; border:1px solid #2a2a4a; overflow:hidden; }}
   .bar-line {{ position:absolute; top:0; bottom:0; width:1px; background:rgba(140,140,180,0.18); }}
   .bar-line.strong {{ background:rgba(140,140,180,0.45); width:1px; }}
+  .pickup-zone {{ position:absolute; top:0; bottom:0; background:repeating-linear-gradient(45deg,rgba(99,102,241,0.06) 0 4px,rgba(99,102,241,0.12) 4px 8px); border-right:1px dashed rgba(165,180,252,0.5); }}
+  .note.pickup {{ opacity:0.7; outline:1px solid rgba(165,180,252,0.4); }}
   .chord-bar {{ position:absolute; top:0; height:12px; font-size:9px; color:rgba(255,255,255,0.85); font-family:ui-monospace,Menlo,monospace; padding:0 4px; display:flex; align-items:center; border-radius:2px; }}
   .note {{ position:absolute; height:5px; border-radius:2px; }}
   .n-1 {{ background:#a01e1e; }} .n-2 {{ background:#b35610; }} .n-3 {{ background:#957e0c; }}
@@ -346,24 +353,34 @@ function noteClass(sd) {{
 
 function renderRoll(d, pattern) {{
   if (!d) return '<div class="no-data">no melody data — slug or section may not match</div>';
-  const span = d.end - d.start;
-  const bars = Math.round(span / d.bpb);
+  const sectionSpan = d.end - d.start;
+  const pickup = d.pickup_beats || 0;
+  const totalSpan = sectionSpan + pickup;
+  const bars = Math.round(sectionSpan / d.bpb);
   // Pitch range from non-rest notes
   const pitches = d.notes.filter(n => !n.r).map(n => n.o * 7 + sdNum(n.sd));
   if (pitches.length === 0) return '<div class="no-data">no notes in this section</div>';
   const lo = Math.min(...pitches), hi = Math.max(...pitches);
   const range = Math.max(1, hi - lo);
+  // Map a beat offset (relative to section start; negative = pickup) to left %
+  const toLeft = (b) => ((b + pickup) / totalSpan) * 100;
+  const toWidth = (w) => (w / totalSpan) * 100;
   let html = '<div class="roll">';
-  // Bar lines
+  // Pickup zone background
+  if (pickup > 0) {{
+    const w = (pickup / totalSpan) * 100;
+    html += `<div class="pickup-zone" style="left:0;width:${{w}}%"></div>`;
+  }}
+  // Bar lines (only across the section proper)
   for (let i = 0; i <= bars; i++) {{
-    const left = (i / bars) * 100;
+    const left = toLeft(i * d.bpb);
     const cls = (i === 0 || i === bars) ? 'bar-line strong' : 'bar-line';
     html += `<div class="${{cls}}" style="left:${{left}}%"></div>`;
   }}
   // Chord bars across the top
   d.chords.forEach(c => {{
-    const left = (c.b / span) * 100;
-    const w = (c.d / span) * 100;
+    const left = toLeft(c.b);
+    const w = toWidth(c.d);
     const lbl = chordLetterShort(c);
     let bg = c.r >=1 && c.r <=7 ? `rgba(${{[null,'160,30,30','179,86,16','149,126,12','37,168,56','48,80,208','110,22,165','160,27,107'][c.r]}}, 0.6)` : 'rgba(80,80,100,0.6)';
     html += `<div class="chord-bar" style="left:${{left}}%;width:${{w}}%;background:${{bg}}">${{lbl}}</div>`;
@@ -372,11 +389,11 @@ function renderRoll(d, pattern) {{
   d.notes.forEach(n => {{
     if (n.r) return;
     const p = n.o * 7 + sdNum(n.sd);
-    // yPct: 0 = top (high), 100 = bottom (low). Use range 18-92 to leave room for chord bars.
     const yPct = 18 + ((hi - p) / range) * 70;
-    const left = (n.b / span) * 100;
-    const w = Math.max(0.5, (n.d / span) * 100);
-    html += `<div class="note ${{noteClass(n.sd)}}" style="left:${{left}}%;width:${{w}}%;top:${{yPct}}%"></div>`;
+    const left = toLeft(n.b);
+    const w = Math.max(0.5, toWidth(n.d));
+    const isPickup = n.b < 0;
+    html += `<div class="note ${{noteClass(n.sd)}}${{isPickup ? ' pickup' : ''}}" style="left:${{left}}%;width:${{w}}%;top:${{yPct}}%"></div>`;
   }});
   html += '</div>';
   return html;
@@ -433,6 +450,11 @@ function show(patStr) {{
     let csChip = '';
     if (r.chord_set_name) csChip = `<span class="chord-set named" title="${{escapeHtml(r.chord_set_letters || '')}}">${{escapeHtml(r.chord_set_name)}}</span>`;
     else if (r.chord_set_letters) csChip = `<span class="chord-set unnamed">${{escapeHtml(r.chord_set_letters)}}</span>`;
+    let pickupChip = '';
+    if (r.data && r.data.pickup_beats > 0) {{
+      const n = r.data.pickup_note_count;
+      pickupChip = `<span class="pickup-chip" title="${{r.data.pickup_beats}}-beat pickup, ${{n}} note${{n===1?'':'s'}}">↪ pickup ${{r.data.pickup_beats}}b (${{n}}n)</span>`;
+    }}
     return `<div class="card">
       <div class="card-head">
         <span class="title">${{escapeHtml(r.title)}}</span>
@@ -440,6 +462,7 @@ function show(patStr) {{
         <span class="section">[${{escapeHtml(r.section)}}]</span>
         ${{keyStr ? `<span class="key">${{keyStr}}</span>` : ''}}
         ${{csChip}}
+        ${{pickupChip}}
         ${{hp}}
       </div>
       ${{roll}}

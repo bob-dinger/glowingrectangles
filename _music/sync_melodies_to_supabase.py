@@ -27,11 +27,12 @@ def main():
         if not r[0]: continue
         d = dict(zip(headers, r))
         xlsx_rows.append({
-            'slug':        d['slug'],
-            'section':     d['section'],
-            'patterns':    d.get('patterns') or '',
-            'chord_shape': d.get('chord_shape') or None,
-            'notes':       d.get('notes') or None,
+            'slug':         d['slug'],
+            'section':      d['section'],
+            'patterns':     d.get('patterns') or '',
+            'chord_shape':  d.get('chord_shape') or None,
+            'notes':        d.get('notes') or None,
+            'pickup_beats': float(d.get('pickup_beats') or 0),
         })
     print(f"xlsx: {len(xlsx_rows)} rows")
 
