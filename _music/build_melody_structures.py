@@ -48,7 +48,19 @@ def fetch_section_data(slug, section_name, pickup_beats=0):
     if not sections: return None
     target = norm_name(section_name)
     end_beat = d.get('endBeat') or 0
-    bpb = ((d.get('meters') or [{}])[0].get('numBeats')) or 4
+    meters_list = sorted(d.get('meters') or [{'beat': 1, 'numBeats': 4}], key=lambda m: m.get('beat', 0))
+    bpb = meters_list[0].get('numBeats') or 4
+
+    def bpb_at(beat):
+        cur = bpb
+        for m in meters_list:
+            if m.get('beat', 0) <= beat: cur = m.get('numBeats') or cur
+            else: break
+        return cur
+
+    def meter_changes_in(start, end):
+        """Return list of {beat, numBeats} for meter changes that occur strictly between start and end."""
+        return [m for m in meters_list if start < m.get('beat', 0) < end]
     keys = d.get('keys') or [{}]
     tonic = keys[0].get('tonic') or 'C'
     scale = keys[0].get('scale') or 'major'
@@ -70,11 +82,22 @@ def fetch_section_data(slug, section_name, pickup_beats=0):
             nts = [n for n in (d.get('notes') or [])
                    if n.get('beat') is not None and fetch_start <= n['beat'] < end]
             pickup_note_count = sum(1 for n in nts if n.get('beat', 0) < start)
+            mc_in = meter_changes_in(start, end)
+            mixed_meter_bars = []
+            if mc_in or bpb_at(start) != bpb:
+                # Walk the section beat-by-beat through meter changes and list any non-main bars
+                cur = start
+                while cur < end:
+                    b = bpb_at(cur)
+                    if b != bpb:
+                        mixed_meter_bars.append({'beat_rel': cur - start, 'numBeats': b})
+                    cur += b
             return {
                 'start': start, 'end': end, 'bpb': bpb, 'bpm': bpm,
                 'key': tonic, 'scale': scale,
                 'pickup_beats': pickup_beats or 0,
                 'pickup_note_count': pickup_note_count,
+                'mixed_meter_bars': mixed_meter_bars,
                 'chords': [{'r': c.get('root'), 't': c.get('type', 0),
                             'b': round(c['beat'] - start, 3),
                             'd': round(c.get('duration', 1), 3),
@@ -256,6 +279,7 @@ def build():
   .card-head .chord-set.named {{ background:rgba(99,102,241,0.25); color:#a5b4fc; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; }}
   .card-head .chord-set.unnamed {{ background:#22223e; color:#8a8ab0; }}
   .card-head .pickup-chip {{ font-size:10px; padding:1px 7px; border-radius:9px; background:rgba(99,102,241,0.18); color:#a5b4fc; font-weight:600; font-family:ui-monospace,Menlo,monospace; }}
+  .card-head .meter-chip {{ font-size:10px; padding:1px 7px; border-radius:9px; background:rgba(251,191,36,0.18); color:#fbbf24; font-weight:600; font-family:ui-monospace,Menlo,monospace; }}
   .card-head .hp {{ color:#a5b4fc; text-decoration:none; font-size:11px; font-weight:700; margin-left:auto; padding:2px 8px; background:rgba(99,102,241,0.15); border-radius:4px; }}
   .card-head .hp:hover {{ background:rgba(99,102,241,0.3); }}
   /* piano roll */
@@ -455,6 +479,11 @@ function show(patStr) {{
       const n = r.data.pickup_note_count;
       pickupChip = `<span class="pickup-chip" title="${{r.data.pickup_beats}}-beat pickup, ${{n}} note${{n===1?'':'s'}}">↪ pickup ${{r.data.pickup_beats}}b (${{n}}n)</span>`;
     }}
+    let meterChip = '';
+    if (r.data && (r.data.mixed_meter_bars || []).length) {{
+      const labels = r.data.mixed_meter_bars.map(b => `${{b.numBeats}}/4`).join(', ');
+      meterChip = `<span class="meter-chip" title="non-main meter bar(s) in this section">⚠ ${{labels}}</span>`;
+    }}
     return `<div class="card">
       <div class="card-head">
         <span class="title">${{escapeHtml(r.title)}}</span>
@@ -463,6 +492,7 @@ function show(patStr) {{
         ${{keyStr ? `<span class="key">${{keyStr}}</span>` : ''}}
         ${{csChip}}
         ${{pickupChip}}
+        ${{meterChip}}
         ${{hp}}
       </div>
       ${{roll}}
