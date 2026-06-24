@@ -250,20 +250,32 @@ def main():
                 pool_lists[label].append(slug)
 
     # Auto-include every beatles_* slug from Supabase (so newly-added album tracks
-    # surface without manual edits to Beatles-Study.html).
+    # surface without manual edits to Beatles-Study.html). Skip dupes:
+    #   - slugs ending in -[a-f0-9]{6} (hex suffix from re-saves)
+    #   - slugs ending in -<digit> (e.g. -1)
+    #   - normalized titles already represented in song_meta
+    def title_norm(s):
+        return re.sub(r'[^a-z0-9]+', '', (s or '').lower())
+    existing_norms = {title_norm(m.get('title','')) for m in song_meta.values()}
     extra = (sb.schema('parcels').table('songs')
              .select('slug,title,artist').like('slug', 'beatles_%')
              .not_.is_('hookpad_json', 'null').execute().data)
-    added = 0
+    added = skipped = 0
     for r in extra:
         slug = r['slug']
         if slug in song_meta: continue
+        if re.search(r'-[a-f0-9]{6}$', slug) or re.search(r'-\d+$', slug):
+            skipped += 1; continue
+        tn = title_norm(r.get('title'))
+        if tn in existing_norms:
+            skipped += 1; continue
         song_meta[slug] = {'title': r.get('title') or slug,
                            'artist': r.get('artist') or 'The Beatles',
                            'pools': ['Beatles']}
         pool_lists['Beatles'].append(slug)
+        existing_norms.add(tn)
         added += 1
-    if added: print(f"  + {added} beatles_* slugs auto-added to the Beatles pool")
+    print(f"  + {added} beatles_* slugs auto-added (skipped {skipped} dupes)")
 
     # Fetch hookpad_json + URLs for every slug, batched
     all_slugs = list(song_meta.keys())
