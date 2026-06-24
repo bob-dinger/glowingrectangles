@@ -339,6 +339,7 @@ def main():
         (4, 'Beatles For Sale'), (5, 'Help!'), (6, 'Rubber Soul'),
         (7, 'Revolver'), (8, "Sgt. Pepper's"), (9, 'Magical Mystery Tour'),
         (10, 'White Album'), (11, 'Let It Be'), (12, 'Abbey Road'),
+        (13, 'Anthology'),
     ]
     # Manual overrides for titles the fuzzy matcher misses
     OVERRIDES = {
@@ -348,6 +349,9 @@ def main():
         'imaloserlyocompleted': (4, 'Beatles For Sale'),
         'norwegianwood': (6, 'Rubber Soul'),
         'sgtpeppers': (8, "Sgt. Pepper's"),
+        'freeasabird': (13, 'Anthology'),
+        'reallove': (13, 'Anthology'),
+        'nowandthen': (13, 'Anthology'),
     }
     def lookup_project(title):
         nk = re.sub(r'[^a-z0-9]+', '', re.sub(r"[''`]", '', title.lower()))
