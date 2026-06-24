@@ -249,6 +249,22 @@ def main():
             if slug not in pool_lists[label]:
                 pool_lists[label].append(slug)
 
+    # Auto-include every beatles_* slug from Supabase (so newly-added album tracks
+    # surface without manual edits to Beatles-Study.html).
+    extra = (sb.schema('parcels').table('songs')
+             .select('slug,title,artist').like('slug', 'beatles_%')
+             .not_.is_('hookpad_json', 'null').execute().data)
+    added = 0
+    for r in extra:
+        slug = r['slug']
+        if slug in song_meta: continue
+        song_meta[slug] = {'title': r.get('title') or slug,
+                           'artist': r.get('artist') or 'The Beatles',
+                           'pools': ['Beatles']}
+        pool_lists['Beatles'].append(slug)
+        added += 1
+    if added: print(f"  + {added} beatles_* slugs auto-added to the Beatles pool")
+
     # Fetch hookpad_json + URLs for every slug, batched
     all_slugs = list(song_meta.keys())
     print(f"loading {len(all_slugs)} songs...")
