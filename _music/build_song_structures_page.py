@@ -444,7 +444,9 @@ HTML_TEMPLATE = r'''<!doctype html>
 <meta charset="utf-8">
 <title>Songs — Glowing Gardens</title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#1a1a2e; color:#e0e0e0; margin:0; padding:0; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#1a1a1a; color:#e0e0e0; margin:0; padding:0; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+  .main { background:#1a1a1a; }
+  .structure-pane.active, .expanded-pane.active { background:#1a1a1a; }
   .back-link { position:fixed; top:18px; left:20px; color:#6a6a8a; text-decoration:none; font-size:13px; z-index:50; }
   .back-link:hover { color:#e0e0e0; }
   header { padding:12px 24px 12px 100px; border-bottom:1px solid #2a2a4a; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
