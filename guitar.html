@@ -413,6 +413,19 @@
             <button class="control-btn" onclick="showNote('E')">E</button>
         </div>
 
+        <div class="controls" style="margin-top: 15px;">
+            <label style="font-size:13px; color:#888; display:flex; align-items:center; gap:8px;">Major scale:
+                <select id="scaleSelect" onchange="showScale(this.value)" style="background:#222; color:#fff; border:1px solid #333; border-radius:6px; padding:9px 10px; font-size:13px; cursor:pointer;">
+                    <option value="">— none —</option>
+                    <option>C</option><option>G</option><option>D</option><option>A</option><option>E</option><option>B</option>
+                    <option>F#</option><option>Db</option><option>Ab</option><option>Eb</option><option>Bb</option><option>F</option>
+                </select>
+            </label>
+            <button class="control-btn" onclick="clearScale()">Clear Scale</button>
+        </div>
+
+        <div class="legend" id="scaleLegend" style="display:none; margin-top:12px; flex-wrap:wrap; justify-content:center;"></div>
+
         <div class="transpose-controls">
             <button class="transpose-btn" onclick="changeTranspose(-12)">-12</button>
             <button class="transpose-btn" onclick="changeTranspose(-1)">-1</button>
@@ -565,6 +578,7 @@
         }
 
         function showAll() {
+            clearScale();
             document.querySelectorAll('.note').forEach(n => n.classList.add('highlight'));
         }
 
@@ -573,12 +587,82 @@
         }
 
         function showNote(note) {
+            clearScale();
             hideAll();
             document.querySelectorAll('.note').forEach(n => {
                 if (getBaseNote(n.dataset.note) === note) {
                     n.classList.add('highlight');
                 }
             });
+        }
+
+        // ---- Scale display: major scale coloured by degree (root=red .. 7th=pink) ----
+        const LETTERS = ['C','D','E','F','G','A','B'];
+        const LETTER_PC = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+        const MAJOR_INTERVALS = [0,2,4,5,7,9,11];
+        const DEGREE_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#a855f7','#ec4899']; // 1..7
+        const DEGREE_TEXT   = ['#fff','#1a1a2e','#1a1a2e','#1a1a2e','#fff','#fff','#fff'];             // dark on orange/yellow/green
+
+        function pcOfName(name) {                 // sharp-spelled note like 'C#'
+            let pc = LETTER_PC[name[0]];
+            if (name.includes('#')) pc += 1;
+            return ((pc % 12) + 12) % 12;
+        }
+        function spellMajorScale(rootName) {      // -> [{pc, name, degree}] with correct #/b spelling
+            const acc = rootName.slice(1);
+            const rootPc = ((LETTER_PC[rootName[0]] + (acc === '#' ? 1 : acc === 'b' ? -1 : 0)) % 12 + 12) % 12;
+            const rootLi = LETTERS.indexOf(rootName[0]);
+            const out = [];
+            for (let i = 0; i < 7; i++) {
+                const letter = LETTERS[(rootLi + i) % 7];
+                const targetPc = (rootPc + MAJOR_INTERVALS[i]) % 12;
+                const diff = ((targetPc - LETTER_PC[letter]) % 12 + 12) % 12;
+                const a = diff === 0 ? '' : diff === 1 ? '#' : diff === 11 ? 'b' : diff === 2 ? '##' : diff === 10 ? 'bb' : '';
+                out.push({ pc: targetPc, name: letter + a, degree: i + 1 });
+            }
+            return out;
+        }
+
+        let currentScale = null;
+        function showScale(rootName) {
+            clearScaleStyles();
+            if (!rootName) { currentScale = null; document.getElementById('scaleLegend').style.display = 'none'; return; }
+            currentScale = rootName;
+            hideAll();
+            const scale = spellMajorScale(rootName);
+            const byPc = {}; scale.forEach(s => byPc[s.pc] = s);
+            document.querySelectorAll('.note').forEach(n => {
+                const s = byPc[pcOfName(n.dataset.note)];
+                if (s) {
+                    n.classList.add('highlight');
+                    n.style.background = DEGREE_COLORS[s.degree - 1];
+                    n.style.color = DEGREE_TEXT[s.degree - 1];
+                    n.textContent = s.name;
+                    n.dataset.scaleOn = '1';
+                } else {
+                    n.classList.remove('highlight', 'active');
+                }
+            });
+            const el = document.getElementById('scaleLegend');
+            el.style.display = 'flex';
+            el.innerHTML = `<div class="legend-item" style="color:#aaa;font-weight:600;margin-right:4px;">${rootName} major</div>` +
+                scale.map(s => `<div class="legend-item"><div class="legend-dot" style="background:${DEGREE_COLORS[s.degree-1]}"></div>${s.degree} ${s.name}</div>`).join('');
+        }
+        function clearScaleStyles() {
+            document.querySelectorAll('.note[data-scale-on], .note').forEach(n => {
+                if (n.dataset.scaleOn) {
+                    n.style.background = ''; n.style.color = '';
+                    n.textContent = n.dataset.note.includes('#') ? '' : n.dataset.note;
+                    delete n.dataset.scaleOn;
+                }
+            });
+        }
+        function clearScale() {
+            clearScaleStyles();
+            currentScale = null;
+            document.querySelectorAll('.note').forEach(n => n.classList.remove('highlight', 'active'));
+            const sel = document.getElementById('scaleSelect'); if (sel) sel.value = '';
+            const lg = document.getElementById('scaleLegend'); if (lg) lg.style.display = 'none';
         }
 
         // Audio context for playing notes
@@ -770,6 +854,7 @@
 
         function playSong(name) {
             initAudio();
+            clearScale();
 
             // If clicking same song while playing, toggle pause
             if (playing && currentSongName === name) {
