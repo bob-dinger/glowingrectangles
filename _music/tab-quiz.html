@@ -15,7 +15,11 @@
   .streak { color:#f59e0b; font-weight:700; }
 
   main { flex:1; padding:14px; max-width:540px; margin:0 auto; width:100%; }
-  .prompt { font-size:13px; color:#8a8ab0; text-align:center; margin-bottom:10px; }
+  .prompt { font-size:13px; color:#8a8ab0; text-align:center; margin-bottom:6px; }
+  .keybadge { text-align:center; font-size:22px; font-weight:800; margin-bottom:10px; letter-spacing:0.5px; }
+  .legend { display:flex; justify-content:center; gap:7px; margin-bottom:14px; font-family:ui-monospace,monospace; font-size:11px; color:#8a8ab0; flex-wrap:wrap; }
+  .legend .lg { display:flex; align-items:center; gap:3px; }
+  .legend .sw { width:11px; height:11px; border-radius:3px; display:inline-block; }
 
   /* ASCII tab — fluid font size so the 24-char block always fits */
   .tab { background:#1a1a2e; border:1px solid #2a2a4a; border-radius:10px; padding:14px 10px; margin-bottom:16px; font-family:ui-monospace,Menlo,monospace; font-size:clamp(13px, 3.4vw, 17px); line-height:1.75; color:#e0e0e0; white-space:pre; text-align:center; -webkit-font-smoothing:antialiased; }
@@ -69,7 +73,9 @@
 </header>
 <main>
   <div class="prompt" id="prompt">What note is shown?</div>
+  <div class="keybadge" id="keyBadge"></div>
   <div class="tab" id="tab"></div>
+  <div class="legend" id="legend"></div>
   <div class="choices" id="choices"></div>
   <div class="feedback" id="feedback"></div>
   <div class="actions">
@@ -78,6 +84,7 @@
 </main>
 <div class="settings">
   <label>max fret <input type="number" id="maxFret" value="12" min="1" max="24"></label>
+  <label><input type="checkbox" id="colorHint" checked> colour tab number by key</label>
   <span class="tip">Tip: Enter for next</span>
 </div>
 
@@ -93,6 +100,20 @@ const STRINGS = [
 const NOTES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const NOTES_FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
 
+// Sample major keys + scale-degree color scheme
+const MAJOR_KEYS = [ {name:'C',pc:0}, {name:'D',pc:2}, {name:'E',pc:4}, {name:'G',pc:7}, {name:'A',pc:9} ];
+const MAJOR_INTERVALS = [0,2,4,5,7,9,11];                                  // semitones of degrees 1..7
+const DEGREE_COLORS   = ['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#a855f7','#ec4899']; // 1..7
+const DEGREE_NAMES    = ['red','orange','yellow','green','blue','purple','pink'];
+const CHROMATIC_COLOR = '#6b7280';
+function degreeIn(pc, tonicPc) {                                          // 1..7 in key, or 0 if chromatic
+  const iv = ((pc - tonicPc) % 12 + 12) % 12;
+  const i = MAJOR_INTERVALS.indexOf(iv);
+  return i >= 0 ? i + 1 : 0;
+}
+function colorFor(pc, tonicPc) { const d = degreeIn(pc, tonicPc); return d ? DEGREE_COLORS[d-1] : CHROMATIC_COLOR; }
+function textOn(deg) { return (deg===2||deg===3||deg===4) ? '#1a1a2e' : '#fff'; }  // dark text on light swatches
+
 const state = { correct: 0, total: 0, streak: 0, best: 0, current: null, answered: false };
 
 function notePc(stringIdx, fret) {
@@ -102,8 +123,8 @@ function noteName(pc) {
   return NOTES_SHARP[pc];
 }
 
-function drawTab(stringIdx, fret) {
-  // Render an ASCII-tab style block, one fret number on one string
+function drawTab(stringIdx, fret, color) {
+  // Render an ASCII-tab style block, one fret number on one string, coloured by key degree
   const WIDTH = 24;                                    // chars between pipes
   const numStr = String(fret);
   const pos = 5 + Math.floor(Math.random() * (WIDTH - numStr.length - 8));
@@ -111,19 +132,29 @@ function drawTab(stringIdx, fret) {
   tabEl.innerHTML = STRINGS.map((s, i) => {
     let line = '-'.repeat(WIDTH);
     if (i === stringIdx) {
-      line = line.slice(0, pos) + `<span class="num">${numStr}</span>` + line.slice(pos + numStr.length);
+      line = line.slice(0, pos) + `<span class="num" style="color:${color}">${numStr}</span>` + line.slice(pos + numStr.length);
     }
     return `|${line}|`;
   }).join('\n');
+}
+
+function renderLegend() {
+  document.getElementById('legend').innerHTML =
+    DEGREE_COLORS.map((c,i)=>`<span class="lg"><span class="sw" style="background:${c}"></span>${i+1}</span>`).join('')
+    + `<span class="lg"><span class="sw" style="background:${CHROMATIC_COLOR}"></span>—</span>`;
 }
 
 function newQuestion() {
   const maxFret = parseInt(document.getElementById('maxFret').value) || 12;
   const stringIdx = Math.floor(Math.random() * 6);
   const fret = Math.floor(Math.random() * (maxFret + 1));
-  state.current = { stringIdx, fret, answerPc: notePc(stringIdx, fret) };
+  const key = MAJOR_KEYS[Math.floor(Math.random() * MAJOR_KEYS.length)];
+  const answerPc = notePc(stringIdx, fret);
+  state.current = { stringIdx, fret, answerPc, key };
   state.answered = false;
-  drawTab(stringIdx, fret);
+  document.getElementById('keyBadge').textContent = `Key of ${key.name} major`;
+  const hint = document.getElementById('colorHint').checked;
+  drawTab(stringIdx, fret, hint ? colorFor(answerPc, key.pc) : '#fbbf24');
   // Build choices: correct answer + 7 random wrong answers
   const correctName = noteName(state.current.answerPc);
   const wrongs = [];
@@ -152,15 +183,23 @@ function answer(btn) {
   } else {
     state.streak = 0;
   }
-  // Mark buttons
+  const key = state.current.key;
+  const deg = degreeIn(state.current.answerPc, key.pc);
+  // Mark buttons — tint the correct one by its scale-degree colour
   document.querySelectorAll('.choice').forEach(b => {
-    if (b.dataset.note === correctName) b.classList.add('correct');
+    if (b.dataset.note === correctName) {
+      b.classList.add('correct');
+      b.style.background = colorFor(state.current.answerPc, key.pc);
+      b.style.color = deg ? textOn(deg) : '#fff';
+      b.style.borderColor = '#fff';
+    }
     else if (b === btn) b.classList.add('wrong');
     else b.classList.add('faded');
   });
+  const degLabel = deg ? `the ${deg} (${DEGREE_NAMES[deg-1]})` : 'chromatic (grey)';
   const fb = document.getElementById('feedback');
   fb.className = 'feedback ' + (isRight ? 'correct' : 'wrong');
-  fb.textContent = isRight ? '✓ correct' : `✗ that was ${correctName}`;
+  fb.textContent = (isRight ? '✓ ' : `✗ that was ${correctName} — `) + `${correctName} is ${degLabel} of ${key.name} major`;
   updateScore();
   localStorage.setItem('tabQuiz', JSON.stringify({ best: state.best }));
 }
@@ -176,9 +215,16 @@ function updateScore() {
 document.getElementById('nextBtn').addEventListener('click', newQuestion);
 window.addEventListener('keydown', e => { if (e.key === 'Enter' && state.answered) newQuestion(); });
 document.getElementById('maxFret').addEventListener('change', newQuestion);
+document.getElementById('colorHint').addEventListener('change', () => {
+  if (!state.current) return;
+  const { stringIdx, fret, answerPc, key } = state.current;
+  const hint = document.getElementById('colorHint').checked;
+  drawTab(stringIdx, fret, hint ? colorFor(answerPc, key.pc) : '#fbbf24');
+});
 
 const saved = JSON.parse(localStorage.getItem('tabQuiz') || '{}');
 if (saved.best) state.best = saved.best;
+renderLegend();
 updateScore();
 newQuestion();
 </script>
