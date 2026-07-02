@@ -1168,6 +1168,14 @@
         }
 
         buildFretboard();
+
+        // Preselect a scale from ?scale= (e.g. deep-linked from the Songs by Key page)
+        (function () {
+            const p = new URLSearchParams(location.search).get('scale');
+            if (!p) return;
+            const sel = document.getElementById('scaleSelect');
+            if (sel) { sel.value = p; if (sel.value === p) showScale(p); }
+        })();
     </script>
 </body>
 </html>
