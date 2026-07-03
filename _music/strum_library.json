@@ -1,0 +1,15 @@
+{
+  "_doc": "Strum patterns for one 4/4 bar as 4 space-separated BEAT CELLS (beats 1 2 3 4). Each cell's LENGTH is its subdivision: 1=quarter, 2=eighths, 3=triplet, 4=sixteenths. Char per slot: D=downstroke, U=upstroke, x=muted chuck, .=no strike (slot 0 of a cell is the downbeat). Encoded in Hookpad as re-struck chords with empty notes. See music_chord_riff_fingerprint (Layer 2 = strike rhythm).",
+  "patterns": {
+    "quarters":          "D D D D",
+    "eighths":           "DU DU DU DU",
+    "folk-DDU-UDU":      "D. DU .U DU",
+    "driving-DU-UDU-U":  "DU .U DU .U",
+    "im-only-sleeping":  "D D D.U D.U",
+    "im-only-sleeping-16": "D D D..U D..U",
+    "wonderwall":        "D. D. DU D.",
+    "ska-upstrokes":     ".U .U .U .U",
+    "boom-chick":        "D. x. D. x.",
+    "shuffle":           "D.U D.U D.U D.U"
+  }
+}
