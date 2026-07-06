@@ -105,6 +105,9 @@ PAGE = '''<!doctype html><html lang="en"><head><meta charset="utf-8">
   .si:hover .cp{opacity:1} .si .cp.ok{color:#22c55e;border-color:#22c55e;opacity:1}
   #poolMain{flex:1;overflow:auto;padding:12px;background:#1a1a1a}
   .cnt{color:#8a8ab0;font-size:11px;padding:2px 4px}
+  .section-header .copyhp{margin-left:12px;background:#22224a;border:1px solid #3a3a5a;color:#a5b4fc;font-size:11px;font-weight:600;padding:2px 9px;border-radius:4px;cursor:pointer;vertical-align:middle}
+  .section-header .copyhp:hover{background:#2e2e5a;color:#fff}
+  .section-header .copyhp.ok{background:#166534;border-color:#22c55e;color:#fff}
 </style></head><body>
 <a class="back-link" href="index.html">&larr; Music</a>
 <header><h1>Simplified Library</h1>
@@ -167,7 +170,19 @@ function refresh(){
     `<div class="si" data-k="${k}"><span class="t">${esc(it.song)} <small>· ${esc(it.sec)} · ${it.bars}b</small></span><span class="cp">⧉</span></div>`).join('');
   // main render (stacked piano rolls)
   viewer.loadData(buildPoolDoc(shown),{title:pool});
+  injectCopy();
 }
+function injectCopy(){
+  document.querySelectorAll('#poolMain .section-block').forEach(bl=>{
+    const it=shown[+bl.dataset.sectionIdx]; const hdr=bl.querySelector('.section-header');
+    if(!hdr||!it||hdr.querySelector('.copyhp'))return;
+    const b=document.createElement('button'); b.className='copyhp'; b.textContent='⧉ Copy Hookpad txt';
+    b.onclick=async e=>{e.stopPropagation();await navigator.clipboard.writeText(pasteFor(it));
+      b.textContent='copied ✓';b.classList.add('ok');setTimeout(()=>{b.textContent='⧉ Copy Hookpad txt';b.classList.remove('ok');},1200);};
+    hdr.appendChild(b);
+  });
+}
+let rz; window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(injectCopy,250);});
 document.getElementById('pools').innerHTML=POOLS.map(p=>`<span class="pill${p===pool?' on':''}" data-p="${p}">${p}</span>`).join('');
 document.getElementById('contours').innerHTML=CONTOURS.map(c=>`<span class="pill ct" data-c="${c}">${c}</span>`).join('');
 document.getElementById('pools').onclick=e=>{const el=e.target.closest('.pill');if(!el)return;pool=el.dataset.p;
