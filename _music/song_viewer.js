@@ -287,6 +287,19 @@
       this.render();
     }
 
+    // Render/play from a Hookpad-JSON doc directly (no DB fetch). Used by pages that
+    // build their own doc (e.g. the Simplified Library feeds reduced note/chord data).
+    loadData(raw, meta = {}) {
+      this.stop();
+      this.song = {
+        title: meta.title || '', artist: meta.artist || '',
+        hookpadUrl: meta.hookpadUrl || null, ugUrl: meta.ugUrl || null,
+        raw, derived: buildSongData(raw),
+      };
+      this._updateHeader();
+      this.render();
+    }
+
     _updateHeader() {
       if (!this.song) return;
       const { derived } = this.song;
