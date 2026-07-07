@@ -11,8 +11,9 @@ import skeleton as sk
 from find_structures import detect_grid, detect_pick, contour, motif, VOCAL, SKIP
 from build_reductions import prog
 
-SLUG2POOL = json.load(open('/tmp/slug2pool.json'))
-BEATLES_PROJ = {k: tuple(v) for k, v in json.load(open('/tmp/beatles_proj.json')).items()}
+_HERE = os.path.dirname(os.path.abspath(__file__))
+SLUG2POOL = json.load(open(os.path.join(_HERE, 'pool_map.json')))          # committed pool membership (Beatles-by-project handled separately + G-lists)
+BEATLES_PROJ = {k: tuple(v) for k, v in json.load(open(os.path.join(_HERE, 'beatles_proj.json'))).items()}
 
 def build_items():
     c = psycopg2.connect(host=os.environ['DB_HOST'], dbname=os.environ['DB_NAME'], user=os.environ['DB_USER'],

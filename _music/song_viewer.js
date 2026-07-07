@@ -465,23 +465,34 @@
       return NOTES_SHARP[m % 12] + oct;
     }
 
+    // Build the instruments once (sampled piano + reverb; triangle synth fallback
+    // until the samples finish loading, so it always makes sound and works offline).
+    _ensureInstruments() {
+      if (this._audioReady) return;
+      this._audioReady = true;
+      this.reverb = new Tone.Reverb({ decay: 1.6, preDelay: 0.012, wet: 0.2 }).toDestination();
+      this.fallback = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'triangle' },
+        envelope: { attack: 0.02, decay: 0.2, sustain: 0.4, release: 0.6 },
+      }).connect(this.reverb);
+      this.fallback.volume.value = -9;
+      const S = 'https://tonejs.github.io/audio/salamander/';
+      this.piano = new Tone.Sampler({
+        urls: { A1:'A1.mp3','C2':'C2.mp3','D#2':'Ds2.mp3','F#2':'Fs2.mp3','A2':'A2.mp3',
+                'C3':'C3.mp3','D#3':'Ds3.mp3','F#3':'Fs3.mp3','A3':'A3.mp3',
+                'C4':'C4.mp3','D#4':'Ds4.mp3','F#4':'Fs4.mp3','A4':'A4.mp3',
+                'C5':'C5.mp3','D#5':'Ds5.mp3','F#5':'Fs5.mp3','A5':'A5.mp3','C6':'C6.mp3' },
+        baseUrl: S, release: 1.3,
+      }).connect(this.reverb);
+      this.piano.volume.value = -3;
+    }
+
+    _inst() { return (this.piano && this.piano.loaded) ? this.piano : this.fallback; }
+
     _buildParts() {
       if (this.chordPart) { this.chordPart.dispose(); this.chordPart = null; }
       if (this.melodyPart) { this.melodyPart.dispose(); this.melodyPart = null; }
-      if (this.chordSynth) { this.chordSynth.dispose(); this.chordSynth = null; }
-      if (this.melodySynth) { this.melodySynth.dispose(); this.melodySynth = null; }
-
-      this.chordSynth = new Tone.PolySynth(Tone.Synth, {
-        oscillator: { type: 'triangle' },
-        envelope: { attack: 0.04, decay: 0.2, sustain: 0.4, release: 0.5 },
-      }).toDestination();
-      this.chordSynth.volume.value = -18;
-
-      this.melodySynth = new Tone.PolySynth(Tone.Synth, {
-        oscillator: { type: 'triangle' },
-        envelope: { attack: 0.02, decay: 0.1, sustain: 0.5, release: 0.3 },
-      }).toDestination();
-      this.melodySynth.volume.value = -6;
+      this._ensureInstruments();
 
       const secPerBeat = 60 / Tone.Transport.bpm.value;
       const { chordBlocks, noteBars } = this.song.derived;
@@ -493,7 +504,7 @@
           dur: Math.max(0.1, c.d * secPerBeat * 0.95),
         }]);
       this.chordPart = new Tone.Part((time, ev) => {
-        this.chordSynth.triggerAttackRelease(ev.notes, ev.dur, time);
+        this._inst().triggerAttackRelease(ev.notes, ev.dur, time, 0.34);   // softer, behind the tune
       }, chordEvents);
       this.chordPart.start(0);
 
@@ -504,7 +515,7 @@
           dur: Math.max(0.05, n.d * secPerBeat * 0.95),
         }]);
       this.melodyPart = new Tone.Part((time, ev) => {
-        this.melodySynth.triggerAttackRelease(ev.note, ev.dur, time);
+        this._inst().triggerAttackRelease(ev.note, ev.dur, time, 0.85);
       }, melodyEvents);
       this.melodyPart.start(0);
     }
@@ -512,6 +523,11 @@
     async startFromBeat(absoluteBeat) {
       if (!this.song) return;
       if (Tone.context.state !== 'running') await Tone.start();
+      this._ensureInstruments();
+      if (this.piano && !this.piano.loaded) {                       // wait for piano samples on first play
+        if (this.transport.playBtn) this.transport.playBtn.textContent = '… loading';
+        try { await Tone.loaded(); } catch (e) {}
+      }
       const bpm = parseInt(this.transport.tempoInput?.value, 10) || this.song.derived.bpm;
       Tone.Transport.bpm.value = bpm;
       Tone.Transport.stop();
