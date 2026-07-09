@@ -441,6 +441,8 @@
             <button class="control-btn" id="playBtn" onclick="resumePlay()">▶ Play</button>
             <button class="control-btn" id="pauseBtn" onclick="pausePlay()">⏸ Pause</button>
             <button class="control-btn" id="stopBtn" onclick="stopPlaying()">⏹ Stop</button>
+            <button class="control-btn" id="prevBtn" onclick="stepNote(-1)" title="Previous note" style="margin-left: 15px;">⏮ Prev</button>
+            <button class="control-btn" id="nextBtn" onclick="stepNote(1)" title="Next note">Next ⏭</button>
             <button class="control-btn" id="viewBtn" onclick="viewSong()" style="margin-left: 15px;">📋 View Notes</button>
             <span id="nowPlaying" style="margin-left: 15px; color: #666; font-size: 13px;"></span>
         </div>
@@ -1083,6 +1085,36 @@
             // Play sound
             initAudio();
             playNote(midi, 300);
+        }
+
+        // Step through the song one note at a time (manual walkthrough)
+        function stepNote(delta) {
+            if (!currentSong && currentSongName && songs[currentSongName]) {
+                currentSong = songs[currentSongName];
+            }
+            if (!currentSong || !currentSong.length) return;
+            // stepping is manual — halt any auto-play
+            if (playing) {
+                playing = false; paused = true;
+                clearTimeout(currentTimeout);
+                updatePlaybackUI();
+            }
+            initAudio();
+            currentNoteIndex = Math.max(0, Math.min(currentNoteIndex + delta, currentSong.length - 1));
+            showMainScrubber();
+            hideAll();
+            const [string, fret, midi] = currentSong[currentNoteIndex];
+            let ps = string, pf = fret, pm = midi;
+            if (transpose !== 0) {
+                const t = getTransposedGuitarPos(midi, lastPosition);
+                if (t) { ps = t.string; pf = t.fret; pm = t.midi; }
+                else { pm = midi + transpose; }
+            }
+            lastPosition = { string: ps, fret: pf };
+            const noteEl = document.querySelector(`.note[data-string="${ps}"][data-fret="${pf}"]`);
+            if (noteEl) noteEl.classList.add('active');
+            playNote(pm, 300);
+            updateScrubber();
         }
 
         function resumePlay() {
