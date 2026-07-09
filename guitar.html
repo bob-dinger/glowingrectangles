@@ -443,6 +443,7 @@
             <button class="control-btn" id="stopBtn" onclick="stopPlaying()">⏹ Stop</button>
             <button class="control-btn" id="prevBtn" onclick="stepNote(-1)" title="Previous note" style="margin-left: 15px;">⏮ Prev</button>
             <button class="control-btn" id="nextBtn" onclick="stepNote(1)" title="Next note">Next ⏭</button>
+            <button class="control-btn" id="showAllBtn" onclick="showAllNotes()" title="Show every note used in the riff" style="margin-left: 15px;">🎯 Show All Notes</button>
             <button class="control-btn" id="viewBtn" onclick="viewSong()" style="margin-left: 15px;">📋 View Notes</button>
             <span id="nowPlaying" style="margin-left: 15px; color: #666; font-size: 13px;"></span>
         </div>
@@ -971,6 +972,7 @@
                 return;
             }
 
+            resetShowAll();
             hideAll();
             const note = currentSong[currentNoteIndex];
             if (note) {
@@ -1108,6 +1110,7 @@
             }
             initAudio();
             currentNoteIndex = Math.max(0, Math.min(currentNoteIndex + delta, currentSong.length - 1));
+            resetShowAll();
             showMainScrubber();
             hideAll();
             const [string, fret, midi] = currentSong[currentNoteIndex];
@@ -1127,6 +1130,45 @@
             if (noteEl) noteEl.classList.add('active');
             playNote(pm, 300);
             updateScrubber();
+        }
+
+        // Toggle: light up every fret position used in the current riff at once
+        let showingAll = false;
+        function showAllNotes() {
+            if (!currentSong && currentSongName && songs[currentSongName]) {
+                currentSong = songs[currentSongName];
+            }
+            if (!currentSong || !currentSong.length) return;
+            if (playing) {
+                playing = false; paused = true;
+                clearTimeout(currentTimeout);
+                updatePlaybackUI();
+            }
+            hideAll();
+            showingAll = !showingAll;
+            const btn = document.getElementById('showAllBtn');
+            if (btn) btn.classList.toggle('active', showingAll);
+            if (!showingAll) return;
+            currentSong.forEach(([string, fret, midi]) => {
+                let s = string, f = fret;
+                if (transpose !== 0) {
+                    const shifted = fret + transpose;
+                    if (shifted >= 0 && shifted <= 20) { f = shifted; }
+                    else {
+                        const t = getTransposedGuitarPos(midi, null);
+                        if (t) { s = t.string; f = t.fret; }
+                    }
+                }
+                const el = document.querySelector(`.note[data-string="${s}"][data-fret="${f}"]`);
+                if (el) el.classList.add('highlight');
+            });
+        }
+
+        function resetShowAll() {
+            if (!showingAll) return;
+            showingAll = false;
+            const b = document.getElementById('showAllBtn');
+            if (b) b.classList.remove('active');
         }
 
         function resumePlay() {
@@ -1286,6 +1328,7 @@
         }
 
         function stopPlaying() {
+            resetShowAll();
             playing = false;
             paused = false;
             clearTimeout(currentTimeout);
