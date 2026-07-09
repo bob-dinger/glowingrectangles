@@ -155,6 +155,7 @@
         .note-G { background: #3B82F6; color: #fff; }
         .note-A { background: #8B5CF6; color: #fff; }
         .note-B { background: #EC4899; color: #fff; }
+        .note-sharp { background: #64748b; color: #fff; }  /* accidentals (like piano black keys) */
 
         /* Fret markers */
         .fret-markers {
@@ -578,8 +579,8 @@
                 const frets = Array.from({length: fretCount}, (_, fret) => {
                     const note = getNoteAt(stringIdx, fret);
                     const baseNote = getBaseNote(note);
-                    const displayNote = note.includes('#') ? '' : note;
-                    const noteClass = note.includes('#') ? '' : `note-${baseNote}`;
+                    const displayNote = note;
+                    const noteClass = note.includes('#') ? 'note-sharp' : `note-${baseNote}`;
                     return `
                         <div class="fret" style="width: ${fretWidths[fret]}px">
                             <div class="string-line"></div>
