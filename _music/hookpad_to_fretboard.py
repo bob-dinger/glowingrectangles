@@ -19,29 +19,38 @@ def sd_semitone(sd):
     st = MAJOR[deg - 1]
     return st + (-1 if acc == 'b' else 1 if acc == '#' else 0)
 
-def best_pos(midi, prev):
-    """prev = (string, fret) of the previous note. Fret proximity dominates so a
-    nearby fret on another string beats the same string several frets away;
-    string is only a minor tiebreaker (matches guitar.html's live reposition)."""
-    cands = [(s, midi - o) for s, o in OPEN.items() if 0 <= midi - o <= 16]
-    if not cands:  # out of range -> octave-shift into range
-        while midi < 40: midi += 12
-        while midi > 64 + 16: midi -= 12
-        cands = [(s, midi - o) for s, o in OPEN.items() if 0 <= midi - o <= 16]
-    ps, pf = prev
-    cands.sort(key=lambda c: (abs(c[1] - pf) * 2 + abs(c[0] - ps), c[1]))
-    return cands[0], midi
+def positions(midi):
+    return [(s, midi - o) for s, o in OPEN.items() if 0 <= midi - o <= 16]
+
+def in_range(midi):
+    while not positions(midi) and midi < 40: midi += 12
+    while not positions(midi) and midi > 80: midi -= 12
+    return midi
 
 def convert(notes, tonic0=52, beat_ms=430):
-    out, prev = [], (3, 5)   # start near D string, fret 5
+    """Lay the melody out VERTICALLY (in a fret box across strings) rather than
+    running horizontally up one string. Pick the anchor fret that keeps every note
+    closest to a single hand position, then place each note on whichever string
+    lands nearest that anchor."""
+    seq = []
     for n in notes:
         if n.get('isRest'):
             continue
-        midi = tonic0 + sd_semitone(n['sd']) + 12 * n.get('octave', 0)
-        (s, fret), midi = best_pos(midi, prev)
-        prev = (s, fret)
-        dur = int(round(n.get('duration', 1) * beat_ms))
-        out.append([s, fret, midi, dur])
+        midi = in_range(tonic0 + sd_semitone(n['sd']) + 12 * n.get('octave', 0))
+        seq.append((midi, int(round(n.get('duration', 1) * beat_ms))))
+    midis = [m for m, _ in seq]
+
+    def box_cost(anchor):
+        # sum of each note's nearest-fret distance to the anchor (tight box = low)
+        return sum(min(abs(f - anchor) for _, f in positions(m)) for m in midis)
+    anchor = min(range(0, 13), key=box_cost)
+
+    out, prev_s = [], 3
+    for m, dur in seq:
+        # nearest fret to the anchor; tiebreak toward the previous string
+        s, f = min(positions(m), key=lambda c: (abs(c[1] - anchor), abs(c[0] - prev_s)))
+        prev_s = s
+        out.append([s, f, m, dur])
     return out
 
 def as_js(name, arr, comment=''):

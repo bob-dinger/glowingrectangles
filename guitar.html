@@ -828,29 +828,29 @@
             ],
             beatit: [
                 // Beat It - Michael Jackson (from Hookpad melody, rendered in E)
-                [4, 4, 49, 430], [3, 2, 52, 215], [2, 1, 56, 215], [0, 0, 64, 215],
-                [1, 2, 61, 645], [1, 4, 63, 430], [1, 2, 61, 215], [1, 0, 59, 430],
-                [1, 0, 59, 645]
+                [4, 4, 49, 430], [3, 2, 52, 215], [3, 6, 56, 215], [1, 5, 64, 215],
+                [1, 2, 61, 645], [1, 4, 63, 430], [1, 2, 61, 215], [2, 4, 59, 430],
+                [2, 4, 59, 645]
             ],
             hanginaround: [
                 // Hanginaround - Counting Crows (from Hookpad melody, rendered in E)
                 [5, 5, 45, 430], [4, 4, 49, 215], [3, 2, 52, 430], [3, 4, 54, 215],
-                [3, 6, 56, 108], [3, 4, 54, 860], [3, 2, 52, 215], [3, 1, 51, 215],
+                [3, 6, 56, 108], [3, 4, 54, 860], [3, 2, 52, 215], [4, 6, 51, 215],
                 [3, 2, 52, 215], [3, 4, 54, 215]
             ],
             andyourbird: [
                 // And Your Bird Can Sing - Beatles (from Hookpad melody, rendered in E)
-                [5, 7, 47, 200], [3, 6, 56, 200], [3, 4, 54, 200], [3, 2, 52, 200],
+                [4, 2, 47, 200], [2, 1, 56, 200], [3, 4, 54, 200], [3, 2, 52, 200],
                 [3, 4, 54, 200], [3, 2, 52, 200], [3, 1, 51, 200], [3, 2, 52, 200],
                 [3, 1, 51, 200], [4, 4, 49, 200], [4, 2, 47, 200], [4, 0, 45, 200],
                 [5, 4, 44, 200], [4, 2, 47, 200], [3, 2, 52, 200], [3, 4, 54, 200],
-                [3, 6, 56, 400], [3, 6, 56, 400], [3, 7, 57, 200], [3, 6, 56, 200],
-                [4, 7, 52, 200], [5, 7, 47, 200], [5, 9, 49, 200], [4, 7, 52, 200],
-                [3, 6, 56, 400], [3, 4, 54, 100], [3, 2, 52, 100], [4, 4, 49, 200]
+                [2, 1, 56, 400], [2, 1, 56, 400], [2, 2, 57, 200], [2, 1, 56, 200],
+                [3, 2, 52, 200], [4, 2, 47, 200], [4, 4, 49, 200], [3, 2, 52, 200],
+                [2, 1, 56, 400], [3, 4, 54, 100], [3, 2, 52, 100], [4, 4, 49, 200]
             ],
             ifineeded: [
                 // If I Needed Someone - Beatles (from Hookpad melody, rendered in E)
-                [2, 4, 59, 200], [2, 4, 59, 400], [2, 2, 57, 400], [1, 2, 61, 400],
+                [2, 4, 59, 200], [2, 4, 59, 400], [2, 2, 57, 400], [2, 6, 61, 400],
                 [2, 2, 57, 200], [2, 4, 59, 200], [1, 5, 64, 400], [1, 4, 63, 400],
                 [1, 2, 61, 400], [1, 4, 63, 200]
             ],
@@ -862,7 +862,7 @@
             ],
             paperbackwriter: [
                 // Paperback Writer - Beatles (from Hookpad melody, rendered in E)
-                [5, 7, 47, 215], [5, 0, 40, 215], [5, 2, 42, 215], [4, 2, 47, 430],
+                [4, 2, 47, 215], [5, 0, 40, 215], [5, 2, 42, 215], [4, 2, 47, 430],
                 [4, 2, 47, 215], [4, 0, 45, 430], [4, 2, 47, 215], [5, 0, 40, 430],
                 [4, 2, 47, 215], [5, 2, 42, 430], [4, 0, 45, 430]
             ]
@@ -982,13 +982,19 @@
 
                 // Only recalculate position if transposing
                 if (transpose !== 0) {
-                    const transposed = getTransposedGuitarPos(midi, lastPosition);
-                    if (transposed) {
-                        playString = transposed.string;
-                        playFret = transposed.fret;
-                        playMidi = transposed.midi;
+                    const shifted = fret + transpose;
+                    if (shifted >= 0 && shifted <= 20) {
+                        // slide the stored shape along the neck (keeps it vertical)
+                        playString = string; playFret = shifted; playMidi = midi + transpose;
                     } else {
-                        playMidi = midi + transpose;
+                        const transposed = getTransposedGuitarPos(midi, lastPosition);
+                        if (transposed) {
+                            playString = transposed.string;
+                            playFret = transposed.fret;
+                            playMidi = transposed.midi;
+                        } else {
+                            playMidi = midi + transpose;
+                        }
                     }
                 }
 
@@ -1107,9 +1113,14 @@
             const [string, fret, midi] = currentSong[currentNoteIndex];
             let ps = string, pf = fret, pm = midi;
             if (transpose !== 0) {
-                const t = getTransposedGuitarPos(midi, lastPosition);
-                if (t) { ps = t.string; pf = t.fret; pm = t.midi; }
-                else { pm = midi + transpose; }
+                const shifted = fret + transpose;
+                if (shifted >= 0 && shifted <= 20) {
+                    ps = string; pf = shifted; pm = midi + transpose;
+                } else {
+                    const t = getTransposedGuitarPos(midi, lastPosition);
+                    if (t) { ps = t.string; pf = t.fret; pm = t.midi; }
+                    else { pm = midi + transpose; }
+                }
             }
             lastPosition = { string: ps, fret: pf };
             const noteEl = document.querySelector(`.note[data-string="${ps}"][data-fret="${pf}"]`);
