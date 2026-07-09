@@ -851,7 +851,7 @@
             ifineeded: [
                 // If I Needed Someone - Beatles (from Hookpad melody, rendered in E)
                 [2, 4, 59, 200], [2, 4, 59, 400], [2, 2, 57, 400], [1, 2, 61, 400],
-                [2, 2, 57, 200], [1, 0, 59, 200], [0, 0, 64, 400], [1, 4, 63, 400],
+                [2, 2, 57, 200], [2, 4, 59, 200], [1, 5, 64, 400], [1, 4, 63, 400],
                 [1, 2, 61, 400], [1, 4, 63, 200]
             ],
             daytripper: [
@@ -907,11 +907,12 @@
                 return { ...midFret, midi: transposedMidi };
             }
 
-            // Find position closest to previous note (minimize hand movement)
+            // Find position closest to previous note (minimize hand movement).
+            // Fret proximity dominates: a nearby fret on another string beats the
+            // same string several frets away (string is only a minor tiebreaker).
             const closest = positions.reduce((best, pos) => {
-                // Distance considers both fret and string
-                const bestDist = Math.abs(best.fret - prevPosition.fret) + Math.abs(best.string - prevPosition.string) * 2;
-                const posDist = Math.abs(pos.fret - prevPosition.fret) + Math.abs(pos.string - prevPosition.string) * 2;
+                const bestDist = Math.abs(best.fret - prevPosition.fret) * 2 + Math.abs(best.string - prevPosition.string);
+                const posDist = Math.abs(pos.fret - prevPosition.fret) * 2 + Math.abs(pos.string - prevPosition.string);
                 return posDist < bestDist ? pos : best;
             }, positions[0]);
 
