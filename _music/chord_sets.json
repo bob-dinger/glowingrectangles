@@ -1,0 +1,56 @@
+{
+  "_schema": {
+    "doc": "Named chord units, keyed by scale degree (transposable, key-independent). Named after the most famous exemplar song. cells = 2 chords, sets = 4-chord unordered palettes, loops = 4-chord ordered progressions. Quality is implied by degree in a MAJOR key: 1,4,5 = major; 2,3,6 = minor; 7 = dim. (Borrowed/chromatic degrees to be added later as e.g. 'b7','b3'.)",
+    "fields": {
+      "key": "slug id",
+      "name": "exemplar song",
+      "artist": "artist (optional)",
+      "n": "number of chords",
+      "ordered": "true = a specific loop; false = an unordered set/cell",
+      "degrees": "sorted scale degrees (for sets/cells) — the canonical identity",
+      "order": "the actual chord order (for loops only)",
+      "set": "for a loop: the key of its parent set",
+      "entry": "for a loop: the starting chord (its 'stance')",
+      "roman": "human-readable roman numerals",
+      "chords_C": "letter names in C major (reference only)",
+      "has_I": "tonic present?",
+      "n_minor": "count of minor chords (2,3,6)",
+      "family": "structural family — pillars = I,IV,V; shadows = vi,ii,iii (relative minors of I,IV,V)"
+    }
+  },
+  "entries": [
+    {"key": "axis", "name": "Axis (of Awesome)", "n": 4, "ordered": false,
+      "degrees": [1,4,5,6], "roman": "I IV V vi", "chords_C": "C F G Am",
+      "has_I": true, "n_minor": 1, "family": "pillars + tonic-shadow"},
+
+    {"key": "getting_better", "name": "Getting Better", "artist": "The Beatles", "n": 4, "ordered": false,
+      "degrees": [1,2,3,4], "roman": "I ii iii IV", "chords_C": "C Dm Em F",
+      "has_I": true, "n_minor": 2, "family": "stepwise (no V)"},
+
+    {"key": "mr_jones_set", "name": "Mr. Jones", "artist": "Counting Crows", "n": 4, "ordered": false,
+      "degrees": [2,4,5,6], "roman": "ii IV V vi", "chords_C": "Dm F G Am",
+      "has_I": false, "n_minor": 2, "family": "no-tonic"},
+
+    {"key": "maggie_may", "name": "Maggie May", "artist": "Rod Stewart", "n": 2, "ordered": false,
+      "degrees": [2,5], "roman": "ii V", "chords_C": "Dm G",
+      "has_I": false, "n_minor": 1, "family": "cell"},
+
+    {"key": "nowhere_man", "name": "Nowhere Man", "artist": "The Beatles", "n": 2, "ordered": false,
+      "degrees": [3,4], "roman": "iii IV", "chords_C": "Em F",
+      "has_I": false, "n_minor": 1, "family": "cell"},
+
+    {"key": "losing_my_religion", "name": "Losing My Religion", "artist": "R.E.M.", "n": 2, "ordered": false,
+      "degrees": [3,6], "roman": "vi iii", "chords_C": "Am Em",
+      "has_I": false, "n_minor": 2, "family": "cell",
+      "notes": "the vi-iii vamp; song also has a Dm-G (ii-V) tag at the end"},
+
+    {"key": "mr_jones", "name": "Mr. Jones", "artist": "Counting Crows", "n": 4, "ordered": true,
+      "order": [6,4,2,5], "set": "mr_jones_set", "entry": "vi", "roman": "vi IV ii V", "chords_C": "Am F Dm G"},
+
+    {"key": "let_it_be", "name": "Let It Be", "artist": "The Beatles", "n": 4, "ordered": true,
+      "order": [1,5,6,4], "set": "axis", "entry": "I", "roman": "I V vi IV", "chords_C": "C G Am F"},
+
+    {"key": "stand_by_me", "name": "Stand By Me (50s / doo-wop)", "artist": "Ben E. King", "n": 4, "ordered": true,
+      "order": [1,6,4,5], "set": "axis", "entry": "I", "roman": "I vi IV V", "chords_C": "C Am F G"}
+  ]
+}

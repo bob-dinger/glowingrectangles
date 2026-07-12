@@ -32,3 +32,7 @@ __pycache__/
 
 # Claude workspace
 .claude/
+
+# audio pipeline venv (large: torch/tf)
+.venv_audio/
+_music/.venv_audio/
