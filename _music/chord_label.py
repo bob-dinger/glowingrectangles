@@ -99,6 +99,19 @@ def chord_label(c, scale='major'):
     bor = c.get('borrowed')
     orig_scale = scale  # remember for pitch-class calculations
 
+    # Secondary leading-tone diminished: Hookpad stores vii°7-of-X as applied=7, where
+    # `root` is the TARGET degree and the chord is a fully-diminished chord on the leading
+    # tone just below it (Lovefool root=3 = D#°7→iii; Bennie root=2 = G#°7→ii). Catch this
+    # BEFORE the minor shift so applied=7 isn't remapped.
+    if applied == 7:
+        deg = '°7' if t == 7 else '°'   # °7 (dim7) or ° (dim triad)
+        if r == 1:
+            return 'vii' + deg                    # vii°7 of the tonic — no slash needed
+        y = NUM[r - 1]
+        if r in (2, 3, 6):
+            y = y.lower()                          # minor target degree
+        return 'vii' + deg + '/' + y
+
     # Minor-mode shift: convert diatonic degree (or applied target) to relative-major reference
     if scale == 'minor':
         if applied > 0:
@@ -235,6 +248,10 @@ if __name__ == '__main__':
         ({'root': 6, 'borrowed': 'minor', 'type': 5}, 'major', 'bVI'),      # bVI stays MAJOR (Ab)
         ({'root': 3, 'borrowed': 'minor', 'type': 5}, 'major', 'bIII'),     # bIII stays MAJOR (Eb)
         ({'root': 5, 'borrowed': 'mixolydian', 'type': 5, 'suspensions': [4]}, 'major', 'Vsus4'),  # sus → no third, keep V
+        ({'root': 3, 'applied': 7, 'type': 5}, 'major', 'vii°/iii'),   # secondary leading-tone dim → iii (Lovefool D#dim)
+        ({'root': 2, 'applied': 7, 'type': 5}, 'major', 'vii°/ii'),    # → ii (Bennie G#dim)
+        ({'root': 5, 'applied': 7, 'type': 7}, 'major', 'vii°7/V'),    # dim7 → V (Blackbird C#dim7)
+        ({'root': 1, 'applied': 7, 'type': 7}, 'major', 'vii°7'),      # dim7 of the tonic
     ]
     fail = 0
     for c, sc, expected in tests:

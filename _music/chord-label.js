@@ -62,6 +62,17 @@
     let bor = c.bor != null ? c.bor : c.borrowed;
     const origScale = scale;
 
+    // Secondary leading-tone diminished: Hookpad stores vii°7-of-X as applied=7, where
+    // `root` is the TARGET degree and the chord is a fully-diminished chord on the leading
+    // tone below it. Catch before the minor shift so applied=7 isn't remapped.
+    if (applied === 7) {
+      const deg = (t === 7) ? '°7' : '°';   // °7 (dim7) or ° (dim triad)
+      if (r === 1) return 'vii' + deg;
+      let y = NUM[r - 1];
+      if (r === 2 || r === 3 || r === 6) y = y.toLowerCase();
+      return 'vii' + deg + '/' + y;
+    }
+
     // Minor → relative-major shift
     if (scale === 'minor') {
       if (applied > 0) {

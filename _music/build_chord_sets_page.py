@@ -11,6 +11,8 @@ from chord_label import chord_label
 CUTOFF = 0.10
 def norm(s): return re.sub(r'[^a-z0-9]', '', (s or '').lower())
 def coretok(t):
+    if '°' in t:   # secondary leading-tone dim (vii°7 / vii°7/iii) — keep whole token
+        m = re.match(r'^(vii°7?(?:/[b#]*[ivxIVX]+)?)', t); return m.group(1) if m else t
     m = re.match(r'^([b#]*[ivxIVX]+(?:/[b#]*[ivxIVX]+)?)', t); return m.group(1) if m else t
 
 NUM={'i':1,'ii':2,'iii':3,'iv':4,'v':5,'vi':6,'vii':7}; MAJ={1:0,2:2,3:4,4:5,5:7,6:9,7:11}
@@ -23,6 +25,11 @@ def _plain(t):
     q='dim' if (m.group(2).lower()=='vii' and m.group(2).islower()) else ('maj' if m.group(2).isupper() else 'min')
     return (MAJ[deg]+acc)%12, q
 def toC(t):
+    if '°' in t:   # secondary leading-tone dim → letter of the leading tone below the target
+        tgt = t.split('/', 1)[1] if '/' in t else 'I'
+        rp = _plain(tgt)
+        base_pc = rp[0] if rp else 0
+        return PCN[(base_pc - 1) % 12] + 'dim'
     if '/' in t:
         l,r=t.split('/',1); rp=_plain(r); m=re.match(r'^([b#]*)([ivxIVX]+)$',l)
         if rp and m:
