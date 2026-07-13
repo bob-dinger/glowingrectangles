@@ -117,7 +117,10 @@ let SZ='4';
 // canonical chord colors (from chord-viz.html), by ROOT pitch class
 const PCCOL={0:'#e84545',2:'#f0a040',4:'#e8c828',5:'#50c878',7:'#5090f0',9:'#7040b0',11:'#e070b0'};
 const NOTEPC={C:0,'C#':1,Db:1,D:2,'D#':3,Eb:3,E:4,F:5,'F#':6,Gb:6,G:7,'G#':8,Ab:8,A:9,'A#':10,Bb:10,B:11};
-function chBg(c){const m=c.match(/^([A-G][#b]?)/);const pc=m?NOTEPC[m[1]]:0;
+// near-diatonic borrowed chords get their own dedicated color (distinct from the diatonic chord on the same pc)
+const SPECIAL={'D':'#c8600f','E':'#b89000'};   // secondary doms: V/V=dark orange, V/vi=dark yellow (vs Dm/Em diatonic)
+function chBg(c){if(SPECIAL[c]!==undefined)return SPECIAL[c];
+  const m=c.match(/^([A-G][#b]?)/);const pc=m?NOTEPC[m[1]]:0;
   if(PCCOL[pc]!==undefined)return PCCOL[pc];                     // diatonic root = solid
   return `linear-gradient(135deg,${PCCOL[(pc+11)%12]} 0 50%,${PCCOL[(pc+1)%12]} 50%)`;} // chromatic = diagonal stripe
 function chip(c){return `<span class=chip style="background:${chBg(c)}">${c}</span>`;}
