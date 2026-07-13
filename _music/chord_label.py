@@ -165,6 +165,18 @@ def chord_label(c, scale='major'):
         if r in (2, 3, 6):
             base = base.lower()
     if isinstance(bor, str) and bor in MODE_INT:
+        # Roman-numeral case = triad quality. A borrowed mode changes the chord's
+        # THIRD (not its root), so quality must be read from the third within that
+        # mode — e.g. root=5 in mixolydian is a MINOR v (Gm), not V. Skip when the
+        # chord has no third (sus / omit-3 power chord).
+        has_third = not (c.get('suspensions') or []) and 3 not in (c.get('omits') or [])
+        if has_third:
+            deg3 = ((r - 1 + 2) % 7) + 1              # the chord's third, as a scale degree
+            third_iv = (MODE_INT[bor][deg3] - MODE_INT[bor][r]) % 12
+            if third_iv == 3:                         # minor third → lowercase
+                base = base.lower()
+            elif third_iv == 4:                       # major third → uppercase
+                base = base.upper()
         diff = MODE_INT[bor][r] - MAJ_INT[r]          # flat/sharp vs the major scale
         if diff < 0:
             base = 'b' * (-diff) + base
@@ -217,6 +229,12 @@ if __name__ == '__main__':
         ({'root': 6, 'type': 7}, 'major', 'vi7'),
         ({'root': 7, 'applied': 5, 'type': 5}, 'minor', 'V/V'),       # VII/V in minor → V/V in major
         ({'root': 5, 'type': 5, 'omits': [3]}, 'major', 'V5'),         # power chord on V
+        ({'root': 5, 'borrowed': 'mixolydian', 'type': 5}, 'major', 'v'),   # minor v (Gm) — quality from the third
+        ({'root': 5, 'borrowed': 'minor', 'type': 5}, 'major', 'v'),        # minor v via aeolian borrow
+        ({'root': 5, 'borrowed': 'mixolydian', 'type': 7}, 'major', 'v7'),  # minor v7 (Gm7)
+        ({'root': 6, 'borrowed': 'minor', 'type': 5}, 'major', 'bVI'),      # bVI stays MAJOR (Ab)
+        ({'root': 3, 'borrowed': 'minor', 'type': 5}, 'major', 'bIII'),     # bIII stays MAJOR (Eb)
+        ({'root': 5, 'borrowed': 'mixolydian', 'type': 5, 'suspensions': [4]}, 'major', 'Vsus4'),  # sus → no third, keep V
     ]
     fail = 0
     for c, sc, expected in tests:

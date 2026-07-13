@@ -13,6 +13,21 @@
   const MIN_TO_MAJ = {1: 6, 2: 7, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5};
   const MAJ_INT = {1: 0, 2: 2, 3: 4, 4: 5, 5: 7, 6: 9, 7: 11};
   const MIN_INT = {1: 0, 2: 2, 3: 3, 4: 5, 5: 7, 6: 8, 7: 10};
+  // Borrowed-mode → semitones per scale degree (mirrors chord_label.py MODE_INT).
+  const MODE_INT = {
+    major:            {1: 0, 2: 2, 3: 4, 4: 5, 5: 7, 6: 9, 7: 11},
+    ionian:           {1: 0, 2: 2, 3: 4, 4: 5, 5: 7, 6: 9, 7: 11},
+    dorian:           {1: 0, 2: 2, 3: 3, 4: 5, 5: 7, 6: 9, 7: 10},
+    phrygian:         {1: 0, 2: 1, 3: 3, 4: 5, 5: 7, 6: 8, 7: 10},
+    lydian:           {1: 0, 2: 2, 3: 4, 4: 6, 5: 7, 6: 9, 7: 11},
+    mixolydian:       {1: 0, 2: 2, 3: 4, 4: 5, 5: 7, 6: 9, 7: 10},
+    aeolian:          {1: 0, 2: 2, 3: 3, 4: 5, 5: 7, 6: 8, 7: 10},
+    minor:            {1: 0, 2: 2, 3: 3, 4: 5, 5: 7, 6: 8, 7: 10},
+    locrian:          {1: 0, 2: 1, 3: 3, 4: 5, 5: 6, 6: 8, 7: 10},
+    harmonicMinor:    {1: 0, 2: 2, 3: 3, 4: 5, 5: 7, 6: 8, 7: 11},
+    melodicMinor:     {1: 0, 2: 2, 3: 3, 4: 5, 5: 7, 6: 9, 7: 11},
+    phrygianDominant: {1: 0, 2: 1, 3: 4, 4: 5, 5: 7, 6: 8, 7: 10}
+  };
 
   function addExt(base, c, t) {
     if (t === 7) base += '7';
@@ -57,8 +72,10 @@
       scale = 'major';
     }
 
-    // bVII (root=7 + minor/mixolydian borrow + no applied) → IV/IV
-    if (r === 7 && (bor === 'minor' || bor === 'mixolydian') && applied === 0) {
+    // bVII → IV/IV. Any flat-7 borrowed mode, OR a bare degree-7 triad (the diatonic
+    // vii° never appears as a plain triad, so a major/power chord on 7 is the subtonic).
+    if (r === 7 && applied === 0 &&
+        ((typeof bor === 'string' && MODE_INT[bor] && MODE_INT[bor][7] === 10) || !bor)) {
       r = 4;
       applied = 4;
       bor = null;
@@ -108,8 +125,23 @@
     if (!bor) {
       if (r === 2 || r === 3 || r === 6) base = base.toLowerCase();
     }
-    if (bor === 'minor' && (r === 3 || r === 6 || r === 7)) base = 'b' + base;
-    else if (bor === 'mixolydian' && r === 7) base = 'b' + base;
+    if (typeof bor === 'string' && MODE_INT[bor]) {
+      // Roman case = triad quality. A borrowed mode alters the chord's THIRD, so read
+      // quality from the third within that mode (root=5 in mixolydian is a minor v, Gm).
+      // Skip when there's no third (sus / omit-3 power chord).
+      const sus0 = c.sus || c.suspensions || [];
+      const om0 = c.omits || [];
+      const hasThird = sus0.length === 0 && om0.indexOf(3) < 0;
+      if (hasThird) {
+        const deg3 = ((r - 1 + 2) % 7) + 1;
+        const thirdIv = ((MODE_INT[bor][deg3] - MODE_INT[bor][r]) % 12 + 12) % 12;
+        if (thirdIv === 3) base = base.toLowerCase();
+        else if (thirdIv === 4) base = base.toUpperCase();
+      }
+      const diff = MODE_INT[bor][r] - MAJ_INT[r];   // flat/sharp vs the major scale
+      if (diff < 0) base = 'b'.repeat(-diff) + base;
+      else if (diff > 0) base = '#'.repeat(diff) + base;
+    }
 
     if (t === 7) {
       if ((r === 1 || r === 4) && !bor) base += 'maj7';
