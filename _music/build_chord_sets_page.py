@@ -69,22 +69,22 @@ def main():
     for artist,title,hj in rows:
         if not title or title.lower().endswith(('-hooktab','-simple')): continue
         for core,share,secname in section_cores(hj):
-            if len(core)!=4: continue
+            if not (2<=len(core)<=4): continue
             key=(norm((artist or '')+title), core)
             if key in seen: continue
             seen.add(key)
             tags=sorted((toC(k) for k,v in share.items() if v<CUTOFF), key=cpc)
             sets[core].append({'a':artist or '','t':title,'sec':secname,'tags':tags})
-    # build serializable, ranked
-    data=[]
+    # build serializable, grouped by size, ranked within
+    data={'2':[],'3':[],'4':[]}
     for core,songs in sorted(sets.items(), key=lambda kv:-len(kv[1])):
         chords=sorted((toC(t) for t in core), key=cpc)
         roman=' '.join(sorted(core,key=lambda x:(len(x),x)))
-        data.append({'chords':chords,'roman':roman,'name':NAMED.get(core,''),
+        data[str(len(core))].append({'chords':chords,'roman':roman,'name':NAMED.get(core,''),
                      'n':len(songs),'songs':sorted(songs,key=lambda s:(s['a'].lower(),s['t'].lower()))})
     out=os.path.join(os.path.dirname(__file__),'chord-sets.html')
     open(out,'w').write(PAGE.replace('__DATA__', json.dumps(data)))
-    print(f'wrote {out}  ({len(data)} four-chord core sets, {sum(d["n"] for d in data)} sections)')
+    print(f'wrote {out}  |  2-chord:{len(data["2"])}  3-chord:{len(data["3"])}  4-chord:{len(data["4"])} sets')
 
 PAGE = r"""<!doctype html><html><head><meta charset=utf-8><title>Chord Sets · 4-chord</title>
 <style>
@@ -92,6 +92,9 @@ PAGE = r"""<!doctype html><html><head><meta charset=utf-8><title>Chord Sets · 4
 #wrap{display:flex;height:100vh}
 #side{width:300px;flex:none;overflow-y:auto;border-right:1px solid #ddd;background:#fff}
 #side h1{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#888;padding:14px 16px 6px;margin:0}
+.tog{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid #eee;position:sticky;top:0;background:#fff;z-index:2}
+.tog button{flex:1;padding:7px 0;border:1px solid #ccd;background:#f6f6fb;border-radius:7px;cursor:pointer;font-weight:600;color:#556}
+.tog button.on{background:#2a2a44;color:#fff;border-color:#2a2a44}
 .setrow{padding:8px 14px;cursor:pointer;border-bottom:1px solid #f0f0f4;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .setrow:hover{background:#eef}.setrow.on{background:#2a2a44}
 .setrow .nm{font-size:11px;color:#8a2be2;margin-left:4px}.setrow.on .nm{color:#ffd}
@@ -106,10 +109,11 @@ table{border-collapse:collapse;width:100%;margin-top:14px}
 td,th{text-align:left;padding:5px 10px;border-bottom:1px solid #eee}th{color:#999;font-size:11px;text-transform:uppercase}
 .tag{font-size:11px;color:#c60;background:#fff3e0;border-radius:4px;padding:1px 5px;margin-left:3px}
 </style></head><body><div id=wrap>
-<div id=side><h1>4-chord core sets</h1><div id=list></div></div>
+<div id=side><div class=tog><button data-sz=2>2-chord</button><button data-sz=3>3-chord</button><button data-sz=4 class=on>4-chord</button></div><div id=list></div></div>
 <div id=main><div id=hd></div><div id=body></div></div></div>
 <script>
 const D=__DATA__;
+let SZ='4';
 // canonical chord colors (from chord-viz.html), by ROOT pitch class
 const PCCOL={0:'#e84545',2:'#f0a040',4:'#e8c828',5:'#50c878',7:'#5090f0',9:'#7040b0',11:'#e070b0'};
 const NOTEPC={C:0,'C#':1,Db:1,D:2,'D#':3,Eb:3,E:4,F:5,'F#':6,Gb:6,G:7,'G#':8,Ab:8,A:9,'A#':10,Bb:10,B:11};
@@ -118,18 +122,21 @@ function chBg(c){const m=c.match(/^([A-G][#b]?)/);const pc=m?NOTEPC[m[1]]:0;
   return `linear-gradient(135deg,${PCCOL[(pc+11)%12]} 0 50%,${PCCOL[(pc+1)%12]} 50%)`;} // chromatic = diagonal stripe
 function chip(c){return `<span class=chip style="background:${chBg(c)}">${c}</span>`;}
 const L=document.getElementById('list');
-D.forEach((s,i)=>{const r=document.createElement('div');r.className='setrow';r.dataset.i=i;
- r.innerHTML=`<span>${s.chords.map(chip).join('')}${s.name?`<span class=nm>${s.name}</span>`:''}</span><span class=ct>${s.n}</span>`;
- r.onclick=()=>sel(i);L.appendChild(r);});
+function build(){L.innerHTML='';
+ D[SZ].forEach((s,i)=>{const r=document.createElement('div');r.className='setrow';r.dataset.i=i;
+  r.innerHTML=`<span>${s.chords.map(chip).join('')}${s.name?`<span class=nm>${s.name}</span>`:''}</span><span class=ct>${s.n}</span>`;
+  r.onclick=()=>sel(i);L.appendChild(r);});}
+function load(sz){SZ=sz;document.querySelectorAll('.tog button').forEach(b=>b.classList.toggle('on',b.dataset.sz===sz));build();sel(0);}
+document.querySelectorAll('.tog button').forEach(b=>b.onclick=()=>load(b.dataset.sz));
 function sel(i){document.querySelectorAll('.setrow').forEach(e=>e.classList.toggle('on',+e.dataset.i===i));
- const s=D[i];document.getElementById('hd').innerHTML=
+ const s=D[SZ][i];document.getElementById('hd').innerHTML=
   `<div>${s.chords.map(chip).join('')}</div>`+
   (s.name?`<div class=name>${s.name}</div>`:'')+
   `<div class=meta>${s.roman} · ${s.n} sections</div>`;
  let h='<table><tr><th>Artist</th><th>Song</th><th>Section</th><th>tags</th></tr>';
  s.songs.forEach(o=>{h+=`<tr><td>${o.a}</td><td>${o.t}</td><td>${o.sec||''}</td><td>${(o.tags||[]).map(t=>`<span class=tag>${t}</span>`).join('')}</td></tr>`});
  document.getElementById('body').innerHTML=h+'</table>';}
-sel(0);
+load('4');
 </script></body></html>"""
 
 if __name__ == '__main__':
