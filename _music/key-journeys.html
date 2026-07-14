@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Key Journeys</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#fbfbfd;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#333}
+  #viz{width:100vw;height:100vh}
+  #panel{position:fixed;top:16px;left:18px;width:270px}
+  #panel h1{font-size:17px;margin:0 0 6px}
+  select{width:100%;padding:6px;font-size:13px;border:1px solid #ccd;border-radius:6px;background:#fff}
+  #meta{font-size:12px;color:#666;margin:8px 0;line-height:1.5;min-height:34px}
+  button{margin-top:6px;padding:6px 14px;font-size:13px;font-weight:600;border:1px solid #2a2a44;background:#2a2a44;color:#fff;border-radius:6px;cursor:pointer}
+  .home circle{stroke:#2a2a44;stroke-width:3px}
+  .knode text{font-weight:700;pointer-events:none}
+  .edge{fill:none;stroke-width:2px;opacity:.55}
+  .edgelbl{font-size:10px;fill:#888;font-weight:600}
+  .token{fill:#ffd23f;stroke:#c89000;stroke-width:2px}
+  .legend{margin-top:12px;font-size:11px;color:#777;line-height:1.6}
+</style>
+</head>
+<body>
+<div id="panel">
+  <h1>Key Journeys</h1>
+  <select id="pick"></select>
+  <div id="meta"></div>
+  <button id="play">▶ replay journey</button>
+  <div class="legend">
+    Home key at center. Each key the song visits is placed by its relationship to home —
+    <b>parallel</b> flip sits on top of home, <b>relative / IV / V</b> nearby, distant keys further out.
+    Major = solid, minor = pale. Watch it venture out and (often) return home.
+  </div>
+</div>
+<div id="viz"></div>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script>
+const SONGS=[{"a": "Ace Of Base", "t": "All That She Wants", "seq": [[1, "minor"], [1, "major"], [1, "minor"]]}, {"a": "Ace Of Base", "t": "I Saw The Sign", "seq": [[7, "minor"], [7, "major"]]}, {"a": "Alanis Morissette", "t": "Head Over Feet", "seq": [[0, "major"], [2, "major"], [0, "major"], [2, "major"], [0, "major"], [2, "major"]]}, {"a": "Avril Lavigne", "t": "My Happy Ending", "seq": [[0, "major"], [9, "minor"], [0, "major"]]}, {"a": "Beach Boys", "t": "Wouldn't It Be Nice", "seq": [[4, "major"], [0, "major"]]}, {"a": "Beach Boys", "t": "Wouldnt It Be Nice", "seq": [[4, "major"], [0, "major"]]}, {"a": "beatles", "t": "another girl", "seq": [[9, "minor"], [9, "major"], [9, "minor"], [9, "major"], [0, "major"], [9, "minor"], [9, "major"], [9, "minor"]]}, {"a": "beatles", "t": "birthday", "seq": [[9, "major"], [0, "major"]]}, {"a": "beatles", "t": "do you want to know a secret", "seq": [[4, "major"], [9, "major"], [4, "major"]]}, {"a": "beatles", "t": "for no one", "seq": [[0, "major"], [2, "minor"], [0, "major"], [2, "minor"], [0, "major"], [2, "minor"]]}, {"a": "beatles", "t": "free as a bird", "seq": [[9, "major"], [0, "major"], [9, "major"], [9, "minor"]]}, {"a": "beatles", "t": "Here There And Everywhere", "seq": [[7, "major"], [7, "minor"], [7, "major"], [7, "minor"], [7, "major"]]}, {"a": "beatles", "t": "i'll be back", "seq": [[9, "major"], [9, "minor"], [9, "major"]]}, {"a": "beatles", "t": "i've just seen a face", "seq": [[9, "major"], [0, "major"], [9, "major"], [0, "major"]]}, {"a": "beatles", "t": "it won't be long", "seq": [[4, "major"], [4, "minor"]]}, {"a": "beatles", "t": "lady madonna", "seq": [[9, "major"], [0, "major"], [9, "major"], [0, "major"], [9, "major"], [0, "major"], [9, "major"]]}, {"a": "beatles", "t": "Lucy In The Sky With Diamonds", "seq": [[9, "major"], [5, "major"], [7, "major"], [9, "major"], [5, "major"], [7, "major"], [9, "major"], [7, "major"]]}, {"a": "beatles", "t": "now and then", "seq": [[9, "minor"], [7, "major"], [9, "minor"]]}, {"a": "beatles", "t": "Penny Lane", "seq": [[0, "major"], [10, "major"], [0, "major"], [10, "major"], [0, "major"], [10, "major"], [0, "major"]]}, {"a": "beatles", "t": "sgt peppers", "seq": [[7, "major"], [5, "major"], [7, "major"]]}, {"a": "beatles", "t": "things we said today", "seq": [[9, "minor"], [9, "major"]]}, {"a": "beatles", "t": "we can work it out", "seq": [[2, "major"], [11, "minor"], [2, "major"], [11, "minor"], [2, "major"]]}, {"a": "beatles", "t": "when i get home", "seq": [[9, "minor"], [0, "major"], [9, "minor"], [0, "major"]]}, {"a": "beatles", "t": "you're going to lose that girl", "seq": [[4, "major"], [7, "major"], [4, "major"]]}, {"a": "beck", "t": "think im in love", "seq": [[5, "major"], [5, "minor"]]}, {"a": "billy joel", "t": "uptown girl", "seq": [[4, "major"], [0, "major"], [9, "major"], [11, "minor"], [9, "major"]]}, {"a": "Cardigans", "t": "Lovefool", "seq": [[0, "major"], [9, "major"]]}, {"a": "coldplay", "t": "trouble", "seq": [[0, "major"], [9, "minor"]]}, {"a": "Empire Of The Sun", "t": "Walking On A Dream", "seq": [[0, "major"], [6, "minor"]]}, {"a": "Green Day", "t": "21 Guns", "seq": [[2, "minor"], [5, "major"], [2, "minor"]]}, {"a": "Guns N Roses", "t": "November Rain", "seq": [[0, "major"], [0, "minor"]]}, {"a": "John Lennon", "t": "Woman", "seq": [[0, "major"], [1, "major"]]}, {"a": "Miley Cyrus", "t": "Malibu", "seq": [[9, "major"], [6, "minor"], [9, "major"]]}, {"a": "No Doubt", "t": "It'S My Life", "seq": [[4, "major"], [1, "major"], [4, "major"]]}, {"a": "no doubt", "t": "its my life", "seq": [[4, "major"], [1, "major"], [4, "major"]]}, {"a": "Pharrell Williams", "t": "Happy", "seq": [[5, "major"], [5, "minor"], [5, "major"]]}, {"a": "pink floyd", "t": "breathe", "seq": [[4, "major"], [4, "minor"]]}, {"a": "pink floyd", "t": "comfortably numb", "seq": [[11, "minor"], [2, "major"], [0, "major"], [2, "major"], [11, "minor"]]}, {"a": "Rolling Stones", "t": "Happy", "seq": [[5, "major"], [5, "minor"], [5, "major"]]}, {"a": "roy orbison", "t": "pretty woman", "seq": [[9, "major"], [9, "minor"], [9, "major"]]}, {"a": "seal", "t": "kiss from a rose", "seq": [[7, "minor"], [7, "major"], [7, "minor"], [7, "major"], [7, "minor"], [7, "major"]]}, {"a": "Styx", "t": "Come Sail Away", "seq": [[0, "major"], [8, "major"], [0, "major"]]}, {"a": "taylor swift", "t": "trouble", "seq": [[0, "major"], [9, "minor"]]}, {"a": "taylor swift", "t": "wildest dreams", "seq": [[9, "minor"], [0, "major"], [9, "minor"], [0, "major"], [9, "minor"], [0, "major"]]}, {"a": "The Beatles", "t": "And I Love Her", "seq": [[4, "major"], [5, "major"]]}, {"a": "The Beatles", "t": "Another Girl", "seq": [[9, "minor"], [9, "major"], [9, "minor"], [9, "major"], [0, "major"], [9, "minor"], [9, "major"], [9, "minor"]]}, {"a": "The Beatles", "t": "Blackbird", "seq": [[7, "major"], [5, "major"], [7, "major"], [5, "major"], [7, "major"], [5, "major"]]}, {"a": "The Beatles", "t": "Come Together", "seq": [[2, "minor"], [2, "major"], [2, "minor"], [2, "major"], [2, "minor"], [2, "major"], [2, "minor"], [2, "major"]]}, {"a": "The Beatles", "t": "Cry Baby Cry", "seq": [[7, "major"], [5, "minor"]]}, {"a": "The Beatles", "t": "Do You Want to Know a Secret", "seq": [[4, "major"], [9, "major"], [4, "major"]]}, {"a": "The Beatles", "t": "For No One", "seq": [[0, "major"], [2, "minor"], [0, "major"], [2, "minor"], [0, "major"], [2, "minor"]]}, {"a": "The Beatles", "t": "Free as a Bird", "seq": [[9, "major"], [0, "major"], [9, "major"], [9, "minor"]]}, {"a": "The Beatles", "t": "Here, There and Everywhere", "seq": [[7, "major"], [7, "minor"], [7, "major"], [7, "minor"], [7, "major"]]}, {"a": "The Beatles", "t": "Hey Bulldog", "seq": [[11, "minor"], [11, "major"], [11, "minor"], [11, "major"]]}, {"a": "The Beatles", "t": "I Saw Her Standing There", "seq": [[4, "major"], [9, "major"], [4, "major"]]}, {"a": "The Beatles", "t": "I Want to Hold Your Hand", "seq": [[7, "major"], [0, "major"], [7, "major"], [0, "major"], [7, "major"]]}, {"a": "The Beatles", "t": "I Want You (She's So Heavy)", "seq": [[9, "minor"], [2, "major"], [2, "minor"]]}, {"a": "The Beatles", "t": "I'll Be Back", "seq": [[9, "major"], [9, "minor"], [9, "major"]]}, {"a": "The Beatles", "t": "I've Just Seen a Face", "seq": [[9, "major"], [0, "major"], [9, "major"], [0, "major"]]}, {"a": "The Beatles", "t": "If I Fell", "seq": [[3, "minor"], [2, "major"]]}, {"a": "The Beatles", "t": "If I Needed Someone", "seq": [[9, "major"], [11, "minor"], [9, "major"], [11, "minor"], [9, "major"]]}, {"a": "The Beatles", "t": "It Won't Be Long", "seq": [[4, "major"], [4, "minor"]]}, {"a": "The Beatles", "t": "Lady Madonna", "seq": [[9, "major"], [0, "major"], [9, "major"], [0, "major"], [9, "major"], [0, "major"], [9, "major"]]}, {"a": "The Beatles", "t": "Lucy in the Sky with Diamonds", "seq": [[9, "major"], [5, "major"], [7, "major"], [9, "major"], [5, "major"], [7, "major"], [9, "major"], [7, "major"]]}, {"a": "The Beatles", "t": "Magical Mystery Tour", "seq": [[2, "major"], [4, "major"], [2, "major"]]}, {"a": "The Beatles", "t": "Norwegian Wood", "seq": [[2, "major"], [2, "minor"], [2, "major"]]}, {"a": "The Beatles", "t": "Penny Lane", "seq": [[0, "major"], [10, "major"], [0, "major"], [10, "major"], [0, "major"], [10, "major"], [0, "major"]]}, {"a": "The Beatles", "t": "Savoy Truffle", "seq": [[4, "major"], [7, "major"], [4, "major"]]}, {"a": "The Beatles", "t": "She Came in Through the Bathroom Window", "seq": [[9, "major"], [0, "major"]]}, {"a": "The Beatles", "t": "Something", "seq": [[0, "major"], [9, "major"], [0, "major"], [9, "major"]]}, {"a": "The Beatles", "t": "Sun King", "seq": [[4, "major"], [0, "major"]]}, {"a": "The Beatles", "t": "The End", "seq": [[9, "major"], [0, "major"]]}, {"a": "The Beatles", "t": "The Fool on the Hill", "seq": [[2, "major"], [2, "minor"]]}, {"a": "The Beatles", "t": "Things We Said Today", "seq": [[9, "minor"], [9, "major"]]}, {"a": "The Beatles", "t": "Two of Us", "seq": [[7, "major"], [7, "minor"]]}, {"a": "The Beatles", "t": "We Can Work It Out", "seq": [[2, "major"], [11, "minor"], [2, "major"], [11, "minor"], [2, "major"]]}, {"a": "The Beatles", "t": "When I Get Home", "seq": [[9, "minor"], [0, "major"], [9, "minor"], [0, "major"]]}, {"a": "The Beatles", "t": "While My Guitar Gently Weeps", "seq": [[9, "minor"], [9, "major"], [9, "minor"], [9, "major"], [9, "minor"]]}, {"a": "The Beatles", "t": "You Never Give Me Your Money", "seq": [[9, "minor"], [0, "major"], [9, "major"], [2, "major"], [9, "major"], [0, "major"], [9, "major"]]}, {"a": "The Beatles", "t": "You're Going to Lose That Girl", "seq": [[4, "major"], [7, "major"], [4, "major"]]}, {"a": "Weezer", "t": "Say It Ain'T So", "seq": [[3, "major"], [10, "major"], [3, "major"]]}, {"a": "Weezer", "t": "The World Has Turned And Left Me Here", "seq": [[6, "major"], [3, "minor"], [6, "major"], [3, "minor"]]}, {"a": "White Stripes", "t": "Dead Leaves And The Dirty Ground", "seq": [[2, "major"], [9, "major"]]}, {"a": "Wings", "t": "Band On The Run", "seq": [[2, "major"], [9, "major"], [0, "major"]]}, {"a": "Zz Top", "t": "Gimme All Your Lovin", "seq": [[5, "major"], [0, "major"]]}, {"a": "zz top", "t": "give me all your lovin", "seq": [[5, "major"], [0, "major"]]}];
+const PCN=['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+const kname=k=>PCN[k[0]]+(k[1]==='minor'?'m':'');
+function fifths(home,pc){let f=(((pc-home)*7)%12+12)%12; return f>6?f-12:f;}
+// relationship of key b relative to home a -> label + radius factor
+function rel(a,b){
+  const dp=((b[0]-a[0])%12+12)%12, same=a[1]===b[1];
+  if(dp===0&&!same) return {t:'parallel',r:0.42};
+  if(a[1]==='major'&&b[1]==='minor'&&dp===9) return {t:'relative minor',r:0.72};
+  if(a[1]==='minor'&&b[1]==='major'&&dp===3) return {t:'relative major',r:0.72};
+  const f=Math.abs(fifths(a[0],b[0]));
+  const names={7:'up ½',2:'up whole',10:'down whole',3:'up m3',9:'down m3',4:'up M3',8:'down M3',5:'to IV',6:'tritone'};
+  let lab=names[dp]|| (same?('+'+dp):('flip +'+dp));
+  if(dp===7&&same) lab='to V'; if(dp===5&&same) lab='to IV';
+  return {t:lab, r: 0.7 + Math.min(f,6)*0.16};
+}
+// color a key by its home-relative role (degree color of its tonic in home's major)
+const DEGCOL={0:'#e84545',7:'#5090f0',5:'#50c878',2:'#f0a040',9:'#7040b0',4:'#e8c828',11:'#e070b0'};
+function keyColor(home,k){const dp=((k[0]-home[0])%12+12)%12; return DEGCOL[dp]||'#9aa';}
+
+const W=window.innerWidth,H=window.innerHeight,CX=W/2,CY=H/2,RAD=Math.min(W,H)/2-110;
+const svg=d3.select('#viz').append('svg').attr('width',W).attr('height',H);
+const g=svg.append('g');
+
+// build dropdown
+const pick=d3.select('#pick');
+pick.selectAll('option').data(SONGS).join('option')
+  .attr('value',(d,i)=>i).text(d=>`${d.a} — ${d.t}  (${d.seq.map(kname).join('→')})`);
+
+let cur=null;
+function layout(song){
+  const home=song.seq[0];
+  // unique keys -> position
+  const pos=new Map();
+  pos.set(kname(home),{k:home,x:CX,y:CY,home:true});
+  song.seq.forEach(k=>{
+    const nm=kname(k); if(pos.has(nm))return;
+    const r=rel(home,k), f=fifths(home,k[0]);
+    const ang=(f*30)*Math.PI/180;                 // 0 = straight up; V right, IV left
+    const rr=RAD*r.r + (k[1]==='minor'?0:0);
+    pos.set(nm,{k, x:CX+rr*Math.sin(ang), y:CY-rr*Math.cos(ang), home:false, rel:r.t});
+  });
+  return {home,pos};
+}
+
+function draw(song){
+  g.selectAll('*').remove();
+  const {home,pos}=layout(song);
+  const nodes=[...pos.values()];
+  // edges follow the sequence
+  const edges=[];
+  for(let i=0;i<song.seq.length-1;i++){
+    const A=pos.get(kname(song.seq[i])), B=pos.get(kname(song.seq[i+1]));
+    if(A&&B&&(A.x!==B.x||A.y!==B.y)) edges.push({A,B,rel:rel(home,song.seq[i+1]).t});
+  }
+  // draw edges (curved)
+  g.selectAll('.edge').data(edges).join('path').attr('class','edge')
+    .attr('stroke',d=>keyColor(home,d.B.k))
+    .attr('d',d=>{const mx=(d.A.x+d.B.x)/2,my=(d.A.y+d.B.y)/2-30;return `M${d.A.x},${d.A.y} Q${mx},${my} ${d.B.x},${d.B.y}`;})
+    .attr('marker-end','url(#arw)');
+  // edge labels (unique rel per edge)
+  g.selectAll('.edgelbl').data(edges).join('text').attr('class','edgelbl')
+    .attr('x',d=>(d.A.x+d.B.x)/2).attr('y',d=>(d.A.y+d.B.y)/2-34).attr('text-anchor','middle').text(d=>d.rel);
+  // nodes
+  const nd=g.selectAll('.knode').data(nodes).join('g').attr('class',d=>'knode'+(d.home?' home':''))
+    .attr('transform',d=>`translate(${d.x},${d.y})`);
+  nd.append('circle').attr('r',d=>d.home?30:20)
+    .attr('fill',d=>d.k[1]==='minor'?d3.color(keyColor(home,d.k)).brighter(1.1):keyColor(home,d.k))
+    .attr('stroke',d=>d3.color(keyColor(home,d.k)).darker(.6)).attr('stroke-width',1.5);
+  nd.append('text').attr('text-anchor','middle').attr('dy','0.34em')
+    .style('font-size',d=>d.home?'16px':'13px')
+    .attr('fill',d=>d.k[1]==='minor'?'#333':'#fff').text(d=>kname(d.k));
+  // arrow marker
+  const defs=svg.select('defs').empty()?svg.append('defs'):svg.select('defs');
+  defs.selectAll('#arw').data([0]).join('marker').attr('id','arw').attr('viewBox','0 -5 10 10')
+    .attr('refX',22).attr('refY',0).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
+    .append('path').attr('d','M0,-5L10,0L0,5').attr('fill','#bbb');
+  return {home,pos};
+}
+
+function animate(song,pos){
+  g.selectAll('.token').remove();
+  const pts=song.seq.map(k=>pos.get(kname(k)));
+  const tok=g.append('circle').attr('class','token').attr('r',9).attr('cx',pts[0].x).attr('cy',pts[0].y);
+  let i=0;
+  function step(){
+    if(i>=pts.length-1) return;
+    const A=pts[i],B=pts[i+1]; i++;
+    tok.transition().duration(750).ease(d3.easeCubicInOut).attr('cx',B.x).attr('cy',B.y).on('end',step);
+  }
+  step();
+}
+
+function show(idx){
+  cur=SONGS[idx];
+  const {pos}=draw(cur);
+  const home=kname(cur.seq[0]), end=kname(cur.seq[cur.seq.length-1]);
+  d3.select('#meta').html(`<b>${cur.seq.map(kname).join(' → ')}</b><br>${cur.seq.length-1} moves · ${home===end?'returns home ✔':'ends on '+end}`);
+  animate(cur,pos);
+}
+pick.on('change',()=>show(+pick.node().value));
+d3.select('#play').on('click',()=>{if(cur){const {pos}=draw(cur);animate(cur,pos);}});
+// default: pick something juicy if present, else first
+const def=SONGS.findIndex(s=>/comfortably numb|pretty woman|norwegian/i.test(s.t));
+pick.node().value=def>=0?def:0; show(def>=0?def:0);
+</script>
+</body>
+</html>
