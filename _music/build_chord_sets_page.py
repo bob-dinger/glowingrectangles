@@ -81,22 +81,23 @@ def main():
                                       + quote_plus(f"{artist or ''} {title}".strip()))
         hp=(hp_url or '').strip()
         for core,share,secname in section_cores(hj):
-            if not (2<=len(core)<=4): continue
+            if len(core)<2: continue
             key=(norm((artist or '')+title), core)
             if key in seen: continue
             seen.add(key)
             tags=sorted((toC(k) for k,v in share.items() if v<CUTOFF), key=cpc)
             sets[core].append({'a':artist or '','t':title,'sec':secname,'tags':tags,'ug':ug,'hp':hp})
     # build serializable, grouped by size, ranked within
-    data={'2':[],'3':[],'4':[]}
+    data={'2':[],'3':[],'4':[],'5':[],'6+':[]}
     for core,songs in sorted(sets.items(), key=lambda kv:-len(kv[1])):
         chords=sorted((toC(t) for t in core), key=cpc)
         roman=' '.join(sorted(core,key=lambda x:(len(x),x)))
-        data[str(len(core))].append({'chords':chords,'roman':roman,'name':NAMED.get(core,''),
+        bucket=str(len(core)) if len(core)<=5 else '6+'
+        data[bucket].append({'chords':chords,'roman':roman,'name':NAMED.get(core,''),
                      'n':len(songs),'songs':sorted(songs,key=lambda s:(s['a'].lower(),s['t'].lower()))})
     out=os.path.join(os.path.dirname(__file__),'chord-sets.html')
     open(out,'w').write(PAGE.replace('__DATA__', json.dumps(data)))
-    print(f'wrote {out}  |  2-chord:{len(data["2"])}  3-chord:{len(data["3"])}  4-chord:{len(data["4"])} sets')
+    print('wrote {}  |  {} sets'.format(out, '  '.join(f'{k}:{len(v)}' for k,v in data.items())))
 
 PAGE = r"""<!doctype html><html><head><meta charset=utf-8><title>Chord Sets · 4-chord</title>
 <style>
@@ -124,7 +125,7 @@ td,th{text-align:left;padding:5px 10px;border-bottom:1px solid #eee}th{color:#99
 .lk.ug{color:#fff;background:#c8600f}.lk.hp{color:#fff;background:#5090f0}
 .lk.off{background:#eee;color:#bbb;pointer-events:none}
 </style></head><body><div id=wrap>
-<div id=side><div class=tog><button data-sz=2>2-chord</button><button data-sz=3>3-chord</button><button data-sz=4 class=on>4-chord</button></div><div id=list></div></div>
+<div id=side><div class=tog><button data-sz=2>2</button><button data-sz=3>3</button><button data-sz=4 class=on>4</button><button data-sz=5>5</button><button data-sz="6+">6+</button></div><div id=list></div></div>
 <div id=main><div id=hd></div><div id=body></div></div></div>
 <script>
 const D=__DATA__;
