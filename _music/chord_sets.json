@@ -588,6 +588,108 @@
       ],
       "notes": "advanced jazz turnaround",
       "source": "bennett"
+    },
+    {
+      "key": "coldplay_415",
+      "name": "Coldplay (4-1-5)",
+      "artist": "Coldplay",
+      "n": 3,
+      "ordered": true,
+      "order": [
+        4,
+        1,
+        5
+      ],
+      "degrees": [
+        1,
+        4,
+        5
+      ],
+      "roman": "IV I V",
+      "chords_C": "F C G",
+      "mode": "major",
+      "family": "plagal/pillars",
+      "examples": [
+        "Paradise",
+        "Trouble",
+        "many Coldplay hits"
+      ],
+      "notes": "the V is often sus4 resolving to V",
+      "source": "bennett"
+    },
+    {
+      "key": "royal_road",
+      "name": "Royal Road",
+      "n": 4,
+      "ordered": true,
+      "order": [
+        4,
+        5,
+        3,
+        6
+      ],
+      "degrees": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "roman": "IV V iii vi",
+      "chords_C": "F G Em Am",
+      "mode": "major",
+      "family": "Japanese pop (Royal Road) — the J-pop 'axis'",
+      "examples": [
+        "J-pop / anime / JRPG staple"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "la_folia",
+      "name": "La Folia",
+      "n": 6,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "i V i bVII i V",
+      "chords": "Am E Am G Am E",
+      "family": "baroque/classical",
+      "examples": [
+        "Corelli La Folia",
+        "Oops!... I Did It Again"
+      ],
+      "notes": "16-bar baroque theme; recognizable core loop",
+      "source": "bennett"
+    },
+    {
+      "key": "our_house",
+      "name": "Our House",
+      "artist": "Madness",
+      "n": 4,
+      "ordered": true,
+      "mode": "major",
+      "roman": "I v ii iv",
+      "chords": "C Gm Dm Fm",
+      "family": "modal-mixture (minor v + minor iv)",
+      "examples": [
+        "Our House"
+      ],
+      "notes": "unusual: both the 5 and 4 chords are minor",
+      "source": "bennett"
+    },
+    {
+      "key": "wuthering_heights",
+      "name": "Wuthering Heights",
+      "artist": "Kate Bush",
+      "n": 4,
+      "ordered": true,
+      "mode": "major",
+      "roman": "I bVI V III",
+      "chords": "C Ab G E",
+      "family": "chromatic-mediant chain (all-major)",
+      "examples": [
+        "Wuthering Heights"
+      ],
+      "notes": "four major chords a third apart; not key-diatonic",
+      "source": "bennett"
     }
   ]
 }
