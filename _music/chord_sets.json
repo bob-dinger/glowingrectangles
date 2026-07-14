@@ -690,6 +690,168 @@
       ],
       "notes": "four major chords a third apart; not key-diatonic",
       "source": "bennett"
+    },
+    {
+      "key": "minor_axis",
+      "name": "Minor Axis",
+      "n": 4,
+      "ordered": true,
+      "order": [
+        6,
+        4,
+        1,
+        5
+      ],
+      "set": "axis",
+      "entry": "vi",
+      "roman": "vi IV I V",
+      "chords_C": "Am F C G",
+      "mode": "major",
+      "family": "axis rotation (relative-minor stance)",
+      "examples": [
+        "Zombie",
+        "Numb",
+        "Save Tonight"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "aeolian_vamp",
+      "name": "Aeolian Vamp",
+      "n": 3,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "i bVII bVI",
+      "chords": "Am G F",
+      "family": "minor vamp (natural minor)",
+      "examples": [
+        "Stairway (intro-ish)",
+        "All Along the Watchtower"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "mixolydian_vamp",
+      "name": "Mixolydian Vamp",
+      "n": 3,
+      "ordered": true,
+      "mode": "major",
+      "roman": "I bVII IV",
+      "chords": "C Bb F",
+      "family": "modal vamp (Mixolydian)",
+      "examples": [
+        "Sweet Home Alabama",
+        "Sympathy for the Devil"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "one_five_four_five",
+      "name": "I-V-IV-V",
+      "n": 4,
+      "ordered": true,
+      "order": [
+        1,
+        5,
+        4,
+        5
+      ],
+      "degrees": [
+        1,
+        4,
+        5
+      ],
+      "roman": "I V IV V",
+      "chords_C": "C G F G",
+      "mode": "major",
+      "family": "pillars vamp",
+      "examples": [
+        "simple major bed, many songs"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "she_loves_you",
+      "name": "She Loves You",
+      "artist": "The Beatles",
+      "n": 4,
+      "ordered": true,
+      "order": [
+        1,
+        6,
+        3,
+        5
+      ],
+      "degrees": [
+        1,
+        3,
+        5,
+        6
+      ],
+      "roman": "I vi iii V",
+      "chords_C": "C Am Em G",
+      "mode": "major",
+      "family": "diatonic (features the rare iii)",
+      "examples": [
+        "She Loves You"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "starlight",
+      "name": "Starlight",
+      "artist": "Muse",
+      "n": 3,
+      "ordered": true,
+      "order": [
+        2,
+        6,
+        4
+      ],
+      "degrees": [
+        2,
+        4,
+        6
+      ],
+      "roman": "ii vi IV",
+      "chords_C": "Dm Am F",
+      "mode": "major",
+      "family": "axis-variant (5 swapped for 2)",
+      "examples": [
+        "Starlight"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "jolene",
+      "name": "Jolene",
+      "artist": "Dolly Parton",
+      "n": 4,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "i bIII bVII i",
+      "chords": "Am C G Am",
+      "family": "minor cadence loop",
+      "examples": [
+        "Jolene"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "polly",
+      "name": "Polly",
+      "artist": "Nirvana",
+      "n": 4,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "i bIII bVII bVI",
+      "chords": "Am C G F",
+      "family": "minor descending (Jolene cousin)",
+      "examples": [
+        "Polly"
+      ],
+      "notes": "verify exact voicing",
+      "source": "bennett"
     }
   ]
 }
