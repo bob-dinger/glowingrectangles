@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Key Map</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#fbfbfd;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#333}
+  #viz{width:100vw;height:100vh}
+  .edge{fill:none;stroke-width:2px;opacity:.5}
+  .elab{font-size:10px;font-weight:600;pointer-events:none}
+  .node{cursor:pointer}
+  .node:hover circle{stroke:#222;stroke-width:3px}
+  .node text{font-weight:700;pointer-events:none}
+  .home circle{stroke:#2a2a44;stroke-width:3px}
+  #panel{position:fixed;top:16px;left:18px;max-width:250px}
+  #panel h1{font-size:17px;margin:0 0 4px}
+  #panel p{font-size:12px;line-height:1.5;color:#666;margin:4px 0}
+  .legend{margin-top:10px;font-size:12px}
+  .legend .row{display:flex;align-items:center;gap:7px;margin:3px 0}
+  .sw{width:14px;height:14px;border-radius:50%;flex:0 0 auto}
+</style>
+</head>
+<body>
+<div id="panel">
+  <h1>Key Map</h1>
+  <p>Home key at center; every key you could modulate to around it, placed by how far it travels and labeled with the move. <b>Click any key</b> to travel there (it becomes the new home). This is where the chords <i>leave</i> the key — the paths the chord-tree can't show.</p>
+  <div class="legend" id="legend"></div>
+</div>
+<div id="viz"></div>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script>
+const PCN=['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+const kname=(pc,mode)=>PCN[((pc%12)+12)%12]+(mode==='minor'?'m':'');
+// category colors
+const CAT={parallel:'#7a7a8c',relative:'#7040b0',fifth:'#5090f0',step:'#3aa85f',m3:'#f0a040',M3:'#e8c828',tritone:'#e84545'};
+// destinations: dp = semitones above home tonic; flip = mode change; ang deg (0=up, clockwise); r = radius factor
+const DESTS=[
+  {dp:0, flip:true,  cat:'parallel', lab:'parallel',      ang:0,    r:.5},
+  {dp:'rel', flip:true, cat:'relative', lab:'relative',   ang:28,   r:.8},
+  {dp:7, flip:false, cat:'fifth',    lab:'to V',          ang:62,   r:.85},
+  {dp:2, flip:false, cat:'step',     lab:'up whole-step', ang:92,   r:1.12},
+  {dp:3, flip:false, cat:'m3',       lab:'up m3 (♭III)',  ang:120,  r:1.05},
+  {dp:4, flip:false, cat:'M3',       lab:'up M3',         ang:148,  r:1.18},
+  {dp:1, flip:false, cat:'step',     lab:'up ½-step',     ang:170,  r:1.32},
+  {dp:6, flip:false, cat:'tritone',  lab:'tritone',       ang:180,  r:1.42},
+  {dp:11,flip:false, cat:'step',     lab:'down ½-step',   ang:-170, r:1.32},
+  {dp:8, flip:false, cat:'M3',       lab:'down M3',       ang:-148, r:1.18},
+  {dp:9, flip:false, cat:'m3',       lab:'down m3',       ang:-120, r:1.05},
+  {dp:10,flip:false, cat:'step',     lab:'down whole-step',ang:-92, r:1.12},
+  {dp:5, flip:false, cat:'fifth',    lab:'to IV',         ang:-62,  r:.85},
+];
+function relDp(mode){return mode==='major'?9:3;}   // major->relative minor (+9), minor->relative major (+3)
+
+let home={pc:0,mode:'major'};
+const W=window.innerWidth,H=window.innerHeight,CX=W/2,CY=H/2,RAD=Math.min(W,H)/2-120;
+const svg=d3.select('#viz').append('svg').attr('width',W).attr('height',H);
+const defs=svg.append('defs');
+defs.append('marker').attr('id','arw').attr('viewBox','0 -5 10 10').attr('refX',20).attr('refY',0)
+  .attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M0,-5L10,0L0,5').attr('fill','#bbb');
+const g=svg.append('g');
+
+d3.select('#legend').selectAll('div').data(Object.entries(CAT)).join('div').attr('class','row')
+  .html(d=>`<span class="sw" style="background:${d[1]}"></span>${d[0]}`);
+
+function dests(){
+  return DESTS.map(d=>{
+    const dp = d.dp==='rel' ? relDp(home.mode) : d.dp;
+    const pc=(home.pc+dp)%12, mode=d.flip?(home.mode==='major'?'minor':'major'):home.mode;
+    const a=d.ang*Math.PI/180;
+    return {pc,mode,cat:d.cat,lab:d.lab, x:CX+RAD*d.r*Math.sin(a), y:CY-RAD*d.r*Math.cos(a)};
+  });
+}
+
+function draw(){
+  const ds=dests();
+  const homeN={pc:home.pc,mode:home.mode,x:CX,y:CY,home:true};
+  // edges
+  const ed=g.selectAll('.edge').data(ds,d=>d.lab);
+  ed.exit().remove();
+  ed.enter().append('path').attr('class','edge').attr('marker-end','url(#arw)')
+    .merge(ed).transition().duration(450)
+    .attr('stroke',d=>CAT[d.cat])
+    .attr('d',d=>`M${CX},${CY} L${d.x},${d.y}`);
+  // edge labels
+  const el=g.selectAll('.elab').data(ds,d=>d.lab);
+  el.exit().remove();
+  el.enter().append('text').attr('class','elab').attr('text-anchor','middle')
+    .merge(el).attr('fill',d=>d3.color(CAT[d.cat]).darker(.4))
+    .transition().duration(450)
+    .attr('x',d=>CX+(d.x-CX)*0.55).attr('y',d=>CY+(d.y-CY)*0.55-4).text(d=>d.lab);
+  // nodes
+  const all=[homeN,...ds];
+  const nd=g.selectAll('.node').data(all,d=>d.home?'HOME':d.lab);
+  nd.exit().remove();
+  const en=nd.enter().append('g').attr('class',d=>'node'+(d.home?' home':''))
+    .on('click',(e,d)=>{if(!d.home){home={pc:d.pc,mode:d.mode};draw();}});
+  en.append('circle'); en.append('text');
+  const m=en.merge(nd);
+  m.attr('class',d=>'node'+(d.home?' home':''));
+  m.transition().duration(450).attr('transform',d=>`translate(${d.x},${d.y})`);
+  m.select('circle').attr('r',d=>d.home?32:22)
+    .attr('fill',d=>d.home?'#2a2a44':(d.mode==='minor'?d3.color(CAT[d.cat]).brighter(1.15):CAT[d.cat]))
+    .attr('stroke',d=>d.home?'#000':d3.color(CAT[d.cat]).darker(.6)).attr('stroke-width',1.6);
+  m.select('text').attr('text-anchor','middle').attr('dy','0.34em')
+    .style('font-size',d=>d.home?'18px':'14px')
+    .attr('fill',d=>(d.home||d.mode!=='minor')?'#fff':'#333')
+    .text(d=>kname(d.pc,d.mode));
+}
+draw();
+</script>
+</body>
+</html>
