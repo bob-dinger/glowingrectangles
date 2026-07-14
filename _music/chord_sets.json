@@ -852,6 +852,52 @@
       ],
       "notes": "verify exact voicing",
       "source": "bennett"
+    },
+    {
+      "key": "minor_climb",
+      "name": "Minor Climb (House of the Rising Sun)",
+      "n": 4,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "i bIII IV bVI",
+      "chords": "Am C D F",
+      "family": "minor climb (ascending)",
+      "examples": [
+        "House of the Rising Sun"
+      ],
+      "notes": "the climbing first half of the full HotRS loop",
+      "source": "bennett"
+    },
+    {
+      "key": "aeolian_closed_loop",
+      "name": "Aeolian Closed Loop",
+      "n": 3,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "i iv i",
+      "chords": "Am Dm Am",
+      "family": "aeolian closed loop",
+      "examples": [
+        "various natural-minor songs"
+      ],
+      "notes": "seals itself — resolves without needing to repeat",
+      "source": "bennett"
+    },
+    {
+      "key": "cant_stop",
+      "name": "Can't Stop (RHCP)",
+      "artist": "Red Hot Chili Peppers",
+      "n": 3,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "i bVII v",
+      "chords": "Am G Em",
+      "family": "aeolian vamp",
+      "examples": [
+        "Can't Stop"
+      ],
+      "notes": "4th chord unclear in transcript; aeolian/funk",
+      "source": "bennett"
     }
   ]
 }
