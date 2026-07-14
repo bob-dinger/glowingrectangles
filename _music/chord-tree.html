@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chord Family Tree</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#fbfbfd;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#333}
+  #viz{width:100vw;height:100vh}
+  .link{fill:none;stroke:#d8d8e2;stroke-width:1.4px}
+  .node{cursor:pointer}
+  .node circle{transition:r .15s}
+  .node:hover circle{stroke-width:3px}
+  .node text{font-weight:700;pointer-events:none;font-size:13px}
+  .kbadge{font-size:9px;fill:#aaa;font-weight:600;pointer-events:none}
+  #panel{position:fixed;top:16px;left:18px;max-width:290px}
+  #panel h1{font-size:17px;margin:0 0 4px}
+  #panel p{font-size:12px;line-height:1.5;color:#666;margin:4px 0}
+  .legend{margin-top:10px;font-size:12px}
+  .legend .row{display:flex;align-items:center;gap:7px;margin:3px 0}
+  .sw{width:15px;height:15px;border-radius:50%;flex:0 0 auto}
+  .pair{font-size:11px;color:#888;margin-top:6px}
+  b.t{color:#e84545}b.s{color:#3aa85f}b.d{color:#4080e0}
+</style>
+</head>
+<body>
+<div id="panel">
+  <h1>Chord Family Tree</h1>
+  <p>Center = <b>C</b>. Around it, the six chords of C major. <b>Click any chord</b> to grow <i>its</i> family; click again to collapse. Drag to pan, scroll to zoom.</p>
+  <div class="legend">
+    <div class="row"><span class="sw" style="background:#e84545"></span> <b class="t">Tonic</b> &nbsp;— I &amp; vi</div>
+    <div class="row"><span class="sw" style="background:#3aa85f"></span> <b class="s">Subdominant</b> — IV &amp; ii</div>
+    <div class="row"><span class="sw" style="background:#4080e0"></span> <b class="d">Dominant</b> — V &amp; iii</div>
+    <div class="pair">Solid = major (light) · pale = minor (dark). Each family has both.</div>
+  </div>
+</div>
+<div id="viz"></div>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script>
+const PCN=['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+// diatonic children (excludes the key's own tonic → 5 chords; the node itself is the tonic)
+const MAJ=[[2,'min','ii'],[4,'min','iii'],[5,'maj','IV'],[7,'maj','V'],[9,'min','vi']];
+const MIN=[[3,'maj','III'],[5,'min','iv'],[7,'min','v'],[8,'maj','VI'],[10,'maj','VII']];
+const FUNC={I:'T',i:'T',vi:'T',III:'T', ii:'S',IV:'S',iv:'S',VI:'S', iii:'D',V:'D',v:'D',VII:'D'};
+const COL={T:'#e84545',S:'#3aa85f',D:'#4080e0'};
+function tint(hex){const n=parseInt(hex.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,m=x=>Math.round(x+(255-x)*0.62);
+  return `rgb(${m(r)},${m(g)},${m(b)})`;}
+function cname(pc,q){return PCN[((pc%12)+12)%12]+(q==='min'?'m':'');}
+
+let _id=0;
+function mk(pc,q,deg){pc=((pc%12)+12)%12;return {id:_id++,pc,q,deg,name:cname(pc,q),func:FUNC[deg]||'T',expanded:false,_kids:null};}
+function kids(n){if(!n._kids){const set=n.q==='maj'?MAJ:MIN;n._kids=set.map(([iv,q,deg])=>mk(n.pc+iv,q,deg));}return n._kids;}
+
+const root=mk(0,'maj','I'); root.expanded=true;
+
+const W=window.innerWidth,H=window.innerHeight,R=Math.min(W,H)/2-70;
+const svg=d3.select('#viz').append('svg').attr('width',W).attr('height',H);
+const g=svg.append('g');
+const zoom=d3.zoom().scaleExtent([0.35,3.5]).on('zoom',e=>g.attr('transform',e.transform));
+svg.call(zoom).call(zoom.transform,d3.zoomIdentity.translate(W/2,H/2));
+const tree=d3.tree().size([2*Math.PI,R]).separation((a,b)=>(a.parent==b.parent?1:2)/Math.max(a.depth,1));
+const deg=x=>x*180/Math.PI;
+
+function update(){
+  const h=d3.hierarchy(root,d=>d.expanded?kids(d):null);
+  tree(h);
+  const nodes=h.descendants(),links=h.links();
+
+  const link=g.selectAll('.link').data(links,d=>d.target.data.id);
+  link.exit().remove();
+  link.enter().append('path').attr('class','link')
+    .merge(link).transition().duration(300)
+    .attr('d',d3.linkRadial().angle(d=>d.x).radius(d=>d.y));
+
+  const node=g.selectAll('.node').data(nodes,d=>d.data.id);
+  const en=node.enter().append('g').attr('class','node')
+    .on('click',(e,d)=>{d.data.expanded=!d.data.expanded;update();});
+  en.append('circle');
+  en.append('text').attr('class','lbl');
+  en.append('text').attr('class','kbadge').attr('dy','2.7em');
+
+  const all=en.merge(node);
+  all.transition().duration(300)
+    .attr('transform',d=>`rotate(${deg(d.x)-90}) translate(${d.y},0)`);
+  all.select('circle')
+    .attr('r',d=>d.depth===0?26:15)
+    .attr('fill',d=>d.data.q==='maj'?COL[d.data.func]:tint(COL[d.data.func]))
+    .attr('stroke',d=>COL[d.data.func]).attr('stroke-width',1.6);
+  all.select('.lbl')
+    .attr('transform',d=>`rotate(${90-deg(d.x)})`)
+    .attr('text-anchor','middle').attr('dy','0.32em')
+    .style('font-size',d=>d.depth===0?'17px':'13px')
+    .attr('fill',d=>d.data.q==='maj'?'#fff':'#2a2a2a')
+    .text(d=>d.data.name);
+  all.select('.kbadge')
+    .attr('transform',d=>`rotate(${90-deg(d.x)})`)
+    .attr('text-anchor','middle')
+    .text(d=>(d.data.expanded||d.depth===0)?'':'⌄');
+  node.exit().remove();
+}
+update();
+</script>
+</body>
+</html>
