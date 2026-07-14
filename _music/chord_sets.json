@@ -1,6 +1,6 @@
 {
   "_schema": {
-    "doc": "Named chord units, keyed by scale degree (transposable, key-independent). Named after the most famous exemplar song. cells = 2 chords, sets = 4-chord unordered palettes, loops = 4-chord ordered progressions. Quality is implied by degree in a MAJOR key: 1,4,5 = major; 2,3,6 = minor; 7 = dim. (Borrowed/chromatic degrees to be added later as e.g. 'b7','b3'.)",
+    "doc": "Named chord units, keyed by scale degree (transposable, key-independent). Named after the most famous exemplar song. cells = 2 chords, sets = 4-chord unordered palettes, loops = 4-chord ordered progressions. Quality is implied by degree in a MAJOR key: 1,4,5 = major; 2,3,6 = minor; 7 = dim. (Borrowed/chromatic degrees to be added later as e.g. 'b7','b3'.) Bennett-sourced entries (source='bennett') add named chromatic progressions; they carry mode+roman+chords instead of integer degrees. Minor progressions anchor on Am (relative minor) for white-note consistency with C major.",
     "fields": {
       "key": "slug id",
       "name": "exemplar song",
@@ -15,42 +15,579 @@
       "chords_C": "letter names in C major (reference only)",
       "has_I": "tonic present?",
       "n_minor": "count of minor chords (2,3,6)",
-      "family": "structural family — pillars = I,IV,V; shadows = vi,ii,iii (relative minors of I,IV,V)"
+      "family": "structural family — pillars = I,IV,V; shadows = vi,ii,iii (relative minors of I,IV,V)",
+      "mode": "for chromatic/Bennett entries: 'major' (chords spelled in C) or 'minor' (spelled in A minor — the relative minor, same white-note frame)",
+      "chords": "letter names in the reference key (C for major-mode, Am for minor-mode). For chromatic entries this + roman are the canonical identity (integer degrees can't hold altered chords)",
+      "examples": "well-known songs that use the progression",
+      "source": "'bennett' = imported from David Bennett's named-progression videos"
     }
   },
   "entries": [
-    {"key": "axis", "name": "Axis (of Awesome)", "n": 4, "ordered": false,
-      "degrees": [1,4,5,6], "roman": "I IV V vi", "chords_C": "C F G Am",
-      "has_I": true, "n_minor": 1, "family": "pillars + tonic-shadow"},
-
-    {"key": "getting_better", "name": "Getting Better", "artist": "The Beatles", "n": 4, "ordered": false,
-      "degrees": [1,2,3,4], "roman": "I ii iii IV", "chords_C": "C Dm Em F",
-      "has_I": true, "n_minor": 2, "family": "stepwise (no V)"},
-
-    {"key": "mr_jones_set", "name": "Mr. Jones", "artist": "Counting Crows", "n": 4, "ordered": false,
-      "degrees": [2,4,5,6], "roman": "ii IV V vi", "chords_C": "Dm F G Am",
-      "has_I": false, "n_minor": 2, "family": "no-tonic"},
-
-    {"key": "maggie_may", "name": "Maggie May", "artist": "Rod Stewart", "n": 2, "ordered": false,
-      "degrees": [2,5], "roman": "ii V", "chords_C": "Dm G",
-      "has_I": false, "n_minor": 1, "family": "cell"},
-
-    {"key": "nowhere_man", "name": "Nowhere Man", "artist": "The Beatles", "n": 2, "ordered": false,
-      "degrees": [3,4], "roman": "iii IV", "chords_C": "Em F",
-      "has_I": false, "n_minor": 1, "family": "cell"},
-
-    {"key": "losing_my_religion", "name": "Losing My Religion", "artist": "R.E.M.", "n": 2, "ordered": false,
-      "degrees": [3,6], "roman": "vi iii", "chords_C": "Am Em",
-      "has_I": false, "n_minor": 2, "family": "cell",
-      "notes": "the vi-iii vamp; song also has a Dm-G (ii-V) tag at the end"},
-
-    {"key": "mr_jones", "name": "Mr. Jones", "artist": "Counting Crows", "n": 4, "ordered": true,
-      "order": [6,4,2,5], "set": "mr_jones_set", "entry": "vi", "roman": "vi IV ii V", "chords_C": "Am F Dm G"},
-
-    {"key": "let_it_be", "name": "Let It Be", "artist": "The Beatles", "n": 4, "ordered": true,
-      "order": [1,5,6,4], "set": "axis", "entry": "I", "roman": "I V vi IV", "chords_C": "C G Am F"},
-
-    {"key": "stand_by_me", "name": "Stand By Me (50s / doo-wop)", "artist": "Ben E. King", "n": 4, "ordered": true,
-      "order": [1,6,4,5], "set": "axis", "entry": "I", "roman": "I vi IV V", "chords_C": "C Am F G"}
+    {
+      "key": "axis",
+      "name": "Axis (of Awesome)",
+      "n": 4,
+      "ordered": false,
+      "degrees": [
+        1,
+        4,
+        5,
+        6
+      ],
+      "roman": "I IV V vi",
+      "chords_C": "C F G Am",
+      "has_I": true,
+      "n_minor": 1,
+      "family": "pillars + tonic-shadow"
+    },
+    {
+      "key": "getting_better",
+      "name": "Getting Better",
+      "artist": "The Beatles",
+      "n": 4,
+      "ordered": false,
+      "degrees": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "roman": "I ii iii IV",
+      "chords_C": "C Dm Em F",
+      "has_I": true,
+      "n_minor": 2,
+      "family": "stepwise (no V)"
+    },
+    {
+      "key": "mr_jones_set",
+      "name": "Mr. Jones",
+      "artist": "Counting Crows",
+      "n": 4,
+      "ordered": false,
+      "degrees": [
+        2,
+        4,
+        5,
+        6
+      ],
+      "roman": "ii IV V vi",
+      "chords_C": "Dm F G Am",
+      "has_I": false,
+      "n_minor": 2,
+      "family": "no-tonic"
+    },
+    {
+      "key": "maggie_may",
+      "name": "Maggie May",
+      "artist": "Rod Stewart",
+      "n": 2,
+      "ordered": false,
+      "degrees": [
+        2,
+        5
+      ],
+      "roman": "ii V",
+      "chords_C": "Dm G",
+      "has_I": false,
+      "n_minor": 1,
+      "family": "cell"
+    },
+    {
+      "key": "nowhere_man",
+      "name": "Nowhere Man",
+      "artist": "The Beatles",
+      "n": 2,
+      "ordered": false,
+      "degrees": [
+        3,
+        4
+      ],
+      "roman": "iii IV",
+      "chords_C": "Em F",
+      "has_I": false,
+      "n_minor": 1,
+      "family": "cell"
+    },
+    {
+      "key": "losing_my_religion",
+      "name": "Losing My Religion",
+      "artist": "R.E.M.",
+      "n": 2,
+      "ordered": false,
+      "degrees": [
+        3,
+        6
+      ],
+      "roman": "vi iii",
+      "chords_C": "Am Em",
+      "has_I": false,
+      "n_minor": 2,
+      "family": "cell",
+      "notes": "the vi-iii vamp; song also has a Dm-G (ii-V) tag at the end"
+    },
+    {
+      "key": "mr_jones",
+      "name": "Mr. Jones",
+      "artist": "Counting Crows",
+      "n": 4,
+      "ordered": true,
+      "order": [
+        6,
+        4,
+        2,
+        5
+      ],
+      "set": "mr_jones_set",
+      "entry": "vi",
+      "roman": "vi IV ii V",
+      "chords_C": "Am F Dm G"
+    },
+    {
+      "key": "let_it_be",
+      "name": "Let It Be",
+      "artist": "The Beatles",
+      "n": 4,
+      "ordered": true,
+      "order": [
+        1,
+        5,
+        6,
+        4
+      ],
+      "set": "axis",
+      "entry": "I",
+      "roman": "I V vi IV",
+      "chords_C": "C G Am F"
+    },
+    {
+      "key": "stand_by_me",
+      "name": "Stand By Me (50s / doo-wop)",
+      "artist": "Ben E. King",
+      "n": 4,
+      "ordered": true,
+      "order": [
+        1,
+        6,
+        4,
+        5
+      ],
+      "set": "axis",
+      "entry": "I",
+      "roman": "I vi IV V",
+      "chords_C": "C Am F G"
+    },
+    {
+      "key": "one_two_three_four",
+      "name": "1-2-3-4 (Major Scale Climb)",
+      "n": 4,
+      "ordered": true,
+      "order": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "set": "getting_better",
+      "entry": "I",
+      "roman": "I ii iii IV",
+      "chords_C": "C Dm Em F",
+      "mode": "major",
+      "family": "stepwise (no V)",
+      "examples": [
+        "Like a Rolling Stone"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "angels",
+      "name": "Angels",
+      "artist": "Robbie Williams",
+      "n": 4,
+      "ordered": true,
+      "order": [
+        5,
+        6,
+        4,
+        1
+      ],
+      "set": "axis",
+      "entry": "V",
+      "roman": "V vi IV I",
+      "chords_C": "G Am F C",
+      "mode": "major",
+      "family": "axis rotation",
+      "examples": [
+        "Angels"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "purple_rain",
+      "name": "Purple Rain",
+      "artist": "Prince",
+      "n": 4,
+      "ordered": true,
+      "order": [
+        1,
+        6,
+        5,
+        4
+      ],
+      "set": "axis",
+      "entry": "I",
+      "roman": "I vi V IV",
+      "chords_C": "C Am G F",
+      "mode": "major",
+      "family": "axis rotation",
+      "examples": [
+        "Purple Rain"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "two_five_one",
+      "name": "2-5-1",
+      "n": 3,
+      "ordered": true,
+      "order": [
+        2,
+        5,
+        1
+      ],
+      "degrees": [
+        1,
+        2,
+        5
+      ],
+      "roman": "ii V I",
+      "chords_C": "Dm G C",
+      "mode": "major",
+      "family": "cadence (jazz)",
+      "examples": [
+        "jazz-standard turnaround",
+        "modulation engine"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "circle_of_fifths",
+      "name": "Circle of Fifths",
+      "n": 5,
+      "ordered": true,
+      "order": [
+        3,
+        6,
+        2,
+        5,
+        1
+      ],
+      "degrees": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "roman": "iii vi ii V I",
+      "chords_C": "Em Am Dm G C",
+      "mode": "major",
+      "family": "circle",
+      "examples": [
+        "Autumn Leaves",
+        "Fly Me to the Moon",
+        "I Will Survive"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "cadential_64",
+      "name": "Cadential 6/4",
+      "n": 3,
+      "ordered": true,
+      "roman": "I64 V I",
+      "chords_C": "C/G G C",
+      "mode": "major",
+      "family": "cadence (classical)",
+      "examples": [
+        "Manic Monday (verse)"
+      ],
+      "notes": "tonic 2nd-inversion -> V -> I; drags out a perfect cadence",
+      "source": "bennett"
+    },
+    {
+      "key": "andalusian",
+      "name": "Andalusian Cadence",
+      "n": 4,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "i bVII bVI V",
+      "chords": "Am G F E",
+      "family": "descending-minor",
+      "examples": [
+        "Happy Together",
+        "Good Vibrations",
+        "Sultans of Swing",
+        "Hit the Road Jack"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "creep",
+      "name": "Creep",
+      "artist": "Radiohead",
+      "n": 4,
+      "ordered": true,
+      "mode": "major",
+      "roman": "I III IV iv",
+      "chords": "C E F Fm",
+      "family": "chromatic-mediant + minor-iv",
+      "examples": [
+        "Creep"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "something",
+      "name": "Something",
+      "artist": "The Beatles",
+      "n": 4,
+      "ordered": true,
+      "mode": "major",
+      "roman": "I Imaj7 I7 IV",
+      "chords": "C Cmaj7 C7 F",
+      "family": "line-cliche (descending)",
+      "examples": [
+        "Something",
+        "Raindrops Keep Fallin' on My Head"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "magnolia",
+      "name": "Magnolia",
+      "n": 4,
+      "ordered": true,
+      "mode": "major",
+      "roman": "I I7 IV iv",
+      "chords": "C C7 F Fm",
+      "family": "minor-iv",
+      "examples": [
+        "numerous pop songs"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "shes_electric",
+      "name": "She's Electric",
+      "artist": "Oasis",
+      "n": 4,
+      "ordered": true,
+      "mode": "major",
+      "roman": "I III VI IV",
+      "chords": "C E A F",
+      "family": "axis-variant (major III)",
+      "examples": [
+        "She's Electric"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "backdoor",
+      "name": "Backdoor Progression",
+      "n": 3,
+      "ordered": true,
+      "mode": "major",
+      "roman": "iv7 bVII7 I",
+      "chords": "Fm7 Bb7 C",
+      "family": "cadence (jazz/soul)",
+      "examples": [
+        "American Boy",
+        "No Such Thing"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "gospel_climb",
+      "name": "Gospel Climb",
+      "n": 3,
+      "ordered": true,
+      "mode": "major",
+      "roman": "IV #iv° I/V",
+      "chords": "F F#dim C/G",
+      "family": "climb (passing-dim)",
+      "examples": [
+        "Bridge Over Troubled Water"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "line_cliche",
+      "name": "Line Cliche",
+      "n": 4,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "i i(maj7) i7 i6",
+      "chords": "Am AmM7 Am7 Am6",
+      "family": "line-cliche (chromatic inner voice)",
+      "examples": [
+        "James Bond Theme",
+        "Stairway to Heaven",
+        "My Funny Valentine"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "just_two_of_us",
+      "name": "Just the Two of Us",
+      "artist": "Grover Washington Jr.",
+      "n": 3,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "bVI V i",
+      "chords": "F E Am",
+      "family": "jazzy minor cadence",
+      "examples": [
+        "Just the Two of Us"
+      ],
+      "notes": "the 6-5-1 core; full progression inserts chromatic passing chords — verify exact voicing",
+      "source": "bennett"
+    },
+    {
+      "key": "where_is_my_mind",
+      "name": "Where Is My Mind",
+      "artist": "Pixies",
+      "n": 4,
+      "ordered": true,
+      "mode": "major",
+      "roman": "I vi III IV",
+      "chords": "C Am E F",
+      "family": "rare loop (major III)",
+      "examples": [
+        "Where Is My Mind"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "wonderwall",
+      "name": "Wonderwall (Plagal Cascade)",
+      "artist": "Oasis",
+      "n": 4,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "i III bVII IV",
+      "chords": "Am C G D",
+      "family": "plagal cascade (major IV in minor)",
+      "examples": [
+        "Wonderwall",
+        "Mad World"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "running_up_that_hill",
+      "name": "Running Up That Hill",
+      "artist": "Kate Bush",
+      "n": 3,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "bVI bVII i",
+      "chords": "F G Am",
+      "family": "rising-minor",
+      "examples": [
+        "Running Up That Hill"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "harmonic_minor_axis",
+      "name": "Harmonic Minor Axis",
+      "n": 4,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "i bVI III V",
+      "chords": "Am F C E",
+      "family": "axis-variant (harmonic minor)",
+      "examples": [
+        "harmonic-minor axis songs"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "eight_days_a_week",
+      "name": "Eight Days a Week",
+      "artist": "The Beatles",
+      "n": 4,
+      "ordered": true,
+      "mode": "major",
+      "roman": "I II IV I",
+      "chords": "C D F C",
+      "family": "major-II",
+      "examples": [
+        "Eight Days a Week",
+        "You Won't See Me",
+        "Sgt. Pepper's (reprise)"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "augmented_climb",
+      "name": "Augmented Climb",
+      "artist": "Green Day",
+      "n": 5,
+      "ordered": true,
+      "mode": "major",
+      "roman": "I I+ I6 I7 IV",
+      "chords": "C Caug C6 C7 F",
+      "family": "climb (chromatic inner voice)",
+      "examples": [
+        "Last Night on Earth"
+      ],
+      "source": "bennett"
+    },
+    {
+      "key": "james_bond",
+      "name": "James Bond Theme",
+      "n": 3,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "i bVI6 vi(dim)",
+      "chords": "Am F/A F#dim/A",
+      "family": "line-cliche (melody-in-chord)",
+      "examples": [
+        "James Bond Theme"
+      ],
+      "notes": "minor tonic with an ascending chromatic top line; verify exact voicing",
+      "source": "bennett"
+    },
+    {
+      "key": "neapolitan",
+      "name": "Neapolitan Chord",
+      "n": 2,
+      "ordered": true,
+      "mode": "minor",
+      "roman": "bII V",
+      "chords": "Bb E",
+      "family": "chromatic pre-dominant",
+      "examples": [
+        "Moonlight Sonata"
+      ],
+      "notes": "major triad on lowered 2nd resolving to V",
+      "source": "bennett"
+    },
+    {
+      "key": "tadd_dameron",
+      "name": "Tadd Dameron Turnaround",
+      "n": 4,
+      "ordered": true,
+      "mode": "major",
+      "roman": "Imaj7 bIII7 bVI7 bII7",
+      "chords": "Cmaj7 Eb7 Ab7 Db7",
+      "family": "tritone-sub turnaround (jazz)",
+      "examples": [
+        "Lady Bird"
+      ],
+      "notes": "advanced jazz turnaround",
+      "source": "bennett"
+    }
   ]
 }
