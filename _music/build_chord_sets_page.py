@@ -3,6 +3,7 @@ duration, keep those >=10% (the CORE), drop the rest as tags. Group sections by
 their 4-chord core set. Emit a sidebar+panel HTML page (site: _music/chord-sets.html).
 """
 import os, re, json, html, psycopg2
+from urllib.parse import quote_plus
 from collections import defaultdict
 from dotenv import load_dotenv
 load_dotenv('/Users/robert/Desktop/themap/themap_claude/.env')
@@ -70,18 +71,22 @@ def section_cores(hj):
 def main():
     c=psycopg2.connect(host=os.environ['DB_HOST'],dbname=os.environ['DB_NAME'],user=os.environ['DB_USER'],
         password=os.environ['DB_PASSWORD'],port=os.environ.get('DB_PORT',5432))
-    cur=c.cursor(); cur.execute("select artist,title,hookpad_json from parcels.songs where has_chords and hookpad_json is not null")
+    cur=c.cursor(); cur.execute("select artist,title,hookpad_json,ug_url,hookpad_url from parcels.songs where has_chords and hookpad_json is not null")
     rows=cur.fetchall(); c.close()
     sets=defaultdict(list); seen=set()
-    for artist,title,hj in rows:
+    for artist,title,hj,ug_url,hp_url in rows:
         if not title or title.lower().endswith(('-hooktab','-simple')): continue
+        # UG: stored url if present, else a title search; HP: stored url only (needs the hashid)
+        ug=(ug_url or '').strip() or ('https://www.ultimate-guitar.com/search.php?search_type=title&value='
+                                      + quote_plus(f"{artist or ''} {title}".strip()))
+        hp=(hp_url or '').strip()
         for core,share,secname in section_cores(hj):
             if not (2<=len(core)<=4): continue
             key=(norm((artist or '')+title), core)
             if key in seen: continue
             seen.add(key)
             tags=sorted((toC(k) for k,v in share.items() if v<CUTOFF), key=cpc)
-            sets[core].append({'a':artist or '','t':title,'sec':secname,'tags':tags})
+            sets[core].append({'a':artist or '','t':title,'sec':secname,'tags':tags,'ug':ug,'hp':hp})
     # build serializable, grouped by size, ranked within
     data={'2':[],'3':[],'4':[]}
     for core,songs in sorted(sets.items(), key=lambda kv:-len(kv[1])):
@@ -115,6 +120,9 @@ PAGE = r"""<!doctype html><html><head><meta charset=utf-8><title>Chord Sets · 4
 table{border-collapse:collapse;width:100%;margin-top:14px}
 td,th{text-align:left;padding:5px 10px;border-bottom:1px solid #eee}th{color:#999;font-size:11px;text-transform:uppercase}
 .tag{font-size:11px;color:#c60;background:#fff3e0;border-radius:4px;padding:1px 5px;margin-left:3px}
+.lk{font-size:10px;font-weight:700;text-decoration:none;border-radius:4px;padding:2px 6px;margin-right:4px;display:inline-block}
+.lk.ug{color:#fff;background:#c8600f}.lk.hp{color:#fff;background:#5090f0}
+.lk.off{background:#eee;color:#bbb;pointer-events:none}
 </style></head><body><div id=wrap>
 <div id=side><div class=tog><button data-sz=2>2-chord</button><button data-sz=3>3-chord</button><button data-sz=4 class=on>4-chord</button></div><div id=list></div></div>
 <div id=main><div id=hd></div><div id=body></div></div></div>
@@ -143,8 +151,11 @@ function sel(i){document.querySelectorAll('.setrow').forEach(e=>e.classList.togg
   `<div>${s.chords.map(chip).join('')}</div>`+
   (s.name?`<div class=name>${s.name}</div>`:'')+
   `<div class=meta>${s.roman} · ${s.n} sections</div>`;
- let h='<table><tr><th>Artist</th><th>Song</th><th>Section</th><th>tags</th></tr>';
- s.songs.forEach(o=>{h+=`<tr><td>${o.a}</td><td>${o.t}</td><td>${o.sec||''}</td><td>${(o.tags||[]).map(t=>`<span class=tag>${t}</span>`).join('')}</td></tr>`});
+ let h='<table><tr><th>Artist</th><th>Song</th><th>Section</th><th>Links</th><th>tags</th></tr>';
+ s.songs.forEach(o=>{
+  const ug=o.ug?`<a class="lk ug" href="${o.ug}" target="_blank" rel="noopener">UG</a>`:`<span class="lk ug off">UG</span>`;
+  const hp=o.hp?`<a class="lk hp" href="${o.hp}" target="_blank" rel="noopener">HP</a>`:`<span class="lk hp off">HP</span>`;
+  h+=`<tr><td>${o.a}</td><td>${o.t}</td><td>${o.sec||''}</td><td style="white-space:nowrap">${ug}${hp}</td><td>${(o.tags||[]).map(t=>`<span class=tag>${t}</span>`).join('')}</td></tr>`});
  document.getElementById('body').innerHTML=h+'</table>';}
 load('4');
 </script></body></html>"""
