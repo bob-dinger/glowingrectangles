@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chord Roles Across Keys</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+.layout {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 28px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+}
+
+.header h1 {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.back-link {
+    font-size: 12px;
+    color: #6a6a8a;
+    text-decoration: none;
+}
+.back-link:hover { color: #e0e0e0; }
+
+.subtitle {
+    font-size: 13px;
+    color: #6a6a8a;
+    margin-bottom: 18px;
+}
+
+.legend {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.hint {
+    font-size: 12px;
+    color: #6a6a8a;
+    margin-left: auto;
+}
+
+.grid-wrap {
+    flex: 1;
+    overflow: hidden;
+    background: #16162a;
+    border-radius: 10px;
+    border: 1px solid #2a2a4a;
+    padding: 14px;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 4px;
+}
+
+th {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6a6a8a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 4px;
+    text-align: center;
+}
+
+th.key-head {
+    text-align: left;
+    padding-left: 8px;
+    color: #e0e0e0;
+    width: 60px;
+}
+
+td {
+    padding: 0;
+    text-align: center;
+}
+
+.cell {
+    background: #1e1e3a;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    padding: 10px 6px;
+    cursor: pointer;
+    transition: all 0.12s;
+    user-select: none;
+}
+
+.cell:hover {
+    border-color: #6366f1;
+}
+
+.cell.dim {
+    opacity: 0.18;
+}
+
+.cell.match {
+    border-color: #f0e888;
+    box-shadow: 0 0 0 1px rgba(240, 232, 136, 0.4);
+    opacity: 1;
+}
+
+.cell .chord {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e0e0e0;
+    line-height: 1.1;
+}
+
+.cell .role {
+    font-size: 10px;
+    color: #888;
+    margin-top: 2px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.key-cell {
+    background: transparent;
+    text-align: left;
+    padding: 10px 8px;
+    font-weight: 700;
+    color: #b0b0cc;
+    font-size: 14px;
+}
+
+/* Degree colors */
+.deg-1 { background: rgba(220, 60, 60, 0.20); }
+.deg-2 { background: rgba(230, 140, 40, 0.20); }
+.deg-3 { background: rgba(220, 200, 40, 0.20); }
+.deg-4 { background: rgba(50, 180, 80, 0.20); }
+.deg-5 { background: rgba(60, 120, 220, 0.20); }
+.deg-6 { background: rgba(160, 80, 220, 0.20); }
+
+.deg-1 .role { color: #ffa0a0; }
+.deg-2 .role { color: #ffc888; }
+.deg-3 .role { color: #f0e888; }
+.deg-4 .role { color: #88e8a0; }
+.deg-5 .role { color: #90b8f8; }
+.deg-6 .role { color: #d0a0f8; }
+
+.lg-1 { background: rgba(220, 60, 60, 0.25); color: #ffa0a0; }
+.lg-2 { background: rgba(230, 140, 40, 0.25); color: #ffc888; }
+.lg-3 { background: rgba(220, 200, 40, 0.25); color: #f0e888; }
+.lg-4 { background: rgba(50, 180, 80, 0.25); color: #88e8a0; }
+.lg-5 { background: rgba(60, 120, 220, 0.25); color: #90b8f8; }
+.lg-6 { background: rgba(160, 80, 220, 0.25); color: #d0a0f8; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+    <div class="header">
+        <h1>Chord Roles Across Keys</h1>
+        <a href="index.html" class="back-link">&larr; Music Hub</a>
+    </div>
+    <div class="subtitle">Click any chord to see every key it lives in and what role it plays</div>
+
+    <div class="legend">
+        <span class="legend-item lg-1">I — tonic (major)</span>
+        <span class="legend-item lg-2">ii — minor</span>
+        <span class="legend-item lg-3">iii — minor</span>
+        <span class="legend-item lg-4">IV — subdominant (major)</span>
+        <span class="legend-item lg-5">V — dominant (major)</span>
+        <span class="legend-item lg-6">vi — minor (relative minor)</span>
+        <span class="hint">Heuristic: minor chord up a m3 = key (e.g. C#m → E)</span>
+    </div>
+
+    <div class="grid-wrap">
+        <table id="grid"></table>
+    </div>
+</div>
+
+<script>
+const KEY_DISPLAY = {
+    0:  ['C','D','E','F','G','A','B'],
+    1:  ['Db','Eb','F','Gb','Ab','Bb','C'],
+    2:  ['D','E','F#','G','A','B','C#'],
+    3:  ['Eb','F','G','Ab','Bb','C','D'],
+    4:  ['E','F#','G#','A','B','C#','D#'],
+    5:  ['F','G','A','Bb','C','D','E'],
+    6:  ['F#','G#','A#','B','C#','D#','E#'],
+    7:  ['G','A','B','C','D','E','F#'],
+    8:  ['Ab','Bb','C','Db','Eb','F','G'],
+    9:  ['A','B','C#','D','E','F#','G#'],
+    10: ['Bb','C','D','Eb','F','G','A'],
+    11: ['B','C#','D#','E','F#','G#','A#']
+};
+const KEY_NAMES = ['C','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+const NUMERALS = ['I','ii','iii','IV','V','vi'];
+const QUALITIES = ['major','minor','minor','major','major','minor'];
+
+// Map every display chord (e.g. "Db", "Ebm") to its enharmonic equivalent for matching
+const ENHARMONIC = {
+    'C#':'Db','D#':'Eb','F#':'F#','Gb':'F#','G#':'Ab','A#':'Bb',
+    'Db':'Db','Eb':'Eb','Ab':'Ab','Bb':'Bb',
+    'C':'C','D':'D','E':'E','F':'F','G':'G','A':'A','B':'B','E#':'F','B#':'C'
+};
+function normalize(chord) {
+    const isMinor = chord.endsWith('m');
+    const root = isMinor ? chord.slice(0,-1) : chord;
+    return (ENHARMONIC[root] || root) + (isMinor ? 'm' : '');
+}
+
+function buildChord(rootIdx, deg) {
+    const scale = KEY_DISPLAY[rootIdx];
+    const r = scale[deg];
+    const q = QUALITIES[deg];
+    return {
+        display: r + (q==='minor' ? 'm' : ''),
+        normalized: normalize(r + (q==='minor' ? 'm' : '')),
+        deg: deg+1,
+        numeral: NUMERALS[deg]
+    };
+}
+
+function render() {
+    const table = document.getElementById('grid');
+    table.innerHTML = '';
+    // header row
+    const header = document.createElement('tr');
+    const corner = document.createElement('th');
+    corner.className = 'key-head';
+    corner.textContent = 'Key';
+    header.appendChild(corner);
+    NUMERALS.forEach((num, i) => {
+        const th = document.createElement('th');
+        th.textContent = num;
+        header.appendChild(th);
+    });
+    table.appendChild(header);
+
+    // 12 key rows
+    KEY_NAMES.forEach((kn, kIdx) => {
+        const tr = document.createElement('tr');
+        const keyCell = document.createElement('td');
+        keyCell.className = 'key-cell';
+        keyCell.textContent = kn;
+        tr.appendChild(keyCell);
+        for (let deg = 0; deg < 6; deg++) {
+            const c = buildChord(kIdx, deg);
+            const td = document.createElement('td');
+            const cell = document.createElement('div');
+            cell.className = `cell deg-${c.deg}`;
+            cell.dataset.normalized = c.normalized;
+            cell.innerHTML = `<div class="chord">${c.display}</div><div class="role">${c.numeral}</div>`;
+            cell.addEventListener('click', () => highlight(c.normalized));
+            td.appendChild(cell);
+            tr.appendChild(td);
+        }
+        table.appendChild(tr);
+    });
+}
+
+let activeNormalized = null;
+
+function highlight(normalized) {
+    if (activeNormalized === normalized) {
+        // toggle off
+        activeNormalized = null;
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('match', 'dim'));
+        return;
+    }
+    activeNormalized = normalized;
+    document.querySelectorAll('.cell').forEach(c => {
+        c.classList.remove('match', 'dim');
+        if (c.dataset.normalized === normalized) {
+            c.classList.add('match');
+        } else {
+            c.classList.add('dim');
+        }
+    });
+}
+
+render();
+</script>
+
+</body>
+</html>
