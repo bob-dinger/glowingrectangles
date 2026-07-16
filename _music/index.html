@@ -140,6 +140,205 @@ html, body {
     </div>
 
     <div class="card-grid">
+        <a href="blocks.html" class="card">
+            <div class="card-icon">&#129513;</div>
+            <div class="card-title">Block Browser</div>
+            <div class="card-desc">Every section as a <i>block</i> &mdash; its chord-set crossed with the melody's focus note (the reciting tone) and register. Groups the library by block and lists which songs use each. Same chords + different focus = a different song family.</div>
+        </a>
+
+        <a href="key-map.html" class="card">
+            <div class="card-icon">&#128506;</div>
+            <div class="card-title">Key Map</div>
+            <div class="card-desc">Every key you could modulate to from a home key, placed by how far it travels. Numbers show how many library songs make each move &mdash; click one to list them. Parallel, relative, mediants, fifths, steps, tritone.</div>
+        </a>
+
+        <a href="key-changes.html" class="card">
+            <div class="card-icon">&#128256;</div>
+            <div class="card-title">Key Changes</div>
+            <div class="card-desc">Browse every modulation in the library by type &mdash; parallel flip, &#9837;III mediant, relative, whole-step gear-shift, to IV/V &mdash; with the songs that make each move, their full path, and whether they return home.</div>
+        </a>
+
+        <a href="chord-tree.html" class="card">
+            <div class="card-icon">&#127795;</div>
+            <div class="card-title">Chord Tree</div>
+            <div class="card-desc">Radial fractal map of chord families &mdash; C at center, its six chords around it, each blooming into its own family. Colored by scale degree; the same rainbow repeats in every key. Click a chord to grow it.</div>
+            <div class="card-chips">
+                <span class="chip deg-1">I</span>
+                <span class="chip deg-2">ii</span>
+                <span class="chip deg-3">iii</span>
+                <span class="chip deg-4">IV</span>
+                <span class="chip deg-5">V</span>
+                <span class="chip deg-6">vi</span>
+            </div>
+        </a>
+
+        <a href="chord-sets.html" class="card">
+            <div class="card-icon">&#127929;</div>
+            <div class="card-title">Chord Sets</div>
+            <div class="card-desc">Every song section reduced to its core chord set (chords &ge;10% by weight). Grouped, ranked by how many songs use each, and colored by scale degree. Toggle 2 / 3 / 4 / 5 / 6+ chord sets.</div>
+        </a>
+
+        <a href="simplified-library.html" class="card">
+            <div class="card-icon">&#129513;</div>
+            <div class="card-title">Simplified Library</div>
+            <div class="card-desc">Every song's melody reduced to its bones — one main note per chord. Search by chord loop or main-note cell (5-6-2-6); filter by contour. 1,320 sections.</div>
+            <div class="card-chips">
+                <span class="chip chord-1">5</span>
+                <span class="chip chord-6">6</span>
+                <span class="chip chord-2">2</span>
+            </div>
+        </a>
+
+        <a href="strum-library.html" class="card">
+            <div class="card-icon">&#127928;</div>
+            <div class="card-title">Strum Library</div>
+            <div class="card-desc">Strumming patterns as data — down/up/mute on a beat ruler, triplets & 16ths. Click to copy a Hookpad paste (re-struck chords).</div>
+            <div class="card-chips">
+                <span class="chip">&#8595;</span>
+                <span class="chip">&#8593;</span>
+                <span class="chip accent">&#215;</span>
+            </div>
+        </a>
+
+        <a href="favorites.html" class="card">
+            <div class="card-icon">&#11088;</div>
+            <div class="card-title">Favorite Parts</div>
+            <div class="card-desc">Curated sections to write my own take on — pattern, palette, cadence, moves, lyrics + felt tempo for each.</div>
+            <div class="card-chips">
+                <span class="chip phrase-A">A</span>
+                <span class="chip phrase-B">B</span>
+                <span class="chip accent">&#9733;</span>
+            </div>
+        </a>
+
+        <a href="chord-colors.html" class="card">
+            <div class="card-icon">&#127912;</div>
+            <div class="card-title">Chord Colors</div>
+            <div class="card-desc">Every diatonic chord as a stack of scale-degree colors (I = red·yellow·blue, ii = orange·green·purple). Toggle triads, 7ths, sus, 9/11/13; click to hear.</div>
+            <div class="card-chips">
+                <span class="chip deg-1">1</span>
+                <span class="chip deg-3">3</span>
+                <span class="chip deg-5">5</span>
+            </div>
+        </a>
+
+        <a href="songs-by-key.html" class="card">
+            <div class="card-icon">&#128273;</div>
+            <div class="card-title">Songs by Key</div>
+            <div class="card-desc">1,145 guitar songs grouped by key. Pick a key for every song in it, with UG + Hookpad links and a jump to the fretboard scale.</div>
+            <div class="card-chips">
+                <span class="chip deg-1">C</span>
+                <span class="chip deg-2">D</span>
+                <span class="chip deg-4">G</span>
+                <span class="chip deg-5">A</span>
+            </div>
+        </a>
+
+        <a href="melody-structures.html" class="card">
+            <div class="card-icon">&#127911;</div>
+            <div class="card-title">Melody Structures</div>
+            <div class="card-desc">Curated melodies grouped by bar count + phrase shape (AABB, ABBC, AABA, etc.). Color blocks show phrase letters.</div>
+            <div class="card-chips">
+                <span class="chip phrase-A">A</span>
+                <span class="chip phrase-B">B</span>
+                <span class="chip phrase-B">B</span>
+                <span class="chip phrase-C">C</span>
+            </div>
+        </a>
+
+        <a href="fretboard.html" class="card">
+            <div class="card-icon">&#127928;</div>
+            <div class="card-title">Fretboard</div>
+            <div class="card-desc">Interactive guitar fretboard. Pick a key + mode, see the scale lit up with Hookpad's chord-degree colors.</div>
+            <div class="card-chips">
+                <span class="chip deg-1">1</span>
+                <span class="chip deg-4">4</span>
+                <span class="chip deg-5">5</span>
+                <span class="chip deg-6">6</span>
+            </div>
+        </a>
+
+        <a href="tab-quiz.html" class="card">
+            <div class="card-icon">&#127928;</div>
+            <div class="card-title">Tab → Note</div>
+            <div class="card-desc">Guitar-tab quiz. A fret number appears on one string; pick the note. Tracks streak.</div>
+            <div class="card-chips">
+                <span class="chip accent">E</span>
+                <span class="chip accent">3</span>
+                <span class="chip">→ G</span>
+            </div>
+        </a>
+
+        <a href="songs.html" class="card">
+            <div class="card-icon">&#128202;</div>
+            <div class="card-title">Songs</div>
+            <div class="card-desc">Browse all 656 songs across Beatles + Guitar pools. Toggle between Structure (section overview) and Expanded (full chord/melody viewer).</div>
+            <div class="card-chips">
+                <span class="chip accent">intro·4</span>
+                <span class="chip deg-1">chorus·8</span>
+                <span class="chip deg-6">bridge·8</span>
+            </div>
+        </a>
+
+        <a href="templates.html" class="card">
+            <div class="card-icon">&#128203;</div>
+            <div class="card-title">Section Templates</div>
+            <div class="card-desc">Curated chorus / verse / bridge archetypes (AABA, ABBC, AABBCCDE...). Hand-picked shapes for study and reference.</div>
+            <div class="card-chips">
+                <span class="chip phrase-A">A</span>
+                <span class="chip phrase-A">A</span>
+                <span class="chip phrase-B">B</span>
+                <span class="chip phrase-A">A</span>
+            </div>
+        </a>
+
+        <a href="eight-bar-patterns.html" class="card">
+            <div class="card-icon">&#129518;</div>
+            <div class="card-title">Patterns by Length</div>
+            <div class="card-desc">Auto-detected phrase patterns (AAB, AABA, ABAC, 44, 224, 112...) over sections of a given bar count.</div>
+            <div class="card-chips">
+                <span class="chip phrase-A">A</span>
+                <span class="chip phrase-A">A</span>
+                <span class="chip phrase-B">B</span>
+                <span class="chip accent">8/10/12/16</span>
+            </div>
+        </a>
+
+        <a href="key-quiz.html" class="card">
+            <div class="card-icon">&#127919;</div>
+            <div class="card-title">What Key?</div>
+            <div class="card-desc">Quiz: see 1–3 chords and identify the major key. Reveals each chord's role on answer.</div>
+            <div class="card-chips">
+                <span class="chip deg-6">C#m</span>
+                <span class="chip deg-2">F#m</span>
+                <span class="chip">→ E?</span>
+            </div>
+        </a>
+
+        <a href="chord-change-ear.html" class="card">
+            <div class="card-icon">&#127911;</div>
+            <div class="card-title">Chord Change Ear</div>
+            <div class="card-desc">Hear two chords. Identify the move (ii / iii / IV / V / vi). Random key each round so it's all relative.</div>
+            <div class="card-chips">
+                <span class="chip deg-1">I</span>
+                <span class="chip">→</span>
+                <span class="chip deg-4">?</span>
+            </div>
+        </a>
+
+        <a href="eight-bar-sections.html" class="card">
+            <div class="card-icon">&#129683;</div>
+            <div class="card-title">Sections by Length</div>
+            <div class="card-desc">Browse real song sections (verses, choruses, bridges) grouped by bar count. Filter and click to play.</div>
+            <div class="card-chips">
+                <span class="chip accent">8</span>
+                <span class="chip accent">10</span>
+                <span class="chip accent">12</span>
+                <span class="chip accent">16</span>
+                <span class="chip accent">24</span>
+            </div>
+        </a>
+
         <a href="song-browser.html" class="card">
             <div class="card-icon">&#127925;</div>
             <div class="card-title">Song Browser</div>
@@ -171,44 +370,6 @@ html, body {
                 <span class="chip phrase-C">C</span>
                 <span class="chip phrase-D">D</span>
             </div>
-        </a>
-
-        <a href="chord-sets.html" class="card">
-            <div class="card-icon">&#127929;</div>
-            <div class="card-title">Chord Sets</div>
-            <div class="card-desc">Every song section reduced to its core chord set (chords &ge;10% by weight). Grouped, ranked by how many songs use each, and colored by scale degree. Toggle 2 / 3 / 4 / 5 / 6+ chord sets.</div>
-        </a>
-
-        <a href="chord-tree.html" class="card">
-            <div class="card-icon">&#127795;</div>
-            <div class="card-title">Chord Tree</div>
-            <div class="card-desc">Radial fractal map of chord families &mdash; C at center, its six chords around it, each blooming into its own family. Colored by scale degree; the same rainbow repeats in every key. Click a chord to grow it.</div>
-            <div class="card-chips">
-                <span class="chip deg-1">I</span>
-                <span class="chip deg-2">ii</span>
-                <span class="chip deg-3">iii</span>
-                <span class="chip deg-4">IV</span>
-                <span class="chip deg-5">V</span>
-                <span class="chip deg-6">vi</span>
-            </div>
-        </a>
-
-        <a href="key-map.html" class="card">
-            <div class="card-icon">&#128506;</div>
-            <div class="card-title">Key Map</div>
-            <div class="card-desc">Every key you could modulate to from a home key, placed by how far it travels. Numbers show how many library songs make each move &mdash; click one to list them. Parallel, relative, mediants, fifths, steps, tritone.</div>
-        </a>
-
-        <a href="key-changes.html" class="card">
-            <div class="card-icon">&#128256;</div>
-            <div class="card-title">Key Changes</div>
-            <div class="card-desc">Browse every modulation in the library by type &mdash; parallel flip, &#9837;III mediant, relative, whole-step gear-shift, to IV/V &mdash; with the songs that make each move, their full path, and whether they return home.</div>
-        </a>
-
-        <a href="blocks.html" class="card">
-            <div class="card-icon">&#129513;</div>
-            <div class="card-title">Block Browser</div>
-            <div class="card-desc">Every section as a <i>block</i> &mdash; its chord-set crossed with the melody's focus note (the reciting tone) and register. Groups the library by block and lists which songs use each. Same chords + different focus = a different song family.</div>
         </a>
 
         <a href="permutations.html" class="card">
@@ -260,48 +421,12 @@ html, body {
             </div>
         </a>
 
-        <a href="chord-colors.html" class="card">
-            <div class="card-icon">&#127912;</div>
-            <div class="card-title">Chord Colors</div>
-            <div class="card-desc">Every diatonic chord as a stack of scale-degree colors (I = red·yellow·blue, ii = orange·green·purple). Toggle triads, 7ths, sus, 9/11/13; click to hear.</div>
-            <div class="card-chips">
-                <span class="chip deg-1">1</span>
-                <span class="chip deg-3">3</span>
-                <span class="chip deg-5">5</span>
-            </div>
-        </a>
-
-        <a href="fretboard.html" class="card">
+        <a href="../guitar.html" class="card">
             <div class="card-icon">&#127928;</div>
-            <div class="card-title">Fretboard</div>
-            <div class="card-desc">Interactive guitar fretboard. Pick a key + mode, see the scale lit up with Hookpad's chord-degree colors.</div>
+            <div class="card-title">Guitar Fretboard</div>
+            <div class="card-desc">Interactive fretboard visualizer with practice mode and classic riffs.</div>
             <div class="card-chips">
-                <span class="chip deg-1">1</span>
-                <span class="chip deg-4">4</span>
-                <span class="chip deg-5">5</span>
-                <span class="chip deg-6">6</span>
-            </div>
-        </a>
-
-        <a href="tab-quiz.html" class="card">
-            <div class="card-icon">&#127928;</div>
-            <div class="card-title">Tab → Note</div>
-            <div class="card-desc">Guitar-tab quiz. A fret number appears on one string; pick the note. Tracks streak.</div>
-            <div class="card-chips">
-                <span class="chip accent">E</span>
-                <span class="chip accent">3</span>
-                <span class="chip">→ G</span>
-            </div>
-        </a>
-
-        <a href="key-quiz.html" class="card">
-            <div class="card-icon">&#127919;</div>
-            <div class="card-title">What Key?</div>
-            <div class="card-desc">Quiz: see 1–3 chords and identify the major key. Reveals each chord's role on answer.</div>
-            <div class="card-chips">
-                <span class="chip deg-6">C#m</span>
-                <span class="chip deg-2">F#m</span>
-                <span class="chip">→ E?</span>
+                <span class="chip accent">fretboard</span>
             </div>
         </a>
 
@@ -314,131 +439,6 @@ html, body {
                 <span class="chip deg-4">IV</span>
                 <span class="chip deg-5">V</span>
                 <span class="chip deg-6">vi</span>
-            </div>
-        </a>
-
-        <a href="chord-change-ear.html" class="card">
-            <div class="card-icon">&#127911;</div>
-            <div class="card-title">Chord Change Ear</div>
-            <div class="card-desc">Hear two chords. Identify the move (ii / iii / IV / V / vi). Random key each round so it's all relative.</div>
-            <div class="card-chips">
-                <span class="chip deg-1">I</span>
-                <span class="chip">→</span>
-                <span class="chip deg-4">?</span>
-            </div>
-        </a>
-
-        <a href="songs.html" class="card">
-            <div class="card-icon">&#128202;</div>
-            <div class="card-title">Songs</div>
-            <div class="card-desc">Browse all 656 songs across Beatles + Guitar pools. Toggle between Structure (section overview) and Expanded (full chord/melody viewer).</div>
-            <div class="card-chips">
-                <span class="chip accent">intro·4</span>
-                <span class="chip deg-1">chorus·8</span>
-                <span class="chip deg-6">bridge·8</span>
-            </div>
-        </a>
-
-        <a href="songs-by-key.html" class="card">
-            <div class="card-icon">&#128273;</div>
-            <div class="card-title">Songs by Key</div>
-            <div class="card-desc">1,145 guitar songs grouped by key. Pick a key for every song in it, with UG + Hookpad links and a jump to the fretboard scale.</div>
-            <div class="card-chips">
-                <span class="chip deg-1">C</span>
-                <span class="chip deg-2">D</span>
-                <span class="chip deg-4">G</span>
-                <span class="chip deg-5">A</span>
-            </div>
-        </a>
-
-        <a href="favorites.html" class="card">
-            <div class="card-icon">&#11088;</div>
-            <div class="card-title">Favorite Parts</div>
-            <div class="card-desc">Curated sections to write my own take on — pattern, palette, cadence, moves, lyrics + felt tempo for each.</div>
-            <div class="card-chips">
-                <span class="chip phrase-A">A</span>
-                <span class="chip phrase-B">B</span>
-                <span class="chip accent">&#9733;</span>
-            </div>
-        </a>
-
-        <a href="simplified-library.html" class="card">
-            <div class="card-icon">&#129513;</div>
-            <div class="card-title">Simplified Library</div>
-            <div class="card-desc">Every song's melody reduced to its bones — one main note per chord. Search by chord loop or main-note cell (5-6-2-6); filter by contour. 1,320 sections.</div>
-            <div class="card-chips">
-                <span class="chip chord-1">5</span>
-                <span class="chip chord-6">6</span>
-                <span class="chip chord-2">2</span>
-            </div>
-        </a>
-
-        <a href="strum-library.html" class="card">
-            <div class="card-icon">&#127928;</div>
-            <div class="card-title">Strum Library</div>
-            <div class="card-desc">Strumming patterns as data — down/up/mute on a beat ruler, triplets & 16ths. Click to copy a Hookpad paste (re-struck chords).</div>
-            <div class="card-chips">
-                <span class="chip">&#8595;</span>
-                <span class="chip">&#8593;</span>
-                <span class="chip accent">&#215;</span>
-            </div>
-        </a>
-
-        <a href="templates.html" class="card">
-            <div class="card-icon">&#128203;</div>
-            <div class="card-title">Section Templates</div>
-            <div class="card-desc">Curated chorus / verse / bridge archetypes (AABA, ABBC, AABBCCDE...). Hand-picked shapes for study and reference.</div>
-            <div class="card-chips">
-                <span class="chip phrase-A">A</span>
-                <span class="chip phrase-A">A</span>
-                <span class="chip phrase-B">B</span>
-                <span class="chip phrase-A">A</span>
-            </div>
-        </a>
-
-        <a href="eight-bar-sections.html" class="card">
-            <div class="card-icon">&#129683;</div>
-            <div class="card-title">Sections by Length</div>
-            <div class="card-desc">Browse real song sections (verses, choruses, bridges) grouped by bar count. Filter and click to play.</div>
-            <div class="card-chips">
-                <span class="chip accent">8</span>
-                <span class="chip accent">10</span>
-                <span class="chip accent">12</span>
-                <span class="chip accent">16</span>
-                <span class="chip accent">24</span>
-            </div>
-        </a>
-
-        <a href="eight-bar-patterns.html" class="card">
-            <div class="card-icon">&#129518;</div>
-            <div class="card-title">Patterns by Length</div>
-            <div class="card-desc">Auto-detected phrase patterns (AAB, AABA, ABAC, 44, 224, 112...) over sections of a given bar count.</div>
-            <div class="card-chips">
-                <span class="chip phrase-A">A</span>
-                <span class="chip phrase-A">A</span>
-                <span class="chip phrase-B">B</span>
-                <span class="chip accent">8/10/12/16</span>
-            </div>
-        </a>
-
-        <a href="melody-structures.html" class="card">
-            <div class="card-icon">&#127911;</div>
-            <div class="card-title">Melody Structures</div>
-            <div class="card-desc">Curated melodies grouped by bar count + phrase shape (AABB, ABBC, AABA, etc.). Color blocks show phrase letters.</div>
-            <div class="card-chips">
-                <span class="chip phrase-A">A</span>
-                <span class="chip phrase-B">B</span>
-                <span class="chip phrase-B">B</span>
-                <span class="chip phrase-C">C</span>
-            </div>
-        </a>
-
-        <a href="../guitar.html" class="card">
-            <div class="card-icon">&#127928;</div>
-            <div class="card-title">Guitar Fretboard</div>
-            <div class="card-desc">Interactive fretboard visualizer with practice mode and classic riffs.</div>
-            <div class="card-chips">
-                <span class="chip accent">fretboard</span>
             </div>
         </a>
     </div>
