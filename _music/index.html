@@ -514,11 +514,11 @@ html, body {
 <div id="pollack-modal">
     <div class="pm-box">
         <h3>&#128214; Pollack&rsquo;s Notes &mdash; local tool</h3>
-        <p>This viewer lives on your machine, and a web page isn&rsquo;t allowed to open local files. Run this in Terminal to open it (or paste the path into your browser&rsquo;s address bar):</p>
-        <code class="pm-cmd" id="pm-cmd">open "/Users/robert/Desktop/music/pollack_beatles_notes/pollack_viewer.html"</code>
+        <p>This viewer lives on your machine, and a web page isn&rsquo;t allowed to open local files. Copy this and paste it into a new browser address bar:</p>
+        <code class="pm-cmd" id="pm-cmd">file:///Users/robert/Desktop/music/pollack_beatles_notes/pollack_viewer.html</code>
         <div class="pm-actions">
             <button class="pm-btn" id="pm-close">Close</button>
-            <button class="pm-btn primary" id="pm-copy">Copy command</button>
+            <button class="pm-btn primary" id="pm-copy">Copy string</button>
         </div>
     </div>
 </div>
@@ -537,7 +537,7 @@ html, body {
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') modal.classList.remove('open'); });
     copyBtn.addEventListener('click', function () {
         var text = cmdEl.textContent;
-        var done = function () { copyBtn.textContent = 'Copied ✓'; setTimeout(function () { copyBtn.textContent = 'Copy command'; }, 1600); };
+        var done = function () { copyBtn.textContent = 'Copied ✓'; setTimeout(function () { copyBtn.textContent = 'Copy string'; }, 1600); };
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(done, done);
         } else {
