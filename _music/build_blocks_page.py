@@ -72,7 +72,7 @@ def main():
             if key in seen: continue
             seen.add(key)
             blocks[(core,focus)].append({'a':a or '','t':t,'sec':s.get('name','?'),'reg':reg,'ug':ug2,'hp':(hp or '').strip()})
-            if 10<=ncount<=110:   # collect roll candidates (meaty melodies only)
+            if 6<=ncount<=200:   # roll for essentially every section with a real melody
                 block_rolls[(core,focus)].append((ncount, roll_compact(hj,lo,hi,f"{a} – {t} · {s.get('name','?')}")))
     data=[]
     for (core,focus),songs in blocks.items():
@@ -80,7 +80,7 @@ def main():
         chords=sorted((toC(x) for x in core), key=cpc)
         roman=' '.join(sorted(core,key=lambda x:(len(x),x)))
         regs=Counter(s['reg'] for s in songs); domreg=regs.most_common(1)[0][0]
-        rolls=[r for _,r in sorted(block_rolls.get((core,focus),[]),key=lambda x:-x[0])[:8]]   # top 8 meatiest
+        rolls=[r for _,r in sorted(block_rolls.get((core,focus),[]),key=lambda x:-x[0])]   # ALL sections for this block
         data.append({'chords':chords,'roman':roman,'focus':focus,'note':FOCUSNOTE.get(focus,'?'),
                      'reg':domreg,'n':len(songs),'rolls':rolls,'songs':sorted(songs,key=lambda s:(s['a'].lower(),s['t'].lower()))})
     data.sort(key=lambda b:-b['n'])
