@@ -126,6 +126,53 @@ html, body {
 }
 .card.local { border-style: dashed; }
 
+/* local-tool helper popup */
+#pollack-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+#pollack-modal.open { display: flex; }
+.pm-box {
+    background: #16162a;
+    border: 1px solid #3a3a5a;
+    border-radius: 12px;
+    padding: 24px 26px;
+    max-width: 440px;
+    width: calc(100% - 40px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+.pm-box h3 { margin: 0 0 4px; font-size: 16px; color: #e0e0e0; }
+.pm-box p { margin: 0 0 14px; font-size: 12.5px; line-height: 1.55; color: #8a8aaa; }
+.pm-cmd {
+    display: block;
+    background: #0c0c1a;
+    border: 1px solid #2a2a4a;
+    border-radius: 7px;
+    padding: 10px 12px;
+    font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: #b8c0e0;
+    word-break: break-all;
+    margin-bottom: 14px;
+}
+.pm-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.pm-btn {
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 7px;
+    border: 1px solid #3a3a5a;
+    background: #1e1e3a;
+    color: #d8d8f0;
+    cursor: pointer;
+}
+.pm-btn.primary { background: rgba(180, 130, 40, 0.28); border-color: #6a5020; color: #f0d8a0; }
+.pm-btn:hover { filter: brightness(1.2); }
+
 /* degree colors */
 .deg-1 { background: rgba(220, 60, 60, 0.25); color: #ffa0a0; }
 .deg-2 { background: rgba(230, 140, 40, 0.25); color: #ffc888; }
@@ -456,13 +503,52 @@ html, body {
             <div class="card-desc">Every section as a <i>block</i> &mdash; its chord-set crossed with the melody's focus note (the reciting tone) and register. Groups the library by block and lists which songs use each. Same chords + different focus = a different song family.</div>
         </a>
 
-        <a href="file:///Users/robert/Desktop/music/pollack_beatles_notes/pollack_viewer.html" class="card local">
+        <a href="#" id="pollack-card" class="card local">
             <div class="card-icon">&#128214;</div>
             <div class="card-title">Pollack&rsquo;s Notes <span class="local-badge">local</span></div>
-            <div class="card-desc">Alan W. Pollack&rsquo;s complete &ldquo;Notes on&hellip;&rdquo; analysis of all 182 Beatles songs &mdash; home key, meter, form, and section-by-section harmony. Offline viewer with search + cross-links. Opens from your own machine; inert on the live site by design.</div>
+            <div class="card-desc">Alan W. Pollack&rsquo;s complete &ldquo;Notes on&hellip;&rdquo; analysis of all 182 Beatles songs &mdash; home key, meter, form, and section-by-section harmony. Offline viewer with search + cross-links. Lives on your machine &mdash; click for how to open it.</div>
         </a>
     </div>
 </div>
+
+<div id="pollack-modal">
+    <div class="pm-box">
+        <h3>&#128214; Pollack&rsquo;s Notes &mdash; local tool</h3>
+        <p>This viewer lives on your machine, and a web page isn&rsquo;t allowed to open local files. Run this in Terminal to open it (or paste the path into your browser&rsquo;s address bar):</p>
+        <code class="pm-cmd" id="pm-cmd">open "/Users/robert/Desktop/music/pollack_beatles_notes/pollack_viewer.html"</code>
+        <div class="pm-actions">
+            <button class="pm-btn" id="pm-close">Close</button>
+            <button class="pm-btn primary" id="pm-copy">Copy command</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var card = document.getElementById('pollack-card');
+    var modal = document.getElementById('pollack-modal');
+    var copyBtn = document.getElementById('pm-copy');
+    var closeBtn = document.getElementById('pm-close');
+    var cmdEl = document.getElementById('pm-cmd');
+    if (!card) return;
+    card.addEventListener('click', function (e) { e.preventDefault(); modal.classList.add('open'); });
+    closeBtn.addEventListener('click', function () { modal.classList.remove('open'); });
+    modal.addEventListener('click', function (e) { if (e.target === modal) modal.classList.remove('open'); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') modal.classList.remove('open'); });
+    copyBtn.addEventListener('click', function () {
+        var text = cmdEl.textContent;
+        var done = function () { copyBtn.textContent = 'Copied ✓'; setTimeout(function () { copyBtn.textContent = 'Copy command'; }, 1600); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, done);
+        } else {
+            var r = document.createRange(); r.selectNode(cmdEl);
+            var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+            try { document.execCommand('copy'); } catch (err) {}
+            sel.removeAllRanges(); done();
+        }
+    });
+})();
+</script>
 
 </body>
 </html>
