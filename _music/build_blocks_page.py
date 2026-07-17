@@ -35,23 +35,17 @@ def main():
     cur=c.cursor()
     cur.execute("select artist,title,hookpad_json,ug_url,hookpad_url from parcels.songs where has_chords and has_melody and (hookpad_json->'keys'->0->>'scale')='major'")
     rows=cur.fetchall(); c.close()
-    def roll_doc(hj, lo, hi, secname, artist, title):
-        """A minimal Hookpad doc for one section (capped to a ~preview length), for SongViewer."""
-        meter=(hj.get('meters') or [{}])[0]; nb=meter.get('numBeats',4); bu=meter.get('beatUnit',1)
-        cap=min(hi, lo+8*nb)   # first ~8 bars is plenty to see the block
-        off=lo-1
-        ns=[{"sd":n['sd'],"octave":n['octave'],"beat":round(n['beat']-off,4),"duration":n['duration'],
-             "isRest":n.get('isRest',False),"recordingEndBeat":None} for n in (hj.get('notes') or []) if lo<=n['beat']<cap]
-        cs=[{**{k:ch.get(k) for k in ('root','type','inversion','applied','adds','omits','alterations',
-             'suspensions','substitutions','pedal','alternate','borrowed')},
-             "beat":round(ch['beat']-off,4),"duration":ch.get('duration',1),"isRest":False,"recordingEndBeat":None}
-             for ch in (hj.get('chords') or []) if lo<=ch['beat']<cap and ch.get('root')]
-        end=int(round(cap-off,4))+1
-        return {"notes":ns,"chords":cs,"keys":[{"beat":1,"scale":"major","tonic":"C"}],
-                "meters":[{"beat":1,"numBeats":nb,"beatUnit":bu}],"tempos":[{"beat":1,"bpm":100,"swingFactor":0,"swingBeat":0.5}],
-                "sections":[{"beat":1,"name":f"{artist} – {title} · {secname}"}],"breaks":[],"endBeat":end,"audioTracks":[]}
+    def roll_compact(hj, lo, hi, label):
+        """Compact section roll (~4 bars): notes as [sd,oct,beat,dur], chords as [root,beat,dur,borrowed]."""
+        meter=(hj.get('meters') or [{}])[0]; nb=meter.get('numBeats',4)
+        cap=min(hi, lo+4*nb); off=lo-1
+        n=[[str(x['sd']),x['octave'],round(x['beat']-off,3),x['duration']]
+           for x in (hj.get('notes') or []) if lo<=x['beat']<cap and not x.get('isRest')]
+        cc=[[ch['root'],round(ch['beat']-off,3),ch.get('duration',1),ch.get('borrowed') or '']
+           for ch in (hj.get('chords') or []) if lo<=ch['beat']<cap and ch.get('root')]
+        return {'lab':label,'nb':nb,'n':n,'c':cc}
 
-    blocks=defaultdict(list); seen=set(); block_roll={}
+    blocks=defaultdict(list); seen=set(); block_rolls=defaultdict(list)
     for a,t,hj,ug,hp in rows:
         if not t or t.lower().endswith(('-hooktab','-simple')): continue
         secs=sorted(hj.get('sections') or [],key=lambda s:s.get('beat',0))
@@ -78,19 +72,17 @@ def main():
             if key in seen: continue
             seen.add(key)
             blocks[(core,focus)].append({'a':a or '','t':t,'sec':s.get('name','?'),'reg':reg,'ug':ug2,'hp':(hp or '').strip()})
-            # keep the roll for the meatiest example section (most notes) per block
-            bk=(core,focus)
-            if 12<=ncount<=120 and (bk not in block_roll or ncount>block_roll[bk][0]):
-                block_roll[bk]=(ncount, roll_doc(hj,lo,hi,s.get('name','?'),a or '',t))
+            if 10<=ncount<=110:   # collect roll candidates (meaty melodies only)
+                block_rolls[(core,focus)].append((ncount, roll_compact(hj,lo,hi,f"{a} – {t} · {s.get('name','?')}")))
     data=[]
     for (core,focus),songs in blocks.items():
         if len(songs)<2: continue
         chords=sorted((toC(x) for x in core), key=cpc)
         roman=' '.join(sorted(core,key=lambda x:(len(x),x)))
         regs=Counter(s['reg'] for s in songs); domreg=regs.most_common(1)[0][0]
-        roll=block_roll.get((core,focus),(0,None))[1]
+        rolls=[r for _,r in sorted(block_rolls.get((core,focus),[]),key=lambda x:-x[0])[:8]]   # top 8 meatiest
         data.append({'chords':chords,'roman':roman,'focus':focus,'note':FOCUSNOTE.get(focus,'?'),
-                     'reg':domreg,'n':len(songs),'roll':roll,'songs':sorted(songs,key=lambda s:(s['a'].lower(),s['t'].lower()))})
+                     'reg':domreg,'n':len(songs),'rolls':rolls,'songs':sorted(songs,key=lambda s:(s['a'].lower(),s['t'].lower()))})
     data.sort(key=lambda b:-b['n'])
     out=os.path.join(os.path.dirname(__file__),'blocks.html')
     open(out,'w').write(PAGE.replace('__DATA__',json.dumps(data,ensure_ascii=False)))
@@ -124,6 +116,22 @@ const D=__DATA__;
 const DEG={C:1,Dm:2,Em:3,F:4,G:5,Am:6,Bdim:7};
 function chip(ch){let d=DEG[ch]||'x';return `<span class="chip deg${d}">${ch}</span>`;}
 const viewer=new SongViewer({supabase:null,mainEl:'#roll'});
+// expand a compact roll [sd,oct,beat,dur] / [root,beat,dur,bor] into Hookpad objects, offset in beats
+function expand(rc,off){
+ const notes=rc.n.map(a=>({sd:a[0],octave:a[1],beat:a[2]+off,duration:a[3],isRest:false,recordingEndBeat:null}));
+ const chords=rc.c.map(a=>({root:a[0],beat:a[1]+off,duration:a[2],type:5,inversion:0,applied:0,adds:[],omits:[],
+   alterations:[],suspensions:[],substitutions:[],pedal:null,alternate:"",borrowed:a[3],isRest:false,recordingEndBeat:null}));
+ return {notes,chords};
+}
+function stack(rolls){
+ const nb=rolls[0].nb; let cur=1,notes=[],chords=[],sections=[];
+ rolls.forEach(rc=>{const off=cur-1,{notes:nn,chords:cc}=expand(rc,off);
+  notes.push(...nn);chords.push(...cc);sections.push({beat:cur,name:rc.lab});
+  const end=Math.max(cur,...nn.map(n=>n.beat+n.duration),...cc.map(c=>c.beat+c.duration));
+  cur=Math.ceil(end/nb)*nb+nb;});
+ return {notes,chords,keys:[{beat:1,scale:"major",tonic:"C"}],meters:[{beat:1,numBeats:nb,beatUnit:1}],
+   tempos:[{beat:1,bpm:100,swingFactor:0,swingBeat:0.5}],sections,breaks:[],endBeat:cur,audioTracks:[]};
+}
 const L=document.getElementById('list');
 document.getElementById('sub').textContent=`${D.length} blocks · chords × melodic focus`;
 D.forEach((b,i)=>{const r=document.createElement('div');r.className='brow';r.dataset.i=i;
@@ -131,13 +139,16 @@ D.forEach((b,i)=>{const r=document.createElement('div');r.className='brow';r.dat
  r.onclick=()=>sel(i);L.appendChild(r);});
 function sel(i){document.querySelectorAll('.brow').forEach(e=>e.classList.toggle('on',+e.dataset.i===i));
  const b=D[i];document.getElementById('hd').innerHTML=b.chords.map(chip).join(' ')+` &nbsp; <span class=foc>focus ${b.focus} = ${b.note}</span>`;
- document.getElementById('sub2').textContent=`${b.n} sections · reciting the ${b.note} · usually register ${b.reg>=0?'+':''}${b.reg}  —  piano roll = a real example section`;
- if(b.roll){try{viewer.loadData(b.roll,{title:'example'});}catch(e){document.getElementById('roll').innerHTML='<div class=status>roll unavailable</div>';}}
- else document.getElementById('roll').innerHTML='<div class=status>no example roll for this block</div>';
- let h='<table><tr><th>Artist</th><th>Song</th><th>Section</th><th>Reg</th><th>Links</th></tr>';
- b.songs.forEach(o=>{const ug=o.ug?`<a class="lk ug" href="${o.ug}" target=_blank>UG</a>`:`<span class="lk ug off">UG</span>`;
+ document.getElementById('sub2').textContent=`${b.n} sections · reciting the ${b.note} · register ${b.reg>=0?'+':''}${b.reg}  —  ${b.rolls.length} shown as piano rolls`;
+ if(b.rolls&&b.rolls.length){try{viewer.loadData(stack(b.rolls),{title:'examples'});}catch(e){document.getElementById('roll').innerHTML='<div class=status>rolls unavailable</div>';}}
+ else document.getElementById('roll').innerHTML='<div class=status>no example rolls for this block</div>';
+ // remaining songs (those not shown as rolls) as compact links
+ const shown=new Set(b.rolls.map(r=>r.lab));
+ const rest=b.songs.filter(o=>!shown.has(`${o.a} – ${o.t} · ${o.sec}`));
+ let h=rest.length?`<div style="font-size:12px;color:#999;margin:4px 0 6px">+ ${rest.length} more songs with this block</div><table>`:'<table>';
+ rest.forEach(o=>{const ug=o.ug?`<a class="lk ug" href="${o.ug}" target=_blank>UG</a>`:`<span class="lk ug off">UG</span>`;
   const hp=o.hp?`<a class="lk hp" href="${o.hp}" target=_blank>HP</a>`:`<span class="lk hp off">HP</span>`;
-  h+=`<tr><td>${o.a}</td><td>${o.t}</td><td>${o.sec}</td><td class=reg>${o.reg>=0?'+':''}${o.reg}</td><td style=white-space:nowrap>${ug}${hp}</td></tr>`;});
+  h+=`<tr><td>${o.a}</td><td>${o.t}</td><td>${o.sec}</td><td style=white-space:nowrap>${ug}${hp}</td></tr>`;});
  document.getElementById('body').innerHTML=h+'</table>';}
 sel(0);
 </script></body></html>
