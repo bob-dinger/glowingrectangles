@@ -35,7 +35,7 @@ def main():
     cur=c.cursor()
     cur.execute("select artist,title,hookpad_json,ug_url,hookpad_url from parcels.songs where has_chords and has_melody and (hookpad_json->'keys'->0->>'scale')='major'")
     rows=cur.fetchall(); c.close()
-    def roll_compact(hj, lo, hi, label):
+    def roll_compact(hj, lo, hi, label, ug, hp):
         """Compact section roll (~4 bars): notes as [sd,oct,beat,dur], chords as [root,beat,dur,borrowed]."""
         meter=(hj.get('meters') or [{}])[0]; nb=meter.get('numBeats',4)
         cap=min(hi, lo+4*nb); off=lo-1
@@ -43,7 +43,7 @@ def main():
            for x in (hj.get('notes') or []) if lo<=x['beat']<cap and not x.get('isRest')]
         cc=[[ch['root'],round(ch['beat']-off,3),ch.get('duration',1),ch.get('borrowed') or '']
            for ch in (hj.get('chords') or []) if lo<=ch['beat']<cap and ch.get('root')]
-        return {'lab':label,'nb':nb,'n':n,'c':cc}
+        return {'lab':label,'nb':nb,'n':n,'c':cc,'ug':ug,'hp':hp}
 
     blocks=defaultdict(list); seen=set(); block_rolls=defaultdict(list)
     for a,t,hj,ug,hp in rows:
@@ -73,7 +73,7 @@ def main():
             seen.add(key)
             blocks[(core,focus)].append({'a':a or '','t':t,'sec':s.get('name','?'),'reg':reg,'ug':ug2,'hp':(hp or '').strip()})
             if 6<=ncount<=200:   # roll for essentially every section with a real melody
-                block_rolls[(core,focus)].append((ncount, roll_compact(hj,lo,hi,f"{a} – {t} · {s.get('name','?')}")))
+                block_rolls[(core,focus)].append((ncount, roll_compact(hj,lo,hi,f"{a} – {t} · {s.get('name','?')}",ug2,(hp or '').strip())))
     data=[]
     for (core,focus),songs in blocks.items():
         if len(songs)<2: continue
@@ -99,6 +99,11 @@ PAGE=r"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="
  .chips{display:flex;gap:3px;flex-wrap:wrap}.chip{font-size:11px;font-weight:700;color:#fff;border-radius:4px;padding:1px 5px}
  .foc{font-weight:700;color:#c8600f}.brow.on .foc{color:#ffd23f}.ct{color:#aaa;font-weight:700}.brow.on .ct{color:#cfd}
  #main{flex:1;overflow-y:auto;padding:18px 22px}#hd{font-size:19px;font-weight:700}#sub2{color:#888;font-size:13px;margin:2px 0 10px}
+ #stopbar{position:fixed;top:14px;right:18px;z-index:50}
+ #stopbtn{padding:7px 16px;font-size:13px;font-weight:700;border:none;border-radius:7px;background:#e84545;color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+ #stopbtn:active{transform:translateY(1px)}
+ .rlk{font-size:10px;font-weight:700;text-decoration:none;border-radius:4px;padding:1px 6px;margin-left:5px;color:#fff}
+ .rlk.ug{background:#c8600f}.rlk.hp{background:#5090f0}.rlk.off{background:#3a3a5a;color:#888}
  #roll{border:1px solid #eee;border-radius:8px;padding:6px;margin-bottom:14px;min-height:80px;background:#fafafb}
  #roll .status{color:#aaa;font-size:13px;padding:20px}
  table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:5px 10px;border-bottom:1px solid #eee;font-size:13px}
@@ -106,7 +111,9 @@ PAGE=r"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="
  .lk{font-size:10px;font-weight:700;text-decoration:none;border-radius:4px;padding:2px 6px;margin-right:4px;color:#fff}
  .lk.ug{background:#c8600f}.lk.hp{background:#5090f0}.lk.off{background:#eee;color:#bbb}
  .deg1{background:#e84545}.deg2{background:#f0a040}.deg3{background:#e8c828;color:#333!important}.deg4{background:#50c878}.deg5{background:#5090f0}.deg6{background:#7040b0}.deg7{background:#e070b0}.degx{background:#9aa}
-</style></head><body><div id="wrap">
+</style></head><body>
+<div id="stopbar"><button id="stopbtn">&#9632; Stop</button></div>
+<div id="wrap">
 <div id="side"><h1>Block Browser</h1><div class="sub" id="sub"></div><div id="list"></div></div>
 <div id="main"><div id="hd"></div><div id="sub2"></div><div id="roll"></div><div id="body"></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
@@ -115,7 +122,16 @@ PAGE=r"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="
 const D=__DATA__;
 const DEG={C:1,Dm:2,Em:3,F:4,G:5,Am:6,Bdim:7};
 function chip(ch){let d=DEG[ch]||'x';return `<span class="chip deg${d}">${ch}</span>`;}
-const viewer=new SongViewer({supabase:null,mainEl:'#roll'});
+const viewer=new SongViewer({supabase:null,mainEl:'#roll',followPlayhead:false});
+document.getElementById('stopbtn').onclick=()=>viewer.stop();
+function injectLinks(rolls){
+ document.querySelectorAll('#roll .section-block').forEach(bl=>{
+  const rc=rolls[+bl.dataset.sectionIdx]; const hdr=bl.querySelector('.section-header');
+  if(!rc||!hdr||hdr.querySelector('.rlk'))return;
+  const ug=rc.ug?`<a class="rlk ug" href="${rc.ug}" target=_blank>UG</a>`:`<span class="rlk off">UG</span>`;
+  const hp=rc.hp?`<a class="rlk hp" href="${rc.hp}" target=_blank>HP</a>`:`<span class="rlk off">HP</span>`;
+  const sp=document.createElement('span'); sp.style.marginLeft='auto'; sp.innerHTML=ug+hp; hdr.appendChild(sp);});
+}
 // expand a compact roll [sd,oct,beat,dur] / [root,beat,dur,bor] into Hookpad objects, offset in beats
 function expand(rc,off){
  const notes=rc.n.map(a=>({sd:a[0],octave:a[1],beat:a[2]+off,duration:a[3],isRest:false,recordingEndBeat:null}));
@@ -140,7 +156,8 @@ D.forEach((b,i)=>{const r=document.createElement('div');r.className='brow';r.dat
 function sel(i){document.querySelectorAll('.brow').forEach(e=>e.classList.toggle('on',+e.dataset.i===i));
  const b=D[i];document.getElementById('hd').innerHTML=b.chords.map(chip).join(' ')+` &nbsp; <span class=foc>focus ${b.focus} = ${b.note}</span>`;
  document.getElementById('sub2').textContent=`${b.n} sections · reciting the ${b.note} · register ${b.reg>=0?'+':''}${b.reg}  —  ${b.rolls.length} shown as piano rolls`;
- if(b.rolls&&b.rolls.length){try{viewer.loadData(stack(b.rolls),{title:'examples'});}catch(e){document.getElementById('roll').innerHTML='<div class=status>rolls unavailable</div>';}}
+ viewer.stop();
+ if(b.rolls&&b.rolls.length){try{viewer.loadData(stack(b.rolls),{title:'examples'});injectLinks(b.rolls);}catch(e){document.getElementById('roll').innerHTML='<div class=status>rolls unavailable</div>';}}
  else document.getElementById('roll').innerHTML='<div class=status>no example rolls for this block</div>';
  // remaining songs (those not shown as rolls) as compact links
  const shown=new Set(b.rolls.map(r=>r.lab));

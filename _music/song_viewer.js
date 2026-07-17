@@ -252,6 +252,7 @@
         displaySelect: typeof t.displaySelect === 'string' ? document.querySelector(t.displaySelect) : t.displaySelect,
       };
       this.displayMode = (this.transport.displaySelect?.value) || 'chord';
+      this.followPlayhead = opts.followPlayhead !== false;   // auto-scroll to the playing row (default on)
 
       this.song = null;
       this.chordSynth = null;
@@ -573,9 +574,11 @@
             ph.className = 'playhead';
             ph.style.left = left + 'px';
             canvas.appendChild(ph);
-            const rect = row.getBoundingClientRect();
-            if (rect.top < 60 || rect.bottom > window.innerHeight - 20) {
-              row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (this.followPlayhead) {
+              const rect = row.getBoundingClientRect();
+              if (rect.top < 60 || rect.bottom > window.innerHeight - 20) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
             }
             break;
           }
