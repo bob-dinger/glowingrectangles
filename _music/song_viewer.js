@@ -252,7 +252,7 @@
         displaySelect: typeof t.displaySelect === 'string' ? document.querySelector(t.displaySelect) : t.displaySelect,
       };
       this.displayMode = (this.transport.displaySelect?.value) || 'chord';
-      this.followPlayhead = opts.followPlayhead !== false;   // auto-scroll to the playing row (default on)
+      this.followPlayhead = opts.followPlayhead === true;   // auto-scroll to the playing row (default OFF — don't hijack scroll)
 
       this.song = null;
       this.chordSynth = null;
