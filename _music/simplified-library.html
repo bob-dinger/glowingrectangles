@@ -54,7 +54,7 @@ const DATA=[{"song":"anna","artist":"beatles","sec":"verse","pool":"Please Pleas
 const CONTOURS=['oscillation','arch','descent','valley','ascent','pedal','wander'];
 let pool=POOLS[0], active=new Set(), q='', shown=[];
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-const viewer=new SongViewer({supabase:null,mainEl:'#poolMain',
+const viewer=new SongViewer({supabase:null,mainEl:'#poolMain',followPlayhead:false,
   transport:{playBtn:'#expPlayBtn',stopBtn:'#expStopBtn',tempoInput:'#expTempoInput',displaySelect:'#expDisplaySelect'}});
 function secDoc(it,sh){   // one section's notes/chords shifted to start at beat sh+1
   return {
