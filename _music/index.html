@@ -112,6 +112,20 @@ html, body {
     border-radius: 3px;
 }
 
+.local-badge {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(180, 130, 40, 0.22);
+    color: #d8b070;
+    vertical-align: middle;
+    margin-left: 6px;
+}
+.card.local { border-style: dashed; }
+
 /* degree colors */
 .deg-1 { background: rgba(220, 60, 60, 0.25); color: #ffa0a0; }
 .deg-2 { background: rgba(230, 140, 40, 0.25); color: #ffc888; }
@@ -440,6 +454,12 @@ html, body {
             <div class="card-icon">&#129513;</div>
             <div class="card-title">Block Browser</div>
             <div class="card-desc">Every section as a <i>block</i> &mdash; its chord-set crossed with the melody's focus note (the reciting tone) and register. Groups the library by block and lists which songs use each. Same chords + different focus = a different song family.</div>
+        </a>
+
+        <a href="file:///Users/robert/Desktop/music/pollack_beatles_notes/pollack_viewer.html" class="card local">
+            <div class="card-icon">&#128214;</div>
+            <div class="card-title">Pollack&rsquo;s Notes <span class="local-badge">local</span></div>
+            <div class="card-desc">Alan W. Pollack&rsquo;s complete &ldquo;Notes on&hellip;&rdquo; analysis of all 182 Beatles songs &mdash; home key, meter, form, and section-by-section harmony. Offline viewer with search + cross-links. Opens from your own machine; inert on the live site by design.</div>
         </a>
     </div>
 </div>
