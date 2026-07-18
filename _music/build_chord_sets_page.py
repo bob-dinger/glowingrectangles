@@ -78,6 +78,13 @@ def section_cores(hj):
         core=frozenset(k for k,v in share.items() if v>=CUTOFF)
         if core: yield core, share, nm
 
+# titles that are really section labels (mis-entered rows) make useless set names
+JUNK={'chorus','verse','bridge','intro','outro','solo','prechorus','pre chorus','section','refrain','hook','coda'}
+def exemplar(songs):
+    """the set's handle: purest section (fewest off-core tags) wins, then most-covered artist name."""
+    ok=[s for s in songs if norm(s['t']) and s['t'].strip().lower() not in JUNK] or songs
+    return min(ok, key=lambda s:(len(s['tags']), s['a'].lower(), s['t'].lower()))['t']
+
 def main():
     c=psycopg2.connect(host=os.environ['DB_HOST'],dbname=os.environ['DB_NAME'],user=os.environ['DB_USER'],
         password=os.environ['DB_PASSWORD'],port=os.environ.get('DB_PORT',5432))
@@ -104,8 +111,10 @@ def main():
         roman=' '.join(sorted(core,key=lambda x:(len(x),x)))
         bucket=str(len(core)) if len(core)<=5 else '6+'
         names=list(dict.fromkeys(NAMED.get(core,[])))   # dedupe, keep order
-        data[bucket].append({'chords':chords,'roman':roman,'name':(names[0] if names else ''),'names':names,
-                     'n':len(songs),'songs':sorted(songs,key=lambda s:(s['a'].lower(),s['t'].lower()))})
+        ranked=sorted(songs,key=lambda s:(s['a'].lower(),s['t'].lower()))
+        data[bucket].append({'chords':chords,'roman':roman,'name':(names[0] if names else exemplar(ranked)),
+                     'names':names,'bysong':not names,
+                     'n':len(songs),'songs':ranked})
     out=os.path.join(os.path.dirname(__file__),'chord-sets.html')
     open(out,'w').write(PAGE.replace('__DATA__', json.dumps(data)))
     print('wrote {}  |  {} sets'.format(out, '  '.join(f'{k}:{len(v)}' for k,v in data.items())))
@@ -122,6 +131,7 @@ PAGE = r"""<!doctype html><html><head><meta charset=utf-8><title>Chord Sets · 4
 .setrow{padding:8px 14px;cursor:pointer;border-bottom:1px solid #f0f0f4;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .setrow:hover{background:#eef}.setrow.on{background:#2a2a44}
 .setrow .nm{font-size:11px;color:#8a2be2;margin-left:4px}.setrow.on .nm{color:#ffd}
+.nm.song,#hd .name.song{color:#777;font-style:italic}.setrow.on .nm.song{color:#ccd}
 .setrow .ct{font-size:11px;color:#aaa;flex:none}.setrow.on .ct{color:#dde}
 #main{flex:1;overflow-y:auto;padding:24px 32px}
 #hd .meta{color:#888;margin:10px 0 2px}#hd .name{color:#8a2be2;font-size:20px;font-weight:600;margin-top:8px}
@@ -155,14 +165,15 @@ const L=document.getElementById('list');
 function build(){L.innerHTML='';
  D[SZ].forEach((s,i)=>{const r=document.createElement('div');r.className='setrow';r.dataset.i=i;
   const extra=(s.names&&s.names.length>1)?` +${s.names.length-1}`:'';
-  r.innerHTML=`<span>${s.chords.map(chip).join('')}${s.name?`<span class=nm>${s.name}${extra}</span>`:''}</span><span class=ct>${s.n}</span>`;
+  r.innerHTML=`<span>${s.chords.map(chip).join('')}${s.name?`<span class="nm${s.bysong?' song':''}">${s.name}${extra}</span>`:''}</span><span class=ct>${s.n}</span>`;
   r.onclick=()=>sel(i);L.appendChild(r);});}
 function load(sz){SZ=sz;document.querySelectorAll('.tog button').forEach(b=>b.classList.toggle('on',b.dataset.sz===sz));build();sel(0);}
 document.querySelectorAll('.tog button').forEach(b=>b.onclick=()=>load(b.dataset.sz));
 function sel(i){document.querySelectorAll('.setrow').forEach(e=>e.classList.toggle('on',+e.dataset.i===i));
  const s=D[SZ][i];document.getElementById('hd').innerHTML=
   `<div>${s.chords.map(chip).join('')}</div>`+
-  ((s.names&&s.names.length)?`<div class=name>${s.names.join('  ·  ')}</div>`:'')+
+  ((s.names&&s.names.length)?`<div class=name>${s.names.join('  ·  ')}</div>`
+    :(s.name?`<div class="name song">${s.name}</div>`:''))+
   `<div class=meta>${s.roman} · ${s.n} sections</div>`;
  let h='<table><tr><th>Artist</th><th>Song</th><th>Section</th><th>Links</th><th>tags</th></tr>';
  s.songs.forEach(o=>{
