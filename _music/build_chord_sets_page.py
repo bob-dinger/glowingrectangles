@@ -45,10 +45,20 @@ def cpc(c):
 
 # names we've assigned
 DEG2ROM={1:'I',2:'ii',3:'iii',4:'IV',5:'V',6:'vi',7:'vii'}
-NAMED={}
+def _basetok(tok):   # strip 7/maj7/6/sus/add… -> bare roman with accidentals, matches page tokens
+    m=re.match(r'^([b#]*)([ivxIVX]+)',tok); return (m.group(1)+m.group(2)) if m else None
+# match a chord SET (unordered) against every named unit — a set of chords can power several
+# named progressions (I/IV/V/vi = Axis + Let It Be + Stand By Me + …). Include ordered loops too.
+NAMED=defaultdict(list)
 for e in json.load(open(os.path.join(os.path.dirname(__file__),'chord_sets.json')))['entries']:
-    if not e.get('ordered') and e.get('degrees'):
-        NAMED[frozenset(DEG2ROM[d] for d in e['degrees'] if d in DEG2ROM)]=e['name']
+    if e.get('degrees'):
+        toks=[DEG2ROM[d] for d in e['degrees'] if d in DEG2ROM]
+    elif e.get('roman'):
+        toks=[_basetok(t) for t in e['roman'].split()]
+    else:
+        toks=[]
+    toks=[t for t in toks if t]
+    if toks: NAMED[frozenset(toks)].append(e['name'])
 
 def section_cores(hj):
     """yield (core_frozenset, roman_share_map, section_name) per section."""
@@ -93,7 +103,8 @@ def main():
         chords=sorted((toC(t) for t in core), key=cpc)
         roman=' '.join(sorted(core,key=lambda x:(len(x),x)))
         bucket=str(len(core)) if len(core)<=5 else '6+'
-        data[bucket].append({'chords':chords,'roman':roman,'name':NAMED.get(core,''),
+        names=list(dict.fromkeys(NAMED.get(core,[])))   # dedupe, keep order
+        data[bucket].append({'chords':chords,'roman':roman,'name':(names[0] if names else ''),'names':names,
                      'n':len(songs),'songs':sorted(songs,key=lambda s:(s['a'].lower(),s['t'].lower()))})
     out=os.path.join(os.path.dirname(__file__),'chord-sets.html')
     open(out,'w').write(PAGE.replace('__DATA__', json.dumps(data)))
@@ -143,14 +154,15 @@ function chip(c){return `<span class=chip style="background:${chBg(c)}">${c}</sp
 const L=document.getElementById('list');
 function build(){L.innerHTML='';
  D[SZ].forEach((s,i)=>{const r=document.createElement('div');r.className='setrow';r.dataset.i=i;
-  r.innerHTML=`<span>${s.chords.map(chip).join('')}${s.name?`<span class=nm>${s.name}</span>`:''}</span><span class=ct>${s.n}</span>`;
+  const extra=(s.names&&s.names.length>1)?` +${s.names.length-1}`:'';
+  r.innerHTML=`<span>${s.chords.map(chip).join('')}${s.name?`<span class=nm>${s.name}${extra}</span>`:''}</span><span class=ct>${s.n}</span>`;
   r.onclick=()=>sel(i);L.appendChild(r);});}
 function load(sz){SZ=sz;document.querySelectorAll('.tog button').forEach(b=>b.classList.toggle('on',b.dataset.sz===sz));build();sel(0);}
 document.querySelectorAll('.tog button').forEach(b=>b.onclick=()=>load(b.dataset.sz));
 function sel(i){document.querySelectorAll('.setrow').forEach(e=>e.classList.toggle('on',+e.dataset.i===i));
  const s=D[SZ][i];document.getElementById('hd').innerHTML=
   `<div>${s.chords.map(chip).join('')}</div>`+
-  (s.name?`<div class=name>${s.name}</div>`:'')+
+  ((s.names&&s.names.length)?`<div class=name>${s.names.join('  ·  ')}</div>`:'')+
   `<div class=meta>${s.roman} · ${s.n} sections</div>`;
  let h='<table><tr><th>Artist</th><th>Song</th><th>Section</th><th>Links</th><th>tags</th></tr>';
  s.songs.forEach(o=>{
