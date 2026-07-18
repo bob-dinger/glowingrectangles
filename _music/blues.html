@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12-Bar Blues — Glowing Gardens</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#1a1a2e; color:#e0e0e0; }
+.back-link { position:fixed; top:20px; left:20px; color:#4a4a6a; text-decoration:none; font-size:13px; z-index:100; }
+.back-link:hover { color:#e0e0e0; }
+.wrap { max-width:1180px; margin:0 auto; padding:40px 28px 70px; }
+.header { text-align:center; margin-bottom:8px; }
+.header h1 { font-size:26px; font-weight:700; }
+.header p { font-size:13px; color:#6a6a8a; margin-top:6px; max-width:680px; margin-left:auto; margin-right:auto; line-height:1.5; }
+.controls { display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap; margin:22px 0 26px; position:sticky; top:0; background:#1a1a2e; padding:12px 0; z-index:50; }
+#q { background:#16162a; border:1px solid #2a2a4a; border-radius:8px; padding:8px 12px; color:#e0e0e0; font-size:13px; width:220px; }
+#q:focus { outline:none; border-color:#5a5a8a; }
+.filt { font-size:12px; font-weight:600; padding:6px 11px; border-radius:6px; border:1px solid #2a2a4a; background:#16162a; color:#8a8aaa; cursor:pointer; }
+.filt.on { background:#26264a; color:#e0e0e0; border-color:#4a4a7a; }
+.count { font-size:12px; color:#6a6a8a; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(370px,1fr)); gap:14px; }
+.song { background:#16162a; border:1px solid #2a2a4a; border-radius:11px; padding:15px 16px; }
+.song .top { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.song h3 { font-size:14.5px; font-weight:600; }
+.song .art { font-size:11px; color:#6a6a8a; margin-top:1px; }
+.song .meta { font-size:10.5px; color:#5a5a8a; white-space:nowrap; }
+.bars { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin:12px 0 10px; }
+.bar { position:relative; height:34px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; border:1px solid transparent; }
+.bar .n { position:absolute; top:1px; left:3px; font-size:8px; font-weight:600; opacity:.5; }
+.bar .sup { font-size:8px; vertical-align:super; opacity:.8; margin-left:1px; }
+.d1 { background:rgba(220,60,60,.22); color:#ffb0b0; }
+.d4 { background:rgba(50,180,80,.22); color:#90e8a8; }
+.d5 { background:rgba(60,120,220,.22); color:#98bcf8; }
+.bar.playing { border-color:#f0e0a0; box-shadow:0 0 0 1px #f0e0a0; filter:brightness(1.35); }
+.tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:9px; }
+.tag { font-size:9.5px; font-weight:600; padding:2px 7px; border-radius:4px; background:#22223e; color:#9a9ac0; }
+.tag.hot { background:rgba(230,140,40,.2); color:#ffc888; }
+.foot { display:flex; align-items:center; gap:10px; }
+.play { font-size:12px; font-weight:600; padding:5px 13px; border-radius:6px; border:1px solid #3a3a5a; background:#1e1e3a; color:#d8d8f0; cursor:pointer; }
+.play:hover { filter:brightness(1.25); }
+.foot a { font-size:10.5px; color:#5a5a8a; text-decoration:none; }
+.foot a:hover { color:#a5a8fc; }
+.legend { text-align:center; font-size:11px; color:#6a6a8a; margin-bottom:18px; }
+.legend b { padding:1px 6px; border-radius:3px; }
+</style></head><body>
+<a href="index.html" class="back-link">&larr; Back</a>
+<div class="wrap">
+  <div class="header">
+    <h1>&#127928; The 12-Bar Blues</h1>
+    <p>Every 12-bar-blues section in the library on one grid &mdash; three 4-bar lines, I&ndash;IV&ndash;V. They share a skeleton but bend it at the same joints. Filter by the bend; hit play to hear each (rendered in C).</p>
+  </div>
+  <div class="legend"><b class="d1">I</b>&nbsp;&nbsp;<b class="d4">IV</b>&nbsp;&nbsp;<b class="d5">V</b>&nbsp;&nbsp;&middot;&nbsp; <sup>7</sup> = dominant 7th</div>
+  <div class="controls">
+    <input id="q" type="text" placeholder="Search&hellip;" autocomplete="off">
+    <button class="filt on" data-f="all">All</button>
+    <button class="filt" data-f="quick">Quick-change</button>
+    <button class="filt" data-f="slow">Slow-change</button>
+    <button class="filt" data-f="iv_start">IV-start</button>
+    <button class="filt" data-f="dom7">Dom7</button>
+    <button class="filt" data-f="power">Power</button>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.3.5/Tone.js"></script>
+<script>
+const DATA = [{"artist": "Beatles", "title": "Bad Boy", "section": "interlude", "cells": [[1, "7"], [4, "7"], [1, "7"], [5, "5"], [4, "5"], [1, "7"], [5, "5"], [1, "7"], [4, "7"], [1, "7"], [5, "5"], [4, "5"]], "bpm": 138, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=WeglKOQd-mr", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/bad-boy-official-2291777", "count": 1, "quick": true, "iv_start": false, "color": "dom7", "turn": "V\u2013IV"}, {"artist": "Beatles", "title": "Can't Buy Me Love", "section": "verse", "cells": [[1, "5"], [1, "5"], [1, "5"], [1, "5"], [4, "5"], [4, "5"], [1, "5"], [1, "5"], [5, "5"], [4, "5"], [4, "5"], [1, "5"]], "bpm": 171, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=zngRwKAVxJj", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/cant-buy-me-love-official-1948111", "count": 10, "quick": false, "iv_start": false, "color": "power", "turn": "IV\u2013I"}, {"artist": "Beatles", "title": "Chains", "section": "verse", "cells": [[1, "5"], [1, "5"], [1, "5"], [1, "5"], [4, "9"], [4, "9"], [1, "5"], [1, "5"], [5, "9"], [4, "9"], [1, "5"], [5, "5"]], "bpm": 130, "key": "Bb major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=YAg-QEREJgl", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/chains-official-2281521", "count": 2, "quick": false, "iv_start": false, "color": "power", "turn": "I\u2013V"}, {"artist": "Beatles", "title": "Dizzy Miss Lizzy", "section": "verse", "cells": [[4, "5"], [1, "5"], [5, "5"], [4, "5"], [1, "5"], [5, "5"], [1, "5"], [4, "5"], [1, "5"], [5, "5"], [4, "5"], [1, "5"]], "bpm": 137, "key": "A major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=nJmBYAMW_oA", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/dizzy-miss-lizzy-official-2580048", "count": 10, "quick": false, "iv_start": true, "color": "power", "turn": "IV\u2013I"}, {"artist": "Beatles", "title": "Dizzy Miss Lizzy", "section": "bridge", "cells": [[1, "5"], [4, "5"], [1, "5"], [5, "5"], [4, "5"], [1, "5"], [5, "5"], [1, "5"], [1, "5"], [4, "5"], [1, "5"], [5, "5"]], "bpm": 137, "key": "A major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=nJmBYAMW_oA", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/dizzy-miss-lizzy-official-2580048", "count": 4, "quick": true, "iv_start": false, "color": "power", "turn": "I\u2013V"}, {"artist": "Beatles", "title": "Everybody's Trying To Be My Baby", "section": "interlude", "cells": [[1, "5"], [4, "5"], [1, "5"], [5, "7"], [4, "5"], [1, "5"], [1, "5"], [4, "5"], [1, "5"], [5, "7"], [4, "5"], [1, "5"]], "bpm": 170, "key": "E major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=VMgJXZENKoq", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/everybodys-trying-to-be-my-baby-official-2278979", "count": 6, "quick": true, "iv_start": false, "color": "power", "turn": "IV\u2013I"}, {"artist": "Beatles", "title": "Honey Don't", "section": "interlude", "cells": [[4, "7"], [1, "5"], [5, "7"], [4, "7"], [1, "5"], [5, "7"], [4, "7"], [1, "5"], [5, "7"], [4, "7"], [1, "5"], [5, "7"]], "bpm": 162, "key": "E major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=veoYXy-Oqxd", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/honey-dont-official-2222405", "count": 2, "quick": false, "iv_start": true, "color": "dom7", "turn": "I\u2013V"}, {"artist": "Beatles", "title": "I'll Cry Instead", "section": "verse", "cells": [[1, "5"], [1, "5"], [1, "5"], [5, "7"], [4, "7"], [4, "7"], [1, "5"], [1, "5"], [1, "5"], [1, "5"], [1, "5"], [1, "5"]], "bpm": 194, "key": "G major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=RzojMEZMQxD", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/ill-cry-instead-official-2121197", "count": 2, "quick": false, "iv_start": false, "color": "power", "turn": "I\u2013I"}, {"artist": "Beatles", "title": "Long Tall Sally", "section": "verse", "cells": [[1, "5"], [4, "5"], [1, "5"], [5, "5"], [4, "5"], [1, "5"], [1, "5"], [4, "5"], [1, "5"], [5, "5"], [4, "5"], [1, "5"]], "bpm": 120, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=nvgyvYlYOxk", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/long-tall-sally-official-2658915", "count": 6, "quick": true, "iv_start": false, "color": "power", "turn": "IV\u2013I"}, {"artist": "Beatles", "title": "Matchbox", "section": "verse", "cells": [[1, "5"], [4, "5"], [1, "5"], [5, "5"], [4, "5"], [1, "5"], [1, "5"], [4, "5"], [1, "5"], [5, "5"], [4, "5"], [1, "5"]], "bpm": 162, "key": "A major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=JNgqQBjBJgr", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/matchbox-official-2780845", "count": 5, "quick": true, "iv_start": false, "color": "power", "turn": "IV\u2013I"}, {"artist": "Beatles", "title": "Rain", "section": "verse", "cells": [[1, "5"], [4, "5"], [1, "5"], [4, "5"], [1, "5"], [4, "5"], [4, "5"], [1, "5"], [1, "5"], [1, "5"], [1, "5"], [1, "5"]], "bpm": 120, "key": "G major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=Rzoj_wEwmDe", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/rain-official-2643462", "count": 2, "quick": true, "iv_start": false, "color": "power", "turn": "I\u2013I"}, {"artist": "Beatles", "title": "Slow Down", "section": "chorus", "cells": [[4, "7"], [1, "7"], [5, "7"], [4, "7"], [1, "7"], [4, "7"], [1, "7"], [5, "7"], [4, "7"], [1, "7"], [4, "7"], [1, "7"]], "bpm": 169, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=zngRWnenVxJ", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/slow-down-official-2717997", "count": 3, "quick": false, "iv_start": true, "color": "dom7", "turn": "IV\u2013I"}, {"artist": "Bill Haley", "title": "Rockaroundtheclock", "section": "Verse", "cells": [[1, "5"], [1, "5"], [1, "5"], [1, "5"], [4, "5"], [4, "5"], [1, "5"], [1, "5"], [5, "5"], [5, "5"], [1, "5"], [1, "5"]], "bpm": 184, "key": "A major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=yvgPAkrExYq", "ug": "https://tabs.ultimate-guitar.com/tab/bill-haley-his-comets/rock-around-the-clock-official-2105067", "count": 1, "quick": false, "iv_start": false, "color": "power", "turn": "I\u2013I"}, {"artist": "Ccr", "title": "Travelin Band", "section": "Verse", "cells": [[1, "5"], [1, "7"], [1, "5"], [1, "7"], [4, "5"], [1, "5"], [1, "5"], [1, "5"], [5, "5"], [4, "5"], [5, "5"], [1, "5"]], "bpm": 155, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=JkmZBEk_mqn", "ug": null, "count": 1, "quick": false, "iv_start": false, "color": "power", "turn": "V\u2013I"}, {"artist": "Chuck Berry", "title": "Johnny B Goode", "section": "verse", "cells": [[1, "5"], [1, "5"], [1, "5"], [1, "5"], [4, "5"], [4, "5"], [1, "5"], [1, "5"], [5, "5"], [5, "5"], [1, "5"], [1, "5"]], "bpm": 144, "key": "A major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=nZgWALvQory", "ug": "https://tabs.ultimate-guitar.com/tab/chuck-berry/johnny-b-goode-official-1920905", "count": 5, "quick": false, "iv_start": false, "color": "power", "turn": "I\u2013I"}, {"artist": "Cold War Kids", "title": "First", "section": "verse", "cells": [[4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [5, "5"]], "bpm": 120, "key": "D major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=nLgawakA_oY", "ug": null, "count": 1, "quick": false, "iv_start": true, "color": "power", "turn": "IV\u2013V"}, {"artist": "Coldplay", "title": "Yellow", "section": "Outro", "cells": [[1, "5"], [1, "5"], [5, "5"], [5, "5"], [4, "5"], [4, "5"], [1, "5"], [1, "5"], [5, "5"], [5, "5"], [4, "5"], [4, "7"]], "bpm": 87, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=ROmNeVZjoNw", "ug": "https://tabs.ultimate-guitar.com/tab/coldplay/yellow-official-1940647", "count": 1, "quick": false, "iv_start": false, "color": "power", "turn": "IV\u2013IV"}, {"artist": "Conway Twittie", "title": "Babys Got Her Blue Jeans On", "section": "Verse", "cells": [[1, "5"], [1, "5"], [1, "5"], [1, "5"], [4, "5"], [4, "5"], [1, "5"], [1, "5"], [5, "5"], [4, "5"], [1, "5"], [1, "5"]], "bpm": 107, "key": "D major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=QLgnyZLvm-V", "ug": null, "count": 6, "quick": false, "iv_start": false, "color": "power", "turn": "I\u2013I"}, {"artist": "Conway Twittie", "title": "Babys Got Her Blue Jeans On", "section": "outro", "cells": [[5, "5"], [4, "5"], [1, "5"], [1, "5"], [1, "5"], [1, "5"], [1, "5"], [1, "5"], [1, "5"], [1, "5"], [1, "5"], [1, "5"]], "bpm": 107, "key": "D major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=QLgnyZLvm-V", "ug": null, "count": 1, "quick": true, "iv_start": false, "color": "power", "turn": "I\u2013I"}, {"artist": "Four Tops", "title": "It's The Same Old Song", "section": "verse", "cells": [[1, "5"], [1, "5"], [4, "5"], [5, "5"], [1, "5"], [1, "5"], [4, "5"], [5, "5"], [1, "5"], [1, "5"], [4, "5"], [5, "5"]], "bpm": 126, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=RPxe-ydMaxb", "ug": null, "count": 1, "quick": false, "iv_start": false, "color": "power", "turn": "IV\u2013V"}, {"artist": "Fuel", "title": "Hemhorrage", "section": "Outro", "cells": [[4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [4, "5"], [4, "5"], [4, "5"], [4, "5"], [4, "5"]], "bpm": 77, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=JNgqRVywxrz", "ug": null, "count": 1, "quick": false, "iv_start": true, "color": "power", "turn": "IV\u2013IV"}, {"artist": "Jackson Browne", "title": "Somebodys Baby", "section": "Outro", "cells": [[5, "5"], [4, "5"], [5, "5"], [1, "5"], [5, "5"], [4, "5"], [5, "5"], [1, "5"], [5, "5"], [4, "5"], [5, "5"], [1, "5"]], "bpm": 117, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=ZbgOYNZponY", "ug": "https://tabs.ultimate-guitar.com/tab/jackson-browne/somebodys-baby-official-3782435", "count": 1, "quick": true, "iv_start": false, "color": "power", "turn": "V\u2013I"}, {"artist": "Joe Dee Messina", "title": "Heads Carolina Tails California", "section": "Chorus", "cells": [[1, "5"], [5, "5"], [4, "5"], [5, "5"], [1, "5"], [5, "5"], [4, "5"], [5, "5"], [1, "5"], [5, "5"], [4, "5"], [5, "5"]], "bpm": 137, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=RPxeBDJPob_", "ug": null, "count": 1, "quick": false, "iv_start": false, "color": "power", "turn": "IV\u2013V"}, {"artist": "Kenny Wayne Sheppard", "title": "Blue On Black", "section": "Chorus", "cells": [[5, "5"], [4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [5, "5"], [1, "5"], [5, "5"], [4, "5"], [1, "5"], [1, "5"]], "bpm": 92, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=ZOxVvPkyxdq", "ug": null, "count": 2, "quick": true, "iv_start": false, "color": "power", "turn": "I\u2013I"}, {"artist": "Pixies", "title": "Here Comes Your Man", "section": "Outro (Chorus)", "cells": [[4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [1, "5"]], "bpm": 120, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=ROmNrXJzmNw", "ug": "https://tabs.ultimate-guitar.com/tab/pixies/here-comes-your-man-official-2057626", "count": 2, "quick": false, "iv_start": true, "color": "power", "turn": "IV\u2013I"}, {"artist": "Shins", "title": "New Slang", "section": "chorus", "cells": [[5, "5"], [5, "5"], [1, "5"], [4, "5"], [1, "5"], [5, "5"], [1, "5"], [4, "5"], [4, "5"], [4, "5"], [5, "5"], [5, "5"]], "bpm": 120, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=RPxenyD-ob_", "ug": "https://tabs.ultimate-guitar.com/tab/the-shins/new-slang-official-2131373", "count": 1, "quick": false, "iv_start": false, "color": "power", "turn": "V\u2013V"}, {"artist": "The Beatles", "title": "Flying", "section": "instrumental", "cells": [[1, "5"], [1, "5"], [1, "5"], [4, "7"], [4, "5"], [4, "7"], [1, "5"], [1, "5"], [5, "7"], [4, "7"], [1, "5"], [5, "7"]], "bpm": 150, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=jDgX_kGwEmK", "ug": null, "count": 1, "quick": false, "iv_start": false, "color": "power", "turn": "I\u2013V"}, {"artist": "The Beatles", "title": "For You Blue", "section": "chorus", "cells": [[1, "7"], [4, "7"], [1, "7"], [1, "7"], [4, "7"], [4, "7"], [1, "7"], [1, "7"], [5, "7"], [4, "7"], [1, "7"], [5, "7"]], "bpm": 127, "key": "D major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=ROmNOAN_BgN", "ug": null, "count": 1, "quick": true, "iv_start": false, "color": "dom7", "turn": "I\u2013V"}, {"artist": "The Beatles", "title": "Money", "section": "outro", "cells": [[4, "7"], [1, "7"], [5, "7"], [4, "7"], [1, "7"], [5, "7"], [1, "7"], [4, "7"], [4, "7"], [4, "7"], [4, "7"], [4, "7"]], "bpm": 145, "key": "E minor", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=AaoGVqJZzxe", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/money-thats-what-i-want-official-2095499", "count": 1, "quick": false, "iv_start": true, "color": "dom7", "turn": "IV\u2013IV"}, {"artist": "The Beatles", "title": "Roll Over Beethoven", "section": "verse", "cells": [[1, "7"], [4, "7"], [1, "7"], [4, "7"], [1, "7"], [4, "7"], [5, "7"], [1, "7"], [1, "7"], [4, "7"], [1, "7"], [4, "7"]], "bpm": 166, "key": "D major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=AQodMvapKmD", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/roll-over-beethoven-official-2143575", "count": 12, "quick": true, "iv_start": false, "color": "dom7", "turn": "I\u2013IV"}, {"artist": "The Beatles", "title": "Roll Over Beethoven", "section": "bridge", "cells": [[1, "7"], [4, "7"], [1, "7"], [4, "7"], [5, "7"], [1, "7"], [1, "7"], [4, "7"], [1, "7"], [4, "7"], [5, "7"], [1, "7"]], "bpm": 166, "key": "D major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=AQodMvapKmD", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/roll-over-beethoven-official-2143575", "count": 2, "quick": true, "iv_start": false, "color": "dom7", "turn": "V\u2013I"}, {"artist": "The Beatles", "title": "The Word", "section": "verse", "cells": [[1, "5"], [1, "5"], [1, "5"], [1, "5"], [4, "5"], [4, "5"], [1, "5"], [1, "5"], [5, "5"], [4, "5"], [1, "5"], [1, "5"]], "bpm": 121, "key": "D major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=nvgyJpvXxkA", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/the-word-official-2089513", "count": 5, "quick": false, "iv_start": false, "color": "power", "turn": "I\u2013I"}, {"artist": "The Beatles", "title": "You Can't Do That", "section": "verse", "cells": [[4, "5"], [4, "5"], [4, "5"], [4, "5"], [4, "5"], [4, "5"], [1, "7"], [1, "7"], [5, "7"], [5, "7"], [1, "7"], [5, "7"]], "bpm": 153, "key": "G major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=bWgMWOaOEol", "ug": "https://tabs.ultimate-guitar.com/tab/the-beatles/you-cant-do-that-official-2113771", "count": 2, "quick": true, "iv_start": true, "color": "triad", "turn": "I\u2013V"}, {"artist": "Vampire Weekend", "title": "Harmony Hall", "section": "chorus", "cells": [[5, "5"], [4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [5, "5"], [4, "5"], [4, "5"], [4, "5"], [4, "5"], [4, "5"]], "bpm": 99, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=RPxe-yEqexb", "ug": null, "count": 1, "quick": true, "iv_start": false, "color": "power", "turn": "IV\u2013IV"}, {"artist": "Van Halen", "title": "Jump", "section": "Intro", "cells": [[1, "5"], [4, "5"], [1, "5"], [1, "5"], [5, "5"], [4, "5"], [1, "5"], [1, "5"], [1, "5"], [4, "5"], [1, "5"], [1, "5"]], "bpm": 129, "key": "C major", "hookpad": "https://hookpad.hooktheory.com/?idOfUserSong=nLgadbGdmYp", "ug": "https://tabs.ultimate-guitar.com/tab/van-halen/jump-official-2234721", "count": 1, "quick": true, "iv_start": false, "color": "power", "turn": "I\u2013I"}];
+const grid = document.getElementById('grid'), q = document.getElementById('q'), countEl = document.getElementById('count');
+let filt = 'all';
+const DEG = {1:'d1',4:'d4',5:'d5'}, LAB = {1:'I',4:'IV',5:'V'};
+function passes(d){
+  if (filt==='quick') return d.quick;
+  if (filt==='slow') return !d.quick && !d.iv_start;
+  if (filt==='iv_start') return d.iv_start;
+  if (filt==='dom7') return d.color==='dom7';
+  if (filt==='power') return d.color==='power';
+  return true;
+}
+function render(){
+  const term=q.value.trim().toLowerCase(); grid.innerHTML=''; let n=0;
+  DATA.forEach((d,idx)=>{
+    if(!passes(d)) return;
+    if(term && !(d.title.toLowerCase().includes(term)||d.artist.toLowerCase().includes(term))) return;
+    n++;
+    const cells=d.cells.map((c,i)=>{
+      const sup = c[1]==='7' ? '<span class="sup">7</span>' : '';
+      return `<div class="bar ${DEG[c[0]]}" data-bar="${i}"><span class="n">${i+1}</span>${LAB[c[0]]}${sup}</div>`;
+    }).join('');
+    const tags=[];
+    tags.push(d.quick?'<span class="tag hot">quick-change</span>':(d.iv_start?'<span class="tag hot">IV-start</span>':'<span class="tag">slow-change</span>'));
+    tags.push(`<span class="tag">turn ${d.turn}</span>`);
+    tags.push(`<span class="tag">${d.color}</span>`);
+    if(d.count>1) tags.push(`<span class="tag">×${d.count}</span>`);
+    let links=''; if(d.hookpad) links+=`<a target="_blank" rel="noopener" href="${d.hookpad}">Hookpad</a>`; if(d.ug) links+=`<a target="_blank" rel="noopener" href="${d.ug}">UG</a>`;
+    const el=document.createElement('div'); el.className='song'; el.dataset.idx=idx;
+    el.innerHTML=`<div class="top"><div><h3>${d.title}</h3><div class="art">${d.artist} &middot; ${d.section}</div></div>`
+      +`<div class="meta">${d.key||''}<br>${d.bpm} bpm</div></div>`
+      +`<div class="bars">${cells}</div><div class="tags">${tags.join('')}</div>`
+      +`<div class="foot"><button class="play" data-idx="${idx}">&#9654; Play</button>${links}</div>`;
+    grid.appendChild(el);
+  });
+  countEl.textContent = n+' sections';
+}
+document.querySelectorAll('.filt').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.filt').forEach(x=>x.classList.remove('on')); b.classList.add('on'); filt=b.dataset.f; render();
+}));
+q.addEventListener('input',render);
+
+// ---- playback ----
+let synth=null, bass=null, playingIdx=null;
+function ensure(){ if(synth) return;
+  synth=new Tone.PolySynth(Tone.Synth,{oscillator:{type:'triangle'},envelope:{attack:.02,decay:.3,sustain:.35,release:.6},volume:-11}).toDestination();
+  bass=new Tone.Synth({oscillator:{type:'triangle'},envelope:{attack:.02,decay:.4,sustain:.5,release:.9},volume:-15}).toDestination();
+}
+const SEMI={1:0,4:5,5:7};       // I=C IV=F V=G
+function notes(root,type){ const b=60+SEMI[root]; const arr=[b,b+4,b+7]; if(type==='7') arr.push(b+10); return arr.map(m=>Tone.Frequency(m,'midi').toNote()); }
+function bassNote(root){ return Tone.Frequency(36+SEMI[root],'midi').toNote(); }
+async function play(idx){
+  const d=DATA[idx]; await Tone.start(); ensure();
+  Tone.Transport.stop(); Tone.Transport.cancel();
+  clearHi();
+  Tone.Transport.bpm.value = Math.min(Math.max(d.bpm,60),220);
+  const card=grid.querySelector(`.song[data-idx="${idx}"]`);
+  d.cells.forEach((c,i)=>{
+    const time=i+':0:0';
+    Tone.Transport.schedule(t=>{
+      synth.triggerAttackRelease(notes(c[0],c[1]),'0:3:2',t);
+      bass.triggerAttackRelease(bassNote(c[0]),'0:3:2',t);
+      Tone.Draw.schedule(()=>{ if(card){ card.querySelectorAll('.bar').forEach(b=>b.classList.remove('playing')); const bb=card.querySelector(`.bar[data-bar="${i}"]`); if(bb) bb.classList.add('playing'); }},t);
+    },time);
+  });
+  Tone.Transport.schedule(()=>{ Tone.Draw.schedule(()=>{ stop(); }); }, '12:0:0');
+  Tone.Transport.position='0:0:0'; Tone.Transport.start(); playingIdx=idx;
+  if(card) card.querySelector('.play').innerHTML='&#9632; Stop';
+}
+function clearHi(){ grid.querySelectorAll('.bar.playing').forEach(b=>b.classList.remove('playing')); }
+function stop(){ Tone.Transport.stop(); Tone.Transport.cancel(); clearHi();
+  if(playingIdx!=null){ const c=grid.querySelector(`.song[data-idx="${playingIdx}"] .play`); if(c) c.innerHTML='&#9654; Play'; }
+  playingIdx=null;
+}
+grid.addEventListener('click',e=>{ const btn=e.target.closest('.play'); if(!btn) return; const idx=+btn.dataset.idx; if(playingIdx===idx) stop(); else { stop(); play(idx); } });
+render();
+</script>
+</body></html>
