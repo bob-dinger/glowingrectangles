@@ -28,11 +28,18 @@
   .fret-cell.head { border-right:4px solid #6a6a8a; }
   .fret-cell.has-string::before { content:''; position:absolute; left:0; right:0; top:50%; height:2px; background:#5a5a7a; transform:translateY(-50%); z-index:0; }
   .fret-cell.has-string.thick::before { height:3px; }
-  .dot { position:relative; z-index:1; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; text-shadow:0 1px 0 rgba(0,0,0,0.6); cursor:default; }
+  .dot { position:relative; z-index:1; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; text-shadow:0 1px 0 rgba(0,0,0,0.6); cursor:pointer; }
   .deg-1 { background:#a01e1e; } .deg-2 { background:#b35610; } .deg-3 { background:#957e0c; }
   .deg-4 { background:#25a838; } .deg-5 { background:#3050d0; } .deg-6 { background:#6e16a5; }
   .deg-7 { background:#a01b6b; }
   .dot.is-root { box-shadow:0 0 0 3px #fff; }
+  /* click-to-play */
+  .fret-cell.has-string { cursor:pointer; }
+  .fret-cell.has-string:hover::after { content:''; position:absolute; z-index:0; width:22px; height:22px; border-radius:50%; background:rgba(165,180,252,0.18); }
+  .dot.pluck { animation:pluckPulse .28s ease; }
+  @keyframes pluckPulse { 0%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,255,255,.7);} 40%{transform:scale(1.28);box-shadow:0 0 0 5px rgba(255,255,255,.45);} 100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,255,255,0);} }
+  .fret-cell.pluck::before { content:''; position:absolute; z-index:3; left:50%; top:50%; width:26px; height:26px; margin:-13px 0 0 -13px; border-radius:50%; border:2px solid #a5b4fc; animation:pluckRing .34s ease-out forwards; }
+  @keyframes pluckRing { from{transform:scale(.5);opacity:.9;} to{transform:scale(1.7);opacity:0;} }
 
   .fret-num-row { display:grid; gap:0; margin-top:6px; font-size:10px; color:#5a5a7a; font-family:ui-monospace,Menlo,monospace; text-align:center; }
   .fret-num-row .num { display:flex; align-items:center; justify-content:center; height:18px; }
@@ -63,6 +70,7 @@
   <div class="row toggle-row">
     <label><input type="checkbox" id="labelToggle"> show scale degrees instead of note names</label>
     <label>frets <input type="number" id="fretCount" value="15" min="5" max="24" style="width:50px;background:#1a1a2e;color:#e0e0e0;border:1px solid #2a2a4a;border-radius:4px;padding:3px;text-align:center;font-family:ui-monospace,monospace;"></label>
+    <span style="color:#a5b4fc;">&#128266; click any fret to hear it &mdash; sound out riffs note by note</span>
   </div>
 
   <div class="fretboard-wrap">
@@ -83,13 +91,13 @@
 
 <script>
 const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-const STRINGS = [   // top of display = high E (tab convention)
-  { name:'e', pc:4 },
-  { name:'B', pc:11 },
-  { name:'G', pc:7 },
-  { name:'D', pc:2 },
-  { name:'A', pc:9 },
-  { name:'E', pc:4 },
+const STRINGS = [   // top of display = high E (tab convention). midi = open-string pitch
+  { name:'e', pc:4,  midi:64 },   // E4
+  { name:'B', pc:11, midi:59 },   // B3
+  { name:'G', pc:7,  midi:55 },   // G3
+  { name:'D', pc:2,  midi:50 },   // D3
+  { name:'A', pc:9,  midi:45 },   // A2
+  { name:'E', pc:4,  midi:40 },   // E2
 ];
 const MODE_INT = {
   major:           [0,2,4,5,7,9,11],
@@ -139,7 +147,7 @@ function render() {
         const rootCls = pc === state.rootPc ? ' is-root' : '';
         inner = `<div class="dot deg-${deg}${rootCls}">${label}</div>`;
       }
-      html += `<div class="${cls}">${inner}</div>`;
+      html += `<div class="${cls}" data-midi="${STRINGS[sIdx].midi + f}">${inner}</div>`;
     }
   });
   fb.innerHTML = html;
@@ -177,6 +185,38 @@ function updatePillUI() {
 
 document.getElementById('labelToggle').addEventListener('change', e => { state.showDegrees = e.target.checked; localStorage.setItem('fbDeg', state.showDegrees ? '1' : ''); render(); });
 document.getElementById('fretCount').addEventListener('change', render);
+
+// ---- click-to-play: pluck any fret (WebAudio, no dependency) ----
+let actx = null;
+function playMidi(m) {
+  try {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+  } catch (e) { return; }
+  const now = actx.currentTime;
+  const freq = 440 * Math.pow(2, (m - 69) / 12);
+  const g = actx.createGain();
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.exponentialRampToValueAtTime(0.45, now + 0.006);   // fast pluck attack
+  g.gain.exponentialRampToValueAtTime(0.0006, now + 1.3);   // decay
+  const lp = actx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(4200, now);
+  lp.frequency.exponentialRampToValueAtTime(750, now + 0.9);
+  const o1 = actx.createOscillator(); o1.type = 'triangle'; o1.frequency.value = freq;
+  const o2 = actx.createOscillator(); o2.type = 'sawtooth'; o2.frequency.value = freq; o2.detune.value = 5;
+  const o2g = actx.createGain(); o2g.gain.value = 0.32;
+  o1.connect(g); o2.connect(o2g); o2g.connect(g); g.connect(lp); lp.connect(actx.destination);
+  o1.start(now); o2.start(now); o1.stop(now + 1.5); o2.stop(now + 1.5);
+}
+document.getElementById('fretboard').addEventListener('click', e => {
+  const cell = e.target.closest('.fret-cell[data-midi]');
+  if (!cell) return;
+  playMidi(parseInt(cell.dataset.midi, 10));
+  const t = cell.querySelector('.dot') || cell;
+  t.classList.remove('pluck'); void t.offsetWidth; t.classList.add('pluck');
+  setTimeout(() => t.classList.remove('pluck'), 340);
+});
 
 // restore
 const savedRoot = parseInt(localStorage.getItem('fbRoot')); if (!isNaN(savedRoot)) state.rootPc = savedRoot;
