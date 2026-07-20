@@ -27,9 +27,9 @@ VARIANT = re.compile(r'[-_](simple|hooktab|right|wrong|double|half|\d+|[A-G]b?|m
 def norm(s): return re.sub(r'[^a-z0-9]', '', (s or '').lower())
 
 def albums():
-    """title -> session number, taken from Pollack's CD: line (covers included)"""
+    """title -> (session number, track number), from Pollack's CD: line"""
     idx = json.load(open(os.path.join(NOTES, '_index.json')))
-    out = {}
+    out, trk = {}, {}
     for slug, v in idx.items():
         if not isinstance(v, dict) or not v.get('title'): continue
         p = os.path.join(NOTES, slug + '.html')
@@ -40,6 +40,8 @@ def albums():
         a = m.group(1).split(',')[0].strip().strip('"') if m else ''
         n = next((n for n, nm in SESSION if a and nm.lower().startswith(a.lower()[:12])), None)
         if n: out[norm(v['title'])] = n
+        mt = re.search(r'CD:.{0,60}?Track\s+(\d+)', t)
+        if mt: trk[norm(v['title'])] = int(mt.group(1))
     # covers have no CD: line in Pollack, and some titles are spelled differently here than
     # there — beatles_proj.json (slug -> [session, album]) fills both gaps
     p = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'beatles_proj.json')
@@ -48,7 +50,18 @@ def albums():
             t = norm(slug.split('_', 1)[1] if '_' in slug else slug)
             t = re.sub(r'\d+$', '', t)
             if t and t not in out and isinstance(v, list) and v: out[t] = v[0]
-    return out
+    return out, trk
+
+# UK album track numbers for the covers, which Pollack's cov_ notes don't carry.
+# Past Masters is a compilation, so its entries stay unnumbered.
+COVER_TRACK = {
+    'anna': 3, 'chains': 4, 'boys': 5, 'babyitsyou': 10, 'atasteofhoney': 12, 'twistandshout': 14,
+    'tilltherewasyou': 6, 'pleasemisterpostman': 7, 'pleasemrpostman': 7, 'rolloverbeethoven': 8,
+    'youreallygotaholdonme': 10, 'devilinherheart': 12, 'money': 14, 'moneythatswhatiwant': 14,
+    'rockandrollmusic': 4, 'mrmoonlight': 6, 'kansascity': 7, 'kansascityheyheyheyhey': 7,
+    'wordsoflove': 9, 'honeydont': 10, 'everybodystryingtobemybaby': 14,
+    'actnaturally': 8, 'dizzymisslizzy': 14,
+}
 
 # Pollack's cover notes carry no CD: line and beatles_proj.json omits covers, so the
 # album for each cover is hardcoded here.
@@ -65,15 +78,21 @@ COVERS = {
     'goodmorning': 8, 'drrobert': 7, 'allivegottado': 2, 'benefitofmrkite': 8,
 }
 
+def _match(k, d):
+    """exact, then prefix, then containment — titles differ across sources"""
+    if k in d: return d[k]
+    for a in d:
+        if (a.startswith(k) or k.startswith(a)) and abs(len(a) - len(k)) <= 6: return d[a]
+    cands = [a for a in d if len(a) > 7 and (a in k or k in a)]
+    return d[cands[0]] if len(cands) == 1 else None
+
 def place(k, alb):
-    """covers table, then exact, then prefix, then containment — titles differ across sources"""
     if k in COVERS: return COVERS[k]
-    if k in alb: return alb[k]
-    for a in alb:
-        if a.startswith(k) or k.startswith(a):
-            if abs(len(a) - len(k)) <= 6: return alb[a]
-    cands = [a for a in alb if len(a) > 7 and (a in k or k in a)]
-    return alb[cands[0]] if len(cands) == 1 else 99
+    return _match(k, alb) or 99
+
+def track(k, trk):
+    if k in COVER_TRACK: return COVER_TRACK[k]
+    return _match(k, trk) or 99
 
 def bars(hj, b0, b1):
     """measures between two beats, honouring every meter change in the range"""
@@ -99,7 +118,7 @@ def kind(nm):
     return 'other'
 
 def main():
-    alb = albums()
+    alb, trk = albums()
     c = psycopg2.connect(host=os.environ['DB_HOST'], dbname=os.environ['DB_NAME'], user=os.environ['DB_USER'],
                          password=os.environ['DB_PASSWORD'], port=os.environ.get('DB_PORT', 5432))
     cur = c.cursor()
@@ -129,7 +148,7 @@ def main():
         if not out: continue
         kk = (hj.get('keys') or [{}])[0]
         tempos = hj.get('tempos') or [{}]
-        songs.append({'title': t, 'session': place(k, alb), 'sections': out,
+        songs.append({'title': t, 'session': place(k, alb), 'track': track(k, trk), 'sections': out,
                       'key': f"{kk.get('tonic','?')} {kk.get('scale','')}".strip(),
                       'bpm': tempos[0].get('bpm') or bpm,
                       'total': round(sum(s['bars'] for s in out), 2),
@@ -139,7 +158,7 @@ def main():
     for s in songs: s['shared'] = shapes[s['shape']]
     sess = []
     for n, nm in SESSION + [(99, 'Unplaced')]:
-        got = sorted([s for s in songs if s['session'] == n], key=lambda s: s['title'].lower())
+        got = sorted([s for s in songs if s['session'] == n], key=lambda s: (s['track'], s['title'].lower()))
         if got: sess.append({'n': n, 'name': SHORT.get(n, nm), 'songs': got})
     open(OUT, 'w').write(PAGE.replace('__DATA__', json.dumps(sess)))
     print(f'wrote {OUT}  |  {len(songs)} songs, {len(sess)} sessions')
@@ -161,7 +180,8 @@ h2{margin:0 0 4px;font-size:20px}
 .opts{display:flex;gap:16px;align-items:center;margin-bottom:14px;font-size:12px;color:#556}
 .opts label{cursor:pointer;user-select:none}
 .song{display:flex;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid #ededf2}
-.song .t{width:210px;flex:none;font-weight:600;font-size:13px}
+.song .t .tn{display:inline-block;width:20px;color:#bbb;font-weight:400;font-size:11px}
+.song .t{width:230px;flex:none;font-weight:600;font-size:13px}
 .song .t .sub{display:block;font-weight:400;font-size:10px;color:#aaa}
 .seq{display:flex;flex-wrap:wrap;gap:3px;align-items:center}
 .sec{font-size:10px;font-weight:700;color:#fff;border-radius:4px;padding:2px 7px;white-space:nowrap;
@@ -209,7 +229,7 @@ function sel(i){SI=i;
   document.getElementById('ttl').textContent=s.n===99?'Unplaced':`${s.n}. ${s.name}`;
   document.getElementById('sub').textContent=`${s.songs.length} songs · sections and bar counts from your Hookpad files`;
   let songs=s.songs.slice();
-  if(sortShape.checked) songs.sort((a,b)=>a.shape.localeCompare(b.shape)||a.title.localeCompare(b.title));
+  if(sortShape.checked) songs.sort((a,b)=>a.shape.localeCompare(b.shape)||a.track-b.track);
   document.getElementById('body').innerHTML=songs.map(o=>{
     const secs=o.sections.filter(x=>!(hideIO.checked&&(x.kind==='intro'||x.kind==='outro')));
     const chips=secs.map(x=>{
@@ -217,7 +237,7 @@ function sel(i){SI=i;
       return `<span class="sec k-${x.kind}${odd}" title="${x.name}">${x.kind}<span class=b> (${NICE(x.bars)})</span></span>`;
     }).join('');
     const b=o.shared>1?`<span class=badge>${o.shared} share this shape</span>`:'';
-    return `<div class=song><div class=t>${o.title}<span class=sub>${o.key||''}${o.bpm?' · '+o.bpm+'bpm':''} · ${NICE(o.total)} bars</span></div>
+    return `<div class=song><div class=t><span class=tn>${o.track<99?o.track:'–'}</span>${o.title}<span class=sub>${o.key||''}${o.bpm?' · '+o.bpm+'bpm':''} · ${NICE(o.total)} bars</span></div>
             <div class=seq>${chips}${b}</div></div>`;}).join('');}
 sel(0);
 </script></body></html>"""
