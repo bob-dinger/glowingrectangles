@@ -14,6 +14,7 @@ from collections import Counter, defaultdict
 import psycopg2
 from dotenv import load_dotenv
 load_dotenv('/Users/robert/Desktop/themap/themap_claude/.env')
+from chord_label import chord_label
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'forms.html')
 NOTES = os.path.expanduser('~/Desktop/music/pollack_beatles_notes')
@@ -108,6 +109,51 @@ def bars(hj, b0, b1):
         pos = min(nxt, b1)
     return round(total, 3)
 
+SEMI = {1: 0, 2: 2, 3: 4, 4: 5, 5: 7, 6: 9, 7: 11}
+PCNAME = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+PCIDX = {n: i for i, n in enumerate(PCNAME)}
+for _a, _b in [('C#', 1), ('D#', 3), ('F#', 6), ('G#', 8), ('A#', 10)]: PCIDX[_a] = _b
+
+def tonic_pc(k):
+    """key entry -> pitch class of the tonic, with Hookpad's relative-major convention"""
+    t = k.get('tonic', 0)
+    pc = PCIDX.get(str(t), t if isinstance(t, int) else 0)
+    return (pc + 3) % 12 if k.get('scale') == 'minor' else pc
+
+def sd_semis(sd):
+    """scale-degree string ('1', 'b3', '#4') -> semitones above the tonic"""
+    m = re.match(r'^([b#]*)(\d)$', str(sd))
+    if not m: return None
+    acc = sum(-1 if c == 'b' else 1 for c in m.group(1))
+    d = int(m.group(2))
+    return SEMI.get(d, 0) + acc if d in SEMI else None
+
+def key_at(hj, beat):
+    ks = sorted(hj.get('keys') or [{'beat': 1}], key=lambda k: k.get('beat', 0))
+    cur = ks[0]
+    for k in ks:
+        if k.get('beat', 0) <= beat: cur = k
+    return cur
+
+def section_body(hj, b0, b1, scale):
+    """melody notes and chords inside a section, positioned relative to its start"""
+    notes = []
+    for n in hj.get('notes') or []:
+        nb = n.get('beat', 0)
+        if not (b0 <= nb < b1) or n.get('isRest'): continue
+        sem = sd_semis(n.get('sd'))
+        if sem is None: continue
+        notes.append({'sd': str(n.get('sd')), 'sem': sem, 'o': int(n.get('octave', 0)),
+                      'b': round(nb - b0, 3), 'd': round(n.get('duration', 1), 3)})
+    chords = []
+    for c in hj.get('chords') or []:
+        cb, cd = c.get('beat', 0), c.get('duration', 1)
+        if not c.get('root') or not 1 <= c['root'] <= 7: continue
+        st, en = max(cb, b0), min(cb + cd, b1)
+        if en <= st: continue
+        chords.append({'n': chord_label(c, scale), 'b': round(st - b0, 3), 'd': round(en - st, 3)})
+    return notes, sorted(chords, key=lambda c: c['b'])
+
 def kind(nm):
     n = nm.lower()
     for k, v in (('intro', 'intro'), ('outro', 'outro'), ('coda', 'outro'), ('pickup', 'intro'),
@@ -136,6 +182,7 @@ def main():
         seen.add(k)
         secs = sorted(hj.get('sections') or [], key=lambda s: s.get('beat', 0))
         if not secs: continue
+        bodies, bodyix = [], {}
         end = hj.get('endBeat', 0) + 1
         out = []
         for i, s in enumerate(secs):
@@ -144,16 +191,37 @@ def main():
             m = bars(hj, b0, b1)
             nm = (s.get('name') or '').strip()
             if m < 0.75 and (not nm or nm.lower() == 'section'): continue   # trailing marker junk
-            out.append({'name': nm or '—', 'kind': kind(nm), 'bars': m})
+            kd = kind(nm)
+            ref = None
+            if kd != 'outro':                       # outros aren't worth a roll
+                kk2 = key_at(hj, b0)
+                sc2 = kk2.get('scale', 'major'); sc2 = sc2 if sc2 in ('major', 'minor') else 'major'
+                ns, cs = section_body(hj, b0, b1, sc2)
+                if ns or cs:
+                    sig = (kd, m, tuple((x['sem'], x['o'], x['b'], x['d']) for x in ns),
+                           tuple((x['n'], x['b'], x['d']) for x in cs))
+                    # two identical verses are one thing to look at, not two
+                    if sig in bodyix:
+                        ref = bodyix[sig]
+                    else:
+                        ref = len(bodies)
+                        bodyix[sig] = ref
+                        bodies.append({'kind': kd, 'name': nm or '—', 'bars': m,
+                                       'tonic': tonic_pc(kk2), 'scale': sc2,
+                                       'bpm': (hj.get('tempos') or [{}])[0].get('bpm') or bpm,
+                                       'notes': ns, 'chords': cs})
+            out.append({'name': nm or '—', 'kind': kd, 'bars': m, 'ref': ref})
         if not out: continue
         kk = (hj.get('keys') or [{}])[0]
         tempos = hj.get('tempos') or [{}]
         songs.append({'title': t, 'session': place(k, alb), 'track': track(k, trk), 'sections': out,
+                      'bodies': bodies,
                       'key': f"{kk.get('tonic','?')} {kk.get('scale','')}".strip(),
                       'bpm': tempos[0].get('bpm') or bpm,
                       'total': round(sum(s['bars'] for s in out), 2),
                       'shape': ' '.join(s['kind'] for s in out
                                         if s['kind'] in ('verse', 'bridge', 'refrain', 'chorus', 'solo'))})
+    for i, s in enumerate(songs): s['i'] = i        # stable id for the modal
     shapes = Counter(s['shape'] for s in songs)
     for s in songs: s['shared'] = shapes[s['shape']]
     sess = []
@@ -194,6 +262,29 @@ h2{margin:0 0 4px;font-size:20px}
 .odd{outline:2px solid #c0392b;outline-offset:1px}
 .legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .badge{font-size:10px;color:#8a2be2;background:#f3ecff;border-radius:4px;padding:1px 6px;margin-left:6px}
+/* --- section modal --- */
+.sec.hit{cursor:pointer}.sec.hit:hover{filter:brightness(1.12)}
+#ov{position:fixed;inset:0;background:rgba(20,20,35,.55);display:none;align-items:center;justify-content:center;z-index:50}
+#ov.on{display:flex}
+#mod{background:#fff;border-radius:12px;padding:18px 20px;max-width:min(1100px,94vw);max-height:90vh;overflow:auto;
+  box-shadow:0 18px 60px rgba(0,0,0,.3)}
+#mod h3{margin:0 0 2px;font-size:17px}
+#mod .mmeta{color:#888;font-size:12px;margin-bottom:12px}
+#mod .close{float:right;cursor:pointer;color:#aaa;font-size:20px;line-height:1;padding:0 4px}
+#mod .close:hover{color:#333}
+.roll{position:relative;border:1px solid #e4e4ec;border-radius:8px;background:#fbfbfe;overflow-x:auto}
+.rollin{position:relative}
+.lane{position:absolute;left:0;right:0;height:1px;background:#ececf4}
+.lane.tonic{background:#d8d8ea}
+.barline{position:absolute;top:0;bottom:0;width:1px;background:#e8e8f0}
+.barline.b4{background:#d4d4e2}
+.nb{position:absolute;height:9px;border-radius:3px;background:#5090f0;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.nb.acc{background:#e8734a}
+.cb{position:absolute;bottom:0;height:22px;border-radius:4px;color:#fff;font:700 10px/22px -apple-system,sans-serif;
+  text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.4);overflow:hidden;white-space:nowrap}
+.mtools{display:flex;gap:10px;align-items:center;margin-top:10px;font-size:12px;color:#667}
+.mtools button{padding:5px 12px;border:1px solid #ccd;background:#f6f6fb;border-radius:7px;cursor:pointer;font-weight:600}
+.dupe{font-size:11px;color:#8a2be2;margin-left:8px}
 </style></head><body><div id=wrap>
 <div id=side><h1>Sessions</h1><div id=list></div></div>
 <div id=main>
@@ -212,6 +303,16 @@ h2{margin:0 0 4px;font-size:20px}
   </div>
   <div id=body></div>
 </div></div>
+<div id=ov><div id=mod>
+  <span class=close onclick="closeMod()">&times;</span>
+  <h3 id=mtitle></h3><div class=mmeta id=msub></div>
+  <div class=roll id=mroll></div>
+  <div class=mtools>
+    <button id=mplay>▶ Play</button>
+    <span id=mnote></span>
+  </div>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
 <script>
 const D=__DATA__;
 let SI=0;
@@ -234,11 +335,82 @@ function sel(i){SI=i;
     const secs=o.sections.filter(x=>!(hideIO.checked&&(x.kind==='intro'||x.kind==='outro')));
     const chips=secs.map(x=>{
       const odd=markOdd.checked&&(x.bars%2!==0)?' odd':'';   // odd-numbered or fractional
-      return `<span class="sec k-${x.kind}${odd}" title="${x.name}">${x.kind}<span class=b> (${NICE(x.bars)})</span></span>`;
+      const hit=x.ref!=null?' hit':'';
+      const click=x.ref!=null?` onclick="openMod(${o.i},${x.ref})"`:'';
+      return `<span class="sec k-${x.kind}${odd}${hit}" title="${x.name}"${click}>${x.kind}<span class=b> (${NICE(x.bars)})</span></span>`;
     }).join('');
     const b=o.shared>1?`<span class=badge>${o.shared} share this shape</span>`:'';
     return `<div class=song><div class=t><span class=tn>${o.track<99?o.track:'–'}</span>${o.title}<span class=sub>${o.key||''}${o.bpm?' · '+o.bpm+'bpm':''} · ${NICE(o.total)} bars</span></div>
             <div class=seq>${chips}${b}</div></div>`;}).join('');}
+// ---------- section modal ----------
+const PCN=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+const DEGCOL={0:'#e84545',2:'#f0a040',4:'#e8c828',5:'#50c878',7:'#5090f0',9:'#7040b0',11:'#e070b0'};
+let SONGIX={},CUR=null,synth=null,part=null;
+D.forEach(s=>s.songs.forEach(o=>{SONGIX[o.i]=o;}));
+function chordBg(name,tonic){
+  const m=name.match(/^([b#]*)([ivxIVX]+)/); if(!m) return '#889';
+  const R={i:1,ii:2,iii:3,iv:4,v:5,vi:6,vii:7}, d=R[m[2].toLowerCase()];
+  if(!d) return '#889';
+  const S={1:0,2:2,3:4,4:5,5:7,6:9,7:11};
+  let acc=0; for(const c of m[1]) acc+= c==='b'?-1:1;
+  const semi=(S[d]+acc+12)%12;
+  return DEGCOL[semi]!==undefined?DEGCOL[semi]
+    :`linear-gradient(135deg,${DEGCOL[(semi+11)%12]||'#889'} 0 50%,${DEGCOL[(semi+1)%12]||'#889'} 50%)`;
+}
+function openMod(si,ri){
+  const o=SONGIX[si], b=o.bodies[ri]; CUR=b;
+  document.getElementById('mtitle').textContent=`${o.title} — ${b.name}`;
+  const dupes=o.sections.filter(x=>x.ref===ri).length;
+  document.getElementById('msub').innerHTML=
+    `${NICE(b.bars)} bars · ${PCN[b.tonic]} ${b.scale} · ${b.bpm||'?'}bpm · ${b.notes.length} notes, ${b.chords.length} chords`
+    +(dupes>1?`<span class=dupe>appears ${dupes}× in the song — showing the one</span>`:'');
+  drawRoll(b);
+  document.getElementById('ov').classList.add('on');
+}
+function closeMod(){document.getElementById('ov').classList.remove('on');stopPlay();}
+document.getElementById('ov').onclick=e=>{if(e.target.id==='ov')closeMod();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMod();});
+function drawRoll(b){
+  const beats=Math.max(b.bars*4, ...b.chords.map(c=>c.b+c.d), ...b.notes.map(n=>n.b+n.d), 4);
+  const PX=Math.max(9,Math.min(20,900/beats)), H=190, CH=26;
+  const vals=b.notes.map(n=>n.sem+12*n.o);
+  const lo=vals.length?Math.min(...vals):0, hi=vals.length?Math.max(...vals):12;
+  const span=Math.max(hi-lo,7), top=8, usable=H-CH-16;
+  const y=v=>top+usable-((v-lo)/span)*usable;
+  let h=`<div class=rollin style="width:${Math.ceil(beats*PX)}px;height:${H}px">`;
+  for(let v=Math.floor(lo/12)*12; v<=hi+1; v+=12) h+=`<div class="lane tonic" style="top:${y(v)}px"></div>`;
+  for(let bar=0;bar<=Math.ceil(beats/4);bar++)
+    h+=`<div class="barline${bar%4===0?' b4':''}" style="left:${bar*4*PX}px"></div>`;
+  b.chords.forEach(c=>{h+=`<div class=cb style="left:${c.b*PX}px;width:${Math.max(c.d*PX-2,14)}px;background:${chordBg(c.n,b.tonic)}">${c.n}</div>`;});
+  b.notes.forEach(n=>{const v=n.sem+12*n.o;
+    h+=`<div class="nb${/[b#]/.test(n.sd)?' acc':''}" title="${n.sd}" style="left:${n.b*PX}px;top:${y(v)}px;width:${Math.max(n.d*PX-2,4)}px"></div>`;});
+  document.getElementById('mroll').innerHTML=h+'</div>';
+}
+// ---------- playback ----------
+function midiOf(n,tonic){return 60+tonic+n.sem+12*n.o;}
+function nameOf(m){return PCN[((m%12)+12)%12].replace('b','b')+(Math.floor(m/12)-1);}
+async function play(){
+  if(!CUR) return;
+  if(typeof Tone==='undefined'){document.getElementById('mnote').textContent='audio unavailable offline';return;}
+  await Tone.start(); stopPlay();
+  synth=synth||new Tone.PolySynth(Tone.Synth,{oscillator:{type:'triangle'},
+        envelope:{attack:.01,decay:.2,sustain:.3,release:.4}}).toDestination();
+  const bpm=CUR.bpm||120; Tone.Transport.bpm.value=bpm; const spb=60/bpm;
+  const ev=[];
+  CUR.notes.forEach(n=>ev.push([n.b*spb,{n:[nameOf(midiOf(n,CUR.tonic))],d:Math.max(.05,n.d*spb*.95),v:.85}]));
+  part=new Tone.Part((t,e)=>synth.triggerAttackRelease(e.n,e.d,t,e.v),ev);
+  part.start(0); Tone.Transport.start();
+  document.getElementById('mplay').textContent='■ Stop';
+}
+function stopPlay(){
+  if(typeof Tone==='undefined')return;
+  Tone.Transport.stop(); Tone.Transport.cancel(0);
+  if(part){part.dispose();part=null;}
+  document.getElementById('mplay').textContent='▶ Play';
+}
+document.getElementById('mplay').onclick=()=>{
+  if(document.getElementById('mplay').textContent.startsWith('■')) stopPlay(); else play();
+};
 sel(0);
 </script></body></html>"""
 
