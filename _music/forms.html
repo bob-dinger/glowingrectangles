@@ -44,8 +44,7 @@ h2{margin:0 0 4px;font-size:20px}
 .lane.tonic{background:#d8d8ea}
 .barline{position:absolute;top:0;bottom:0;width:1px;background:#e8e8f0}
 .barline.b4{background:#d4d4e2}
-.nb{position:absolute;height:9px;border-radius:3px;background:#5090f0;box-shadow:0 1px 2px rgba(0,0,0,.15)}
-.nb.acc{background:#e8734a}
+.nb{position:absolute;height:9px;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.15)}
 .cb{position:absolute;bottom:0;height:22px;border-radius:4px;color:#fff;font:700 10px/22px -apple-system,sans-serif;
   text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.4);overflow:hidden;white-space:nowrap}
 .mtools{display:flex;gap:10px;align-items:center;margin-top:10px;font-size:12px;color:#667}
@@ -113,15 +112,33 @@ const PCN=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
 const DEGCOL={0:'#e84545',2:'#f0a040',4:'#e8c828',5:'#50c878',7:'#5090f0',9:'#7040b0',11:'#e070b0'};
 let SONGIX={},CUR=null,synth=null,part=null;
 D.forEach(s=>s.songs.forEach(o=>{SONGIX[o.i]=o;}));
-function chordBg(name,tonic){
-  const m=name.match(/^([b#]*)([ivxIVX]+)/); if(!m) return '#889';
-  const R={i:1,ii:2,iii:3,iv:4,v:5,vi:6,vii:7}, d=R[m[2].toLowerCase()];
-  if(!d) return '#889';
-  const S={1:0,2:2,3:4,4:5,5:7,6:9,7:11};
-  let acc=0; for(const c of m[1]) acc+= c==='b'?-1:1;
-  const semi=(S[d]+acc+12)%12;
+const R2D={i:1,ii:2,iii:3,iv:4,v:5,vi:6,vii:7}, D2S={1:0,2:2,3:4,4:5,5:7,6:9,7:11};
+// diatonic degrees get a solid colour; chromatic ones a diagonal of their two neighbours
+function degBg(semi){
+  semi=((semi%12)+12)%12;
   return DEGCOL[semi]!==undefined?DEGCOL[semi]
     :`linear-gradient(135deg,${DEGCOL[(semi+11)%12]||'#889'} 0 50%,${DEGCOL[(semi+1)%12]||'#889'} 50%)`;
+}
+// roman numeral -> semitones above the tonic, quality, and whatever decoration trails it
+function parseRoman(lbl){
+  if(lbl.indexOf('/')>-1 && lbl.indexOf('\u00b0')===-1){
+    const [l,r]=lbl.split('/'); const L=parseRoman(l), R=parseRoman(r);
+    if(L&&R) return {semi:(L.semi+R.semi)%12, q:'maj', suf:L.suf};   // applied chords are always major
+  }
+  if(lbl.indexOf('\u00b0')>-1){                                      // vii°7/V etc.
+    const tgt=lbl.indexOf('/')>-1?parseRoman(lbl.split('/')[1]):{semi:0};
+    const suf=/7/.test(lbl.split('/')[0])?'7':'';
+    return {semi:((tgt?tgt.semi:0)-1+12)%12, q:'dim', suf};
+  }
+  const m=lbl.match(/^([b#]*)([ivxIVX]+)(.*)$/); if(!m) return null;
+  const d=R2D[m[2].toLowerCase()]; if(!d) return null;
+  let acc=0; for(const c of m[1]) acc+= c==='b'?-1:1;
+  return {semi:(D2S[d]+acc+12)%12, q:m[2]===m[2].toUpperCase()?'maj':'min', suf:m[3]||''};
+}
+function chordBg(name,tonic){const p=parseRoman(name); return p?degBg(p.semi):'#889';}
+function chordName(lbl,tonic){
+  const p=parseRoman(lbl); if(!p) return lbl;
+  return PCN[(tonic+p.semi)%12]+(p.q==='min'?'m':p.q==='dim'?'\u00b0':'')+p.suf;
 }
 function openMod(si,ri){
   const o=SONGIX[si], b=o.bodies[ri]; CUR=b;
@@ -147,9 +164,9 @@ function drawRoll(b){
   for(let v=Math.floor(lo/12)*12; v<=hi+1; v+=12) h+=`<div class="lane tonic" style="top:${y(v)}px"></div>`;
   for(let bar=0;bar<=Math.ceil(beats/4);bar++)
     h+=`<div class="barline${bar%4===0?' b4':''}" style="left:${bar*4*PX}px"></div>`;
-  b.chords.forEach(c=>{h+=`<div class=cb style="left:${c.b*PX}px;width:${Math.max(c.d*PX-2,14)}px;background:${chordBg(c.n,b.tonic)}">${c.n}</div>`;});
+  b.chords.forEach(c=>{h+=`<div class=cb title="${c.n}" style="left:${c.b*PX}px;width:${Math.max(c.d*PX-2,14)}px;background:${chordBg(c.n,b.tonic)}">${chordName(c.n,b.tonic)}</div>`;});
   b.notes.forEach(n=>{const v=n.sem+12*n.o;
-    h+=`<div class="nb${/[b#]/.test(n.sd)?' acc':''}" title="${n.sd}" style="left:${n.b*PX}px;top:${y(v)}px;width:${Math.max(n.d*PX-2,4)}px"></div>`;});
+    h+=`<div class="nb" title="${n.sd} — ${PCN[(b.tonic+n.sem%12+12)%12]}" style="left:${n.b*PX}px;top:${y(v)}px;width:${Math.max(n.d*PX-2,4)}px;background:${degBg(n.sem)}"></div>`;});
   document.getElementById('mroll').innerHTML=h+'</div>';
 }
 // ---------- playback ----------
