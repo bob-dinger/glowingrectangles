@@ -18,7 +18,12 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'phrases.html')
 PCN = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
 PCIDX = {n: i for i, n in enumerate(PCN)}
 for _a, _b in [('C#', 1), ('D#', 3), ('F#', 6), ('G#', 8), ('A#', 10)]: PCIDX[_a] = _b
-SCALES = {16: (4, 4), 12: (3, 4), 8: (4, 2)}
+# bar-scale -> phrase bar-lengths (its natural cut). The odd lengths read as deformations
+# of the 8-bar core, which is how they're heard: 7 = 8 minus a bar (4+3), 9 = 8 plus a bar
+# (4+4+1), 10 = 8 plus two (4+4+2). 6 = three 2-bar phrases (the classic AAB); 8/12/16 even.
+SCALES = {16: [4, 4, 4, 4], 12: [4, 4, 4], 10: [4, 4, 2], 9: [4, 4, 1],
+          8: [2, 2, 2, 2], 7: [4, 3], 6: [2, 2, 2]}
+ORDER = [16, 12, 10, 9, 8, 7, 6]
 
 def tonic_pc(k):
     t = k.get('tonic', 0)
@@ -59,7 +64,8 @@ def main():
     rows.sort(key=lambda r: -len((r[1] or {}).get('notes') or []))
 
     data = {}
-    for bars, (nph, pb) in SCALES.items():
+    for bars in ORDER:
+        plens = SCALES[bars]
         seen, items = set(), []
         for t, hj, bpm in rows:
             t = (t or '').strip()
@@ -70,7 +76,8 @@ def main():
             seen.add(key)
             perslug = set()
             for nm, b0, b1, stitched in P.spans(hj, bars):
-                f = P.form_of(hj, b0, b1, nph, pb) or ('—' if stitched else None)
+                f, offs = P.form_and_offsets(hj, b0, plens)
+                f = f or ('—' if stitched else None)
                 if not f: continue
                 sig = (re.sub(r'[^a-z]', '', nm.lower()), f)
                 if sig in perslug: continue
@@ -78,12 +85,12 @@ def main():
                 kk = key_at(hj, b0)
                 sc = kk.get('scale', 'major'); sc = sc if sc in ('major', 'minor') else 'major'
                 notes, chords = body(hj, b0, b1, sc)
-                # phrase boundaries + letter, in beats relative to the section
-                phrases, letters = [], f.replace("'", "′")
+                # phrase boundaries (beats relative to section) + letter
+                phrases = []
                 labs = re.findall(r"[A-Z]'?", f)
-                for j in range(nph):
-                    pa = P.bar_at(hj, b0, j * pb) - b0
-                    pbend = P.bar_at(hj, b0, (j + 1) * pb) - b0
+                for j in range(len(plens)):
+                    pa = P.bar_at(hj, b0, offs[j]) - b0 if offs else j
+                    pbend = P.bar_at(hj, b0, offs[j + 1]) - b0 if offs else j
                     phrases.append({'L': labs[j] if j < len(labs) else '', 'b': round(pa, 3), 'e': round(pbend, 3)})
                 items.append({'form': f, 'title': t, 'sec': nm, 'stitched': stitched, 'bars': bars,
                               'tonic': tonic_pc(kk), 'scale': sc,
@@ -135,7 +142,7 @@ h2{margin:0 0 4px;font-size:20px}.meta{color:#888;font-size:12px;margin-bottom:1
 .mtools button{padding:5px 12px;border:1px solid #ccd;background:#f6f6fb;border-radius:7px;cursor:pointer;font-weight:600}
 </style></head><body><div id=wrap>
 <div id=side>
-  <div class=scaletog><button data-s=16 class=on>16-bar</button><button data-s=12>12-bar</button><button data-s=8>8-bar</button></div>
+  <div class=scaletog><button data-s=16 class=on>16</button><button data-s=12>12</button><button data-s=10>10</button><button data-s=9>9</button><button data-s=8>8</button><button data-s=7>7</button><button data-s=6>6</button></div>
   <h1>Phrase form</h1><div id=list></div>
 </div>
 <div id=main><h2 id=ttl></h2><div class=meta id=sub></div><div id=body></div></div></div>

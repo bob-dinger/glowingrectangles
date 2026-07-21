@@ -141,6 +141,16 @@ def form_of(hj, b0, b1, nphrases, pbars):
     if not any(phs): return None
     return label(phs)
 
+def form_and_offsets(hj, b0, plens):
+    """generalized: plens = list of phrase bar-lengths (unequal ok, e.g. 7 = [4,3]).
+    returns (form_string, cumulative_bar_offsets) or (None, [])."""
+    offs = [0]
+    for L in plens: offs.append(offs[-1] + L)
+    phs = [phrase_notes(hj, bar_at(hj, b0, offs[k]), bar_at(hj, b0, offs[k + 1]))
+           for k in range(len(plens))]
+    if not any(phs): return None, []
+    return label(phs), offs
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--bars', type=int, default=16)
