@@ -117,12 +117,20 @@ def main():
                 if not offs:                                            # no melody -> still want offsets for chords
                     offs = [0]
                     for L in plens: offs.append(offs[-1] + L)
-                cform = chord_form(hj, b0, plens, sc, offs)             # harmonic form
+                notes, chords = body(hj, b0, b1, sc)
+                # only read harmony when chords actually cover the span (else it's under-transcribed:
+                # a lone V7 in an 8-bar window is a fragment, not a drone)
+                cover = sum(c['d'] for c in chords) / max(b1 - b0, 1)
+                if cover >= 0.6:
+                    cform = chord_form(hj, b0, plens, sc, offs)
+                    ndist = len({coretok(c['n']) for c in chords})
+                    harm = 'drone' if ndist == 1 else 'vamp' if ndist == 2 else ('riff' if ndist >= 3 else '')
+                else:
+                    cform, harm = None, ''
                 if not mform and not cform: continue
                 sig = (re.sub(r'[^a-z]', '', nm.lower()), mform, cform)
                 if sig in perslug: continue
                 perslug.add(sig)
-                notes, chords = body(hj, b0, b1, sc)
                 mlabs = re.findall(r"[A-Z]'?", mform or '')
                 clabs = re.findall(r"[A-Z]'?", cform or '')
                 phrases = []
@@ -132,7 +140,7 @@ def main():
                     phrases.append({'b': pa, 'e': pe,
                                     'm': mlabs[j] if j < len(mlabs) else '',
                                     'c': clabs[j] if j < len(clabs) else ''})
-                items.append({'m': mform or '', 'c': cform or '', 'title': t, 'artist': artist or '',
+                items.append({'m': mform or '', 'c': cform or '', 'harm': harm, 'title': t, 'artist': artist or '',
                               'beatles': beatles, 'sec': nm, 'stitched': stitched, 'bars': bars,
                               'tonic': tonic_pc(kk), 'scale': sc,
                               'bpm': (hj.get('tempos') or [{}])[0].get('bpm') or bpm,
@@ -159,6 +167,9 @@ body{margin:0;font:14px/1.45 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1
 .tog2 button{flex:1;padding:6px 0;border:1px solid #ccd;background:#f6f6fb;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;color:#556}
 .tog2 button.on{background:#8a2be2;color:#fff;border-color:#8a2be2}
 .tog2.scope button.on{background:#2a7a44;border-color:#2a7a44}
+.tog2.harm button.on{background:#c07018;border-color:#c07018}
+.htag{font-size:10px;font-weight:700;border-radius:4px;padding:1px 7px;margin-left:8px;text-transform:uppercase;letter-spacing:.04em}
+.htag.drone{color:#3a6ea5;background:#e7f0fa}.htag.vamp{color:#2a7a44;background:#e6f5ec}.htag.riff{color:#b5651d;background:#fbeede}
 .frow{padding:6px 16px;cursor:pointer;border-bottom:1px solid #f2f2f6;display:flex;justify-content:space-between;gap:8px;align-items:center}
 .frow:hover{background:#eef}.frow.on{background:#2a2a44;color:#fff}
 .frow .fm{font-weight:700;letter-spacing:.03em}.frow .ct{font-size:11px;color:#aaa}.frow.on .ct{color:#dde}
@@ -193,6 +204,7 @@ h2{margin:0 0 4px;font-size:20px}.meta{color:#888;font-size:12px;margin-bottom:1
   <div class=scaletog><button data-s=16 class=on>16</button><button data-s=12>12</button><button data-s=10>10</button><button data-s=9>9</button><button data-s=8>8</button><button data-s=7>7</button><button data-s=6>6</button></div>
   <div class="tog2 ftype"><button data-f=m class=on>melody form</button><button data-f=c>chord form</button></div>
   <div class="tog2 scope"><button data-sc=beatles class=on>Beatles</button><button data-sc=others>others</button><button data-sc=all>all</button></div>
+  <div class="tog2 harm"><button data-h="" class=on>any</button><button data-h=drone>drone</button><button data-h=vamp>vamp</button><button data-h=riff>riff</button></div>
   <h1>Phrase form</h1><div id=list></div>
 </div>
 <div id=main><h2 id=ttl></h2><div class=meta id=sub></div><div id=body></div></div></div>
@@ -208,8 +220,8 @@ const D=__DATA__;
 const PCN=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
 const DEGCOL={0:'#e84545',2:'#f0a040',4:'#e8c828',5:'#50c878',7:'#5090f0',9:'#7040b0',11:'#e070b0'};
 const PHCOL=['#5090f0','#e8734a','#50c878','#a878d8','#e0a030','#d060a0'];  // A B C D by first-seen
-let SC='16',FORM=null,FT='m',SCOPE='beatles';   // form-type: m=melody c=chord ; scope
-const inScope=x=>SCOPE==='all'||(SCOPE==='beatles'?x.beatles:!x.beatles);
+let SC='16',FORM=null,FT='m',SCOPE='beatles',HARM='';   // form-type; scope; harmony filter
+const inScope=x=>(SCOPE==='all'||(SCOPE==='beatles'?x.beatles:!x.beatles))&&(!HARM||x.harm===HARM);
 const formOf=x=>FT==='m'?x.m:x.c;
 const R2D={i:1,ii:2,iii:3,iv:4,v:5,vi:6,vii:7},D2S={1:0,2:2,3:4,4:5,5:7,6:9,7:11};
 function degBg(semi){semi=((semi%12)+12)%12;return DEGCOL[semi]!==undefined?DEGCOL[semi]
@@ -249,8 +261,9 @@ function render(){
     const other=FT==='m'?x.c:x.m; const olab=FT==='m'?'chords':'mel';
     const oth=(other&&other!==f)?`<span class="other ${FT==='m'?'c':'m'}">${olab} ${other}</span>`:'';
     const be=x.beatles?'':`<span class=be>${x.artist}</span>`;
+    const ht=x.harm?`<span class="htag ${x.harm}">${x.harm}</span>`:'';
     return `<div class=sec onclick="openMod('${SC}',${x.i})"><div class=ph>${chips}</div>
-      <div class=t>${x.title}${be}<span class=sub>${x.sec} · ${PCN[x.tonic]} ${x.scale}${x.stitched?' · composite':''}</span>${oth}</div></div>`;
+      <div class=t>${x.title}${be}${ht}<span class=sub>${x.sec} · ${PCN[x.tonic]} ${x.scale}${x.stitched?' · composite':''}</span>${oth}</div></div>`;
   }).join('');
 }
 function reset(){FORM=null;buildList();render();}
@@ -260,12 +273,14 @@ document.querySelectorAll('.ftype button').forEach(b=>b.onclick=()=>{
   FT=b.dataset.f;document.querySelectorAll('.ftype button').forEach(x=>x.classList.toggle('on',x===b));reset();});
 document.querySelectorAll('.scope button').forEach(b=>b.onclick=()=>{
   SCOPE=b.dataset.sc;document.querySelectorAll('.scope button').forEach(x=>x.classList.toggle('on',x===b));reset();});
+document.querySelectorAll('.harm button').forEach(b=>b.onclick=()=>{
+  HARM=b.dataset.h;document.querySelectorAll('.harm button').forEach(x=>x.classList.toggle('on',x===b));reset();});
 
 // ---- modal / roll (melody by degree colour, chord names, phrase dividers) ----
 let CUR=null,synth=null,part=null;
 function openMod(sc,i){const x=D[sc].find(y=>y.i===i);CUR=x;
   document.getElementById('mtitle').textContent=`${x.title}${x.beatles?'':' · '+x.artist} — ${x.sec}`;
-  const both=`melody ${x.m||'—'} · chords ${x.c||'—'}`;
+  const both=`melody ${x.m||'—'} · chords ${x.c||'—'}${x.harm?' · '+x.harm:''}`;
   document.getElementById('msub').textContent=`${both} · ${x.bars} bars · ${PCN[x.tonic]} ${x.scale} · ${x.bpm||'?'}bpm`;
   drawRoll(x);document.getElementById('ov').classList.add('on');}
 function closeMod(){document.getElementById('ov').classList.remove('on');stopPlay();}
