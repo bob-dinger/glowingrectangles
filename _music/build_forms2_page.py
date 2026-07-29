@@ -21,7 +21,7 @@ were wrong that way. Every row here is joined by filename but the `# <url>` head
 re-checked against the expected artist, and mismatches are reported, not silently used.
 """
 import os, re, csv, glob, json, difflib
-from collections import Counter
+from collections import Counter, defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'forms2.html')
@@ -113,9 +113,54 @@ def key_of(txt):
     return m.group(1) if m else ''
 
 
+def links_index():
+    """slug-ish key -> (hookpad_url, ug_url) from parcels.songs.
+
+    Returns two dicts: one keyed on <artist>_<title>, one keyed on title alone.
+    The title-only map is a fallback for rows filed under a different artist than
+    the guitar lists use — the lists credit the writer where Supabase credits whoever
+    charted it (Seashores of Old Mexico is under Merle Haggard not George Strait,
+    Pancho and Lefty under Willie Nelson not Townes Van Zandt). Only consulted when
+    exactly one song has that title, so it can't silently grab the wrong one.
+    """
+    try:
+        import psycopg2
+        from dotenv import load_dotenv
+        load_dotenv('/Users/robert/Desktop/themap/themap_claude/.env')
+        c = psycopg2.connect(host=os.environ['DB_HOST'], dbname=os.environ['DB_NAME'],
+                             user=os.environ['DB_USER'], password=os.environ['DB_PASSWORD'],
+                             port=os.environ.get('DB_PORT', 5432))
+        cur = c.cursor()
+        cur.execute('select slug, title, artist, hookpad_url, ug_url from parcels.songs')
+        rows = cur.fetchall()
+        c.close()
+    except Exception as e:
+        print(f'  ! no Supabase ({e}) — building without Hookpad links')
+        return {}, {}
+    by, bytitle = {}, defaultdict(dict)
+    for slug, t, a, hp, ug in rows:
+        v = (hp, ug)
+        if slug:
+            by.setdefault(re.sub(r'_o-[0-9a-f]{6}$', '', slug), v)   # strip dedupe suffix
+        by.setdefault(f'{artist_key(a)}_{kebab(t)}', v)
+        # keyed by artist so a song stored twice as variants collapses to one entry;
+        # two DIFFERENT artists sharing a title still counts as ambiguous and is dropped
+        bytitle[kebab(t)].setdefault(artist_key(a), v)
+    return by, {k: next(iter(v.values())) for k, v in bytitle.items() if len(v) == 1}
+
+
+def find_links(by, bytitle, title, artist):
+    k = f'{artist_key(artist)}_{kebab(title)}'
+    if k in by: return by[k]
+    m = difflib.get_close_matches(k, list(by), n=1, cutoff=0.86)
+    if m: return by[m[0]]
+    return bytitle.get(kebab(title), (None, None))
+
+
 def main():
     files = {os.path.basename(p)[:-4]: p for p in glob.glob(TABS + '/*.txt')
              if not p.endswith('.parts.txt')}
+    by, bytitle = links_index()
     pools, problems = [], []
     for pid, pname, path in LISTS:
         songs = []
@@ -147,8 +192,14 @@ def main():
             core = ''.join({'verse': 'V', 'chorus': 'C', 'bridge': 'B'}[s['kind']]
                            for s in secs if s['kind'] in ('verse', 'chorus', 'bridge'))
             match = next((lbl for pat, lbl in TARGETS if core.startswith(pat)), '')
+            head = open(files[key], errors='ignore').read(400)
+            hp, db_ug = find_links(by, bytitle, title, artist)
+            # link to the tab this form was actually read from, not whatever Supabase
+            # has on file — otherwise the page could show one tab's form and link to another
+            m = re.search(r'https://tabs\.ultimate-guitar\.com/tab/\S+', head)
+            ug = m.group(0).strip() if m else db_ug
             songs.append({'title': title, 'artist': artist, 'file': key, 'src': src,
-                          'key': key_of(open(files[key], errors='ignore').read(400)),
+                          'key': key_of(head), 'hp': hp, 'ug': ug,
                           'sections': secs, 'core': core, 'match': match,
                           'shape': ' '.join(s['kind'] for s in secs
                                             if s['kind'] in ('verse', 'chorus', 'bridge',
@@ -169,7 +220,13 @@ def main():
 
     open(OUT, 'w').write(PAGE.replace('__DATA__', json.dumps({'songs': allsongs,
                                                              'groups': groups})))
-    print(f'wrote {OUT}  |  {len(allsongs)} songs')
+    nug = sum(1 for s in allsongs if s['ug'])
+    nhp = sum(1 for s in allsongs if s['hp'])
+    print(f'wrote {OUT}  |  {len(allsongs)} songs  |  {nug} UG links, {nhp} Hookpad links')
+    for s in allsongs:
+        if not s['hp'] or not s['ug']:
+            print(f'   no link: {s["title"][:32]:34} {s["artist"][:20]:22} '
+                  f'{"" if s["ug"] else "UG "}{"" if s["hp"] else "HP"}')
     for p in pools:
         n = sum(1 for s in p['songs'] if s['match'])
         print(f'   {p["name"]:<12} {len(p["songs"]):>3} songs   '
@@ -201,6 +258,10 @@ h2{margin:0 0 4px;font-size:20px}
 .song{display:flex;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid #ededf2}
 .song .t{width:250px;flex:none;font-weight:600;font-size:13px}
 .song .t .sub{display:block;font-weight:400;font-size:10px;color:#aaa}
+.lnk{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.03em;text-decoration:none;
+  border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:1px}
+.lnk.ug{color:#8a5a00;background:#fdf0d5}.lnk.ug:hover{background:#f8e0a8}
+.lnk.hp{color:#1a5f8a;background:#dceaf5}.lnk.hp:hover{background:#c2dcef}
 .seq{display:flex;flex-wrap:wrap;gap:3px;align-items:center}
 .sec{font-size:10px;font-weight:700;color:#fff;border-radius:4px;padding:2px 7px;white-space:nowrap;
   text-shadow:0 1px 2px rgba(0,0,0,.35)}
@@ -269,7 +330,9 @@ function sel(i){SI=i;
     const sh=o.shared>1?`<span class=badge>${o.shared} share this shape</span>`:'';
     const mb=o.match?`<span class=mbadge>${o.match}</span>`:'';
     const sp=o.src==='parts'?`<span class=srcp title="from the official tab's PARTS panel — names only">parts</span>`:'';
-    return `<div class=song><div class=t>${esc(o.title)}<span class=sub>${esc(o.artist)}${o.key?' · '+o.key:''}</span></div>
+    const L=(o.ug?`<a class="lnk ug" href="${o.ug}" target=_blank rel=noopener title="Ultimate Guitar tab this form came from">UG</a>`:'')
+           +(o.hp?`<a class="lnk hp" href="${o.hp}" target=_blank rel=noopener title="open in Hookpad">HP</a>`:'');
+    return `<div class=song><div class=t>${esc(o.title)}<span class=sub>${esc(o.artist)}${o.key?' · '+o.key:''}${L}</span></div>
             <div class=seq>${chips}${mb}${sh}${sp}</div></div>`;}).join('')
     || '<div class=meta>no songs match that form in this list</div>';}
 sel(0);
