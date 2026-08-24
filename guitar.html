@@ -384,6 +384,19 @@
             .main { padding-right: 0; }
             .sidebar { display: none; }
         }
+    
+        /* ---- Position boxes ---- */
+        .note.pos-off { opacity: .10 !important; }
+        #positionBar { display:none; gap:6px; justify-content:center; align-items:center;
+            flex-wrap:wrap; margin-top:12px; }
+        #positionBar .lbl { color:#888; font-size:12px; margin-right:2px; }
+        .pos-btn { background:#222; color:#ddd; border:1px solid #333; border-radius:6px;
+            padding:5px 9px; font-size:13px; cursor:pointer; display:flex; flex-direction:column;
+            align-items:center; line-height:1.15; font-family:inherit; }
+        .pos-btn span { font-size:9px; color:#777; margin-top:1px; }
+        .pos-btn:hover { border-color:#666; }
+        .pos-btn.on { background:#3b82f6; border-color:#3b82f6; color:#fff; }
+        .pos-btn.on span { color:#dbeafe; }
     </style>
 </head>
 <body>
@@ -428,6 +441,7 @@
         </div>
 
         <div class="legend" id="scaleLegend" style="display:none; margin-top:12px; flex-wrap:wrap; justify-content:center;"></div>
+        <div id="positionBar"></div>
 
         <div class="transpose-controls">
             <button class="transpose-btn" onclick="changeTranspose(-12)">-12</button>
@@ -681,6 +695,7 @@
             el.style.display = 'flex';
             el.innerHTML = `<div class="legend-item" style="color:#aaa;font-weight:600;margin-right:4px;">${rootName} major</div>` +
                 scale.map(s => `<div class="legend-item"><div class="legend-dot" style="background:${DEGREE_COLORS[s.degree-1]}"></div>${s.degree} ${s.name}</div>`).join('');
+            buildPositions(rootName);
         }
         function clearScaleStyles() {
             document.querySelectorAll('.note[data-scale-on], .note').forEach(n => {
@@ -697,6 +712,77 @@
             document.querySelectorAll('.note').forEach(n => n.classList.remove('highlight', 'active'));
             const sel = document.getElementById('scaleSelect'); if (sel) sel.value = '';
             const lg = document.getElementById('scaleLegend'); if (lg) lg.style.display = 'none';
+            clearPosition();
+        }
+
+
+        // ---- Position boxes: the seven three-notes-per-string shapes ----
+        // Standard tuning as MIDI, indexed to match `strings` (high E .. low E).
+        const OPEN_MIDI = [64, 59, 55, 50, 45, 40];
+        let POSITIONS = [];        // each entry: Set of "stringIdx:fret"
+        let activePosition = -1;
+
+        function buildPositions(rootName) {
+            POSITIONS = [];
+            activePosition = -1;
+            document.querySelectorAll('.note').forEach(n => n.classList.remove('pos-off'));
+            const bar = document.getElementById('positionBar');
+            if (!rootName) { bar.style.display = 'none'; return; }
+
+            const pcs = spellMajorScale(rootName).map(s => s.pc);
+            const inScale = m => pcs.includes(((m % 12) + 12) % 12);
+
+            // Every scale note on the low E string; the first seven are the position roots.
+            const lowE = [];
+            for (let f = 0; f < fretCount; f++) if (inScale(OPEN_MIDI[5] + f)) lowE.push(f);
+
+            for (let p = 0; p < 7 && p < lowE.length; p++) {
+                const cells = new Set();
+                let pitch = OPEN_MIDI[5] + lowE[p];
+                let ok = true;
+                // Walk the scale upward, three notes per string, low E to high E.
+                for (let s = 5; s >= 0 && ok; s--) {
+                    for (let k = 0; k < 3; k++) {
+                        const fret = pitch - OPEN_MIDI[s];
+                        if (fret < 0 || fret >= fretCount) { ok = false; break; }
+                        cells.add(s + ':' + fret);
+                        do { pitch++; } while (!inScale(pitch));
+                    }
+                }
+                if (ok) POSITIONS.push(cells);
+            }
+            renderPositionBar();
+        }
+
+        function renderPositionBar() {
+            const bar = document.getElementById('positionBar');
+            if (!POSITIONS.length) { bar.style.display = 'none'; return; }
+            bar.style.display = 'flex';
+            bar.innerHTML = '<span class="lbl">Position</span>' +
+                POSITIONS.map((c, i) => {
+                    const fr = [...c].map(x => +x.split(':')[1]);
+                    return `<button class="pos-btn" data-pos="${i}" onclick="showPosition(${i})">` +
+                           `${i + 1}<span>${Math.min(...fr)}\u2013${Math.max(...fr)}</span></button>`;
+                }).join('') +
+                '<button class="pos-btn" data-pos="-1" onclick="showPosition(-1)">All<span>&nbsp;</span></button>';
+        }
+
+        function showPosition(i) {
+            activePosition = i;
+            document.querySelectorAll('.pos-btn').forEach(b =>
+                b.classList.toggle('on', +b.dataset.pos === i));
+            document.querySelectorAll('.note').forEach(n => {
+                if (i < 0) { n.classList.remove('pos-off'); return; }
+                n.classList.toggle('pos-off', !POSITIONS[i].has(n.dataset.string + ':' + n.dataset.fret));
+            });
+        }
+
+        function clearPosition() {
+            activePosition = -1;
+            POSITIONS = [];
+            document.querySelectorAll('.note').forEach(n => n.classList.remove('pos-off'));
+            const bar = document.getElementById('positionBar');
+            if (bar) { bar.style.display = 'none'; bar.innerHTML = ''; }
         }
 
         // Audio context for playing notes
