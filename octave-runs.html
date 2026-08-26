@@ -39,6 +39,15 @@
   .run span{font-size:11.5px;color:var(--dim);display:block;line-height:1.4}
   .gbm{font-style:normal;color:#f0b429;border:1px solid #6b5320;border-radius:4px;
        padding:0 4px;font-size:10px;margin-left:3px}
+  .run b{display:flex;align-items:baseline;gap:7px}
+  .mode{font-style:normal;font-size:10.5px;font-weight:500;color:var(--dim);
+        letter-spacing:.04em}
+  .run.on .mode{color:#9fc4fb}
+  .steps{display:flex!important;gap:3px;margin-bottom:3px}
+  .st{font-style:normal;font-size:10px;font-weight:600;line-height:15px;width:15px;
+      text-align:center;border-radius:3px;background:#31314a;color:var(--dim);
+      font-variant-numeric:tabular-nums}
+  .st.h{background:#5a3a20;color:#ffc98a}
 
   .bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
   .bar label{font-size:13px;color:var(--dim)}
@@ -75,6 +84,8 @@
          font-size:12px;font-weight:700;color:#12121a}
   .facts{display:flex;gap:22px;flex-wrap:wrap;font-size:12.5px;color:var(--dim)}
   .facts b{color:var(--ink);font-weight:600}
+  .stepline{display:flex;align-items:center;gap:4px}
+  .stepline em{font-style:normal;color:var(--faint);font-size:11.5px;margin-left:4px}
   .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px}
   .legend div{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--dim)}
   .legend i{width:12px;height:12px;border-radius:50%}
@@ -200,13 +211,25 @@ function buildRuns(){
   drawRuns(); show(active);
 }
 
+// The seven journeys are the seven modes, in scale-degree order.
+const MODES=['Ionian','Dorian','Phrygian','Lydian','Mixolydian','Aeolian','Locrian'];
+
+// Steps between consecutive notes. Only two of the seven are half steps, and
+// where they land is the entire difference between one run and the next.
+function stepsOf(r){
+  const m=r.cells.map(c=>OPENM[c.s]+c.f);
+  return m.slice(1).map((x,i)=>x-m[i]);
+}
+const stepHTML=st=>st.map(v=>`<i class="st${v===1?' h':''}">${v}</i>`).join('');
+
 function drawRuns(){
   document.getElementById('runs').innerHTML=RUNS.map((r,i)=>{
     const per={}; r.cells.forEach(c=>per[c.s]=(per[c.s]||0)+1);
     const shape=Object.keys(per).sort((a,b)=>b-a).map(k=>per[k]).join('-');
     return `<button class="run" data-i="${i}">
       <span class="ball" style="background:${DEG[r.degree-1]}">${r.root}</span>
-      <span><b>${r.root} → ${r.root}</b>
+      <span><b>${r.root} → ${r.root}<em class="mode">${MODES[r.degree-1]}</em></b>
+      <span class="steps">${stepHTML(stepsOf(r))}</span>
       <span>fret ${r.fret} · ${r.span+1} frets · ${shape}${r.gb?' <i class="gbm">crosses B</i>':''}</span></span></button>`;
   }).join('');
   document.querySelectorAll('.run').forEach(b=>b.onclick=()=>show(+b.dataset.i));
@@ -250,7 +273,8 @@ function show(i){
     if(k===0||k===r.cells.length-1) el.classList.add('root');
     el.querySelector('.ord').textContent=k+1;
   });
-  document.getElementById('runTitle').textContent=`${r.root} to ${r.root} — one octave`;
+  document.getElementById('runTitle').textContent=
+    `${r.root} to ${r.root} — one octave — ${MODES[r.degree-1]}`;
   document.getElementById('seq').innerHTML=r.cells.map(c=>
     `<i style="background:${DEG[degAt(c.s,c.f)-1]}">${nameAt(c.s,c.f)}</i>`).join('');
   const per={}; r.cells.forEach(c=>per[c.s]=(per[c.s]||0)+1);
@@ -260,6 +284,8 @@ function show(i){
    +`<span>span <b>${r.span+1} frets</b></span>`
    +`<span>strings <b>${strs.map(s=>STR[s]).join(' → ')}</b></span>`
    +`<span>notes per string <b>${strs.map(s=>per[s]).join('-')}</b></span>`
+   +`<span class="stepline">steps ${stepHTML(stepsOf(r))}`
+   +` <em>half steps at ${stepsOf(r).map((v,k)=>v===1?k+1:0).filter(Boolean).join(' and ')}</em></span>`
    +(r.gb?`<span style="color:#f0b429">crosses the <b style="color:#f0b429">G\u2013B</b> major third</span>`:'');
 }
 
