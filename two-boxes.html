@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Boxes - Glowing Rectangles</title>
+<style>
+  :root{--bg:#15151f;--panel:#1e1e2b;--line:#2c2c3d;--ink:#e8e8f0;--dim:#8b8ba0;--faint:#5c5c72;
+        --run:#f0b429;--pos:#5b9cf8}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+  a{color:#8ab4f8}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 20px 70px}
+  .back{font-size:13px;color:var(--dim);text-decoration:none}
+  h1{font-size:28px;font-weight:600;margin:10px 0 6px}
+  .lede{color:var(--dim);font-size:13.5px;margin:0 0 6px;max-width:74ch;line-height:1.55}
+  .lede b{color:var(--ink)}
+  .lede.sub{font-size:12.5px;opacity:.78;margin-bottom:20px}
+
+  .layout{display:grid;grid-template-columns:250px 1fr;gap:30px;align-items:start}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}
+    .drawer{height:auto!important;position:static!important;border-right:0!important;
+            border-bottom:1px solid var(--line);padding-right:0!important}}
+  .drawer{position:sticky;top:0;height:100vh;border-right:1px solid var(--line);
+          padding:22px 22px 18px 0;display:flex;flex-direction:column;overflow:hidden}
+  .dhead{margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .dhead h2{margin:0;font-size:12px;letter-spacing:.15em;text-transform:uppercase;
+            color:var(--dim);font-weight:600}
+  main{padding-top:22px;min-width:0}
+
+  .roots{display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;padding-right:6px}
+  .root{display:flex;align-items:center;gap:12px;background:#252534;border:1px solid var(--line);
+       border-radius:8px;padding:11px 13px;cursor:pointer;text-align:left;width:100%;
+       font-family:inherit;color:var(--ink)}
+  .root:hover{border-color:#5a5a78}
+  .root.on{border-color:var(--pos);background:#22304a}
+  .root .ball{width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;
+             font-size:13px;font-weight:700;color:#12121a}
+  .root b{font-size:13.5px;display:block;margin-bottom:2px}
+  .root span{font-size:11.5px;color:var(--dim);display:block;line-height:1.4}
+  .verdict{font-style:normal;font-size:10px;font-weight:700;border-radius:4px;padding:1px 5px;
+           margin-left:4px;letter-spacing:.03em}
+  .v-same{background:#204a2e;color:#7fdca0}
+  .v-diff{background:#5a3a20;color:#ffc98a}
+
+  .bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .bar label{font-size:13px;color:var(--dim)}
+  select,button{font-family:inherit;background:#252534;color:var(--ink);border:1px solid var(--line);
+    border-radius:6px;padding:7px 11px;font-size:13px;cursor:pointer}
+  button:hover{border-color:#5a5a78}
+  button.on{background:var(--pos);border-color:var(--pos);color:#fff}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{border:0;border-radius:0;border-left:1px solid var(--line)}
+  .seg button:first-child{border-left:0}
+
+  .board{background:#241c16;border:1px solid #3a2d22;border-radius:10px;padding:12px 10px 8px;overflow-x:auto}
+  .grid{display:grid;gap:0;min-width:820px}
+  .fnum{font-size:10px;color:var(--faint);text-align:center;padding-bottom:5px;font-variant-numeric:tabular-nums}
+  .slabel{font-size:11px;color:var(--dim);display:flex;align-items:center;justify-content:center;padding-right:4px}
+  .cell{position:relative;height:38px;display:flex;align-items:center;justify-content:center;
+        border-left:1px solid #4a3a2c}
+  .cell.nut{border-left:3px solid #cbbba6}
+  .cell::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:#6b5844;opacity:.75}
+  .dot{position:relative;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+       justify-content:center;font-size:11px;font-weight:700;color:#12121a;opacity:.07;
+       transition:opacity .13s,transform .13s,box-shadow .13s}
+  .cell.inscale .dot{opacity:.13}
+  .cell.lit .dot{opacity:1}
+  .cell.both  .dot{box-shadow:0 0 0 3px #fff}
+  .cell.runonly .dot{box-shadow:0 0 0 3px var(--run)}
+  .cell.posonly .dot{box-shadow:0 0 0 2px #3d5f8f}
+  .cell.now .dot{transform:scale(1.32);box-shadow:0 0 0 3px #fff,0 0 18px 5px rgba(255,255,255,.6)}
+  .marker{position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;
+          border-radius:50%;background:#6b5844}
+  .cellgroup{position:absolute;top:1px;left:2px;font-size:8.5px;font-weight:700;color:#fff;
+             background:#0009;border-radius:6px;padding:0 4px;line-height:12px;display:none}
+  .cell.grouphead .cellgroup{display:block}
+
+  .key{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:11.5px;color:var(--dim)}
+  .key div{display:flex;align-items:center;gap:6px}
+  .key i{width:13px;height:13px;border-radius:50%;background:#4b4b60;display:inline-block}
+  .key i.b{box-shadow:0 0 0 2.5px #fff}
+  .key i.r{box-shadow:0 0 0 2.5px var(--run)}
+  .key i.p{box-shadow:0 0 0 2px #3d5f8f}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px;align-items:start}
+  @media(max-width:820px){.cols{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:15px 18px 17px}
+  .card.run{border-top:3px solid var(--run)}
+  .card.pos{border-top:3px solid var(--pos)}
+  .card h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 3px;font-weight:600}
+  .card.run h2{color:var(--run)} .card.pos h2{color:var(--pos)}
+  .card .sub{font-size:11.5px;color:var(--faint);margin:0 0 12px}
+  .rows{display:flex;flex-direction:column;gap:4px;margin-bottom:13px;
+        font-variant-numeric:tabular-nums}
+  .row{display:flex;align-items:center;gap:9px;font-size:12px}
+  .row u{text-decoration:none;color:var(--dim);width:14px;font-size:11px}
+  .row code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--ink)}
+  .row em{font-style:normal;font-size:10px;font-weight:700;color:#12121a;background:#6f6f8a;
+          border-radius:3px;padding:0 4px;line-height:14px}
+  .row em.A{background:#e0705a} .row em.B{background:#61a672} .row em.C{background:#6f8fd0}
+  .stats{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--dim);
+         border-top:1px solid var(--line);padding-top:11px}
+  .stats b{color:var(--ink);font-weight:600;display:block;font-size:14px;
+           font-variant-numeric:tabular-nums}
+  .note{font-size:12.5px;color:var(--dim);line-height:1.6;margin:11px 0 0}
+  .note b{color:var(--ink)}
+
+  .verdictbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+              padding:15px 18px 17px;margin-top:16px}
+  .verdictbox h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+                 margin:0 0 10px;font-weight:600}
+  .verdictbox p{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 9px;max-width:80ch}
+  .verdictbox p:last-child{margin-bottom:0}
+  .verdictbox b{color:var(--ink)}
+  .abc{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0 4px}
+  .abc div{font-size:11.5px;color:var(--dim);display:flex;align-items:center;gap:6px}
+  .abc em{font-style:normal;font-size:10px;font-weight:700;color:#12121a;border-radius:3px;
+          padding:1px 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="layout">
+    <aside class="drawer">
+      <div class="dhead"><h2>Seven roots</h2></div>
+      <div class="roots" id="roots"></div>
+    </aside>
+
+    <main>
+      <a class="back" href="index.html">← Back</a>
+      <h1>Two Boxes</h1>
+      <p class="lede">The same eight notes, fingered two different ways. The <b>octave run</b>
+        keeps your hand as small as possible. The <b>playing position</b> keeps three notes on
+        every string so it can carry on across all six. They are not the same shape, and for
+        four of the seven roots they don't even use the same frets.</p>
+      <p class="lede sub">Pick a root on the left. Frets lit in both shapes get a white ring;
+        run-only gets gold, position-only gets blue.</p>
+
+      <div class="bar">
+        <label for="key">Key</label><select id="key"></select>
+        <div class="seg">
+          <button data-v="both" class="on">Both</button>
+          <button data-v="run">Run only</button>
+          <button data-v="pos">Position only</button>
+        </div>
+        <button id="playRun">▶ Play run</button>
+        <button id="playPos">▶ Play position</button>
+      </div>
+
+      <div class="board"><div class="grid" id="grid"></div></div>
+      <div class="key">
+        <div><i class="b"></i> in both shapes</div>
+        <div><i class="r"></i> octave run only</div>
+        <div><i class="p"></i> position only</div>
+        <div><i></i> in the key, in neither</div>
+      </div>
+
+      <div class="cols">
+        <div class="card run">
+          <h2>Octave run</h2>
+          <p class="sub" id="runSub">—</p>
+          <div class="rows" id="runRows"></div>
+          <div class="stats" id="runStats"></div>
+          <p class="note" id="runNote"></p>
+        </div>
+        <div class="card pos">
+          <h2>Playing position</h2>
+          <p class="sub" id="posSub">—</p>
+          <div class="rows" id="posRows"></div>
+          <div class="stats" id="posStats"></div>
+          <p class="note" id="posNote"></p>
+        </div>
+      </div>
+
+      <div class="verdictbox">
+        <h2>Why they differ</h2>
+        <p>There are only <b>three ways</b> to finger three consecutive scale notes on one
+          string, and which one you get depends only on the degree you start from:</p>
+        <div class="abc">
+          <div><em class="A" style="background:#e0705a">A</em> whole, whole &nbsp;·&nbsp; frets f, f+2, f+4 &nbsp;·&nbsp; span 4, the stretch</div>
+          <div><em class="B" style="background:#61a672">B</em> whole, half &nbsp;·&nbsp; f, f+2, f+3 &nbsp;·&nbsp; span 3</div>
+          <div><em class="C" style="background:#6f8fd0">C</em> half, whole &nbsp;·&nbsp; f, f+1, f+3 &nbsp;·&nbsp; span 3</div>
+        </div>
+        <p>Across degrees 1 to 7 that reads <b>A B C A A B C</b>. The position is just that row
+          read in steps of three, since each string starts a third above the one below it.</p>
+        <p><b>The run refuses the A shape when it can.</b> It will drop back to a lower fret on
+          the next string up rather than stretch — which is why it stays inside four frets, and
+          why it sometimes moves backwards across the neck. The position accepts every stretch
+          the scale hands it, and gets uniformity and reach in exchange.</p>
+        <p><b>Neither is wrong.</b> The run is the cheaper hand for one octave. The position is
+          the shape that keeps going. The A shape lands on degrees 1, 4 and 5 — exactly the
+          major chords — because two whole steps above a note <em>is</em> a major third.</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const STR=['E','B','G','D','A','E'];
+const OPENM=[64,59,55,50,45,40];
+const FRETS=19, MARKERS=[3,5,7,9,12,15,17];
+const DEG=['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#a855f7','#ec4899'];
+const MAJOR=[0,2,4,5,7,9,11];
+const LETTERS=['C','D','E','F','G','A','B'], LPC={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const MODES=['Ionian','Dorian','Phrygian','Lydian','Mixolydian','Aeolian','Locrian'];
+
+let key='C', SCALE=[], BYPC={}, ROOTS=[], active=0, view='both';
+
+function scaleOf(root){
+  const acc=root.slice(1);
+  const rp=((LPC[root[0]]+(acc==='#'?1:acc==='b'?-1:0))%12+12)%12;
+  const li=LETTERS.indexOf(root[0]); const out=[];
+  for(let i=0;i<7;i++){
+    const letter=LETTERS[(li+i)%7], pc=(rp+MAJOR[i])%12;
+    const d=((pc-LPC[letter])%12+12)%12;
+    out.push({pc,name:letter+(d===0?'':d===1?'#':d===11?'b':d===2?'##':'bb'),degree:i+1});
+  }
+  return out;
+}
+const pcAt=(s,f)=>((OPENM[s]+f)%12+12)%12;
+const degAt=(s,f)=>{const x=BYPC[pcAt(s,f)];return x?x.degree:null};
+const nameAt=(s,f)=>{const x=BYPC[pcAt(s,f)];return x?x.name:NOTES[pcAt(s,f)]};
+const inScale=m=>SCALE.some(x=>x.pc===((m%12)+12)%12);
+
+// Tightest ascending octave: total span <= 5 frets, no string reaching past 4
+// fret positions. Prefers dropping back a string over stretching.
+function tightRun(s0,f0){
+  const seq=[OPENM[s0]+f0]; let m=seq[0];
+  while(seq.length<8){ m++; while(!inScale(m)) m++; seq.push(m); }
+  const REACH=3, TOTAL=4; let best=null;
+  (function dfs(i,s,cells,per,first){
+    const fs=cells.map(c=>c.f), span=Math.max(...fs)-Math.min(...fs);
+    if(span>TOTAL) return;
+    if(best && span>best.span) return;
+    if(i===seq.length){
+      if(Object.values(per).some(v=>v<2)) return;
+      if(!best || span<best.span) best={span,cells:cells.slice()};
+      return;
+    }
+    for(let ns=s;ns>=0;ns--){
+      const fr=seq[i]-OPENM[ns];
+      if(fr<0||fr>=FRETS) continue;
+      if(ns===s){
+        if(fr<=cells[cells.length-1].f) continue;
+        if(fr-first[ns]>REACH) continue;
+      } else if((per[s]||0)<2) continue;
+      if((per[ns]||0)>=4) continue;
+      const p2={...per}; p2[ns]=(p2[ns]||0)+1;
+      const f2={...first}; if(f2[ns]===undefined) f2[ns]=fr;
+      dfs(i+1,ns,cells.concat([{s:ns,f:fr}]),p2,f2);
+    }
+  })(1,s0,[{s:s0,f:f0}],{[s0]:1},{[s0]:f0});
+  return best;
+}
+
+// Three notes per string, low E to high E.
+function position(f0){
+  const cells=[]; let m=OPENM[5]+f0;
+  for(let s=5;s>=0;s--) for(let k=0;k<3;k++){
+    const fr=m-OPENM[s];
+    if(fr<0||fr>=FRETS) return null;
+    cells.push({s,f:fr});
+    m++; while(!inScale(m)) m++;
+  }
+  return cells;
+}
+
+const cellKey=c=>c.s+':'+c.f;
+function byString(cells){
+  const m={}; cells.forEach(c=>(m[c.s]=m[c.s]||[]).push(c.f));
+  return Object.keys(m).map(Number).sort((a,b)=>b-a).map(s=>({s,frets:m[s].slice().sort((a,b)=>a-b)}));
+}
+// Which of the three one-string groups is this? Only meaningful for 3-note groups.
+function groupOf(frets){
+  if(frets.length!==3) return null;
+  const a=frets[1]-frets[0], b=frets[2]-frets[1];
+  if(a===2&&b===2) return 'A';
+  if(a===2&&b===1) return 'B';
+  if(a===1&&b===2) return 'C';
+  return null;
+}
+const span=cells=>{const f=cells.map(c=>c.f);return Math.max(...f)-Math.min(...f)+1};
+
+function buildRoots(){
+  ROOTS=[];
+  for(let f=0;f<FRETS && ROOTS.length<7;f++){
+    if(!degAt(5,f)) continue;
+    const r=tightRun(5,f), p=position(f);
+    if(!r||!p) continue;
+    const same=r.cells.length===8 &&
+      r.cells.every(c=>p.slice(0,8).some(q=>q.s===c.s&&q.f===c.f));
+    ROOTS.push({fret:f,name:nameAt(5,f),degree:degAt(5,f),run:r.cells,pos:p,same});
+  }
+  active=Math.min(active,ROOTS.length-1);
+  drawRoots(); show(active);
+}
+
+function drawRoots(){
+  document.getElementById('roots').innerHTML=ROOTS.map((r,i)=>
+    `<button class="root" data-i="${i}">
+      <span class="ball" style="background:${DEG[r.degree-1]}">${r.name}</span>
+      <span><b>${r.name} — fret ${r.fret}</b>
+      <span>${MODES[r.degree-1]}<i class="verdict ${r.same?'v-same':'v-diff'}">${
+        r.same?'same':'differs'}</i></span></span></button>`).join('');
+  document.querySelectorAll('.root').forEach(b=>b.onclick=()=>show(+b.dataset.i));
+}
+
+const cellEl=(s,f)=>document.querySelector(`.cell[data-s="${s}"][data-f="${f}"]`);
+
+function show(i){
+  active=i;
+  document.querySelectorAll('.root').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));
+  document.querySelectorAll('.cell').forEach(c=>{
+    c.classList.remove('lit','both','runonly','posonly','now','grouphead');
+    c.querySelector('.cellgroup').textContent='';
+  });
+  const r=ROOTS[i]; if(!r) return;
+  const R=new Set(r.run.map(cellKey)), P=new Set(r.pos.map(cellKey));
+
+  const paint=(set,cls)=>set.forEach(k=>{
+    const [s,f]=k.split(':').map(Number); const el=cellEl(s,f); if(!el) return;
+    el.classList.add('lit',cls);
+  });
+  if(view==='run')      paint(R,'runonly');
+  else if(view==='pos') paint(P,'posonly');
+  else {
+    P.forEach(k=>{ const [s,f]=k.split(':').map(Number); const el=cellEl(s,f); if(!el) return;
+      el.classList.add('lit', R.has(k)?'both':'posonly'); });
+    R.forEach(k=>{ if(P.has(k)) return;
+      const [s,f]=k.split(':').map(Number); const el=cellEl(s,f);
+      if(el) el.classList.add('lit','runonly'); });
+  }
+
+  // A/B/C tags on the position's three-note groups
+  if(view!=='run') byString(r.pos).forEach(({s,frets})=>{
+    const g=groupOf(frets); if(!g) return;
+    const el=cellEl(s,frets[0]); if(!el) return;
+    el.classList.add('grouphead'); el.querySelector('.cellgroup').textContent=g;
+  });
+
+  fillCard('run',r,r.run,'The smallest hand that covers one octave.');
+  fillCard('pos',r,r.pos,'Three notes on every string, all six strings.');
+}
+
+function fillCard(kind,r,cells,sub){
+  const rows=byString(cells);
+  document.getElementById(kind+'Sub').textContent=sub;
+  document.getElementById(kind+'Rows').innerHTML=rows.map(({s,frets})=>{
+    const g=kind==='pos'?groupOf(frets):null;
+    return `<div class="row"><u>${STR[s]}</u><code>${frets.join(' · ')}</code>`
+         + (g?`<em class="${g}">${g}</em>`:'')+`</div>`;
+  }).join('');
+  const mid=cells.map(c=>OPENM[c.s]+c.f);
+  const range=Math.max(...mid)-Math.min(...mid);
+  document.getElementById(kind+'Stats').innerHTML=
+     `<span><b>${cells.length}</b>notes</span>`
+    +`<span><b>${rows.length}</b>strings</span>`
+    +`<span><b>${span(cells)}</b>frets wide</span>`
+    +`<span><b>${(range/12).toFixed(1)}</b>octaves</span>`;
+  const stretches=rows.filter(x=>groupOf(x.frets)==='A').length;
+  document.getElementById(kind+'Note').innerHTML= kind==='run'
+    ? (r.same
+        ? `Here the run is <b>exactly the bottom of the position</b> — the two agree.`
+        : `Here the run <b>differs from the position</b>. It takes a different set of frets for
+           the same eight notes, trading uniformity for a smaller reach.`)
+    : `<b>${stretches} of 6</b> strings use the stretchy A shape. The run avoids it wherever
+       it can; the position takes it every time the scale asks.`;
+}
+
+function build(){
+  SCALE=scaleOf(key); BYPC={}; SCALE.forEach(s=>BYPC[s.pc]=s);
+  const g=document.getElementById('grid');
+  g.style.gridTemplateColumns=`26px repeat(${FRETS},1fr)`;
+  let h='<div></div>';
+  for(let f=0;f<FRETS;f++) h+=`<div class="fnum">${f}</div>`;
+  for(let s=0;s<6;s++){
+    h+=`<div class="slabel">${STR[s]}</div>`;
+    for(let f=0;f<FRETS;f++){
+      const d=degAt(s,f);
+      h+=`<div class="cell${f===0?' nut':''}${d?' inscale':''}" data-s="${s}" data-f="${f}">`
+       + `<div class="dot" style="background:${d?DEG[d-1]:'#3a3a4c'}">${d?nameAt(s,f):''}</div>`
+       + `<div class="cellgroup"></div>`
+       + (s===5&&MARKERS.includes(f)?'<div class="marker"></div>':'')+`</div>`;
+    }
+  }
+  g.innerHTML=h;
+  buildRoots();
+}
+
+// ---- sound -------------------------------------------------------------
+let ac=null;
+function beep(midi,t,dur){
+  const o=ac.createOscillator(), gn=ac.createGain();
+  o.type='triangle'; o.frequency.value=440*Math.pow(2,(midi-69)/12);
+  gn.gain.setValueAtTime(0,t);
+  gn.gain.linearRampToValueAtTime(.26,t+.012);
+  gn.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(gn); gn.connect(ac.destination); o.start(t); o.stop(t+dur+.05);
+}
+function play(cells){
+  ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+  if(ac.state==='suspended') ac.resume();
+  const step=cells.length>10?.19:.26, t0=ac.currentTime+.05;
+  cells.forEach((c,k)=>{
+    beep(OPENM[c.s]+c.f,t0+k*step,step*1.5);
+    setTimeout(()=>{
+      document.querySelectorAll('.cell.now').forEach(e=>e.classList.remove('now'));
+      const el=cellEl(c.s,c.f); if(el) el.classList.add('now');
+      if(k===cells.length-1) setTimeout(()=>el&&el.classList.remove('now'),420);
+    },(t0-ac.currentTime+k*step)*1000);
+  });
+}
+
+document.getElementById('key').innerHTML=
+  ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F']
+  .map(k=>`<option${k==='C'?' selected':''}>${k}</option>`).join('');
+document.getElementById('key').onchange=e=>{key=e.target.value;build()};
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{
+  view=b.dataset.v;
+  document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b));
+  show(active);
+});
+document.getElementById('playRun').onclick=()=>play(ROOTS[active].run);
+document.getElementById('playPos').onclick=()=>play(ROOTS[active].pos);
+build();
+window.__two={get ROOTS(){return ROOTS},show,build};
+</script>
+</body>
+</html>
