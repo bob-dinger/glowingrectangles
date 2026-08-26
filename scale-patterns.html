@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scale Patterns - Glowing Rectangles</title>
+<style>
+  :root{
+    --bg:#15151f; --panel:#1e1e2b; --line:#2c2c3d; --ink:#e8e8f0;
+    --dim:#8b8ba0; --faint:#5c5c72;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+  a{color:#8ab4f8}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 20px 70px}
+  .back{font-size:13px;color:var(--dim);text-decoration:none}
+  h1{font-size:28px;font-weight:600;margin:10px 0 6px}
+  .lede{color:var(--dim);font-size:13.5px;margin:0 0 20px;max-width:70ch;line-height:1.55}
+
+  .bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  .bar label{font-size:13px;color:var(--dim)}
+  select,button{font-family:inherit;background:#252534;color:var(--ink);
+    border:1px solid var(--line);border-radius:6px;padding:7px 11px;font-size:13px;cursor:pointer}
+  button:hover{border-color:#5a5a78}
+  button.on{background:#3b82f6;border-color:#3b82f6;color:#fff}
+
+  /* ---- fretboard ---- */
+  .board{background:#241c16;border:1px solid #3a2d22;border-radius:10px;
+         padding:12px 10px 8px;overflow-x:auto}
+  .grid{display:grid;gap:0;min-width:760px}
+  .fnum{font-size:10px;color:var(--faint);text-align:center;padding-bottom:5px;
+        font-variant-numeric:tabular-nums}
+  .slabel{font-size:11px;color:var(--dim);display:flex;align-items:center;
+          justify-content:center;padding-right:4px}
+  .cell{position:relative;height:38px;display:flex;align-items:center;justify-content:center;
+        border-left:1px solid #4a3a2c;cursor:pointer}
+  .cell.nut{border-left:3px solid #cbbba6}
+  .cell::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;
+                background:#6b5844;opacity:.75}
+  .dot{position:relative;width:26px;height:26px;border-radius:50%;
+       display:flex;align-items:center;justify-content:center;
+       font-size:11px;font-weight:700;color:#12121a;
+       opacity:.30;transition:opacity .12s,transform .12s}
+  .cell.inscale .dot{opacity:1}
+  /* once a shape is picked, everything else recedes hard */
+  .grid.focus .cell .dot{opacity:.05}
+  .grid.focus .cell.inscale .dot{opacity:.13}
+  .grid.focus .cell.match .dot,
+  .grid.focus .cell.sel .dot{opacity:1}
+  .cell.match .dot{box-shadow:0 0 0 2px #fff,0 0 12px 2px rgba(255,255,255,.45)}
+  .cell.sel .dot{box-shadow:0 0 0 3px #fff,0 0 16px 4px rgba(255,255,255,.7);transform:scale(1.12)}
+  .cell:hover .dot{opacity:.85}
+  .cell.inscale:hover .dot{opacity:1;transform:scale(1.1)}
+  .marker{position:absolute;bottom:1px;left:50%;transform:translateX(-50%);
+          width:4px;height:4px;border-radius:50%;background:#6b5844}
+
+  /* ---- layout: shapes in a left drawer, board gets the rest ---- */
+  .layout{display:grid;grid-template-columns:310px 1fr;gap:30px;align-items:start}
+  .layout.closed{grid-template-columns:46px 1fr}
+  @media(max-width:900px){.layout,.layout.closed{grid-template-columns:1fr}
+    .drawer{height:auto!important;position:static!important;border-right:0!important;
+            border-bottom:1px solid var(--line)}}
+  .drawer{position:sticky;top:0;height:100vh;
+          border-right:1px solid var(--line);
+          padding:22px 22px 18px 0;
+          display:flex;flex-direction:column;overflow:hidden}
+  .dhead{display:flex;align-items:center;justify-content:space-between;gap:8px;
+         margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .dhead h2{margin:0;font-size:12px}
+  .layout.closed .drawer{padding:22px 8px 18px 0}
+  main{padding-top:22px;min-width:0}
+  .layout.closed .dhead h2,.layout.closed .presets,.layout.closed .gbnote{display:none}
+  #collapse{padding:3px 8px;font-size:12px;line-height:1.2}
+  .gbnote{font-size:11px;color:var(--dim);line-height:1.5;margin:10px 0 0;
+          border-top:1px solid var(--line);padding-top:9px}
+  .gbnote b{color:#f0b429}
+.pgroup{font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint);
+          margin:14px 0 3px;padding-left:2px;font-weight:600}
+  .presets>.pgroup:first-child{margin-top:0}
+  .preset.gb{border-color:#6b5320}
+  .preset.gb.on{border-color:#f0b429;background:#3a2f14}
+  .star{color:#f0b429;font-size:11px;margin-left:3px}
+
+  /* ---- pattern panel ---- */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .card h2{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);
+           margin:0 0 10px;font-weight:600}
+  .mini{display:inline-grid;gap:3px;background:#2a2438;padding:7px;border-radius:7px}
+  .mini i{width:19px;height:19px;border-radius:50%;background:#33334a;display:block}
+  .count{font-size:30px;font-weight:700;line-height:1;margin:10px 0 2px}
+  .count small{font-size:12px;font-weight:400;color:var(--dim);display:block;margin-top:4px;letter-spacing:.04em}
+  .hint{font-size:12px;color:var(--dim);line-height:1.5;margin:8px 0 0}
+
+  .presets{display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;padding-right:6px}
+  .preset{display:flex;align-items:center;gap:13px;background:#252534;border:1px solid var(--line);
+          border-radius:8px;padding:11px 13px;cursor:pointer;text-align:left;width:100%}
+  .preset>span{min-width:0}
+  .preset:hover{border-color:#5a5a78}
+  .preset.on{border-color:#3b82f6;background:#22304a}
+  .preset .mini{padding:5px;background:#1b1b28}
+  .preset .mini i{width:15px;height:15px}
+  .preset .mini{flex:none}
+  .preset b{font-size:13.5px;font-weight:600;display:block;margin-bottom:2px}
+  .preset span span{font-size:11.5px;color:var(--dim);line-height:1.4;display:block}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px}
+  .legend div{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--dim)}
+  .legend i{width:12px;height:12px;border-radius:50%}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="layout" id="layout">
+    <aside class="drawer">
+      <div class="dhead">
+        <h2>Shapes</h2>
+        <button id="collapse" title="Hide">&lsaquo;</button>
+      </div>
+      <div class="presets" id="presets"></div>
+      <p class="gbnote"><b>&#9733;</b> only works on the <b>G&ndash;B</b> pair.
+        Those two strings are a major third apart; every other pair is a fourth,
+        so shapes never cross between them.</p>
+    </aside>
+
+    <main>
+  <a class="back" href="index.html">← Back</a>
+  <h1>Scale Patterns</h1>
+  <p class="lede">Small shapes repeat all over the fretboard. Click any notes to
+    build a shape and the board shows you <b>every other place it occurs</b>.
+    Colours are scale degrees — in C major that's C&nbsp;red, D&nbsp;orange,
+    E&nbsp;yellow, F&nbsp;green, G&nbsp;blue, A&nbsp;purple, B&nbsp;pink.</p>
+
+      <div class="bar">
+        <label for="key">Key</label>
+        <select id="key"></select>
+        <button id="mode" class="on">Match colours</button>
+        <button id="clear">Clear</button>
+      </div>
+
+      <div class="board"><div class="grid" id="grid"></div></div>
+      <div class="legend" id="legend"></div>
+
+      <div class="card" style="margin-top:16px">
+        <h2>Your shape</h2>
+        <div id="mini"></div>
+        <div class="count" id="count">&mdash;<small id="countLabel">click notes to start</small></div>
+        <p class="hint" id="hint">Pick two notes on one string and two on the string
+          above. That's the smallest useful block.</p>
+      </div>
+    </main>
+  </div>
+
+<script>
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const STR=['E','B','G','D','A','E'];          // high → low, as drawn
+const OPEN=[4,11,7,2,9,4];                    // pitch class of each open string
+const FRETS=16;
+const MARKERS=[3,5,7,9,12,15];
+// degree colours — identical to the fretboard page
+const DEG=['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#a855f7','#ec4899'];
+const MAJOR=[0,2,4,5,7,9,11];
+const LETTERS=['C','D','E','F','G','A','B'], LPC={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+
+let key='C', matchColours=true, sel=[], matches=[];
+
+function scaleOf(root){
+  const acc=root.slice(1);
+  const rp=((LPC[root[0]]+(acc==='#'?1:acc==='b'?-1:0))%12+12)%12;
+  const li=LETTERS.indexOf(root[0]); const out=[];
+  for(let i=0;i<7;i++){
+    const letter=LETTERS[(li+i)%7], pc=(rp+MAJOR[i])%12;
+    const d=((pc-LPC[letter])%12+12)%12;
+    const a=d===0?'':d===1?'#':d===11?'b':d===2?'##':'bb';
+    out.push({pc,name:letter+a,degree:i+1});
+  }
+  return out;
+}
+let SCALE=[], BYPC={};
+function pcAt(s,f){ return (OPEN[s]+f)%12; }
+function degAt(s,f){ const x=BYPC[pcAt(s,f)]; return x?x.degree:null; }
+function nameAt(s,f){ const x=BYPC[pcAt(s,f)]; return x?x.name:NOTES[pcAt(s,f)]; }
+
+function build(){
+  SCALE=scaleOf(key); BYPC={}; SCALE.forEach(s=>BYPC[s.pc]=s);
+  const g=document.getElementById('grid');
+  g.style.gridTemplateColumns=`26px repeat(${FRETS},1fr)`;
+  let h='<div></div>';
+  for(let f=0;f<FRETS;f++) h+=`<div class="fnum">${f}</div>`;
+  for(let s=0;s<6;s++){
+    h+=`<div class="slabel">${STR[s]}</div>`;
+    for(let f=0;f<FRETS;f++){
+      const d=degAt(s,f);
+      h+=`<div class="cell${f===0?' nut':''}${d?' inscale':''}" data-s="${s}" data-f="${f}">`
+       +  `<div class="dot" style="background:${d?DEG[d-1]:'#3a3a4c'}">${d?nameAt(s,f):''}</div>`
+       +  (s===5&&MARKERS.includes(f)?'<div class="marker"></div>':'')
+       +  `</div>`;
+    }
+  }
+  g.innerHTML=h;
+  g.querySelectorAll('.cell').forEach(c=>c.onclick=()=>toggle(+c.dataset.s,+c.dataset.f));
+  document.getElementById('legend').innerHTML=SCALE.map(s=>
+    `<div><i style="background:${DEG[s.degree-1]}"></i>${s.degree} ${s.name}</div>`).join('');
+  refresh();
+}
+
+function toggle(s,f){
+  if(!degAt(s,f)) return;                       // only scale notes
+  const i=sel.findIndex(c=>c.s===s&&c.f===f);
+  if(i>=0) sel.splice(i,1); else sel.push({s,f});
+  document.querySelectorAll('.preset').forEach(p=>p.classList.remove('on'));
+  refresh();
+}
+
+// Every place this exact shape reappears.
+function findMatches(){
+  if(sel.length<2) return [];
+  const mS=Math.min(...sel.map(c=>c.s)), mF=Math.min(...sel.map(c=>c.f));
+  const offs=sel.map(c=>({ds:c.s-mS,df:c.f-mF,deg:degAt(c.s,c.f)}));
+  const out=[];
+  for(let s=0;s<6;s++) for(let f=0;f<FRETS;f++){
+    let ok=true;
+    for(const o of offs){
+      const S=s+o.ds, F=f+o.df;
+      if(S>5||F>=FRETS){ok=false;break}
+      const d=degAt(S,F);
+      if(!d){ok=false;break}
+      if(matchColours&&d!==o.deg){ok=false;break}
+    }
+    if(ok) out.push({s,f,offs});
+  }
+  return out;
+}
+
+function refresh(){
+  document.getElementById('grid').classList.toggle('focus', sel.length>0);
+  document.querySelectorAll('.cell').forEach(c=>c.classList.remove('sel','match'));
+  sel.forEach(c=>cellEl(c.s,c.f)?.classList.add('sel'));
+  matches=findMatches();
+  const mS=sel.length?Math.min(...sel.map(c=>c.s)):0, mF=sel.length?Math.min(...sel.map(c=>c.f)):0;
+  matches.forEach(m=>{
+    if(m.s===mS&&m.f===mF) return;              // that's the one you drew
+    m.offs.forEach(o=>cellEl(m.s+o.ds,m.f+o.df)?.classList.add('match'));
+  });
+  drawMini();
+  const others=Math.max(0,matches.length-(sel.length?1:0));
+  document.getElementById('count').firstChild.nodeValue=sel.length?String(matches.length):'—';
+  document.getElementById('countLabel').textContent=
+    !sel.length?'click notes to start'
+    : matches.length===1?'only here — this shape is unique'
+    : `places on the neck · ${others} other${others===1?'':'s'} lit up`;
+  document.getElementById('hint').textContent=
+    !sel.length ? 'Pick two notes on one string and two on the string above. That’s the smallest useful block.'
+    : matchColours ? 'Matching colours: same shape AND same scale degrees.'
+    : 'Shape only: same fingering, whatever notes fall under it.';
+}
+function cellEl(s,f){ return document.querySelector(`.cell[data-s="${s}"][data-f="${f}"]`); }
+
+function drawMini(){
+  const el=document.getElementById('mini');
+  if(!sel.length){ el.innerHTML=''; return; }
+  const mS=Math.min(...sel.map(c=>c.s)), xS=Math.max(...sel.map(c=>c.s));
+  const mF=Math.min(...sel.map(c=>c.f)), xF=Math.max(...sel.map(c=>c.f));
+  el.innerHTML=miniHTML(sel,mS,xS,mF,xF,19);
+}
+function miniHTML(cells,mS,xS,mF,xF,size){
+  let h=`<div class="mini" style="grid-template-columns:repeat(${xF-mF+1},${size}px)">`;
+  for(let s=mS;s<=xS;s++) for(let f=mF;f<=xF;f++){
+    const on=cells.find(c=>c.s===s&&c.f===f);
+    const d=on?degAt(s,f):null;
+    h+=`<i style="width:${size}px;height:${size}px;background:${d?DEG[d-1]:'#33334a'}"></i>`;
+  }
+  return h+'</div>';
+}
+
+// Your three shapes.
+const PRESETS=[
+ {group:'Four-note blocks',name:'Two-by-two', note:'B-C over E-F · A and D strings',
+  cells:[{s:4,f:2},{s:4,f:3},{s:3,f:2},{s:3,f:3}]},
+ {group:'Four-note blocks',name:'Up and over', note:'E-F, then up a string and over two',
+  cells:[{s:3,f:2},{s:3,f:3},{s:2,f:4},{s:2,f:5}]},
+ {group:'Two columns',name:'G-A over D-E', note:'the family: two aligned pairs, a gap between',
+  cells:[{s:3,f:0},{s:3,f:2},{s:2,f:0},{s:2,f:2}]},
+ {group:'Two columns',name:'D-E over A-B', note:'same shape, different pair \u00b7 5 places',
+  cells:[{s:3,f:0},{s:3,f:2},{s:4,f:0},{s:4,f:2}]},
+ {group:'Two columns',name:'F-G over C-D', note:'same shape, different pair \u00b7 5 places',
+  cells:[{s:0,f:1},{s:0,f:3},{s:1,f:1},{s:1,f:3}]},
+ {group:'Two columns',name:'C-D over G-A', note:'same shape, different pair \u00b7 4 places',
+  cells:[{s:4,f:3},{s:4,f:5},{s:5,f:3},{s:5,f:5}]},
+ {group:'Four-note blocks',name:'Step up', note:'half-step below, whole-step above · 5 places',
+  cells:[{s:1,f:5},{s:1,f:6},{s:0,f:5},{s:0,f:7}]},
+ {group:'Four-note blocks',name:'Step down', note:'whole below, half above and right · 5 places',
+  cells:[{s:1,f:6},{s:1,f:8},{s:0,f:7},{s:0,f:8}]},
+ {group:'Four-note blocks',name:'Offset pair', note:'B-C, then F-G up and to the right · 5 places',
+  cells:[{s:1,f:0},{s:1,f:1},{s:0,f:1},{s:0,f:3}]},
+ {group:'Four-note blocks',name:'The stretch', note:'widest of the four-note blocks · 4 places',
+  cells:[{s:1,f:1},{s:1,f:3},{s:0,f:3},{s:0,f:5}]},
+ {group:'Landmarks',name:'Octave', note:'root, then two strings up and two frets over',
+  cells:[{s:5,f:8},{s:3,f:10}]},
+ // --- G-B pair only: that pair is a major third, so nothing above transfers ---
+ {group:'G\u2013B pair only',name:'Two-and-two', gb:true, note:'B-C over G-A',
+  cells:[{s:1,f:0},{s:1,f:1},{s:2,f:0},{s:2,f:2}]},
+ {group:'G\u2013B pair only',name:'Offset', gb:true, note:'C-D over G-A, shifted a fret',
+  cells:[{s:1,f:1},{s:1,f:3},{s:2,f:0},{s:2,f:2}]},
+ {group:'G\u2013B pair only',name:'Reverse', gb:true, note:'D-E over B-C',
+  cells:[{s:1,f:3},{s:1,f:5},{s:2,f:4},{s:2,f:5}]},
+ {group:'G\u2013B pair only',name:'Two columns \u00b7 A-B over F-G', gb:true,
+  note:'the fifth two-column shape \u2014 exists only here',
+  cells:[{s:1,f:10},{s:1,f:12},{s:2,f:10},{s:2,f:12}]},
+ // --- triangles: two on one string, one between them on the other. G-B only. ---
+ {group:'Triangles \u00b7 apex down', gb:true, name:'C-D over A', note:'2 places',
+  cells:[{s:1,f:1},{s:1,f:3},{s:2,f:2}]},
+ {group:'Triangles \u00b7 apex down', gb:true, name:'D-E over B', note:'',
+  cells:[{s:1,f:3},{s:1,f:5},{s:2,f:4}]},
+ {group:'Triangles \u00b7 apex down', gb:true, name:'F-G over D', note:'',
+  cells:[{s:1,f:6},{s:1,f:8},{s:2,f:7}]},
+ {group:'Triangles \u00b7 apex down', gb:true, name:'G-A over E', note:'',
+  cells:[{s:1,f:8},{s:1,f:10},{s:2,f:9}]},
+ {group:'Triangles \u00b7 apex up', gb:true, name:'C over G-A', note:'2 places',
+  cells:[{s:1,f:1},{s:2,f:0},{s:2,f:2}]},
+ {group:'Triangles \u00b7 apex up', gb:true, name:'D over A-B', note:'',
+  cells:[{s:1,f:3},{s:2,f:2},{s:2,f:4}]},
+ {group:'Triangles \u00b7 apex up', gb:true, name:'F over C-D', note:'',
+  cells:[{s:1,f:6},{s:2,f:5},{s:2,f:7}]},
+ {group:'Triangles \u00b7 apex up', gb:true, name:'G over D-E', note:'',
+  cells:[{s:1,f:8},{s:2,f:7},{s:2,f:9}]},
+ // --- three notes on each string inside four frets. Only three of these exist. ---
+ {group:'Three and three \u00b7 4 frets', name:'B-C-D under E-F-G', note:'A and D strings \u00b7 5 places',
+  cells:[{s:3,f:2},{s:3,f:3},{s:3,f:5},{s:4,f:2},{s:4,f:3},{s:4,f:5}]},
+ {group:'Three and three \u00b7 4 frets', name:'E-F-G under A-B-C', note:'low E and A \u00b7 5 places',
+  cells:[{s:4,f:0},{s:4,f:2},{s:4,f:3},{s:5,f:0},{s:5,f:1},{s:5,f:3}]},
+ {group:'Three and three \u00b7 4 frets', name:'A-B-C under D-E-F', note:'the third one \u00b7 5 places',
+  cells:[{s:4,f:5},{s:4,f:7},{s:4,f:8},{s:5,f:5},{s:5,f:7},{s:5,f:8}]},
+ // --- 3 + 3 across five frets: the wide ones. Only four exist. ---
+ {group:'Wide \u00b7 5 frets', name:'C-D-E under F-G-A', note:'4 places',
+  cells:[{s:1,f:1},{s:1,f:3},{s:1,f:5},{s:0,f:1},{s:0,f:3},{s:0,f:5}]},
+ {group:'Wide \u00b7 5 frets', name:'D-E-F under G-A-B', note:'4 places',
+  cells:[{s:1,f:3},{s:1,f:5},{s:1,f:6},{s:0,f:3},{s:0,f:5},{s:0,f:7}]},
+ {group:'Wide \u00b7 5 frets', name:'F-G-A under B-C-D', note:'4 places',
+  cells:[{s:1,f:6},{s:1,f:8},{s:1,f:10},{s:0,f:7},{s:0,f:8},{s:0,f:10}]},
+ {group:'Wide \u00b7 5 frets', name:'G-A-B under C-D-E', note:'4 places',
+  cells:[{s:1,f:8},{s:1,f:10},{s:1,f:12},{s:0,f:8},{s:0,f:10},{s:0,f:12}]},
+
+ // --- three strings ---
+ {group:'Two strings \u00b7 3 frets', name:'G down to C, over to D',
+  note:'low E 3 \u2192 A 3 \u2192 A 5',
+  cells:[{s:5,f:3},{s:4,f:3},{s:4,f:5}]},
+ {group:'Three strings', name:'Stacked fourths', note:'one fret, three strings \u00b7 C G D',
+  cells:[{s:2,f:5},{s:3,f:5},{s:4,f:5}]},
+ {group:'Three strings', name:'The diagonal', note:'C G D climbing, two frets per string',
+  cells:[{s:4,f:3},{s:3,f:5},{s:2,f:7}]},
+ {group:'Three strings', name:'G-D-C corner', note:'two open, one reached',
+  cells:[{s:2,f:0},{s:3,f:0},{s:4,f:3}]},
+];
+function drawPresets(){
+  const ORDER=['Three and three \u00b7 4 frets','Wide \u00b7 5 frets','Two strings \u00b7 3 frets','Three strings',
+               'Four-note blocks','Two columns','Landmarks',
+               'G\u2013B pair only','Triangles \u00b7 apex down','Triangles \u00b7 apex up'];
+  // keep the original index so clicks still resolve, but show grouped
+  const order=PRESETS.map((p,i)=>({p,i}))
+    .sort((a,b)=>ORDER.indexOf(a.p.group)-ORDER.indexOf(b.p.group));
+  let lastG=null;
+  document.getElementById('presets').innerHTML=order.map(({p,i})=>{
+    const hdr = p.group && p.group!==lastG ? `<div class="pgroup">${(lastG=p.group)}</div>` : '';
+    const mS=Math.min(...p.cells.map(c=>c.s)),xS=Math.max(...p.cells.map(c=>c.s));
+    const mF=Math.min(...p.cells.map(c=>c.f)),xF=Math.max(...p.cells.map(c=>c.f));
+    return hdr+`<button class="preset${p.gb?' gb':''}" data-i="${i}">${miniHTML(p.cells,mS,xS,mF,xF,13)}`
+      +`<span><b>${p.name}${p.gb?'<i class="star">\u2605</i>':''}</b>`
+      +(p.note?`<span>${p.note}</span>`:'')+`</span></button>`;
+  }).join('');
+  document.querySelectorAll('.preset').forEach(b=>b.onclick=()=>{
+    sel=PRESETS[+b.dataset.i].cells.map(c=>({...c}));
+    document.querySelectorAll('.preset').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); refresh();
+  });
+}
+
+document.getElementById('key').innerHTML=
+  ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F'].map(k=>`<option>${k}</option>`).join('');
+document.getElementById('key').onchange=e=>{ key=e.target.value; sel=[]; build(); drawPresets(); };
+document.getElementById('mode').onclick=e=>{
+  matchColours=!matchColours;
+  e.target.classList.toggle('on',matchColours);
+  e.target.textContent=matchColours?'Match colours':'Match shape only';
+  refresh();
+};
+document.getElementById('collapse').onclick=e=>{
+  const l=document.getElementById('layout');
+  const closed=l.classList.toggle('closed');
+  e.target.innerHTML=closed?'\u203a':'\u2039';
+  e.target.title=closed?'Show shapes':'Hide';
+};
+document.getElementById('clear').onclick=()=>{
+  sel=[]; document.querySelectorAll('.preset').forEach(p=>p.classList.remove('on')); refresh();
+};
+
+build(); drawPresets();
+</script>
+</body>
+</html>

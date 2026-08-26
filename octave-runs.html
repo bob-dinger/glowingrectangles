@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octave Runs - Glowing Rectangles</title>
+<style>
+  :root{--bg:#15151f;--panel:#1e1e2b;--line:#2c2c3d;--ink:#e8e8f0;--dim:#8b8ba0;--faint:#5c5c72}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+  a{color:#8ab4f8}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 20px 70px}
+  .back{font-size:13px;color:var(--dim);text-decoration:none}
+  h1{font-size:28px;font-weight:600;margin:10px 0 6px}
+  .lede{color:var(--dim);font-size:13.5px;margin:0 0 20px;max-width:70ch;line-height:1.55}
+  .lede.sub{font-size:12.5px;opacity:.72;margin-top:-12px}
+
+  .layout{display:grid;grid-template-columns:270px 1fr;gap:30px;align-items:start}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}
+    .drawer{height:auto!important;position:static!important;border-right:0!important;
+            border-bottom:1px solid var(--line)}}
+  .drawer{position:sticky;top:0;height:100vh;border-right:1px solid var(--line);
+          padding:22px 22px 18px 0;display:flex;flex-direction:column;overflow:hidden}
+  .dhead{margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .dhead h2{margin:0;font-size:12px;letter-spacing:.15em;text-transform:uppercase;
+            color:var(--dim);font-weight:600}
+  main{padding-top:22px;min-width:0}
+
+  .runs{display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;padding-right:6px}
+  .run{display:flex;align-items:center;gap:12px;background:#252534;border:1px solid var(--line);
+       border-radius:8px;padding:11px 13px;cursor:pointer;text-align:left;width:100%;
+       font-family:inherit;color:var(--ink)}
+  .run:hover{border-color:#5a5a78}
+  .run.on{border-color:#3b82f6;background:#22304a}
+  .run .ball{width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;
+             font-size:13px;font-weight:700;color:#12121a}
+  .run b{font-size:13.5px;display:block;margin-bottom:2px}
+  .run span{font-size:11.5px;color:var(--dim);display:block;line-height:1.4}
+  .gbm{font-style:normal;color:#f0b429;border:1px solid #6b5320;border-radius:4px;
+       padding:0 4px;font-size:10px;margin-left:3px}
+
+  .bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  .bar label{font-size:13px;color:var(--dim)}
+  select,button{font-family:inherit;background:#252534;color:var(--ink);border:1px solid var(--line);
+    border-radius:6px;padding:7px 11px;font-size:13px;cursor:pointer}
+  button:hover{border-color:#5a5a78}
+  button.on{background:#3b82f6;border-color:#3b82f6;color:#fff}
+
+  .board{background:#241c16;border:1px solid #3a2d22;border-radius:10px;padding:12px 10px 8px;overflow-x:auto}
+  .grid{display:grid;gap:0;min-width:780px}
+  .fnum{font-size:10px;color:var(--faint);text-align:center;padding-bottom:5px;font-variant-numeric:tabular-nums}
+  .slabel{font-size:11px;color:var(--dim);display:flex;align-items:center;justify-content:center;padding-right:4px}
+  .cell{position:relative;height:38px;display:flex;align-items:center;justify-content:center;
+        border-left:1px solid #4a3a2c}
+  .cell.nut{border-left:3px solid #cbbba6}
+  .cell::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:#6b5844;opacity:.75}
+  .dot{position:relative;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+       justify-content:center;font-size:11px;font-weight:700;color:#12121a;opacity:.06;
+       transition:opacity .12s,transform .12s}
+  .cell.inscale .dot{opacity:.13}
+  .cell.inrun .dot{opacity:1}
+  .cell.inrun.root .dot{box-shadow:0 0 0 3px #fff}
+  .cell.now .dot{transform:scale(1.3);box-shadow:0 0 0 3px #fff,0 0 18px 5px rgba(255,255,255,.65)}
+  .ord{position:absolute;top:-1px;right:2px;font-size:9px;font-weight:700;color:#fff;
+       background:#000a;border-radius:7px;padding:0 4px;line-height:13px;display:none}
+  .cell.inrun .ord{display:block}
+  .marker{position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;
+          border-radius:50%;background:#6b5844}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:16px}
+  .card h2{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);margin:0 0 10px;font-weight:600}
+  .seq{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .seq i{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-style:normal;
+         font-size:12px;font-weight:700;color:#12121a}
+  .facts{display:flex;gap:22px;flex-wrap:wrap;font-size:12.5px;color:var(--dim)}
+  .facts b{color:var(--ink);font-weight:600}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px}
+  .legend div{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--dim)}
+  .legend i{width:12px;height:12px;border-radius:50%}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="layout">
+    <aside class="drawer">
+      <div class="dhead"><h2>Seven runs</h2></div>
+      <div class="runs" id="runs"></div>
+    </aside>
+
+    <main>
+      <a class="back" href="index.html">← Back</a>
+      <h1>Octave Runs</h1>
+      <p class="lede">One octave, root to root. Start on each note of the scale and you get a
+        <b>different shape</b> — seven in all. Every one fits under the hand in four or five
+        frets and crosses exactly three strings.</p>
+      <p class="lede sub">No runs starting on the B or high E string: an octave needs eight notes,
+        and with only two strings left you'd need four on one of them — four scale notes in a row
+        always span at least five frets, which is past the hand.</p>
+
+      <div class="bar">
+        <label for="key">Key</label><select id="key"></select>
+        <label for="startStr">Root on</label><select id="startStr"></select>
+        <button id="play">▶ Play</button>
+        <button id="sound" class="on">Sound on</button>
+      </div>
+
+      <div class="board"><div class="grid" id="grid"></div></div>
+      <div class="legend" id="legend"></div>
+
+      <div class="card">
+        <h2 id="runTitle">—</h2>
+        <div class="seq" id="seq"></div>
+        <div class="facts" id="facts"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const STR=['E','B','G','D','A','E'];
+const OPENM=[64,59,55,50,45,40];              // midi of each open string
+const FRETS=18, MARKERS=[3,5,7,9,12,15,17];
+const DEG=['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#a855f7','#ec4899'];
+const MAJOR=[0,2,4,5,7,9,11];
+const LETTERS=['C','D','E','F','G','A','B'], LPC={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+
+let key='C', startStr=5, RUNS=[], active=0, soundOn=true;
+
+function scaleOf(root){
+  const acc=root.slice(1);
+  const rp=((LPC[root[0]]+(acc==='#'?1:acc==='b'?-1:0))%12+12)%12;
+  const li=LETTERS.indexOf(root[0]); const out=[];
+  for(let i=0;i<7;i++){
+    const letter=LETTERS[(li+i)%7], pc=(rp+MAJOR[i])%12;
+    const d=((pc-LPC[letter])%12+12)%12;
+    out.push({pc,name:letter+(d===0?'':d===1?'#':d===11?'b':d===2?'##':'bb'),degree:i+1});
+  }
+  return out;
+}
+let SCALE=[],BYPC={};
+const pcAt=(s,f)=>((OPENM[s]+f)%12+12)%12;
+const degAt=(s,f)=>{const x=BYPC[pcAt(s,f)];return x?x.degree:null};
+const nameAt=(s,f)=>{const x=BYPC[pcAt(s,f)];return x?x.name:NOTES[pcAt(s,f)]};
+
+// Tightest ascending one-octave fingering from (s0,f0):
+// minimise fret span, never fewer than two notes on any string used.
+function findRun(s0,f0){
+  const pcs=SCALE.map(x=>x.pc);
+  const inScale=m=>pcs.includes(((m%12)+12)%12);
+  const seq=[OPENM[s0]+f0];
+  let m=seq[0];
+  while(seq.length<8){ m++; while(!inScale(m)) m++; seq.push(m); }
+  // Playability, not just tightness:
+  //   REACH  no string may span more than 4 fret positions (one finger per fret)
+  //   TOTAL  the whole run stays inside 5 frets
+  // Without the per-string cap you get things like frets 10-12-14 on one string,
+  // which is an index-to-pinky stretch across five positions.
+  const REACH=3, TOTAL=4;
+  let best=null;
+  (function dfs(i,s,cells,per,first){
+    const fs=cells.map(c=>c.f);
+    const span=Math.max(...fs)-Math.min(...fs);
+    if(span>TOTAL) return;
+    if(best && span>best.span) return;
+    if(i===seq.length){
+      if(Object.values(per).some(v=>v<2)) return;
+      if(!best || span<best.span) best={span,cells:cells.slice()};
+      return;
+    }
+    for(let ns=s;ns>=0;ns--){
+      const fr=seq[i]-OPENM[ns];
+      if(fr<0||fr>=FRETS) continue;
+      if(ns===s){
+        if(fr<=cells[cells.length-1].f) continue;
+        if(fr-first[ns]>REACH) continue;
+      } else if((per[s]||0)<2) continue;
+      if((per[ns]||0)>=4) continue;
+      const p2={...per}; p2[ns]=(p2[ns]||0)+1;
+      const f2={...first}; if(f2[ns]===undefined) f2[ns]=fr;
+      dfs(i+1,ns,cells.concat([{s:ns,f:fr}]),p2,f2);
+    }
+  })(1,s0,[{s:s0,f:f0}],{[s0]:1},{[s0]:f0});
+  return best;
+}
+
+function buildRuns(){
+  RUNS=[];
+  for(let f=0;f<FRETS && RUNS.length<7;f++){
+    if(!degAt(startStr,f)) continue;
+    const r=findRun(startStr,f);
+    if(r){
+      const used=new Set(r.cells.map(c=>c.s));
+      RUNS.push({root:nameAt(startStr,f),degree:degAt(startStr,f),fret:f,
+                 gb:used.has(2)&&used.has(1), ...r});
+    }
+  }
+  active=Math.min(active,RUNS.length-1);
+  drawRuns(); show(active);
+}
+
+function drawRuns(){
+  document.getElementById('runs').innerHTML=RUNS.map((r,i)=>{
+    const per={}; r.cells.forEach(c=>per[c.s]=(per[c.s]||0)+1);
+    const shape=Object.keys(per).sort((a,b)=>b-a).map(k=>per[k]).join('-');
+    return `<button class="run" data-i="${i}">
+      <span class="ball" style="background:${DEG[r.degree-1]}">${r.root}</span>
+      <span><b>${r.root} → ${r.root}</b>
+      <span>fret ${r.fret} · ${r.span+1} frets · ${shape}${r.gb?' <i class="gbm">crosses B</i>':''}</span></span></button>`;
+  }).join('');
+  document.querySelectorAll('.run').forEach(b=>b.onclick=()=>show(+b.dataset.i));
+}
+
+function build(){
+  SCALE=scaleOf(key); BYPC={}; SCALE.forEach(s=>BYPC[s.pc]=s);
+  const g=document.getElementById('grid');
+  g.style.gridTemplateColumns=`26px repeat(${FRETS},1fr)`;
+  let h='<div></div>';
+  for(let f=0;f<FRETS;f++) h+=`<div class="fnum">${f}</div>`;
+  for(let s=0;s<6;s++){
+    h+=`<div class="slabel">${STR[s]}</div>`;
+    for(let f=0;f<FRETS;f++){
+      const d=degAt(s,f);
+      h+=`<div class="cell${f===0?' nut':''}${d?' inscale':''}" data-s="${s}" data-f="${f}">`
+       + `<div class="dot" style="background:${d?DEG[d-1]:'#3a3a4c'}">${d?nameAt(s,f):''}</div>`
+       + `<div class="ord"></div>`
+       + (s===5&&MARKERS.includes(f)?'<div class="marker"></div>':'')+`</div>`;
+    }
+  }
+  g.innerHTML=h;
+  document.getElementById('legend').innerHTML=SCALE.map(s=>
+    `<div><i style="background:${DEG[s.degree-1]}"></i>${s.degree} ${s.name}</div>`).join('');
+  buildRuns();
+}
+
+function cellEl(s,f){return document.querySelector(`.cell[data-s="${s}"][data-f="${f}"]`)}
+
+function show(i){
+  active=i;
+  document.querySelectorAll('.run').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));
+  document.querySelectorAll('.cell').forEach(c=>{
+    c.classList.remove('inrun','root','now');
+    c.querySelector('.ord').textContent='';
+  });
+  const r=RUNS[i]; if(!r) return;
+  r.cells.forEach((c,k)=>{
+    const el=cellEl(c.s,c.f); if(!el) return;
+    el.classList.add('inrun');
+    if(k===0||k===r.cells.length-1) el.classList.add('root');
+    el.querySelector('.ord').textContent=k+1;
+  });
+  document.getElementById('runTitle').textContent=`${r.root} to ${r.root} — one octave`;
+  document.getElementById('seq').innerHTML=r.cells.map(c=>
+    `<i style="background:${DEG[degAt(c.s,c.f)-1]}">${nameAt(c.s,c.f)}</i>`).join('');
+  const per={}; r.cells.forEach(c=>per[c.s]=(per[c.s]||0)+1);
+  const strs=Object.keys(per).sort((a,b)=>b-a);
+  document.getElementById('facts').innerHTML=
+    `<span>starts <b>${STR[startStr]} string, fret ${r.fret}</b></span>`
+   +`<span>span <b>${r.span+1} frets</b></span>`
+   +`<span>strings <b>${strs.map(s=>STR[s]).join(' → ')}</b></span>`
+   +`<span>notes per string <b>${strs.map(s=>per[s]).join('-')}</b></span>`
+   +(r.gb?`<span style="color:#f0b429">crosses the <b style="color:#f0b429">G\u2013B</b> major third</span>`:'');
+}
+
+// --- sound ---
+let actx=null;
+function ping(midi,when,dur=0.42){
+  if(!soundOn) return;
+  actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  const t=actx.currentTime+when;
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type='triangle'; o.frequency.value=440*Math.pow(2,(midi-69)/12);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.22,t+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g).connect(actx.destination); o.start(t); o.stop(t+dur+0.05);
+}
+let playing=null;
+function playRun(){
+  const r=RUNS[active]; if(!r) return;
+  clearTimeout(playing);
+  if(soundOn) actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  r.cells.forEach((c,k)=>{
+    ping(OPENM[c.s]+c.f, k*0.30);
+    playing=setTimeout(()=>{
+      document.querySelectorAll('.cell.now').forEach(x=>x.classList.remove('now'));
+      cellEl(c.s,c.f)?.classList.add('now');
+      if(k===r.cells.length-1) setTimeout(()=>cellEl(c.s,c.f)?.classList.remove('now'),400);
+    },k*300);
+  });
+}
+
+document.getElementById('key').innerHTML=
+  ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F'].map(k=>`<option>${k}</option>`).join('');
+document.getElementById('startStr').innerHTML=
+  [[5,'low E'],[4,'A'],[3,'D'],[2,'G']].map(([v,l])=>`<option value="${v}">${l} string</option>`).join('');
+document.getElementById('key').onchange=e=>{key=e.target.value;build()};
+document.getElementById('startStr').onchange=e=>{startStr=+e.target.value;buildRuns()};
+document.getElementById('play').onclick=playRun;
+document.getElementById('sound').onclick=e=>{
+  soundOn=!soundOn; e.target.classList.toggle('on',soundOn);
+  e.target.textContent=soundOn?'Sound on':'Sound off';
+};
+build();
+window.__runs={get RUNS(){return RUNS}, show, findRun};
+</script>
+</body>
+</html>
