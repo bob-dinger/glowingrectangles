@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area Model</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #A855F7;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .problem {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            font-size: 2rem;
+            font-family: 'Georgia', serif;
+        }
+
+        .area-container {
+            background: #111;
+            border-radius: 12px;
+            padding: 30px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .area-model {
+            position: relative;
+        }
+
+        .area-grid {
+            display: grid;
+            gap: 4px;
+        }
+
+        .area-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .area-cell.c1 { background: #A855F7; color: #fff; }
+        .area-cell.c2 { background: #3B82F6; color: #fff; }
+        .area-cell.c3 { background: #22C55E; color: #fff; }
+        .area-cell.c4 { background: #F59E0B; color: #fff; }
+
+        .top-labels {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .top-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .side-labels {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-right: 10px;
+        }
+
+        .side-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .breakdown-section {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .breakdown-equation {
+            text-align: center;
+            font-size: 1.2rem;
+            font-family: 'Georgia', serif;
+            color: #888;
+        }
+
+        .breakdown-equation .c1 { color: #A855F7; }
+        .breakdown-equation .c2 { color: #3B82F6; }
+        .breakdown-equation .c3 { color: #22C55E; }
+        .breakdown-equation .c4 { color: #F59E0B; }
+
+        .result-section {
+            background: #0d1f0d;
+            border: 2px solid #22C55E33;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #22C55E;
+        }
+
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .num-btn {
+            width: 40px;
+            height: 36px;
+            border: 2px solid #333;
+            background: #1a1a1f;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .num-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .num-btn.selected {
+            border-color: #A855F7;
+            background: #A855F722;
+            color: #A855F7;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #A855F7;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #A855F7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <a href="multiplication-methods.html" class="back-link">← Methods</a>
+
+    <header>
+        <h1>Area Model</h1>
+        <p class="subtitle">Multiplication IS area. See it as rectangles.</p>
+    </header>
+
+    <main>
+        <div class="viz-section">
+            <div class="problem" id="problem">23 × 14 = ?</div>
+
+            <div class="area-container">
+                <div class="area-model" id="areaModel"></div>
+            </div>
+
+            <div class="breakdown-section">
+                <div class="breakdown-equation" id="equation"></div>
+            </div>
+
+            <div class="result-section">
+                <div class="result-value" id="result">322</div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">First number</div>
+                    <div class="control-buttons" id="num1Buttons"></div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Second number</div>
+                    <div class="control-buttons" id="num2Buttons"></div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h3>The core idea</h3>
+                <p>
+                    23 × 14 is the same as asking:<br><br>
+                    "What's the area of a 23 × 14 rectangle?"<br><br>
+                    Break the rectangle into smaller pieces. Add them up.
+                </p>
+            </div>
+
+            <div class="insight-box">
+                <h3>Why it works</h3>
+                <p>
+                    This is the <strong>distributive property</strong> made visible:<br><br>
+                    23 × 14 = (20+3) × (10+4)<br><br>
+                    = 20×10 + 20×4 + 3×10 + 3×4<br><br>
+                    Each box is one of those pieces!
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let num1 = 23;
+        let num2 = 14;
+
+        const nums = [12, 14, 15, 23, 25, 34, 45];
+
+        nums.forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num1 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num1 = n; render(); };
+            document.getElementById('num1Buttons').appendChild(btn);
+        });
+
+        nums.forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num2 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num2 = n; render(); };
+            document.getElementById('num2Buttons').appendChild(btn);
+        });
+
+        function render() {
+            document.querySelectorAll('#num1Buttons .num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (nums[i] === num1 ? ' selected' : '');
+            });
+            document.querySelectorAll('#num2Buttons .num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (nums[i] === num2 ? ' selected' : '');
+            });
+
+            const answer = num1 * num2;
+            document.getElementById('problem').textContent = `${num1} × ${num2} = ?`;
+            document.getElementById('result').textContent = answer;
+
+            // Break numbers into tens and ones
+            const t1 = Math.floor(num1 / 10) * 10;
+            const o1 = num1 % 10;
+            const t2 = Math.floor(num2 / 10) * 10;
+            const o2 = num2 % 10;
+
+            // Calculate areas
+            const a1 = t1 * t2; // top-left
+            const a2 = o1 * t2; // top-right
+            const a3 = t1 * o2; // bottom-left
+            const a4 = o1 * o2; // bottom-right
+
+            // Sizes proportional to values
+            const w1 = t1 * 4;
+            const w2 = o1 * 4;
+            const h1 = t2 * 4;
+            const h2 = o2 * 4;
+
+            const html = `
+                <div style="display: flex; flex-direction: column;">
+                    <div class="top-labels">
+                        <div class="top-label" style="width: ${w1}px">${t1}</div>
+                        <div class="top-label" style="width: ${w2}px">${o1}</div>
+                    </div>
+                    <div style="display: flex;">
+                        <div class="side-labels">
+                            <div class="side-label" style="height: ${h1}px">${t2}</div>
+                            <div class="side-label" style="height: ${h2}px">${o2}</div>
+                        </div>
+                        <div class="area-grid" style="grid-template-columns: ${w1}px ${w2}px; grid-template-rows: ${h1}px ${h2}px;">
+                            <div class="area-cell c1">${a1}</div>
+                            <div class="area-cell c2">${a2}</div>
+                            <div class="area-cell c3">${a3}</div>
+                            <div class="area-cell c4">${a4}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('areaModel').innerHTML = html;
+
+            // Equation
+            document.getElementById('equation').innerHTML = `
+                <span class="c1">${a1}</span> +
+                <span class="c2">${a2}</span> +
+                <span class="c3">${a3}</span> +
+                <span class="c4">${a4}</span> = ${answer}
+            `;
+        }
+
+        render();
+    </script>
+</body>
+</html>

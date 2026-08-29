@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Multiply Anything</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 20px 20px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #F59E0B, #EF4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            padding-right: 360px;
+        }
+
+        .visualization {
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .problem {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .problem-display {
+            font-size: 3rem;
+            font-family: 'Georgia', serif;
+            margin-bottom: 20px;
+        }
+
+        .problem-display .num-a {
+            color: #3B82F6;
+        }
+
+        .problem-display .num-b {
+            color: #A855F7;
+        }
+
+        .problem-display .operator {
+            color: #666;
+            margin: 0 15px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="number"] {
+            width: 100px;
+            padding: 12px;
+            font-size: 1.5rem;
+            text-align: center;
+            background: #1a1a1f;
+            border: 2px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        input[type="number"]:focus {
+            border-color: #A855F7;
+        }
+
+        input[type="number"].num-a {
+            border-color: #3B82F6;
+        }
+
+        input[type="number"].num-b {
+            border-color: #A855F7;
+        }
+
+        .decomposition {
+            background: #111;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .decomp-title {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .decomp-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .decomp-step {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            font-family: 'Georgia', serif;
+        }
+
+        .decomp-step .part-a {
+            color: #3B82F6;
+        }
+
+        .decomp-step .part-b {
+            color: #A855F7;
+        }
+
+        .decomp-step .operator {
+            color: #555;
+        }
+
+        .decomp-step .equals {
+            color: #555;
+            margin: 0 5px;
+        }
+
+        .decomp-step .result {
+            color: #22C55E;
+            font-weight: 600;
+        }
+
+        .decomp-step .breakdown {
+            color: #888;
+            font-size: 1rem;
+        }
+
+        .final-result {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+            margin-top: 10px;
+        }
+
+        .final-label {
+            color: #666;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .final-equation {
+            font-size: 1.8rem;
+            font-family: 'Georgia', serif;
+        }
+
+        .final-equation .parts {
+            color: #22C55E;
+        }
+
+        .final-equation .total {
+            color: #F59E0B;
+            font-weight: 700;
+            font-size: 2.2rem;
+        }
+
+        .visual-blocks {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .block-rect {
+            background: linear-gradient(135deg, #22C55E22, #22C55E11);
+            border: 2px solid #22C55E;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #22C55E;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .block-label {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 340px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            padding: 30px 25px;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            font-size: 1rem;
+            color: #F59E0B;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar p {
+            color: #999;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .sidebar .highlight {
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        .insight {
+            background: #1a1a24;
+            border-left: 3px solid #EF4444;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .insight-title {
+            color: #EF4444;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight p {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        .comparison {
+            background: #1a1a1f;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .comparison h3 {
+            color: #3B82F6;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .comparison-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.9rem;
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-row .method {
+            color: #888;
+        }
+
+        .comparison-row .verdict {
+            color: #22C55E;
+        }
+
+        .comparison-row .verdict.no {
+            color: #EF4444;
+        }
+
+        @media (max-width: 1300px) {
+            .sidebar {
+                display: none;
+            }
+            main {
+                padding-right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>How to Multiply Anything</h1>
+        <p class="subtitle">Break it into pieces you already know</p>
+    </header>
+
+    <main>
+        <div class="visualization">
+            <div class="problem">
+                <div class="controls">
+                    <div class="control-group">
+                        <label class="control-label">First number</label>
+                        <input type="number" class="num-a" id="numA" value="7" min="1" max="99">
+                    </div>
+                    <span style="font-size: 2rem; color: #666; padding-top: 25px;">×</span>
+                    <div class="control-group">
+                        <label class="control-label">Second number</label>
+                        <input type="number" class="num-b" id="numB" value="12" min="1" max="99">
+                    </div>
+                </div>
+            </div>
+
+            <div class="decomposition">
+                <div class="decomp-title">Break it down</div>
+                <div class="decomp-steps" id="steps">
+                    <!-- Generated by JS -->
+                </div>
+
+                <div class="visual-blocks" id="blocks">
+                    <!-- Generated by JS -->
+                </div>
+
+                <div class="final-result">
+                    <div class="final-label">Add them up</div>
+                    <div class="final-equation" id="finalEquation">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <aside class="sidebar">
+        <h2>The Secret</h2>
+        <p>
+            You memorized up to <span class="highlight">12 × 12 = 144</span>.
+            But what about 13 × 7? Or 23 × 15?
+        </p>
+        <p>
+            The tables stop. The method doesn't.
+        </p>
+
+        <div class="insight">
+            <div class="insight-title">The real skill</div>
+            <p>
+                Any multiplication is just smaller multiplications added together.
+                Break numbers into 10s, 5s, and 1s—pieces you already know.
+            </p>
+        </div>
+
+        <p>
+            <span class="highlight">7 × 12</span> becomes:<br>
+            7 × 10 = 70<br>
+            7 × 2 = 14<br>
+            70 + 14 = <span class="highlight">84</span>
+        </p>
+
+        <p>
+            This is called the <span class="highlight">distributive property</span>,
+            but that name was hidden from you until algebra—as if it were something
+            different. It's not. It's just breaking things into pieces.
+        </p>
+
+        <div class="comparison">
+            <h3>Memorization vs Method</h3>
+            <div class="comparison-row">
+                <span class="method">7 × 12</span>
+                <span class="verdict">Both work</span>
+            </div>
+            <div class="comparison-row">
+                <span class="method">7 × 13</span>
+                <span class="verdict no">Table fails</span>
+            </div>
+            <div class="comparison-row">
+                <span class="method">23 × 17</span>
+                <span class="verdict no">Table fails</span>
+            </div>
+            <div class="comparison-row">
+                <span class="method">Any × Any</span>
+                <span class="verdict">Method works</span>
+            </div>
+        </div>
+    </aside>
+
+    <script>
+        const numAInput = document.getElementById('numA');
+        const numBInput = document.getElementById('numB');
+        const stepsContainer = document.getElementById('steps');
+        const blocksContainer = document.getElementById('blocks');
+        const finalEquation = document.getElementById('finalEquation');
+
+        function decompose(n) {
+            // Break number into convenient pieces (10s and remainder)
+            const parts = [];
+
+            if (n >= 10) {
+                const tens = Math.floor(n / 10) * 10;
+                parts.push(tens);
+                const remainder = n - tens;
+                if (remainder > 0) {
+                    parts.push(remainder);
+                }
+            } else {
+                parts.push(n);
+            }
+
+            return parts;
+        }
+
+        function update() {
+            const a = parseInt(numAInput.value) || 1;
+            const b = parseInt(numBInput.value) || 1;
+
+            // Decompose the larger number for cleaner visualization
+            const [multiplier, toDecompose] = a <= b ? [a, b] : [b, a];
+            const parts = decompose(toDecompose);
+
+            // Build steps
+            let stepsHTML = '';
+            const results = [];
+
+            parts.forEach((part, i) => {
+                const result = multiplier * part;
+                results.push(result);
+
+                stepsHTML += `
+                    <div class="decomp-step">
+                        <span class="part-a">${multiplier}</span>
+                        <span class="operator">×</span>
+                        <span class="part-b">${part}</span>
+                        <span class="equals">=</span>
+                        <span class="result">${result}</span>
+                    </div>
+                `;
+            });
+
+            stepsContainer.innerHTML = stepsHTML;
+
+            // Build visual blocks
+            const total = a * b;
+            const maxBlockWidth = 200;
+            const scale = Math.min(1, maxBlockWidth / Math.max(...results));
+
+            let blocksHTML = '';
+            parts.forEach((part, i) => {
+                const result = results[i];
+                const width = Math.max(60, result * scale * 2);
+                const height = 60;
+
+                blocksHTML += `
+                    <div class="block">
+                        <div class="block-rect" style="width: ${width}px; height: ${height}px;">
+                            ${result}
+                        </div>
+                        <div class="block-label">${multiplier} × ${part}</div>
+                    </div>
+                `;
+            });
+
+            blocksContainer.innerHTML = blocksHTML;
+
+            // Build final equation
+            const partsStr = results.join(' + ');
+            finalEquation.innerHTML = `
+                <span class="parts">${partsStr}</span>
+                <span style="color: #666; margin: 0 15px;">=</span>
+                <span class="total">${total}</span>
+            `;
+        }
+
+        // Initialize
+        update();
+
+        // Event listeners
+        numAInput.addEventListener('input', update);
+        numBInput.addEventListener('input', update);
+    </script>
+</body>
+</html>

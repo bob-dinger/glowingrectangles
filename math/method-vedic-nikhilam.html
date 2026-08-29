@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedic Nikhilam</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #F59E0B;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .problem {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            font-size: 2rem;
+            font-family: 'Georgia', serif;
+        }
+
+        .steps-visual {
+            background: #111;
+            border-radius: 12px;
+            padding: 30px;
+            flex: 1;
+        }
+
+        .step-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .step-row:last-child {
+            border-bottom: none;
+        }
+
+        .step-num {
+            width: 35px;
+            height: 35px;
+            background: #F59E0B;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #000;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .step-math {
+            font-size: 1.4rem;
+            font-family: 'Georgia', serif;
+            color: #888;
+        }
+
+        .step-math .num { color: #F59E0B; font-weight: 600; }
+        .step-math .dev { color: #EF4444; }
+        .step-math .result { color: #22C55E; font-weight: 600; }
+
+        .result-section {
+            background: #0d1f0d;
+            border: 2px solid #22C55E33;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #22C55E;
+        }
+
+        .sidebar {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .num-btn {
+            width: 44px;
+            height: 36px;
+            border: 2px solid #333;
+            background: #1a1a1f;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .num-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .num-btn.selected {
+            border-color: #F59E0B;
+            background: #F59E0B22;
+            color: #F59E0B;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #F59E0B;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #F59E0B;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .formula-box {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .formula {
+            font-family: 'Georgia', serif;
+            font-size: 1.1rem;
+            color: #888;
+            line-height: 2;
+        }
+    </style>
+</head>
+<body>
+    <a href="multiplication-methods.html" class="back-link">← Methods</a>
+
+    <header>
+        <h1>Vedic Nikhilam</h1>
+        <p class="subtitle">For numbers near 100 (or 10, or 1000). Feels like magic.</p>
+    </header>
+
+    <main>
+        <div class="viz-section">
+            <div class="problem" id="problem">97 × 94 = ?</div>
+
+            <div class="steps-visual" id="stepsVisual">
+                <!-- Generated steps -->
+            </div>
+
+            <div class="result-section">
+                <div class="result-value" id="result">9118</div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">First number</div>
+                    <div class="control-buttons" id="num1Buttons"></div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Second number</div>
+                    <div class="control-buttons" id="num2Buttons"></div>
+                </div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula">
+                    (base - a) × (base - b)<br>
+                    = (base - a - b) × base + (a × b)
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h3>When to use it</h3>
+                <p>
+                    Numbers close to a power of 10:<br><br>
+                    • 97, 98, 99 (near 100)<br>
+                    • 996, 997 (near 1000)<br>
+                    • 102, 103 (near 100)<br><br>
+                    The closer to the base, the easier!
+                </p>
+            </div>
+
+            <div class="insight-box">
+                <h3>Why it works</h3>
+                <p>
+                    It's algebra in disguise:<br><br>
+                    97 × 94 = (100-3)(100-6)<br>
+                    = 10000 - 300 - 600 + 18<br>
+                    = 10000 - 900 + 18<br>
+                    = 9118
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let num1 = 97;
+        let num2 = 94;
+
+        const nums1 = [91, 93, 94, 96, 97, 98, 99];
+        const nums2 = [91, 93, 94, 96, 97, 98, 99];
+
+        nums1.forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num1 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num1 = n; render(); };
+            document.getElementById('num1Buttons').appendChild(btn);
+        });
+
+        nums2.forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num2 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num2 = n; render(); };
+            document.getElementById('num2Buttons').appendChild(btn);
+        });
+
+        function render() {
+            document.querySelectorAll('#num1Buttons .num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (nums1[i] === num1 ? ' selected' : '');
+            });
+            document.querySelectorAll('#num2Buttons .num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (nums2[i] === num2 ? ' selected' : '');
+            });
+
+            const base = 100;
+            const dev1 = num1 - base; // negative for numbers below 100
+            const dev2 = num2 - base;
+            const answer = num1 * num2;
+
+            document.getElementById('problem').textContent = `${num1} × ${num2} = ?`;
+            document.getElementById('result').textContent = answer;
+
+            // Left part: either number + other's deviation
+            const leftPart = num1 + dev2; // or num2 + dev1, same result
+            // Right part: product of deviations
+            const rightPart = dev1 * dev2;
+
+            const html = `
+                <div class="step-row">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Find deviations from 100</div>
+                        <div class="step-math">
+                            <span class="num">${num1}</span> is <span class="dev">${dev1}</span> from 100<br>
+                            <span class="num">${num2}</span> is <span class="dev">${dev2}</span> from 100
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-row">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Cross-add: either number + other's deviation</div>
+                        <div class="step-math">
+                            <span class="num">${num1}</span> + (<span class="dev">${dev2}</span>) = <span class="result">${leftPart}</span>
+                            <br><small style="color:#666">(This is the left part of answer)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-row">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Multiply the deviations</div>
+                        <div class="step-math">
+                            (<span class="dev">${dev1}</span>) × (<span class="dev">${dev2}</span>) = <span class="result">${rightPart}</span>
+                            <br><small style="color:#666">(This is the right part of answer)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-row">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Combine: left part | right part</div>
+                        <div class="step-math">
+                            <span class="result">${leftPart}</span> | <span class="result">${rightPart.toString().padStart(2, '0')}</span> = <span class="result">${answer}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('stepsVisual').innerHTML = html;
+        }
+
+        render();
+    </script>
+</body>
+</html>

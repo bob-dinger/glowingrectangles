@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You vs Them</title>
+    <link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Carlito', sans-serif;
+            background-color: #fafafa;
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            gap: 12px;
+        }
+
+        .app-bar .title {
+            background: #111827;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+
+        .app-bar a {
+            color: #10b981;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 64px);
+            margin-top: 64px;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .contact-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .contact-item:hover {
+            background: #f3f4f6;
+        }
+
+        .contact-item.active {
+            background: #ecfdf5;
+            border-color: #10b981;
+        }
+
+        .contact-item .name {
+            font-weight: 600;
+            font-size: 13px;
+            color: #111827;
+        }
+
+        .contact-item .meta {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .chart-container {
+            flex: 1;
+            padding: 30px 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-header {
+            margin-bottom: 30px;
+        }
+
+        .chart-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .chart-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .legend-color.you { background: linear-gradient(180deg, #60a5fa, #3b82f6); }
+        .legend-color.them { background: linear-gradient(180deg, #34d399, #10b981); }
+
+        .chart-area {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 30px;
+            padding-bottom: 50px;
+        }
+
+        .year-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .bars-pair {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 300px;
+        }
+
+        .bar-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 60px;
+        }
+
+        .bar {
+            width: 100%;
+            border-radius: 6px 6px 0 0;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 8px;
+            min-height: 30px;
+        }
+
+        .bar.you { background: linear-gradient(180deg, #60a5fa, #3b82f6); }
+        .bar.them { background: linear-gradient(180deg, #34d399, #10b981); }
+
+        .bar-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .bar-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.8);
+            margin-top: 2px;
+        }
+
+        .year-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .ratio-badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #f3f4f6;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: #111827;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+        }
+
+        .summary-stat {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #6b7280;
+        }
+
+        .summary-stat strong {
+            color: #111827;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-bar">
+        <a href="../index.html">Home</a>
+        <a href="messages-viz.html">All Messages</a>
+        <a href="messages-groups.html">Groups</a>
+        <a href="messages-trends.html">Trends</a>
+        <div class="title">You vs Them</div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <h3>Conversations</h3>
+            <div class="contact-list" id="contactList"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <div class="chart-title" id="chartTitle">Select a contact</div>
+                <div class="chart-subtitle" id="chartSubtitle"></div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color you"></div>
+                    <span>You sent</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color them"></div>
+                    <span>They sent</span>
+                </div>
+            </div>
+
+            <div class="chart-area" id="chartArea"></div>
+
+            <div class="summary-stat" id="summaryStat"></div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const contacts = [
+            {
+                id: "+12146758307",
+                you_2023: 0, them_2023: 1045,
+                you_2024: 0, them_2024: 735,
+                you_2025: 41, them_2025: 1266
+            },
+            {
+                id: "+12069283336",
+                you_2023: 0, them_2023: 1564,
+                you_2024: 0, them_2024: 1270,
+                you_2025: 62, them_2025: 400
+            },
+            {
+                id: "+12147690278",
+                you_2023: 0, them_2023: 316,
+                you_2024: 0, them_2024: 499,
+                you_2025: 6, them_2025: 555
+            },
+            {
+                id: "+12143950527",
+                you_2023: 0, them_2023: 152,
+                you_2024: 0, them_2024: 457,
+                you_2025: 14, them_2025: 438
+            },
+            {
+                id: "+18179037227",
+                you_2023: 0, them_2023: 0,
+                you_2024: 0, them_2024: 0,
+                you_2025: 63, them_2025: 829
+            },
+            {
+                id: "+12143844540",
+                you_2023: 0, them_2023: 37,
+                you_2024: 0, them_2024: 47,
+                you_2025: 70, them_2025: 458
+            },
+            {
+                id: "+12147661024",
+                you_2023: 0, them_2023: 111,
+                you_2024: 0, them_2024: 127,
+                you_2025: 18, them_2025: 242
+            },
+            {
+                id: "+19453354664",
+                you_2023: 0, them_2023: 0,
+                you_2024: 0, them_2024: 0,
+                you_2025: 41, them_2025: 107
+            },
+            {
+                id: "malone.winnie@icloud.com",
+                you_2023: 0, them_2023: 0,
+                you_2024: 0, them_2024: 77,
+                you_2025: 11, them_2025: 47
+            },
+            {
+                id: "juliamundinger@icloud.com",
+                you_2023: 0, them_2023: 0,
+                you_2024: 0, them_2024: 8,
+                you_2025: 4, them_2025: 24
+            }
+        ];
+
+        const tooltip = document.getElementById('tooltip');
+        let currentContact = null;
+
+        function formatContact(id) {
+            if (id.includes('@')) return id.split('@')[0];
+            return id;
+        }
+
+        function getTotal(c) {
+            return c.you_2023 + c.them_2023 + c.you_2024 + c.them_2024 + c.you_2025 + c.them_2025;
+        }
+
+        function renderContactList() {
+            const container = document.getElementById('contactList');
+            const sorted = [...contacts].sort((a, b) => getTotal(b) - getTotal(a));
+
+            container.innerHTML = sorted.map(c => {
+                const total = getTotal(c);
+                const youTotal = c.you_2023 + c.you_2024 + c.you_2025;
+                const themTotal = c.them_2023 + c.them_2024 + c.them_2025;
+                return `
+                    <div class="contact-item" data-id="${c.id}">
+                        <div class="name">${formatContact(c.id)}</div>
+                        <div class="meta">${total.toLocaleString()} msgs · You: ${youTotal} / Them: ${themTotal}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.querySelectorAll('.contact-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.contact-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    currentContact = contacts.find(c => c.id === item.dataset.id);
+                    renderChart();
+                });
+            });
+
+            // Select first
+            container.querySelector('.contact-item').click();
+        }
+
+        function renderChart() {
+            if (!currentContact) return;
+
+            const c = currentContact;
+            document.getElementById('chartTitle').textContent = formatContact(c.id);
+
+            const youTotal = c.you_2023 + c.you_2024 + c.you_2025;
+            const themTotal = c.them_2023 + c.them_2024 + c.them_2025;
+            document.getElementById('chartSubtitle').textContent =
+                `${(youTotal + themTotal).toLocaleString()} total messages`;
+
+            const maxVal = Math.max(
+                c.you_2023, c.them_2023,
+                c.you_2024, c.them_2024,
+                c.you_2025, c.them_2025,
+                1
+            );
+            const maxHeight = 280;
+
+            const years = [
+                {year: 2023, you: c.you_2023, them: c.them_2023},
+                {year: 2024, you: c.you_2024, them: c.them_2024},
+                {year: 2025, you: c.you_2025, them: c.them_2025}
+            ];
+
+            const container = document.getElementById('chartArea');
+            container.innerHTML = years.map(y => {
+                const youHeight = Math.max((y.you / maxVal) * maxHeight, y.you > 0 ? 30 : 0);
+                const themHeight = Math.max((y.them / maxVal) * maxHeight, y.them > 0 ? 30 : 0);
+                const total = y.you + y.them;
+                const ratio = total > 0 ? Math.round((y.you / total) * 100) : 0;
+
+                return `
+                    <div class="year-group">
+                        <div class="bars-pair">
+                            <div class="bar-column">
+                                <div class="bar you" style="height: ${youHeight}px;" data-type="You" data-year="${y.year}" data-value="${y.you}">
+                                    ${y.you > 0 ? `<span class="bar-value">${y.you.toLocaleString()}</span><span class="bar-label">You</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="bar-column">
+                                <div class="bar them" style="height: ${themHeight}px;" data-type="Them" data-year="${y.year}" data-value="${y.them}">
+                                    ${y.them > 0 ? `<span class="bar-value">${y.them.toLocaleString()}</span><span class="bar-label">Them</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="year-label">${y.year}</div>
+                        ${total > 0 ? `<div class="ratio-badge">You: ${ratio}%</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            // Summary
+            const yourShare = themTotal > 0 ? Math.round((youTotal / (youTotal + themTotal)) * 100) : 0;
+            const who = yourShare > 50 ? 'You talk more' : yourShare < 50 ? 'They talk more' : 'Equal';
+            document.getElementById('summaryStat').innerHTML =
+                `<strong>${who}</strong> — You sent ${yourShare}% of messages in this conversation`;
+
+            // Tooltips
+            container.querySelectorAll('.bar').forEach(bar => {
+                bar.addEventListener('mouseenter', () => {
+                    const type = bar.dataset.type;
+                    const year = bar.dataset.year;
+                    const value = parseInt(bar.dataset.value);
+                    tooltip.innerHTML = `<strong>${type} · ${year}</strong><br>${value.toLocaleString()} messages`;
+                    tooltip.style.opacity = 1;
+                });
+                bar.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = e.clientX + 10 + 'px';
+                    tooltip.style.top = e.clientY - 50 + 'px';
+                });
+                bar.addEventListener('mouseleave', () => {
+                    tooltip.style.opacity = 0;
+                });
+            });
+        }
+
+        renderContactList();
+    </script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football - Glowing Gardens</title>
+    <link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Carlito', sans-serif;
+            background-color: #fafafa;
+            color: #333;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 10;
+        }
+        .back-link:hover { color: #333; }
+
+        .main-container {
+            padding: 60px 16px 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .post-card {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .post-card:hover {
+            background: #f5f5f5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .post-card img {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .post-card .content {
+            margin-left: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .post-card .post-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: teal;
+            margin-bottom: 4px;
+        }
+
+        .post-card .post-subtitle {
+            font-size: 13px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="main-container">
+        <h1>Football</h1>
+        <p class="subtitle">NFL & College Football Visualizations</p>
+
+        <div class="grid">
+            <a href="../d3-cfb-realignment.html" class="post-card">
+                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/cfb_nrs1np.png" alt="">
+                <div class="content">
+                    <div class="post-title">CFB Realignment</div>
+                    <div class="post-subtitle">35 years of conference chaos</div>
+                </div>
+            </a>
+            <a href="d3-nfl-ages-by-position.html" class="post-card">
+                <img src="images/football.png" alt="">
+                <div class="content">
+                    <div class="post-title">Ages by Position</div>
+                    <div class="post-subtitle">from young RBs to veteran QBs</div>
+                </div>
+            </a>
+            <a href="d3-nfl-ages-by-position-bubbles.html" class="post-card">
+                <img src="images/football.png" alt="">
+                <div class="content">
+                    <div class="post-title">Age Bubbles</div>
+                    <div class="post-subtitle">age distribution by position</div>
+                </div>
+            </a>
+            <a href="../d3-bubble-nfl-ages.html" class="post-card">
+                <img src="images/football.png" alt="">
+                <div class="content">
+                    <div class="post-title">NFL Age Bubbles</div>
+                    <div class="post-subtitle">all current player ages</div>
+                </div>
+            </a>
+            <a href="d3-nfl-brady-survival.html" class="post-card">
+                <img src="images/football.png" alt="">
+                <div class="content">
+                    <div class="post-title">Brady Era Survival</div>
+                    <div class="post-subtitle">career survival rates</div>
+                </div>
+            </a>
+            <a href="d3-nfl-brady-careers.html" class="post-card">
+                <img src="images/football.png" alt="">
+                <div class="content">
+                    <div class="post-title">Brady Era Careers</div>
+                    <div class="post-subtitle">2000 draft class tracking</div>
+                </div>
+            </a>
+            <a href="d3-nfl-qb-wr-connections.html" class="post-card">
+                <img src="images/football.png" alt="">
+                <div class="content">
+                    <div class="post-title">QB-WR Connections</div>
+                    <div class="post-subtitle">passing network visualization</div>
+                </div>
+            </a>
+            <a href="../nfl_data/d3-nfl-draft.html" class="post-card">
+                <img src="images/football.png" alt="">
+                <div class="content">
+                    <div class="post-title">NFL Draft</div>
+                    <div class="post-subtitle">draft picks and outcomes</div>
+                </div>
+            </a>
+            <a href="../nfl_data/d3-nfl-lineups-2023.html" class="post-card">
+                <img src="images/football.png" alt="">
+                <div class="content">
+                    <div class="post-title">Lineups 2023</div>
+                    <div class="post-subtitle">team lineup visualizations</div>
+                </div>
+            </a>
+            <a href="2025-11-06-nfl-logos.html" class="post-card">
+                <img src="images/football.png" alt="">
+                <div class="content">
+                    <div class="post-title">NFL Team Logos</div>
+                    <div class="post-subtitle">all 32 team logos</div>
+                </div>
+            </a>
+            <a href="../nfl_data/d3-nfl-drives-2014.html" class="post-card">
+                <img src="images/football.png" alt="">
+                <div class="content">
+                    <div class="post-title">Drive Charts 2014</div>
+                    <div class="post-subtitle">offensive drive visualization</div>
+                </div>
+            </a>
+            <a href="../nfl_data/d3-nfl-rb-rushing-2024.html" class="post-card">
+                <img src="images/football.png" alt="">
+                <div class="content">
+                    <div class="post-title">RB Rushing 2024</div>
+                    <div class="post-subtitle">running back statistics</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

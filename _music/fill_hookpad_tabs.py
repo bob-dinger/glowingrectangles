@@ -74,20 +74,25 @@ def build_mapping(pages):
 
 
 def fill_one(page, song):
-    """Drive File -> Open -> type song -> Enter on the given Playwright page."""
+    """Drive File -> Open -> paste song -> click Open button on the given Playwright page."""
     t0 = time.time()
     try:
         # Dismiss any startup modal by clicking an empty area
         page.mouse.click(20, 200)
-        page.wait_for_timeout(250)
+        page.wait_for_timeout(120)
         page.locator("button.button-menu[title*='open']").first.click(timeout=5000)
-        page.wait_for_timeout(500)
+        page.wait_for_timeout(200)
         page.locator(".popper-file >> :text-is('Open')").first.click(timeout=5000)
-        page.wait_for_timeout(1800)
-        page.keyboard.type(song)
-        page.wait_for_timeout(1500)   # wait for Hookpad to query DB and populate results
-        page.keyboard.press("Enter")
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(900)   # let Open modal appear + auto-focus its input
+        # Clear any stale text, then paste so Hookpad's DB query fires once
+        page.keyboard.press("Meta+A")
+        page.wait_for_timeout(40)
+        subprocess.run(["pbcopy"], input=song.encode("utf-8"), check=False)
+        page.keyboard.press("Meta+V")
+        page.wait_for_timeout(700)   # one DB query needs to settle
+        # Click the Open submit button (more reliable than pressing Enter)
+        page.locator("[data-type='new-and-open-modal'] button:has-text('Open')").first.click(timeout=4000)
+        page.wait_for_timeout(900)
         return "ok", time.time() - t0
     except Exception as e:
         return f"err: {type(e).__name__}: {e}", time.time() - t0

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lattice Method</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #3B82F6;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .problem {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            font-size: 2rem;
+            font-family: 'Georgia', serif;
+        }
+
+        .lattice-container {
+            background: #111;
+            border-radius: 12px;
+            padding: 30px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lattice {
+            position: relative;
+        }
+
+        .lattice-grid {
+            display: grid;
+            border: 2px solid #444;
+        }
+
+        .lattice-cell {
+            width: 70px;
+            height: 70px;
+            border: 1px solid #333;
+            position: relative;
+        }
+
+        .lattice-cell::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            border-bottom: 1px solid #444;
+            transform: rotate(-45deg);
+            transform-origin: top right;
+        }
+
+        .cell-tens {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            font-size: 1.1rem;
+            color: #3B82F6;
+        }
+
+        .cell-ones {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            font-size: 1.1rem;
+            color: #22C55E;
+        }
+
+        .top-digits {
+            display: flex;
+            position: absolute;
+            top: -35px;
+            left: 0;
+        }
+
+        .top-digit {
+            width: 70px;
+            text-align: center;
+            font-size: 1.3rem;
+            color: #EF4444;
+            font-weight: 600;
+        }
+
+        .side-digits {
+            position: absolute;
+            right: -35px;
+            top: 0;
+        }
+
+        .side-digit {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            font-size: 1.3rem;
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        .diagonal-sums {
+            position: absolute;
+            font-size: 1.1rem;
+            color: #A855F7;
+            font-weight: 600;
+        }
+
+        .result-section {
+            background: #0d1f0d;
+            border: 2px solid #22C55E33;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #22C55E;
+        }
+
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .num-btn {
+            width: 40px;
+            height: 36px;
+            border: 2px solid #333;
+            background: #1a1a1f;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .num-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .num-btn.selected {
+            border-color: #3B82F6;
+            background: #3B82F622;
+            color: #3B82F6;
+        }
+
+        .steps-box {
+            background: #111;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .steps-box h3 {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .step-item {
+            font-size: 0.85rem;
+            color: #888;
+            padding: 6px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .step-item:last-child {
+            border-bottom: none;
+        }
+
+        .step-num {
+            color: #3B82F6;
+            font-weight: 600;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #3B82F6;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #3B82F6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <a href="multiplication-methods.html" class="back-link">← Methods</a>
+
+    <header>
+        <h1>Lattice Method</h1>
+        <p class="subtitle">Grid, diagonals, no carrying mistakes</p>
+    </header>
+
+    <main>
+        <div class="viz-section">
+            <div class="problem" id="problem">34 × 52 = ?</div>
+
+            <div class="lattice-container">
+                <div class="lattice" id="lattice"></div>
+            </div>
+
+            <div class="result-section">
+                <div class="result-value" id="result">1768</div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">First number</div>
+                    <div class="control-buttons" id="num1Buttons"></div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Second number</div>
+                    <div class="control-buttons" id="num2Buttons"></div>
+                </div>
+            </div>
+
+            <div class="steps-box">
+                <h3>How it works</h3>
+                <div class="step-item"><span class="step-num">1.</span> Draw grid (digits across top, digits down side)</div>
+                <div class="step-item"><span class="step-num">2.</span> Draw diagonal in each cell</div>
+                <div class="step-item"><span class="step-num">3.</span> Multiply: tens go top-left, ones go bottom-right</div>
+                <div class="step-item"><span class="step-num">4.</span> Add along each diagonal</div>
+                <div class="step-item"><span class="step-num">5.</span> Read answer around the edge</div>
+            </div>
+
+            <div class="insight-box">
+                <h3>Why it's great</h3>
+                <p>
+                    You never have to hold carries in your head. Each diagonal naturally collects numbers of the same place value.<br><br>
+                    Hard to make mistakes!
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let num1 = 34;
+        let num2 = 52;
+
+        const nums = [23, 34, 45, 56, 67, 78, 89];
+
+        nums.forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num1 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num1 = n; render(); };
+            document.getElementById('num1Buttons').appendChild(btn);
+        });
+
+        nums.forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num2 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num2 = n; render(); };
+            document.getElementById('num2Buttons').appendChild(btn);
+        });
+
+        function getDigits(n) {
+            return n.toString().split('').map(Number);
+        }
+
+        function render() {
+            document.querySelectorAll('#num1Buttons .num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (nums[i] === num1 ? ' selected' : '');
+            });
+            document.querySelectorAll('#num2Buttons .num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (nums[i] === num2 ? ' selected' : '');
+            });
+
+            const d1 = getDigits(num1);
+            const d2 = getDigits(num2);
+            const answer = num1 * num2;
+
+            document.getElementById('problem').textContent = `${num1} × ${num2} = ?`;
+            document.getElementById('result').textContent = answer;
+
+            // Build lattice HTML
+            const cols = d1.length;
+            const rows = d2.length;
+
+            let html = `
+                <div class="top-digits">
+                    ${d1.map(d => `<div class="top-digit">${d}</div>`).join('')}
+                </div>
+                <div class="side-digits">
+                    ${d2.map(d => `<div class="side-digit">${d}</div>`).join('')}
+                </div>
+                <div class="lattice-grid" style="grid-template-columns: repeat(${cols}, 70px);">
+            `;
+
+            // Fill cells
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const product = d1[c] * d2[r];
+                    const tens = Math.floor(product / 10);
+                    const ones = product % 10;
+                    html += `
+                        <div class="lattice-cell">
+                            <span class="cell-tens">${tens}</span>
+                            <span class="cell-ones">${ones}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            html += '</div>';
+
+            document.getElementById('lattice').innerHTML = html;
+        }
+
+        render();
+    </script>
+</body>
+</html>

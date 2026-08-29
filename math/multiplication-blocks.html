@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplication Blocks</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #22C55E, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .problem {
+            text-align: center;
+            font-size: 2rem;
+            font-family: 'Georgia', serif;
+            margin-bottom: 30px;
+        }
+
+        .problem .op { color: #666; margin: 0 10px; }
+        .problem .result { color: #22C55E; font-weight: 600; }
+
+        .step {
+            background: #111;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .step-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .step-content {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .block-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .block-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 6px;
+            background: #1a1a1f;
+            border-radius: 6px;
+        }
+
+        .block-row {
+            display: flex;
+            gap: 2px;
+        }
+
+        .block {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+        }
+
+        .block.green { background: #22C55E; }
+        .block.purple { background: #A855F7; }
+        .block.blue { background: #3B82F6; }
+        .block.orange { background: #F59E0B; }
+
+        .block-equation {
+            font-size: 1.1rem;
+            font-family: 'Georgia', serif;
+            color: #888;
+            text-align: center;
+        }
+
+        .block-equation .val {
+            color: #22C55E;
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+
+        .plus-sign {
+            font-size: 2rem;
+            color: #444;
+        }
+
+        .equals-sign {
+            font-size: 2rem;
+            color: #444;
+        }
+
+        .sum-section {
+            text-align: center;
+            padding: 20px;
+            background: #0d1f0d;
+            border-radius: 12px;
+            border: 2px solid #22C55E33;
+        }
+
+        .sum-equation {
+            font-size: 1.3rem;
+            font-family: 'Georgia', serif;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .final-answer {
+            font-size: 3rem;
+            color: #22C55E;
+            font-weight: 700;
+        }
+
+        .btn {
+            display: block;
+            margin: 20px auto;
+            padding: 14px 32px;
+            font-size: 1rem;
+            border: 2px solid #3B82F6;
+            background: #3B82F622;
+            color: #3B82F6;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #3B82F633;
+        }
+
+        .score-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.6rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-value {
+            font-size: 1.5rem;
+            color: #22C55E;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="score-display">
+        <div class="score-label">Solved</div>
+        <div class="score-value" id="score">0</div>
+    </div>
+
+    <header>
+        <h1>Multiplication Blocks</h1>
+        <p class="subtitle">Memorize to 10. Break at 10. Add the pieces.</p>
+    </header>
+
+    <main id="main"></main>
+
+    <script>
+        let numA, numB;
+        let score = 0;
+        const main = document.getElementById('main');
+
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function newProblem() {
+            if (Math.random() < 0.75) {
+                numA = randomInt(2, 9);
+                numB = randomInt(11, 19);
+            } else {
+                numA = randomInt(11, 15);
+                numB = randomInt(11, 19);
+            }
+            if (numA > numB) [numA, numB] = [numB, numA];
+            render();
+        }
+
+        function renderGrid(rows, cols, color) {
+            let html = '<div class="block-grid">';
+            for (let r = 0; r < rows; r++) {
+                html += '<div class="block-row">';
+                for (let c = 0; c < cols; c++) {
+                    html += `<div class="block ${color}"></div>`;
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function blockGroup(rows, cols, color) {
+            return `
+                <div class="block-group">
+                    ${renderGrid(rows, cols, color)}
+                    <div class="block-equation">${rows} × ${cols} = <span class="val">${rows * cols}</span></div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const total = numA * numB;
+
+            // Break at 10
+            const aTens = numA > 10 ? 10 : numA;
+            const aOnes = numA > 10 ? numA - 10 : 0;
+            const bTens = numB > 10 ? 10 : numB;
+            const bOnes = numB > 10 ? numB - 10 : 0;
+
+            // Build all pieces
+            let pieces = [];
+
+            if (numA <= 10 && numB <= 10) {
+                // Both small - just one piece (shouldn't happen with our generator)
+                pieces.push({ a: numA, b: numB, color: 'green' });
+            } else if (numA <= 10) {
+                // Only B needs breaking
+                pieces.push({ a: numA, b: bTens, color: 'green' });
+                if (bOnes > 0) pieces.push({ a: numA, b: bOnes, color: 'purple' });
+            } else if (numB <= 10) {
+                // Only A needs breaking
+                pieces.push({ a: aTens, b: numB, color: 'green' });
+                if (aOnes > 0) pieces.push({ a: aOnes, b: numB, color: 'purple' });
+            } else {
+                // Both need breaking - 4 pieces
+                pieces.push({ a: aTens, b: bTens, color: 'green' });
+                if (bOnes > 0) pieces.push({ a: aTens, b: bOnes, color: 'blue' });
+                if (aOnes > 0) pieces.push({ a: aOnes, b: bTens, color: 'purple' });
+                if (aOnes > 0 && bOnes > 0) pieces.push({ a: aOnes, b: bOnes, color: 'orange' });
+            }
+
+            let html = '';
+
+            // Problem
+            html += `<div class="problem">${numA} <span class="op">×</span> ${numB}</div>`;
+
+            // Step 1: Show the original as blocks
+            html += `
+                <div class="step">
+                    <div class="step-label">The whole thing: ${numA} rows of ${numB}</div>
+                    <div class="step-content">
+                        ${renderGrid(numA, numB, 'green')}
+                    </div>
+                </div>
+            `;
+
+            // Step 2: Show it broken into pieces
+            if (numA > 10 || numB > 10) {
+                let breakExplain = '';
+                if (numA > 10 && numB > 10) {
+                    breakExplain = `Break ${numA} into 10 + ${aOnes}, and ${numB} into 10 + ${bOnes}`;
+                } else if (numB > 10) {
+                    breakExplain = `Break ${numB} into 10 + ${bOnes}`;
+                } else {
+                    breakExplain = `Break ${numA} into 10 + ${aOnes}`;
+                }
+
+                html += `
+                    <div class="step">
+                        <div class="step-label">${breakExplain}</div>
+                        <div class="step-content">
+                            ${pieces.map((p, i) =>
+                                (i > 0 ? '<span class="plus-sign">+</span>' : '') +
+                                blockGroup(p.a, p.b, p.color)
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Step 3: Add them up
+            const pieceValues = pieces.map(p => p.a * p.b);
+            html += `
+                <div class="sum-section">
+                    <div class="sum-equation">${pieceValues.join(' + ')} =</div>
+                    <div class="final-answer">${total}</div>
+                </div>
+            `;
+
+            html += `<button class="btn" onclick="next()">Next Problem</button>`;
+
+            main.innerHTML = html;
+        }
+
+        function next() {
+            score++;
+            document.getElementById('score').textContent = score;
+            newProblem();
+        }
+
+        newProblem();
+    </script>
+</body>
+</html>

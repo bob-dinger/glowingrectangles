@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russian Peasant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #EC4899;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .problem {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            font-size: 2rem;
+            font-family: 'Georgia', serif;
+        }
+
+        .table-container {
+            background: #111;
+            border-radius: 12px;
+            padding: 25px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .russian-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .russian-table th {
+            text-align: left;
+            padding: 12px 20px;
+            border-bottom: 2px solid #333;
+            color: #666;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .russian-table td {
+            padding: 12px 20px;
+            border-bottom: 1px solid #222;
+            font-size: 1.2rem;
+            font-family: 'SF Mono', monospace;
+        }
+
+        .russian-table tr.strike td {
+            color: #444;
+            text-decoration: line-through;
+        }
+
+        .russian-table tr.keep td {
+            color: #22C55E;
+        }
+
+        .russian-table .col-halve {
+            color: #EC4899;
+        }
+
+        .russian-table .col-double {
+            color: #3B82F6;
+        }
+
+        .russian-table .col-keep {
+            width: 80px;
+            text-align: center;
+        }
+
+        .result-section {
+            background: #0d1f0d;
+            border: 2px solid #22C55E33;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #22C55E;
+        }
+
+        .result-sum {
+            font-size: 1rem;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .num-btn {
+            width: 40px;
+            height: 36px;
+            border: 2px solid #333;
+            background: #1a1a1f;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .num-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .num-btn.selected {
+            border-color: #EC4899;
+            background: #EC489922;
+            color: #EC4899;
+        }
+
+        .steps-box {
+            background: #111;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .steps-box h3 {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .step-item {
+            font-size: 0.85rem;
+            color: #888;
+            padding: 6px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .step-item:last-child {
+            border-bottom: none;
+        }
+
+        .step-num {
+            color: #EC4899;
+            font-weight: 600;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #EC4899;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #EC4899;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <a href="multiplication-methods.html" class="back-link">← Methods</a>
+
+    <header>
+        <h1>Russian Peasant</h1>
+        <p class="subtitle">Halve, double, add the odd ones. Weird but works.</p>
+    </header>
+
+    <main>
+        <div class="viz-section">
+            <div class="problem" id="problem">37 × 41 = ?</div>
+
+            <div class="table-container">
+                <table class="russian-table" id="table">
+                    <thead>
+                        <tr>
+                            <th>Halve</th>
+                            <th>Double</th>
+                            <th class="col-keep">Keep?</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="result-section">
+                <div class="result-label">Sum of kept values</div>
+                <div class="result-value" id="result">1517</div>
+                <div class="result-sum" id="resultSum"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">First number</div>
+                    <div class="control-buttons" id="num1Buttons"></div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Second number</div>
+                    <div class="control-buttons" id="num2Buttons"></div>
+                </div>
+            </div>
+
+            <div class="steps-box">
+                <h3>How it works</h3>
+                <div class="step-item"><span class="step-num">1.</span> Write both numbers</div>
+                <div class="step-item"><span class="step-num">2.</span> Halve the left (drop remainders)</div>
+                <div class="step-item"><span class="step-num">3.</span> Double the right</div>
+                <div class="step-item"><span class="step-num">4.</span> Repeat until left = 1</div>
+                <div class="step-item"><span class="step-num">5.</span> Cross out rows where left is EVEN</div>
+                <div class="step-item"><span class="step-num">6.</span> Add the remaining right values</div>
+            </div>
+
+            <div class="insight-box">
+                <h3>Why it works</h3>
+                <p>
+                    It's binary multiplication in disguise!<br><br>
+                    Odd numbers in the left column = 1s in binary. You're adding powers of 2 × the other number.<br><br>
+                    This is how computers multiply.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let num1 = 37;
+        let num2 = 41;
+
+        const nums1 = [17, 23, 37, 45, 53, 67];
+        const nums2 = [19, 29, 41, 47, 59, 73];
+
+        nums1.forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num1 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num1 = n; render(); };
+            document.getElementById('num1Buttons').appendChild(btn);
+        });
+
+        nums2.forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num2 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num2 = n; render(); };
+            document.getElementById('num2Buttons').appendChild(btn);
+        });
+
+        function render() {
+            document.querySelectorAll('#num1Buttons .num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (nums1[i] === num1 ? ' selected' : '');
+            });
+            document.querySelectorAll('#num2Buttons .num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (nums2[i] === num2 ? ' selected' : '');
+            });
+
+            const answer = num1 * num2;
+            document.getElementById('problem').textContent = `${num1} × ${num2} = ?`;
+            document.getElementById('result').textContent = answer;
+
+            // Build table
+            let left = num1;
+            let right = num2;
+            let rows = [];
+            let kept = [];
+
+            while (left >= 1) {
+                const isOdd = left % 2 === 1;
+                rows.push({ left, right, keep: isOdd });
+                if (isOdd) kept.push(right);
+                left = Math.floor(left / 2);
+                right = right * 2;
+            }
+
+            let html = '';
+            rows.forEach(row => {
+                html += `
+                    <tr class="${row.keep ? 'keep' : 'strike'}">
+                        <td class="col-halve">${row.left}</td>
+                        <td class="col-double">${row.right}</td>
+                        <td class="col-keep">${row.keep ? '✓' : '✗'}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('tableBody').innerHTML = html;
+            document.getElementById('resultSum').textContent = kept.join(' + ') + ' = ' + answer;
+        }
+
+        render();
+    </script>
+</body>
+</html>

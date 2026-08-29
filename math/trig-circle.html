@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trig is Circles</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        header {
+            text-align: center;
+            padding: 12px 20px 8px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .viz-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #circleCanvas {
+            background: #111;
+            border-radius: 12px;
+        }
+
+        #waveCanvas {
+            background: #111;
+            border-radius: 12px;
+        }
+
+        .sidebar {
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .values-box {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .value-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .value-row:last-child {
+            border-bottom: none;
+        }
+
+        .value-label {
+            font-size: 1rem;
+            color: #888;
+        }
+
+        .value-num {
+            font-size: 1.2rem;
+            font-weight: 600;
+            font-family: 'SF Mono', monospace;
+        }
+
+        .value-num.sin { color: #22C55E; }
+        .value-num.cos { color: #3B82F6; }
+        .value-num.angle { color: #F59E0B; }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #F59E0B;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #F59E0B;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.8rem;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        .insight-box .hl { color: #e0e0e0; }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 60px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #333;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #F59E0B;
+            cursor: pointer;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            border: 1px solid #444;
+            background: #222;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn.active {
+            border-color: #F59E0B;
+            background: #F59E0B22;
+            color: #F59E0B;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>Trig is Circles</h1>
+        <p class="subtitle">Sine and cosine are just shadows of a point going around</p>
+    </header>
+
+    <main>
+        <div class="viz-container">
+            <canvas id="circleCanvas" width="300" height="300"></canvas>
+            <canvas id="waveCanvas" width="400" height="300"></canvas>
+        </div>
+
+        <div class="sidebar">
+            <div class="values-box">
+                <div class="value-row">
+                    <span class="value-label">Angle θ</span>
+                    <span class="value-num angle" id="angleValue">0°</span>
+                </div>
+                <div class="value-row">
+                    <span class="value-label">sin(θ)</span>
+                    <span class="value-num sin" id="sinValue">0.00</span>
+                </div>
+                <div class="value-row">
+                    <span class="value-label">cos(θ)</span>
+                    <span class="value-num cos" id="cosValue">1.00</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-row">
+                    <span class="control-label">Speed</span>
+                    <input type="range" id="speedSlider" min="0" max="3" step="0.1" value="1">
+                </div>
+                <div class="btn-row">
+                    <button class="btn active" id="playBtn" onclick="togglePlay()">Pause</button>
+                    <button class="btn" onclick="reset()">Reset</button>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h3>What you're seeing</h3>
+                <p>
+                    A point moves around a circle.<br><br>
+                    <span class="hl" style="color:#22C55E">sin(θ)</span> = the point's height (y)<br>
+                    <span class="hl" style="color:#3B82F6">cos(θ)</span> = the point's horizontal position (x)<br><br>
+                    The waves on the right? That's just the height over time. That's ALL trig is.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const circleCanvas = document.getElementById('circleCanvas');
+        const waveCanvas = document.getElementById('waveCanvas');
+        const circleCtx = circleCanvas.getContext('2d');
+        const waveCtx = waveCanvas.getContext('2d');
+        const speedSlider = document.getElementById('speedSlider');
+        const playBtn = document.getElementById('playBtn');
+        const angleValue = document.getElementById('angleValue');
+        const sinValue = document.getElementById('sinValue');
+        const cosValue = document.getElementById('cosValue');
+
+        let angle = 0;
+        let playing = true;
+        let history = [];
+        const maxHistory = 400;
+
+        function draw() {
+            const cw = circleCanvas.width;
+            const ch = circleCanvas.height;
+            const ww = waveCanvas.width;
+            const wh = waveCanvas.height;
+
+            const cx = cw / 2;
+            const cy = ch / 2;
+            const radius = 100;
+
+            // Calculate position
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+
+            // Store history
+            history.unshift({ sin: Math.sin(angle), cos: Math.cos(angle) });
+            if (history.length > maxHistory) history.pop();
+
+            // Clear circle canvas
+            circleCtx.fillStyle = '#111';
+            circleCtx.fillRect(0, 0, cw, ch);
+
+            // Draw circle
+            circleCtx.strokeStyle = '#333';
+            circleCtx.lineWidth = 2;
+            circleCtx.beginPath();
+            circleCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+            circleCtx.stroke();
+
+            // Draw axes
+            circleCtx.strokeStyle = '#222';
+            circleCtx.lineWidth = 1;
+            circleCtx.beginPath();
+            circleCtx.moveTo(0, cy);
+            circleCtx.lineTo(cw, cy);
+            circleCtx.moveTo(cx, 0);
+            circleCtx.lineTo(cx, ch);
+            circleCtx.stroke();
+
+            // Draw radius line
+            circleCtx.strokeStyle = '#F59E0B';
+            circleCtx.lineWidth = 2;
+            circleCtx.beginPath();
+            circleCtx.moveTo(cx, cy);
+            circleCtx.lineTo(cx + x, cy - y);
+            circleCtx.stroke();
+
+            // Draw cos line (horizontal)
+            circleCtx.strokeStyle = '#3B82F6';
+            circleCtx.lineWidth = 3;
+            circleCtx.beginPath();
+            circleCtx.moveTo(cx, cy);
+            circleCtx.lineTo(cx + x, cy);
+            circleCtx.stroke();
+
+            // Draw sin line (vertical)
+            circleCtx.strokeStyle = '#22C55E';
+            circleCtx.lineWidth = 3;
+            circleCtx.beginPath();
+            circleCtx.moveTo(cx + x, cy);
+            circleCtx.lineTo(cx + x, cy - y);
+            circleCtx.stroke();
+
+            // Draw point
+            circleCtx.fillStyle = '#fff';
+            circleCtx.beginPath();
+            circleCtx.arc(cx + x, cy - y, 8, 0, Math.PI * 2);
+            circleCtx.fill();
+
+            // Draw projection lines to wave
+            circleCtx.strokeStyle = '#22C55E44';
+            circleCtx.lineWidth = 1;
+            circleCtx.setLineDash([5, 5]);
+            circleCtx.beginPath();
+            circleCtx.moveTo(cx + x, cy - y);
+            circleCtx.lineTo(cw, cy - y);
+            circleCtx.stroke();
+            circleCtx.setLineDash([]);
+
+            // === Wave canvas ===
+            waveCtx.fillStyle = '#111';
+            waveCtx.fillRect(0, 0, ww, wh);
+
+            // Center line
+            waveCtx.strokeStyle = '#222';
+            waveCtx.lineWidth = 1;
+            waveCtx.beginPath();
+            waveCtx.moveTo(0, wh / 2);
+            waveCtx.lineTo(ww, wh / 2);
+            waveCtx.stroke();
+
+            // Draw sin wave
+            circleCtx.strokeStyle = '#22C55E';
+            waveCtx.strokeStyle = '#22C55E';
+            waveCtx.lineWidth = 2;
+            waveCtx.beginPath();
+            for (let i = 0; i < history.length; i++) {
+                const hx = i;
+                const hy = wh / 2 - history[i].sin * radius;
+                if (i === 0) {
+                    waveCtx.moveTo(hx, hy);
+                } else {
+                    waveCtx.lineTo(hx, hy);
+                }
+            }
+            waveCtx.stroke();
+
+            // Current point on wave
+            waveCtx.fillStyle = '#22C55E';
+            waveCtx.beginPath();
+            waveCtx.arc(0, wh / 2 - history[0].sin * radius, 6, 0, Math.PI * 2);
+            waveCtx.fill();
+
+            // Update values
+            const angleDeg = ((angle * 180 / Math.PI) % 360).toFixed(0);
+            angleValue.textContent = angleDeg + '°';
+            sinValue.textContent = Math.sin(angle).toFixed(2);
+            cosValue.textContent = Math.cos(angle).toFixed(2);
+        }
+
+        function update() {
+            if (playing) {
+                const speed = parseFloat(speedSlider.value);
+                angle += 0.02 * speed;
+            }
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        function togglePlay() {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause' : 'Play';
+            playBtn.classList.toggle('active', playing);
+        }
+
+        function reset() {
+            angle = 0;
+            history = [];
+        }
+
+        update();
+    </script>
+</body>
+</html>

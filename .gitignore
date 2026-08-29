@@ -36,3 +36,6 @@ __pycache__/
 # audio pipeline venv (large: torch/tf)
 .venv_audio/
 _music/.venv_audio/
+
+# NFL play-by-play data — 1.1GB, regenerate or keep local
+nfl_data/*.csv

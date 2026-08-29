@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Percentages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+            max-height: calc(100vh - 80px);
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .percent-display {
+            text-align: center;
+            padding: 15px;
+            background: #111;
+            border-radius: 12px;
+        }
+
+        .percent-value {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #F59E0B;
+        }
+
+        .grid-section {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .grid-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .hundred-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 3px;
+            max-width: 350px;
+        }
+
+        .block {
+            width: 30px;
+            height: 30px;
+            background: #2a2a2f;
+            border-radius: 3px;
+            transition: background 0.15s;
+        }
+
+        .block.filled {
+            background: #F59E0B;
+        }
+
+        .meanings-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .meaning-box {
+            flex: 1;
+            background: #111;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .meaning-label {
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .meaning-value {
+            font-size: 1.4rem;
+            color: #888;
+            font-family: 'Georgia', serif;
+        }
+
+        .meaning-value .hl {
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        .result-section {
+            background: #0d1f0d;
+            border-radius: 12px;
+            border: 2px solid #22C55E33;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-text {
+            font-size: 1.2rem;
+            color: #888;
+        }
+
+        .result-text .hl {
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        .sidebar {
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #333;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #F59E0B;
+            cursor: pointer;
+        }
+
+        .quick-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .quick-btn {
+            padding: 8px 12px;
+            border: 2px solid #333;
+            background: #1a1a1f;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .quick-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .quick-btn.selected {
+            border-color: #F59E0B;
+            background: #F59E0B22;
+            color: #F59E0B;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #F59E0B;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #F59E0B;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .examples-box {
+            background: #111;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .examples-box h3 {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .example-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .example-row:last-child {
+            border-bottom: none;
+        }
+
+        .example-row .pct { color: #F59E0B; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>Percentages</h1>
+        <p class="subtitle">"Per cent" = "per hundred" = out of 100</p>
+    </header>
+
+    <main>
+        <div class="viz-section">
+            <div class="percent-display">
+                <div class="percent-value" id="percentValue">25%</div>
+            </div>
+
+            <div class="grid-section">
+                <div class="grid-label"><span id="filledCount">25</span> out of 100 squares</div>
+                <div class="hundred-grid" id="hundredGrid"></div>
+            </div>
+
+            <div class="meanings-row">
+                <div class="meaning-box">
+                    <div class="meaning-label">As a fraction</div>
+                    <div class="meaning-value"><span class="hl" id="fracNum">25</span> / 100</div>
+                </div>
+                <div class="meaning-box">
+                    <div class="meaning-label">Simplified</div>
+                    <div class="meaning-value" id="simplified">1/4</div>
+                </div>
+                <div class="meaning-box">
+                    <div class="meaning-label">As decimal</div>
+                    <div class="meaning-value" id="decimal">0.25</div>
+                </div>
+            </div>
+
+            <div class="result-section">
+                <div class="result-text">
+                    <span class="hl" id="pctText">25%</span> means <span class="hl" id="pctMeaning">25 out of every 100</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-label">Percentage</div>
+                <input type="range" id="percentSlider" min="0" max="100" value="25">
+                <div class="quick-buttons" id="quickButtons"></div>
+            </div>
+
+            <div class="insight-box">
+                <h3>The word itself</h3>
+                <p>
+                    <strong>Per</strong> = for each<br>
+                    <strong>Cent</strong> = hundred<br><br>
+                    "Per cent" literally means "for each hundred"<br><br>
+                    25% = 25 per 100 = 25/100
+                </p>
+            </div>
+
+            <div class="examples-box">
+                <h3>Real world</h3>
+                <div class="example-row">
+                    <span>Half</span>
+                    <span class="pct">50%</span>
+                </div>
+                <div class="example-row">
+                    <span>Quarter</span>
+                    <span class="pct">25%</span>
+                </div>
+                <div class="example-row">
+                    <span>Three quarters</span>
+                    <span class="pct">75%</span>
+                </div>
+                <div class="example-row">
+                    <span>All of it</span>
+                    <span class="pct">100%</span>
+                </div>
+                <div class="example-row">
+                    <span>None of it</span>
+                    <span class="pct">0%</span>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h3>Converting</h3>
+                <p>
+                    % → decimal: divide by 100<br>
+                    <span style="color:#F59E0B">25%</span> = 25 ÷ 100 = 0.25<br><br>
+                    decimal → %: multiply by 100<br>
+                    0.25 × 100 = <span style="color:#F59E0B">25%</span>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let percent = 25;
+
+        const percentSlider = document.getElementById('percentSlider');
+        const quickButtons = document.getElementById('quickButtons');
+        const hundredGrid = document.getElementById('hundredGrid');
+
+        // Build the 100-block grid
+        for (let i = 0; i < 100; i++) {
+            const block = document.createElement('div');
+            block.className = 'block';
+            hundredGrid.appendChild(block);
+        }
+
+        // Quick buttons
+        const quickValues = [0, 10, 25, 33, 50, 66, 75, 90, 100];
+        quickValues.forEach(val => {
+            const btn = document.createElement('button');
+            btn.className = 'quick-btn' + (val === percent ? ' selected' : '');
+            btn.textContent = val + '%';
+            btn.onclick = () => { percent = val; percentSlider.value = val; render(); };
+            quickButtons.appendChild(btn);
+        });
+
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+
+        function simplify(num, den) {
+            if (num === 0) return '0';
+            const g = gcd(num, den);
+            const sNum = num / g;
+            const sDen = den / g;
+            if (sDen === 1) return sNum.toString();
+            return `${sNum}/${sDen}`;
+        }
+
+        function render() {
+            // Update quick button states
+            quickButtons.querySelectorAll('.quick-btn').forEach((btn, i) => {
+                btn.className = 'quick-btn' + (quickValues[i] === percent ? ' selected' : '');
+            });
+
+            // Update display
+            document.getElementById('percentValue').textContent = percent + '%';
+            document.getElementById('filledCount').textContent = percent;
+            document.getElementById('fracNum').textContent = percent;
+            document.getElementById('simplified').textContent = simplify(percent, 100);
+            document.getElementById('decimal').textContent = (percent / 100).toFixed(2);
+            document.getElementById('pctText').textContent = percent + '%';
+            document.getElementById('pctMeaning').textContent = percent + ' out of every 100';
+
+            // Update grid
+            const blocks = hundredGrid.querySelectorAll('.block');
+            blocks.forEach((block, i) => {
+                block.className = 'block' + (i < percent ? ' filled' : '');
+            });
+        }
+
+        percentSlider.addEventListener('input', () => {
+            percent = parseInt(percentSlider.value);
+            render();
+        });
+
+        render();
+    </script>
+</body>
+</html>

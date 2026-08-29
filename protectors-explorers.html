@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protectors vs Explorers - Glowing Gardens</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .main {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-right: 320px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        h1 .red { color: #DC2626; }
+        h1 .blue { color: #3B82F6; }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .message {
+            color: #888;
+            font-size: 15px;
+            max-width: 500px;
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .viz-title {
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 15px;
+            font-weight: 400;
+        }
+
+        #viz {
+            position: relative;
+        }
+
+        .outer-circle {
+            fill: none;
+            stroke: #222;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+        }
+
+        .center-zone {
+            fill: rgba(220, 38, 38, 0.08);
+            stroke: rgba(220, 38, 38, 0.5);
+            stroke-width: 2;
+        }
+
+        .dot {
+            transition: opacity 0.3s;
+        }
+
+        .legend {
+            display: flex;
+            gap: 30px;
+            margin-top: 25px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.red { background: #DC2626; }
+        .legend-dot.blue { background: #3B82F6; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 25px;
+            z-index: 50;
+        }
+
+        .sidebar h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .sidebar h3 {
+            font-size: 14px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .sidebar h3.red { color: #DC2626; }
+        .sidebar h3.blue { color: #3B82F6; }
+
+        .sidebar p {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .sidebar strong {
+            color: #fff;
+        }
+
+        .sidebar em {
+            color: #22C55E;
+            font-style: normal;
+        }
+
+        .sidebar .quote {
+            border-left: 2px solid #444;
+            padding-left: 15px;
+            margin: 15px 0;
+            font-style: italic;
+            color: #999;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .sidebar ul {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.8;
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .sidebar .insight {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        .count-display {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
+
+        .count-item {
+            text-align: center;
+        }
+
+        .count-number {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .count-number.red { color: #DC2626; }
+        .count-number.blue { color: #3B82F6; }
+
+        .count-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 900px) {
+            .main { padding-right: 0; }
+            .sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="main">
+        <h1><span class="red">Protectors</span> vs <span class="blue">Explorers</span></h1>
+        <p class="subtitle">conservatives vs. liberals</p>
+        <p class="message">Society needs both. If you think one side is better than the other then get over yourself. You're not smarter than evolution.</p>
+
+        <h2 class="viz-title">A Tribe of 150</h2>
+        <svg id="viz"></svg>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot red"></div>
+                <span>Protectors (Conservatives)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot blue"></div>
+                <span>Explorers (Liberals)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>The Tribe Needs Both</h2>
+
+        <p>Imagine a tribe of 150 people—roughly <strong>Dunbar's number</strong>, the natural size of human social groups throughout evolution.</p>
+
+        <div class="count-display">
+            <div class="count-item">
+                <div class="count-number red">~90</div>
+                <div class="count-label">Protectors</div>
+            </div>
+            <div class="count-item">
+                <div class="count-number blue">~60</div>
+                <div class="count-label">Explorers</div>
+            </div>
+        </div>
+
+        <h3 class="red">Protectors</h3>
+        <p>Stay close to the center. Guard what works. They value:</p>
+        <ul>
+            <li>Tradition and proven methods</li>
+            <li>Safety and stability</li>
+            <li>Clear boundaries and rules</li>
+            <li>Loyalty to the group</li>
+            <li>Caution toward outsiders</li>
+        </ul>
+
+        <h3 class="blue">Explorers</h3>
+        <p>Venture to the edges. Find new resources. They value:</p>
+        <ul>
+            <li>Novelty and new experiences</li>
+            <li>Openness to change</li>
+            <li>Individual expression</li>
+            <li>Welcoming strangers</li>
+            <li>Questioning traditions</li>
+        </ul>
+
+        <div class="insight">
+            <strong>The evolutionary logic:</strong> A tribe of all protectors would never find new food sources or adapt to change. A tribe of all explorers would lose its culture and cohesion. The tension between them <em>is</em> the balance.
+        </div>
+
+        <div class="quote">
+            "The liberal and conservative impulses are both necessary for a functioning society—like the gas pedal and brake in a car."
+        </div>
+
+        <p>Neither is right or wrong. They're different <strong>survival strategies</strong> that evolved because groups needed both.</p>
+
+        <p style="color: #555; margin-top: 20px; font-size: 12px;">
+            Note: Real political views are more complex than this simple model. This is about psychological tendencies, not policies.
+        </p>
+    </div>
+
+    <script>
+        const svg = document.getElementById('viz');
+        const width = 500;
+        const height = 500;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const outerRadius = 220;
+        const innerRadius = 180;
+
+        svg.setAttribute('width', width);
+        svg.setAttribute('height', height);
+
+        // Draw outer circle (exploration boundary)
+        const outerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        outerCircle.setAttribute('cx', centerX);
+        outerCircle.setAttribute('cy', centerY);
+        outerCircle.setAttribute('r', outerRadius);
+        outerCircle.setAttribute('class', 'outer-circle');
+        svg.appendChild(outerCircle);
+
+        // Draw inner zone (safety zone)
+        const innerZone = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        innerZone.setAttribute('cx', centerX);
+        innerZone.setAttribute('cy', centerY);
+        innerZone.setAttribute('r', innerRadius);
+        innerZone.setAttribute('class', 'center-zone');
+        svg.appendChild(innerZone);
+
+        // Label for inner zone
+        const innerLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        innerLabel.setAttribute('x', centerX);
+        innerLabel.setAttribute('y', centerY - innerRadius - 10);
+        innerLabel.setAttribute('text-anchor', 'middle');
+        innerLabel.setAttribute('fill', 'rgba(220, 38, 38, 0.6)');
+        innerLabel.setAttribute('font-size', '13');
+        innerLabel.setAttribute('font-family', '-apple-system, BlinkMacSystemFont, sans-serif');
+        innerLabel.textContent = "tribe's comfort zone";
+        svg.appendChild(innerLabel);
+
+        // Create 150 people
+        const totalPeople = 150;
+        const protectorCount = 90;
+        const explorerCount = 60;
+
+        const people = [];
+
+        // Create protectors (red) - stay near center
+        for (let i = 0; i < protectorCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.random() * innerRadius * 0.9;
+            people.push({
+                type: 'protector',
+                x: centerX + Math.cos(angle) * radius,
+                y: centerY + Math.sin(angle) * radius,
+                baseRadius: radius,
+                angle: angle,
+                speed: 0.001 + Math.random() * 0.002,
+                wobble: Math.random() * Math.PI * 2
+            });
+        }
+
+        // Create explorers (blue) - venture to edges
+        for (let i = 0; i < explorerCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const minRadius = innerRadius * 0.5;
+            const radius = minRadius + Math.random() * (outerRadius * 0.85 - minRadius);
+            people.push({
+                type: 'explorer',
+                x: centerX + Math.cos(angle) * radius,
+                y: centerY + Math.sin(angle) * radius,
+                baseRadius: radius,
+                angle: angle,
+                speed: 0.003 + Math.random() * 0.004,
+                wobble: Math.random() * Math.PI * 2,
+                radiusSpeed: 0.002 + Math.random() * 0.003
+            });
+        }
+
+        // Draw dots
+        people.forEach((person, i) => {
+            const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            dot.setAttribute('r', 8);
+            dot.setAttribute('fill', person.type === 'protector' ? '#DC2626' : '#3B82F6');
+            dot.setAttribute('stroke', '#fff');
+            dot.setAttribute('stroke-width', 2);
+            dot.setAttribute('class', 'dot');
+            dot.id = `dot-${i}`;
+            svg.appendChild(dot);
+        });
+
+        // Position dots statically with gentle breathing
+        let time = 0;
+
+        // Initial positioning
+        people.forEach((person, i) => {
+            const dot = document.getElementById(`dot-${i}`);
+            dot.setAttribute('cx', person.x);
+            dot.setAttribute('cy', person.y);
+        });
+
+        // Very subtle breathing animation
+        function animate() {
+            time += 0.016;
+
+            people.forEach((person, i) => {
+                const dot = document.getElementById(`dot-${i}`);
+
+                // Just tiny wobbles in place
+                const wobbleX = Math.sin(time * 0.5 + person.wobble) * 2;
+                const wobbleY = Math.cos(time * 0.6 + person.wobble) * 2;
+
+                dot.setAttribute('cx', person.x + wobbleX);
+                dot.setAttribute('cy', person.y + wobbleY);
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

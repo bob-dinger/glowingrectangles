@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Carlito', sans-serif;
+            background-color: #fafafa;
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            gap: 12px;
+        }
+
+        .app-bar .title {
+            background: #111827;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5), 0 0 30px rgba(16, 185, 129, 0.2);
+        }
+
+        .app-bar a {
+            color: #10b981;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 64px);
+            margin-top: 64px;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card {
+            background: #f3f4f6;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .stat-card .label {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .filter-group {
+            margin-top: 20px;
+        }
+
+        .filter-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .filter-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #10b981;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .year-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .year-btn {
+            flex: 1;
+            padding: 8px 4px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .year-btn:hover {
+            border-color: #10b981;
+        }
+
+        .year-btn.active {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+
+        .chart-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            height: 28px;
+        }
+
+        .bar-label {
+            width: 160px;
+            font-size: 12px;
+            color: #374151;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 12px;
+            text-align: right;
+        }
+
+        .bar-wrapper {
+            flex: 1;
+            height: 20px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            position: relative;
+        }
+
+        .bar-segment {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .bar-2024 {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        .bar-2025 {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+
+        .bar-2026 {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+
+        .bar-received {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+
+        .bar-sent {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+
+        .bar-count {
+            width: 70px;
+            font-size: 12px;
+            color: #6b7280;
+            padding-left: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+
+        .legend-color.y2024 { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .legend-color.y2025 { background: linear-gradient(90deg, #10b981, #34d399); }
+        .legend-color.y2026 { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .legend-color.received { background: linear-gradient(90deg, #10b981, #34d399); }
+        .legend-color.sent { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+
+        .tooltip {
+            position: fixed;
+            background: #111827;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+            max-width: 250px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 4px;
+            background: #f3f4f6;
+            padding: 4px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+
+        .view-btn {
+            flex: 1;
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-bar">
+        <a href="../index.html">Home</a>
+        <div class="title">Message Analytics</div>
+        <a href="messages-groups.html">Groups</a>
+        <a href="messages-trends.html">Trends</a>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <h3>Summary</h3>
+            <div class="stat-card">
+                <div class="value" id="totalMessages">-</div>
+                <div class="label">Total Messages</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="totalContacts">-</div>
+                <div class="label">Unique Contacts</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="conversationCount">-</div>
+                <div class="label">Real Conversations</div>
+            </div>
+
+            <div class="filter-group">
+                <h3>Year</h3>
+                <div class="year-buttons">
+                    <button class="year-btn active" data-year="all">All</button>
+                    <button class="year-btn" data-year="2024">2024</button>
+                    <button class="year-btn" data-year="2025">2025</button>
+                    <button class="year-btn" data-year="2026">2026</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3>Filters</h3>
+                <label>
+                    <input type="checkbox" id="conversationsOnly" checked>
+                    Real conversations only
+                </label>
+                <label>
+                    <input type="checkbox" id="hideShortCodes">
+                    Hide short codes
+                </label>
+                <label style="flex-direction: column; align-items: flex-start;">
+                    Show top
+                    <select id="topCount">
+                        <option value="15">15 contacts</option>
+                        <option value="25" selected>25 contacts</option>
+                        <option value="50">50 contacts</option>
+                        <option value="100">All filtered</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="view-toggle">
+                <button class="view-btn active" data-view="yearly">By Year</button>
+                <button class="view-btn" data-view="direction">Sent vs Received</button>
+            </div>
+            <div class="chart-title">Top Message Senders</div>
+            <div class="legend" id="legend"></div>
+            <div id="chartArea"></div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Data with year breakdown
+        const yearlyData = [
+            {contact: "+15806780033", y2024: {r: 932, s: 0}, y2025: {r: 3022, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+12147380884", y2024: {r: 1447, s: 0}, y2025: {r: 2039, s: 0}, y2026: {r: 138, s: 0}},
+            {contact: "+12149265353", y2024: {r: 1094, s: 0}, y2025: {r: 1435, s: 0}, y2026: {r: 51, s: 0}},
+            {contact: "+12147977940", y2024: {r: 1223, s: 0}, y2025: {r: 1076, s: 0}, y2026: {r: 32, s: 0}},
+            {contact: "+12142743800", y2024: {r: 875, s: 0}, y2025: {r: 1319, s: 0}, y2026: {r: 99, s: 1}},
+            {contact: "+12146758307", y2024: {r: 672, s: 0}, y2025: {r: 1266, s: 41}, y2026: {r: 21, s: 15}},
+            {contact: "+12069283336", y2024: {r: 1249, s: 0}, y2025: {r: 400, s: 62}, y2026: {r: 13, s: 18}},
+            {contact: "+12144975678", y2024: {r: 619, s: 0}, y2025: {r: 994, s: 0}, y2026: {r: 43, s: 0}},
+            {contact: "+12147178442", y2024: {r: 789, s: 0}, y2025: {r: 807, s: 0}, y2026: {r: 48, s: 0}},
+            {contact: "+12144572397", y2024: {r: 527, s: 0}, y2025: {r: 561, s: 0}, y2026: {r: 11, s: 0}},
+            {contact: "+12147690278", y2024: {r: 465, s: 0}, y2025: {r: 555, s: 6}, y2026: {r: 18, s: 10}},
+            {contact: "+12143950527", y2024: {r: 457, s: 0}, y2025: {r: 438, s: 14}, y2026: {r: 8, s: 6}},
+            {contact: "+18179037227", y2024: {r: 0, s: 0}, y2025: {r: 829, s: 63}, y2026: {r: 9, s: 6}},
+            {contact: "+17815615165", y2024: {r: 589, s: 0}, y2025: {r: 257, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+14043761930", y2024: {r: 437, s: 0}, y2025: {r: 366, s: 0}, y2026: {r: 23, s: 0}},
+            {contact: "+17138232509", y2024: {r: 420, s: 0}, y2025: {r: 383, s: 0}, y2026: {r: 12, s: 0}},
+            {contact: "+14042752945", y2024: {r: 359, s: 0}, y2025: {r: 327, s: 0}, y2026: {r: 31, s: 0}},
+            {contact: "+12145057323", y2024: {r: 275, s: 0}, y2025: {r: 422, s: 0}, y2026: {r: 16, s: 0}},
+            {contact: "+12143844540", y2024: {r: 0, s: 0}, y2025: {r: 458, s: 70}, y2026: {r: 70, s: 59}},
+            {contact: "+17132012650", y2024: {r: 476, s: 0}, y2025: {r: 119, s: 0}, y2026: {r: 1, s: 0}},
+            {contact: "+12023403766", y2024: {r: 419, s: 0}, y2025: {r: 121, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+12149242342", y2024: {r: 244, s: 0}, y2025: {r: 236, s: 0}, y2026: {r: 16, s: 0}},
+            {contact: "+12143947870", y2024: {r: 136, s: 0}, y2025: {r: 331, s: 0}, y2026: {r: 22, s: 0}},
+            {contact: "+18173070421", y2024: {r: 226, s: 0}, y2025: {r: 197, s: 0}, y2026: {r: 8, s: 0}},
+            {contact: "+12107717661", y2024: {r: 172, s: 0}, y2025: {r: 236, s: 0}, y2026: {r: 11, s: 0}},
+            {contact: "+12819619955", y2024: {r: 348, s: 0}, y2025: {r: 57, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+12147933509", y2024: {r: 146, s: 0}, y2025: {r: 229, s: 0}, y2026: {r: 6, s: 0}},
+            {contact: "+12147661024", y2024: {r: 108, s: 0}, y2025: {r: 242, s: 18}, y2026: {r: 1, s: 0}},
+            {contact: "+18323878038", y2024: {r: 164, s: 0}, y2025: {r: 191, s: 0}, y2026: {r: 9, s: 0}},
+            {contact: "+12144588849", y2024: {r: 135, s: 0}, y2025: {r: 167, s: 1}, y2026: {r: 19, s: 0}},
+            {contact: "+12142745264", y2024: {r: 131, s: 0}, y2025: {r: 172, s: 0}, y2026: {r: 12, s: 0}},
+            {contact: "+12146754473", y2024: {r: 126, s: 0}, y2025: {r: 140, s: 3}, y2026: {r: 1, s: 0}},
+            {contact: "+12142357977", y2024: {r: 84, s: 0}, y2025: {r: 119, s: 4}, y2026: {r: 3, s: 0}},
+            {contact: "craig.lechtenberg@gmail.com", y2024: {r: 123, s: 0}, y2025: {r: 65, s: 0}, y2026: {r: 1, s: 0}},
+            {contact: "+12145356966", y2024: {r: 46, s: 0}, y2025: {r: 139, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+18179446795", y2024: {r: 106, s: 0}, y2025: {r: 76, s: 0}, y2026: {r: 2, s: 0}},
+            {contact: "+12107250071", y2024: {r: 0, s: 0}, y2025: {r: 173, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+12145364142", y2024: {r: 135, s: 0}, y2025: {r: 34, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+18177184210", y2024: {r: 84, s: 0}, y2025: {r: 71, s: 0}, y2026: {r: 11, s: 0}},
+            {contact: "+19453354664", y2024: {r: 0, s: 0}, y2025: {r: 107, s: 41}, y2026: {r: 9, s: 6}},
+            {contact: "+12143543815", y2024: {r: 54, s: 0}, y2025: {r: 102, s: 0}, y2026: {r: 5, s: 0}},
+            {contact: "+17138651929", y2024: {r: 156, s: 0}, y2025: {r: 4, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "898287", y2024: {r: 82, s: 0}, y2025: {r: 69, s: 0}, y2026: {r: 5, s: 0}},
+            {contact: "+12142899076", y2024: {r: 0, s: 0}, y2025: {r: 143, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+12144580318", y2024: {r: 15, s: 0}, y2025: {r: 128, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+12145323364", y2024: {r: 42, s: 0}, y2025: {r: 96, s: 0}, y2026: {r: 0, s: 2}},
+            {contact: "+15126330700", y2024: {r: 0, s: 0}, y2025: {r: 132, s: 0}, y2026: {r: 4, s: 0}},
+            {contact: "malone.winnie@icloud.com", y2024: {r: 77, s: 0}, y2025: {r: 40, s: 5}, y2026: {r: 7, s: 6}},
+            {contact: "+18179650951", y2024: {r: 100, s: 0}, y2025: {r: 20, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+12144508014", y2024: {r: 79, s: 0}, y2025: {r: 36, s: 0}, y2026: {r: 4, s: 0}},
+            {contact: "+18186324982", y2024: {r: 0, s: 0}, y2025: {r: 118, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+18067865342", y2024: {r: 0, s: 0}, y2025: {r: 115, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+12143845805", y2024: {r: 52, s: 0}, y2025: {r: 50, s: 0}, y2026: {r: 4, s: 0}},
+            {contact: "+19178682927", y2024: {r: 63, s: 0}, y2025: {r: 36, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+12148133980", y2024: {r: 18, s: 0}, y2025: {r: 63, s: 0}, y2026: {r: 0, s: 2}},
+            {contact: "+14694507131", y2024: {r: 34, s: 0}, y2025: {r: 46, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+18662112590", y2024: {r: 23, s: 0}, y2025: {r: 52, s: 0}, y2026: {r: 1, s: 0}},
+            {contact: "+19729989111", y2024: {r: 12, s: 0}, y2025: {r: 63, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+18324832072", y2024: {r: 15, s: 0}, y2025: {r: 58, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+12142327727", y2024: {r: 51, s: 0}, y2025: {r: 18, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+17138238686", y2024: {r: 25, s: 0}, y2025: {r: 42, s: 0}, y2026: {r: 2, s: 0}},
+            {contact: "+15039641186", y2024: {r: 0, s: 0}, y2025: {r: 58, s: 0}, y2026: {r: 4, s: 4}},
+            {contact: "+17137248068", y2024: {r: 15, s: 0}, y2025: {r: 40, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+19728323114", y2024: {r: 50, s: 0}, y2025: {r: 0, s: 0}, y2026: {r: 0, s: 0}},
+            {contact: "+12147661796", y2024: {r: 0, s: 0}, y2025: {r: 44, s: 0}, y2026: {r: 4, s: 0}},
+            {contact: "+12146812049", y2024: {r: 0, s: 0}, y2025: {r: 12, s: 18}, y2026: {r: 0, s: 0}},
+            {contact: "+19157775166", y2024: {r: 0, s: 0}, y2025: {r: 9, s: 15}, y2026: {r: 0, s: 0}},
+            {contact: "juliamundinger@icloud.com", y2024: {r: 8, s: 0}, y2025: {r: 20, s: 4}, y2026: {r: 4, s: 0}},
+            {contact: "+12145389224", y2024: {r: 0, s: 0}, y2025: {r: 5, s: 3}, y2026: {r: 0, s: 0}}
+        ];
+
+        const tooltip = document.getElementById('tooltip');
+        let currentData = [];
+        let currentYear = 'all';
+        let currentView = 'yearly';
+
+        function formatContact(contact) {
+            if (contact.includes('@')) {
+                return contact.split('@')[0];
+            }
+            return contact;
+        }
+
+        function isShortCode(contact) {
+            return /^\d{4,6}$/.test(contact);
+        }
+
+        function getYearData(d, year) {
+            if (year === 'all') {
+                return {
+                    received: (d.y2024?.r || 0) + (d.y2025?.r || 0) + (d.y2026?.r || 0),
+                    sent: (d.y2024?.s || 0) + (d.y2025?.s || 0) + (d.y2026?.s || 0)
+                };
+            }
+            const key = 'y' + year;
+            return {
+                received: d[key]?.r || 0,
+                sent: d[key]?.s || 0
+            };
+        }
+
+        function filterData() {
+            const conversationsOnly = document.getElementById('conversationsOnly').checked;
+            const hideShortCodes = document.getElementById('hideShortCodes').checked;
+            const topCount = parseInt(document.getElementById('topCount').value);
+
+            let filtered = yearlyData.map(d => {
+                const yd = getYearData(d, currentYear);
+                return {
+                    ...d,
+                    received: yd.received,
+                    sent: yd.sent,
+                    total: yd.received + yd.sent
+                };
+            }).filter(d => {
+                if (d.total === 0) return false;
+                if (conversationsOnly && d.sent === 0) return false;
+                if (hideShortCodes && isShortCode(d.contact)) return false;
+                return true;
+            });
+
+            filtered.sort((a, b) => b.total - a.total);
+
+            const limit = topCount === 100 ? filtered.length : topCount;
+            currentData = filtered.slice(0, limit);
+            renderChart();
+            updateStats();
+        }
+
+        function updateStats() {
+            const hideShortCodes = document.getElementById('hideShortCodes').checked;
+
+            let filtered = yearlyData.map(d => {
+                const yd = getYearData(d, currentYear);
+                return { ...d, received: yd.received, sent: yd.sent, total: yd.received + yd.sent };
+            }).filter(d => {
+                if (d.total === 0) return false;
+                if (hideShortCodes && isShortCode(d.contact)) return false;
+                return true;
+            });
+
+            const totalMessages = filtered.reduce((sum, d) => sum + d.total, 0);
+            const totalContacts = filtered.length;
+            const conversationCount = filtered.filter(d => d.sent > 0).length;
+
+            document.getElementById('totalMessages').textContent = totalMessages.toLocaleString();
+            document.getElementById('totalContacts').textContent = totalContacts.toLocaleString();
+            document.getElementById('conversationCount').textContent = conversationCount.toLocaleString();
+        }
+
+        function updateLegend() {
+            const legend = document.getElementById('legend');
+            if (currentView === 'yearly' && currentYear === 'all') {
+                legend.innerHTML = `
+                    <div class="legend-item"><div class="legend-color y2024"></div><span>2024</span></div>
+                    <div class="legend-item"><div class="legend-color y2025"></div><span>2025</span></div>
+                    <div class="legend-item"><div class="legend-color y2026"></div><span>2026</span></div>
+                `;
+            } else {
+                legend.innerHTML = `
+                    <div class="legend-item"><div class="legend-color received"></div><span>Received</span></div>
+                    <div class="legend-item"><div class="legend-color sent"></div><span>Sent</span></div>
+                `;
+            }
+        }
+
+        function renderChart() {
+            const container = document.getElementById('chartArea');
+            updateLegend();
+
+            if (currentData.length === 0) {
+                container.innerHTML = '<div class="no-data">No data matches your filters</div>';
+                return;
+            }
+
+            const maxTotal = Math.max(...currentData.map(d => d.total));
+
+            container.innerHTML = currentData.map(d => {
+                let barsHtml = '';
+
+                if (currentView === 'yearly' && currentYear === 'all') {
+                    const t2024 = (d.y2024?.r || 0) + (d.y2024?.s || 0);
+                    const t2025 = (d.y2025?.r || 0) + (d.y2025?.s || 0);
+                    const t2026 = (d.y2026?.r || 0) + (d.y2026?.s || 0);
+                    barsHtml = `
+                        <div class="bar-segment bar-2024" style="width: ${(t2024 / maxTotal) * 100}%"></div>
+                        <div class="bar-segment bar-2025" style="width: ${(t2025 / maxTotal) * 100}%"></div>
+                        <div class="bar-segment bar-2026" style="width: ${(t2026 / maxTotal) * 100}%"></div>
+                    `;
+                } else {
+                    barsHtml = `
+                        <div class="bar-segment bar-received" style="width: ${(d.received / maxTotal) * 100}%"></div>
+                        <div class="bar-segment bar-sent" style="width: ${(d.sent / maxTotal) * 100}%"></div>
+                    `;
+                }
+
+                return `
+                    <div class="bar-row" data-contact="${d.contact}">
+                        <div class="bar-label" title="${d.contact}">${formatContact(d.contact)}</div>
+                        <div class="bar-wrapper">${barsHtml}</div>
+                        <div class="bar-count">${d.total.toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.querySelectorAll('.bar-row').forEach(row => {
+                const contact = row.dataset.contact;
+                const data = currentData.find(d => d.contact === contact);
+
+                row.addEventListener('mouseenter', (e) => {
+                    let html = `<strong>${contact}</strong><br>`;
+                    if (currentView === 'yearly' && currentYear === 'all') {
+                        const t2024 = (data.y2024?.r || 0) + (data.y2024?.s || 0);
+                        const t2025 = (data.y2025?.r || 0) + (data.y2025?.s || 0);
+                        const t2026 = (data.y2026?.r || 0) + (data.y2026?.s || 0);
+                        html += `2024: ${t2024.toLocaleString()}<br>`;
+                        html += `2025: ${t2025.toLocaleString()}<br>`;
+                        html += `2026: ${t2026.toLocaleString()}`;
+                    } else {
+                        html += `Received: ${data.received.toLocaleString()}<br>`;
+                        html += `Sent: ${data.sent.toLocaleString()}`;
+                    }
+                    tooltip.innerHTML = html;
+                    tooltip.style.opacity = 1;
+                });
+                row.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = e.clientX + 10 + 'px';
+                    tooltip.style.top = e.clientY + 10 + 'px';
+                });
+                row.addEventListener('mouseleave', () => {
+                    tooltip.style.opacity = 0;
+                });
+            });
+        }
+
+        // Event listeners
+        document.getElementById('conversationsOnly').addEventListener('change', filterData);
+        document.getElementById('hideShortCodes').addEventListener('change', filterData);
+        document.getElementById('topCount').addEventListener('change', filterData);
+
+        document.querySelectorAll('.year-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentYear = btn.dataset.year;
+                filterData();
+            });
+        });
+
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentView = btn.dataset.view;
+                renderChart();
+            });
+        });
+
+        // Initial render
+        filterData();
+    </script>
+</body>
+</html>

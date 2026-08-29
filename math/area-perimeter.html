@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area vs Perimeter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #3B82F6, #22C55E);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+            max-height: calc(100vh - 80px);
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .results-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .result-box {
+            flex: 1;
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .result-value.area { color: #3B82F6; }
+        .result-value.perimeter { color: #22C55E; }
+
+        .result-formula {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 8px;
+            font-family: 'Georgia', serif;
+        }
+
+        .grid-section {
+            background: #111;
+            border-radius: 12px;
+            padding: 25px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .grid-container {
+            position: relative;
+        }
+
+        .rectangle-grid {
+            display: grid;
+            gap: 2px;
+            position: relative;
+        }
+
+        .block {
+            width: 35px;
+            height: 35px;
+            background: #3B82F6;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .block.edge {
+            box-shadow: inset 0 0 0 3px #22C55E;
+        }
+
+        .dimension-label {
+            position: absolute;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #888;
+        }
+
+        .dimension-label.width {
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .dimension-label.height {
+            left: -40px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+        }
+
+        .explanation-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .explanation-box {
+            flex: 1;
+            background: #1a1a24;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .explanation-box.area {
+            border-left: 3px solid #3B82F6;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .explanation-box.perimeter {
+            border-left: 3px solid #22C55E;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .explanation-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .explanation-title.area { color: #3B82F6; }
+        .explanation-title.perimeter { color: #22C55E; }
+
+        .explanation-text {
+            font-size: 0.9rem;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        .sidebar {
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .control-value {
+            color: #e0e0e0;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #333;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #A855F7;
+            cursor: pointer;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #A855F7;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #A855F7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .comparison-box {
+            background: #111;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .comparison-box h3 {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .comparison-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .comparison-row:last-child { border-bottom: none; }
+
+        .comparison-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+        }
+
+        .comparison-icon.area {
+            background: #3B82F6;
+        }
+
+        .comparison-icon.perimeter {
+            background: transparent;
+            border: 2px solid #22C55E;
+        }
+
+        .comparison-text {
+            font-size: 0.85rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>Area vs Perimeter</h1>
+        <p class="subtitle">Inside space vs. outside edge</p>
+    </header>
+
+    <main>
+        <div class="viz-section">
+            <div class="results-row">
+                <div class="result-box">
+                    <div class="result-label">Area (inside)</div>
+                    <div class="result-value area" id="areaValue">15 sq</div>
+                    <div class="result-formula" id="areaFormula">5 × 3 = 15</div>
+                </div>
+                <div class="result-box">
+                    <div class="result-label">Perimeter (edge)</div>
+                    <div class="result-value perimeter" id="perimeterValue">16</div>
+                    <div class="result-formula" id="perimeterFormula">5 + 3 + 5 + 3 = 16</div>
+                </div>
+            </div>
+
+            <div class="grid-section">
+                <div class="grid-container">
+                    <div class="rectangle-grid" id="rectangleGrid"></div>
+                    <div class="dimension-label width" id="widthLabel">5</div>
+                    <div class="dimension-label height" id="heightLabel">3</div>
+                </div>
+            </div>
+
+            <div class="explanation-row">
+                <div class="explanation-box area">
+                    <div class="explanation-title area">Area</div>
+                    <div class="explanation-text">
+                        Count all the squares inside.<br>
+                        <strong>width × height</strong>
+                    </div>
+                </div>
+                <div class="explanation-box perimeter">
+                    <div class="explanation-title perimeter">Perimeter</div>
+                    <div class="explanation-text">
+                        Walk around the edge. How far?<br>
+                        <strong>2 × width + 2 × height</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Width</span>
+                        <span class="control-value" id="widthValue">5</span>
+                    </div>
+                    <input type="range" id="widthSlider" min="1" max="10" value="5">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Height</span>
+                        <span class="control-value" id="heightValue">3</span>
+                    </div>
+                    <input type="range" id="heightSlider" min="1" max="8" value="3">
+                </div>
+            </div>
+
+            <div class="comparison-box">
+                <h3>Think of it as</h3>
+                <div class="comparison-row">
+                    <div class="comparison-icon area"></div>
+                    <div class="comparison-text"><strong>Area:</strong> How much carpet to cover the floor</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-icon perimeter"></div>
+                    <div class="comparison-text"><strong>Perimeter:</strong> How much fence around a yard</div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h3>Key difference</h3>
+                <p>
+                    <span style="color:#3B82F6">Area</span> = 2D (square units)<br>
+                    Measures <strong>surface</strong><br><br>
+                    <span style="color:#22C55E">Perimeter</span> = 1D (linear units)<br>
+                    Measures <strong>distance</strong>
+                </p>
+            </div>
+
+            <div class="insight-box">
+                <h3>Same perimeter, different area</h3>
+                <p>
+                    1×8 rectangle: P=18, A=8<br>
+                    2×7 rectangle: P=18, A=14<br>
+                    3×6 rectangle: P=18, A=18<br>
+                    4×5 rectangle: P=18, A=20<br><br>
+                    Squares maximize area!
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let width = 5;
+        let height = 3;
+
+        const widthSlider = document.getElementById('widthSlider');
+        const heightSlider = document.getElementById('heightSlider');
+        const rectangleGrid = document.getElementById('rectangleGrid');
+
+        function render() {
+            const area = width * height;
+            const perimeter = 2 * width + 2 * height;
+
+            document.getElementById('widthValue').textContent = width;
+            document.getElementById('heightValue').textContent = height;
+            document.getElementById('widthLabel').textContent = width;
+            document.getElementById('heightLabel').textContent = height;
+
+            document.getElementById('areaValue').textContent = area + ' sq';
+            document.getElementById('areaFormula').textContent = `${width} × ${height} = ${area}`;
+
+            document.getElementById('perimeterValue').textContent = perimeter;
+            document.getElementById('perimeterFormula').textContent = `${width} + ${height} + ${width} + ${height} = ${perimeter}`;
+
+            // Build grid
+            rectangleGrid.style.gridTemplateColumns = `repeat(${width}, 35px)`;
+
+            let gridHTML = '';
+            for (let row = 0; row < height; row++) {
+                for (let col = 0; col < width; col++) {
+                    const isEdge = row === 0 || row === height - 1 || col === 0 || col === width - 1;
+                    gridHTML += `<div class="block${isEdge ? ' edge' : ''}"></div>`;
+                }
+            }
+            rectangleGrid.innerHTML = gridHTML;
+        }
+
+        widthSlider.addEventListener('input', () => {
+            width = parseInt(widthSlider.value);
+            render();
+        });
+
+        heightSlider.addEventListener('input', () => {
+            height = parseInt(heightSlider.value);
+            render();
+        });
+
+        render();
+    </script>
+</body>
+</html>

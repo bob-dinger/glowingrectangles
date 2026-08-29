@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplication Methods</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px 30px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #22C55E, #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+            margin-top: 8px;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .method-card {
+            background: #111;
+            border-radius: 12px;
+            padding: 25px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s, background 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .method-card:hover {
+            transform: translateY(-3px);
+            background: #161618;
+            border-color: #333;
+        }
+
+        .method-region {
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .method-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .method-card:nth-child(1) .method-name { color: #EF4444; }
+        .method-card:nth-child(2) .method-name { color: #F59E0B; }
+        .method-card:nth-child(3) .method-name { color: #22C55E; }
+        .method-card:nth-child(4) .method-name { color: #3B82F6; }
+        .method-card:nth-child(5) .method-name { color: #A855F7; }
+        .method-card:nth-child(6) .method-name { color: #EC4899; }
+        .method-card:nth-child(7) .method-name { color: #14B8A6; }
+
+        .method-desc {
+            font-size: 0.9rem;
+            color: #888;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .method-best {
+            font-size: 0.8rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .intro-box {
+            background: #1a1a24;
+            border-left: 3px solid #3B82F6;
+            border-radius: 0 12px 12px 0;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .intro-box p {
+            font-size: 0.95rem;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .intro-box .hl {
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>Multiplication Methods</h1>
+        <p class="subtitle">Same answer. Different paths. Find what clicks for you.</p>
+    </header>
+
+    <main>
+        <div class="intro-box">
+            <p>
+                There's no single "right" way to multiply. Different cultures developed different techniques.
+                Some are visual. Some are fast. Some work better for certain numbers.<br><br>
+                <span class="hl">Explore them all. See which one makes sense to YOUR brain.</span>
+            </p>
+        </div>
+
+        <div class="methods-grid">
+            <a href="method-lines.html" class="method-card">
+                <div class="method-region">Japan / China</div>
+                <div class="method-name">Line Method</div>
+                <div class="method-desc">Draw intersecting lines, count where they cross. Pure visual—no memorization needed.</div>
+                <div class="method-best">Best for: small digits (1s, 2s, 3s)</div>
+            </a>
+
+            <a href="method-vedic-nikhilam.html" class="method-card">
+                <div class="method-region">India (Vedic)</div>
+                <div class="method-name">Nikhilam</div>
+                <div class="method-desc">For numbers near 10, 100, 1000. Uses deviations from the base. Feels like magic.</div>
+                <div class="method-best">Best for: 97×96, 102×108, etc.</div>
+            </a>
+
+            <a href="method-vedic-urdhva.html" class="method-card">
+                <div class="method-region">India (Vedic)</div>
+                <div class="method-name">Urdhva Tiryak</div>
+                <div class="method-desc">"Vertically and crosswise." A systematic pattern that works for any numbers.</div>
+                <div class="method-best">Best for: general use</div>
+            </a>
+
+            <a href="method-lattice.html" class="method-card">
+                <div class="method-region">Arabic / Medieval Europe</div>
+                <div class="method-name">Lattice Method</div>
+                <div class="method-desc">Grid with diagonals. Multiply in boxes, add along the diagonals. Hard to mess up.</div>
+                <div class="method-best">Best for: big numbers, avoiding carry mistakes</div>
+            </a>
+
+            <a href="method-area.html" class="method-card">
+                <div class="method-region">Visual / Modern</div>
+                <div class="method-name">Area Model</div>
+                <div class="method-desc">Break numbers into parts, draw rectangles. See multiplication AS area.</div>
+                <div class="method-best">Best for: understanding what multiplication means</div>
+            </a>
+
+            <a href="method-russian.html" class="method-card">
+                <div class="method-region">Russia / Ancient</div>
+                <div class="method-name">Russian Peasant</div>
+                <div class="method-desc">Halve one number, double the other, add the right rows. Weird but works.</div>
+                <div class="method-best">Best for: when you only know how to double</div>
+            </a>
+
+            <a href="method-egyptian.html" class="method-card">
+                <div class="method-region">Ancient Egypt</div>
+                <div class="method-name">Egyptian Doubling</div>
+                <div class="method-desc">Build up through doubling. The ancestor of binary multiplication.</div>
+                <div class="method-best">Best for: understanding how computers multiply</div>
+            </a>
+        </div>
+    </main>
+</body>
+</html>

@@ -35,7 +35,7 @@ function render(){const kl=document.getElementById('keyList');
  kl.querySelectorAll('.keybtn').forEach(b=>b.onclick=()=>select(+b.dataset.i)); select(0);}
 function select(i){cur=i;document.querySelectorAll('.keybtn').forEach(b=>b.classList.toggle('active',+b.dataset.i===i));
  const d=DATA[i];
- const shapes=d.fret?`<a class="shapes" href="../guitar.html?scale=${encodeURIComponent(d.fret)}">🎸 ${d.fret} major scale${d.minor?' (relative)':''}</a>`:'';
+ const shapes=d.fret?`<a class="shapes" href="../guitar/fretboard.html?scale=${encodeURIComponent(d.fret)}">🎸 ${d.fret} major scale${d.minor?' (relative)':''}</a>`:'';
  const rows=d.songs.map(([t,a,ug,hp])=>`<div class="song"><span class="txt"><span class="t">${esc(t)}</span> <span class="a">— ${esc(a)}</span></span>${ug?`<a class="lk ug" target="_blank" href="${esc(ug)}">UG</a>`:''}${hp?`<a class="lk hp" target="_blank" href="${esc(hp)}">HP</a>`:''}</div>`).join('');
  document.getElementById('pane').innerHTML=`<div class="khead"><h2>${d.key}</h2><span class="cnt">${d.songs.length} songs</span>${shapes}</div><input class="filter" placeholder="filter…" oninput="flt(this.value)"><div class="songs" id="songs">${rows}</div>`;}
 function flt(q){q=q.toLowerCase();document.querySelectorAll('#songs .song').forEach(s=>{s.style.display=s.textContent.toLowerCase().includes(q)?'':'none';});}

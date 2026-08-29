@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Place Value</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #A855F7, #7C3AED);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+            max-height: calc(100vh - 80px);
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .number-display {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .number-value {
+            font-size: 4rem;
+            font-weight: 700;
+            font-family: 'SF Mono', monospace;
+            letter-spacing: 8px;
+        }
+
+        .digit-thousands { color: #EF4444; }
+        .digit-hundreds { color: #F59E0B; }
+        .digit-tens { color: #22C55E; }
+        .digit-ones { color: #3B82F6; }
+
+        .blocks-section {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .place-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .place-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .place-count {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .place-blocks {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+        }
+
+        /* Thousands = big cube representation */
+        .thousand-block {
+            width: 50px;
+            height: 50px;
+            background: #EF4444;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Hundreds = 10x10 flat */
+        .hundred-block {
+            width: 40px;
+            height: 40px;
+            background: #F59E0B;
+            border-radius: 3px;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 1px;
+            padding: 2px;
+        }
+
+        .hundred-block .mini {
+            background: #D97706;
+            border-radius: 1px;
+        }
+
+        /* Tens = strip of 10 */
+        .ten-block {
+            width: 12px;
+            height: 80px;
+            background: #22C55E;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            padding: 2px;
+        }
+
+        .ten-block .mini {
+            flex: 1;
+            background: #16A34A;
+            border-radius: 1px;
+        }
+
+        .tens-row {
+            display: flex;
+            gap: 4px;
+        }
+
+        /* Ones = single cube */
+        .one-block {
+            width: 16px;
+            height: 16px;
+            background: #3B82F6;
+            border-radius: 2px;
+        }
+
+        .ones-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            max-width: 60px;
+        }
+
+        .breakdown-section {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .breakdown-equation {
+            text-align: center;
+            font-size: 1.2rem;
+            font-family: 'Georgia', serif;
+            color: #888;
+        }
+
+        .breakdown-equation .thousands { color: #EF4444; }
+        .breakdown-equation .hundreds { color: #F59E0B; }
+        .breakdown-equation .tens { color: #22C55E; }
+        .breakdown-equation .ones { color: #3B82F6; }
+        .breakdown-equation .op { color: #666; }
+
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #333;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #A855F7;
+            cursor: pointer;
+        }
+
+        .quick-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .quick-btn {
+            padding: 8px 12px;
+            border: 2px solid #333;
+            background: #1a1a1f;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .quick-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #A855F7;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #A855F7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .place-table {
+            background: #111;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .place-table h3 {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .table-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.85rem;
+        }
+
+        .table-row:last-child { border-bottom: none; }
+        .table-row .place { color: #888; }
+        .table-row .value { color: #666; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>Place Value</h1>
+        <p class="subtitle">Each position is worth 10× more than the one to its right</p>
+    </header>
+
+    <main>
+        <div class="viz-section">
+            <div class="number-display">
+                <div class="number-value" id="numberValue">1234</div>
+            </div>
+
+            <div class="blocks-section" id="blocksSection">
+                <!-- Blocks will be rendered here -->
+            </div>
+
+            <div class="breakdown-section">
+                <div class="breakdown-equation" id="breakdownEquation">
+                    <!-- Equation will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-label">Number (0-9999)</div>
+                <input type="range" id="numberSlider" min="0" max="9999" value="1234">
+                <div class="quick-buttons" id="quickButtons"></div>
+            </div>
+
+            <div class="insight-box">
+                <h3>The pattern</h3>
+                <p>
+                    Each place is <strong>10×</strong> the previous:<br><br>
+                    <span style="color:#3B82F6">Ones</span> × 10 = <span style="color:#22C55E">Tens</span><br>
+                    <span style="color:#22C55E">Tens</span> × 10 = <span style="color:#F59E0B">Hundreds</span><br>
+                    <span style="color:#F59E0B">Hundreds</span> × 10 = <span style="color:#EF4444">Thousands</span>
+                </p>
+            </div>
+
+            <div class="place-table">
+                <h3>Place values</h3>
+                <div class="table-row">
+                    <span class="place" style="color:#EF4444">Thousands</span>
+                    <span class="value">× 1000</span>
+                </div>
+                <div class="table-row">
+                    <span class="place" style="color:#F59E0B">Hundreds</span>
+                    <span class="value">× 100</span>
+                </div>
+                <div class="table-row">
+                    <span class="place" style="color:#22C55E">Tens</span>
+                    <span class="value">× 10</span>
+                </div>
+                <div class="table-row">
+                    <span class="place" style="color:#3B82F6">Ones</span>
+                    <span class="value">× 1</span>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h3>Base 10</h3>
+                <p>
+                    We use 10 digits (0-9).<br><br>
+                    When we run out at 9, we "carry" to the next place.<br><br>
+                    9 + 1 = 10<br>
+                    (0 ones, 1 ten)
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let number = 1234;
+
+        const numberSlider = document.getElementById('numberSlider');
+        const quickButtons = document.getElementById('quickButtons');
+        const blocksSection = document.getElementById('blocksSection');
+        const numberValue = document.getElementById('numberValue');
+        const breakdownEquation = document.getElementById('breakdownEquation');
+
+        // Quick buttons
+        const quickValues = [1, 10, 100, 1000, 1234, 5678, 9999];
+        quickValues.forEach(val => {
+            const btn = document.createElement('button');
+            btn.className = 'quick-btn';
+            btn.textContent = val;
+            btn.onclick = () => { number = val; numberSlider.value = val; render(); };
+            quickButtons.appendChild(btn);
+        });
+
+        function render() {
+            const thousands = Math.floor(number / 1000);
+            const hundreds = Math.floor((number % 1000) / 100);
+            const tens = Math.floor((number % 100) / 10);
+            const ones = number % 10;
+
+            // Number display with colored digits
+            let displayHTML = '';
+            const numStr = number.toString().padStart(4, ' ');
+            if (thousands > 0) displayHTML += `<span class="digit-thousands">${thousands}</span>`;
+            if (thousands > 0 || hundreds > 0) displayHTML += `<span class="digit-hundreds">${hundreds}</span>`;
+            if (thousands > 0 || hundreds > 0 || tens > 0) displayHTML += `<span class="digit-tens">${tens}</span>`;
+            displayHTML += `<span class="digit-ones">${ones}</span>`;
+            if (number === 0) displayHTML = `<span class="digit-ones">0</span>`;
+            numberValue.innerHTML = displayHTML;
+
+            // Blocks visualization
+            let blocksHTML = '';
+
+            // Thousands
+            if (thousands > 0) {
+                blocksHTML += `
+                    <div class="place-column">
+                        <div class="place-label" style="color:#EF4444">Thousands</div>
+                        <div class="place-count" style="color:#EF4444">${thousands}</div>
+                        <div class="place-blocks">
+                `;
+                for (let i = 0; i < thousands; i++) {
+                    blocksHTML += `<div class="thousand-block">1000</div>`;
+                }
+                blocksHTML += `</div></div>`;
+            }
+
+            // Hundreds
+            if (hundreds > 0 || thousands > 0) {
+                blocksHTML += `
+                    <div class="place-column">
+                        <div class="place-label" style="color:#F59E0B">Hundreds</div>
+                        <div class="place-count" style="color:#F59E0B">${hundreds}</div>
+                        <div class="place-blocks">
+                `;
+                for (let i = 0; i < hundreds; i++) {
+                    let miniBlocks = '';
+                    for (let j = 0; j < 100; j++) {
+                        miniBlocks += '<div class="mini"></div>';
+                    }
+                    blocksHTML += `<div class="hundred-block">${miniBlocks}</div>`;
+                }
+                blocksHTML += `</div></div>`;
+            }
+
+            // Tens
+            if (tens > 0 || hundreds > 0 || thousands > 0) {
+                blocksHTML += `
+                    <div class="place-column">
+                        <div class="place-label" style="color:#22C55E">Tens</div>
+                        <div class="place-count" style="color:#22C55E">${tens}</div>
+                        <div class="place-blocks"><div class="tens-row">
+                `;
+                for (let i = 0; i < tens; i++) {
+                    let miniBlocks = '';
+                    for (let j = 0; j < 10; j++) {
+                        miniBlocks += '<div class="mini"></div>';
+                    }
+                    blocksHTML += `<div class="ten-block">${miniBlocks}</div>`;
+                }
+                blocksHTML += `</div></div></div>`;
+            }
+
+            // Ones
+            blocksHTML += `
+                <div class="place-column">
+                    <div class="place-label" style="color:#3B82F6">Ones</div>
+                    <div class="place-count" style="color:#3B82F6">${ones}</div>
+                    <div class="place-blocks"><div class="ones-grid">
+            `;
+            for (let i = 0; i < ones; i++) {
+                blocksHTML += `<div class="one-block"></div>`;
+            }
+            blocksHTML += `</div></div></div>`;
+
+            blocksSection.innerHTML = blocksHTML;
+
+            // Breakdown equation
+            let parts = [];
+            if (thousands > 0) parts.push(`<span class="thousands">${thousands} × 1000</span>`);
+            if (hundreds > 0) parts.push(`<span class="hundreds">${hundreds} × 100</span>`);
+            if (tens > 0) parts.push(`<span class="tens">${tens} × 10</span>`);
+            if (ones > 0 || parts.length === 0) parts.push(`<span class="ones">${ones} × 1</span>`);
+
+            breakdownEquation.innerHTML = parts.join(' <span class="op">+</span> ') + ` <span class="op">=</span> ${number}`;
+        }
+
+        numberSlider.addEventListener('input', () => {
+            number = parseInt(numberSlider.value);
+            render();
+        });
+
+        render();
+    </script>
+</body>
+</html>

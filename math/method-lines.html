@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Method</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #EF4444;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .problem {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            font-size: 2rem;
+            font-family: 'Georgia', serif;
+        }
+
+        .canvas-container {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            background: #0a0a0a;
+            border-radius: 8px;
+        }
+
+        .result-section {
+            background: #0d1f0d;
+            border: 2px solid #22C55E33;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #22C55E;
+        }
+
+        .result-breakdown {
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .num-btn {
+            width: 40px;
+            height: 36px;
+            border: 2px solid #333;
+            background: #1a1a1f;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .num-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .num-btn.selected {
+            border-color: #EF4444;
+            background: #EF444422;
+            color: #EF4444;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #EF4444;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #EF4444;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .steps-box {
+            background: #111;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .steps-box h3 {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .step-item {
+            font-size: 0.85rem;
+            color: #888;
+            padding: 6px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .step-item:last-child {
+            border-bottom: none;
+        }
+
+        .step-num {
+            color: #EF4444;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <a href="multiplication-methods.html" class="back-link">← Methods</a>
+
+    <header>
+        <h1>Line Method</h1>
+        <p class="subtitle">Draw lines. Count intersections. That's it.</p>
+    </header>
+
+    <main>
+        <div class="viz-section">
+            <div class="problem" id="problem">12 × 23 = ?</div>
+
+            <div class="canvas-container">
+                <canvas id="canvas" width="450" height="350"></canvas>
+            </div>
+
+            <div class="result-section">
+                <div class="result-value" id="result">276</div>
+                <div class="result-breakdown" id="breakdown">2 | 7 | 6</div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">First number</div>
+                    <div class="control-buttons" id="num1Buttons"></div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Second number</div>
+                    <div class="control-buttons" id="num2Buttons"></div>
+                </div>
+            </div>
+
+            <div class="steps-box">
+                <h3>How it works</h3>
+                <div class="step-item"><span class="step-num">1.</span> Draw lines for first number (diagonal ↘)</div>
+                <div class="step-item"><span class="step-num">2.</span> Draw lines for second number (diagonal ↗)</div>
+                <div class="step-item"><span class="step-num">3.</span> Count intersections in each zone</div>
+                <div class="step-item"><span class="step-num">4.</span> Carry if any zone > 9</div>
+            </div>
+
+            <div class="insight-box">
+                <h3>Why it works</h3>
+                <p>
+                    Each intersection is a unit of multiplication. The zones naturally separate into ones, tens, hundreds.<br><br>
+                    It's the same math as long multiplication—just visual.
+                </p>
+            </div>
+
+            <div class="insight-box">
+                <h3>Limitation</h3>
+                <p>
+                    Gets messy with big digits. Try 99 × 99 and you'll be counting forever!<br><br>
+                    Best for numbers with small digits (1s, 2s, 3s).
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let num1 = 12;
+        let num2 = 23;
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Build buttons
+        const nums1 = [12, 13, 21, 22, 23, 31, 32, 33];
+        const nums2 = [12, 13, 21, 22, 23, 31, 32, 33];
+
+        nums1.forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num1 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num1 = n; render(); };
+            document.getElementById('num1Buttons').appendChild(btn);
+        });
+
+        nums2.forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num2 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num2 = n; render(); };
+            document.getElementById('num2Buttons').appendChild(btn);
+        });
+
+        function getDigits(n) {
+            return n.toString().split('').map(Number);
+        }
+
+        function render() {
+            // Update buttons
+            document.querySelectorAll('#num1Buttons .num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (nums1[i] === num1 ? ' selected' : '');
+            });
+            document.querySelectorAll('#num2Buttons .num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (nums2[i] === num2 ? ' selected' : '');
+            });
+
+            const d1 = getDigits(num1);
+            const d2 = getDigits(num2);
+            const answer = num1 * num2;
+
+            document.getElementById('problem').textContent = `${num1} × ${num2} = ?`;
+            document.getElementById('result').textContent = answer;
+
+            // Clear canvas
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const spacing = 25;
+            const groupGap = 50;
+
+            // Calculate positions for first number lines (going ↘)
+            const lines1 = [];
+            let startX = 80;
+            d1.forEach((digit, groupIdx) => {
+                for (let i = 0; i < digit; i++) {
+                    lines1.push({
+                        x1: startX + i * spacing,
+                        y1: 30,
+                        x2: startX + i * spacing + 150,
+                        y2: h - 30,
+                        group: groupIdx
+                    });
+                }
+                startX += digit * spacing + groupGap;
+            });
+
+            // Calculate positions for second number lines (going ↗)
+            const lines2 = [];
+            let startY = 50;
+            d2.forEach((digit, groupIdx) => {
+                for (let i = 0; i < digit; i++) {
+                    lines2.push({
+                        x1: 30,
+                        y1: startY + i * spacing,
+                        x2: w - 30,
+                        y2: startY + i * spacing + 100,
+                        group: groupIdx
+                    });
+                }
+                startY += digit * spacing + groupGap;
+            });
+
+            // Draw first number lines
+            ctx.strokeStyle = '#EF4444';
+            ctx.lineWidth = 3;
+            lines1.forEach(line => {
+                ctx.beginPath();
+                ctx.moveTo(line.x1, line.y1);
+                ctx.lineTo(line.x2, line.y2);
+                ctx.stroke();
+            });
+
+            // Draw second number lines
+            ctx.strokeStyle = '#3B82F6';
+            lines2.forEach(line => {
+                ctx.beginPath();
+                ctx.moveTo(line.x1, line.y1);
+                ctx.lineTo(line.x2, line.y2);
+                ctx.stroke();
+            });
+
+            // Find and count intersections by zone
+            const zones = {};
+            lines1.forEach(l1 => {
+                lines2.forEach(l2 => {
+                    // Line intersection calculation
+                    const x1 = l1.x1, y1 = l1.y1, x2 = l1.x2, y2 = l1.y2;
+                    const x3 = l2.x1, y3 = l2.y1, x4 = l2.x2, y4 = l2.y2;
+
+                    const denom = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4);
+                    if (Math.abs(denom) < 0.001) return;
+
+                    const t = ((x1-x3)*(y3-y4) - (y1-y3)*(x3-x4)) / denom;
+                    const u = -((x1-x2)*(y1-y3) - (y1-y2)*(x1-x3)) / denom;
+
+                    if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+                        const ix = x1 + t * (x2 - x1);
+                        const iy = y1 + t * (y2 - y1);
+
+                        // Zone = sum of group indices (determines place value)
+                        const zone = l1.group + l2.group;
+                        if (!zones[zone]) zones[zone] = [];
+                        zones[zone].push({x: ix, y: iy});
+
+                        // Draw intersection
+                        ctx.fillStyle = '#22C55E';
+                        ctx.beginPath();
+                        ctx.arc(ix, iy, 6, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+            });
+
+            // Build breakdown string
+            const maxZone = d1.length + d2.length - 2;
+            let parts = [];
+            let carry = 0;
+            for (let z = maxZone; z >= 0; z--) {
+                const count = (zones[z] ? zones[z].length : 0) + carry;
+                carry = Math.floor(count / 10);
+                parts.unshift(count % 10);
+            }
+            if (carry > 0) parts.unshift(carry);
+
+            document.getElementById('breakdown').textContent = parts.join(' | ');
+        }
+
+        render();
+    </script>
+</body>
+</html>

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exponents & Logs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #EF4444, #A855F7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+            max-height: calc(100vh - 80px);
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .equation-pair {
+            display: flex;
+            gap: 20px;
+        }
+
+        .equation-box {
+            flex: 1;
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .equation-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .equation {
+            font-size: 1.8rem;
+            font-family: 'Georgia', serif;
+        }
+
+        .equation .base { color: #EF4444; }
+        .equation .exp { color: #22C55E; font-size: 1.2rem; vertical-align: super; }
+        .equation .result { color: #3B82F6; }
+        .equation .op { color: #666; }
+
+        .arrow-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .arrow-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: #666;
+        }
+
+        .arrow-label {
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .blocks-section {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .blocks-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .multiplication-chain {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .chain-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chain-blocks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            padding: 8px;
+            background: #1a1a1f;
+            border-radius: 6px;
+            max-width: 120px;
+            min-width: 40px;
+            min-height: 40px;
+            justify-content: center;
+            align-content: flex-start;
+        }
+
+        .chain-blocks .block {
+            width: 12px;
+            height: 12px;
+            background: #EF4444;
+            border-radius: 2px;
+        }
+
+        .chain-value {
+            font-size: 1rem;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .chain-times {
+            font-size: 1.5rem;
+            color: #666;
+        }
+
+        .insight-section {
+            background: #0d1f0d;
+            border-radius: 12px;
+            border: 2px solid #22C55E33;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .insight-text {
+            font-size: 1rem;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .insight-text .hl { color: #e0e0e0; font-weight: 500; }
+
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .num-btn {
+            width: 36px;
+            height: 36px;
+            border: 2px solid #333;
+            background: #1a1a1f;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .num-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .num-btn.selected-base {
+            border-color: #EF4444;
+            background: #EF444422;
+            color: #EF4444;
+        }
+
+        .num-btn.selected-exp {
+            border-color: #22C55E;
+            background: #22C55E22;
+            color: #22C55E;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #A855F7;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #A855F7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .inverse-diagram {
+            background: #111;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .inverse-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 10px 0;
+        }
+
+        .inverse-item {
+            font-family: 'Georgia', serif;
+            font-size: 1.1rem;
+        }
+
+        .inverse-arrow {
+            color: #666;
+        }
+
+        .question-box {
+            background: #111;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .question-title {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 0.95rem;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        .question-text .base { color: #EF4444; font-weight: 600; }
+        .question-text .exp { color: #22C55E; font-weight: 600; }
+        .question-text .result { color: #3B82F6; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>Exponents & Logarithms</h1>
+        <p class="subtitle">They're the same question asked backwards</p>
+    </header>
+
+    <main>
+        <div class="viz-section">
+            <div class="equation-pair">
+                <div class="equation-box">
+                    <div class="equation-label">Exponent question</div>
+                    <div class="equation">
+                        <span class="base" id="eqBase">2</span><span class="exp" id="eqExp">3</span> <span class="op">=</span> <span class="result" id="eqResult">?</span>
+                    </div>
+                    <div class="question-text" style="margin-top:10px; font-size:0.85rem;">
+                        <span class="base" id="qBase">2</span> multiplied by itself <span class="exp" id="qExp">3</span> times = ?
+                    </div>
+                </div>
+                <div class="equation-box">
+                    <div class="equation-label">Logarithm question</div>
+                    <div class="equation">
+                        log<sub style="color:#EF4444" id="logBase">2</sub>(<span class="result" id="logResult">8</span>) <span class="op">=</span> <span class="exp" id="logAnswer">?</span>
+                    </div>
+                    <div class="question-text" style="margin-top:10px; font-size:0.85rem;">
+                        How many times do I multiply <span class="base" id="qBase2">2</span> to get <span class="result" id="qResult">8</span>?
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-section">
+                <div class="arrow-box">
+                    <div class="arrow">→</div>
+                    <div class="arrow-label">Exponent finds the result</div>
+                </div>
+                <div class="arrow-box">
+                    <div class="arrow">←</div>
+                    <div class="arrow-label">Log finds the exponent</div>
+                </div>
+            </div>
+
+            <div class="blocks-section">
+                <div class="blocks-label">Watch it grow: multiply <span id="baseLabel">2</span> by itself <span id="expLabel">3</span> times</div>
+                <div class="multiplication-chain" id="chain"></div>
+            </div>
+
+            <div class="insight-section">
+                <div class="insight-text">
+                    <span class="hl" style="color:#EF4444" id="ansBase">2</span><sup style="color:#22C55E" id="ansExp">3</sup> = <span class="hl" style="color:#3B82F6" id="ansResult">8</span>
+                    &nbsp;&nbsp;⟷&nbsp;&nbsp;
+                    log<sub style="color:#EF4444" id="ansLogBase">2</sub>(<span class="hl" style="color:#3B82F6" id="ansLogResult">8</span>) = <span class="hl" style="color:#22C55E" id="ansLogExp">3</span><br><br>
+                    <span class="hl">Same three numbers. Same relationship. Different question.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">Base (multiply this)</div>
+                    <div class="control-buttons" id="baseButtons"></div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Exponent (how many times)</div>
+                    <div class="control-buttons" id="expButtons"></div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h3>The inverse</h3>
+                <p>
+                    Exponent: I know the <span style="color:#EF4444">base</span> and <span style="color:#22C55E">power</span>. What's the <span style="color:#3B82F6">result</span>?<br><br>
+                    Logarithm: I know the <span style="color:#EF4444">base</span> and <span style="color:#3B82F6">result</span>. What's the <span style="color:#22C55E">power</span>?<br><br>
+                    They <em>undo</em> each other. Like + and −.
+                </p>
+            </div>
+
+            <div class="insight-box">
+                <h3>Think of it as</h3>
+                <p>
+                    2<sup>3</sup> = 8 means:<br>
+                    "2 × 2 × 2 = 8"<br><br>
+                    log₂(8) = 3 means:<br>
+                    "You need 3 twos to make 8"
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let base = 2;
+        let exp = 3;
+
+        const baseButtons = document.getElementById('baseButtons');
+        const expButtons = document.getElementById('expButtons');
+
+        // Build base buttons (2-5)
+        for (let i = 2; i <= 5; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (i === base ? ' selected-base' : '');
+            btn.textContent = i;
+            btn.onclick = () => { base = i; render(); };
+            baseButtons.appendChild(btn);
+        }
+
+        // Build exp buttons (1-6)
+        for (let i = 1; i <= 6; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (i === exp ? ' selected-exp' : '');
+            btn.textContent = i;
+            btn.onclick = () => { exp = i; render(); };
+            expButtons.appendChild(btn);
+        }
+
+        function render() {
+            const result = Math.pow(base, exp);
+
+            // Update button states
+            baseButtons.querySelectorAll('.num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (i + 2 === base ? ' selected-base' : '');
+            });
+            expButtons.querySelectorAll('.num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (i + 1 === exp ? ' selected-exp' : '');
+            });
+
+            // Update equations
+            document.getElementById('eqBase').textContent = base;
+            document.getElementById('eqExp').textContent = exp;
+            document.getElementById('eqResult').textContent = result;
+            document.getElementById('qBase').textContent = base;
+            document.getElementById('qExp').textContent = exp;
+
+            document.getElementById('logBase').textContent = base;
+            document.getElementById('logResult').textContent = result;
+            document.getElementById('logAnswer').textContent = exp;
+            document.getElementById('qBase2').textContent = base;
+            document.getElementById('qResult').textContent = result;
+
+            document.getElementById('baseLabel').textContent = base;
+            document.getElementById('expLabel').textContent = exp;
+
+            document.getElementById('ansBase').textContent = base;
+            document.getElementById('ansExp').textContent = exp;
+            document.getElementById('ansResult').textContent = result;
+            document.getElementById('ansLogBase').textContent = base;
+            document.getElementById('ansLogResult').textContent = result;
+            document.getElementById('ansLogExp').textContent = exp;
+
+            // Build multiplication chain
+            let chainHTML = '';
+            let current = 1;
+
+            for (let i = 0; i < exp; i++) {
+                current *= base;
+                const numBlocks = Math.min(current, 100);
+
+                let blocksHTML = '';
+                for (let b = 0; b < numBlocks; b++) {
+                    blocksHTML += '<div class="block"></div>';
+                }
+                if (current > 100) {
+                    blocksHTML += `<span style="color:#666;font-size:0.7rem;">+${current-100}</span>`;
+                }
+
+                chainHTML += `
+                    <div class="chain-step">
+                        <div class="chain-blocks">${blocksHTML}</div>
+                        <div class="chain-value">${current}</div>
+                    </div>
+                `;
+
+                if (i < exp - 1) {
+                    chainHTML += `<div class="chain-times">×${base}</div>`;
+                }
+            }
+
+            document.getElementById('chain').innerHTML = chainHTML;
+        }
+
+        render();
+    </script>
+</body>
+</html>

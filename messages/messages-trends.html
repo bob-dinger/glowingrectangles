@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Trends</title>
+    <link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Carlito', sans-serif;
+            background-color: #fafafa;
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            gap: 12px;
+        }
+
+        .app-bar .title {
+            background: #111827;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+
+        .app-bar a {
+            color: #10b981;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 64px);
+            margin-top: 64px;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card {
+            background: #f3f4f6;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .stat-card .label {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .stat-card .change {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .stat-card .change.up {
+            color: #10b981;
+        }
+
+        .stat-card .change.down {
+            color: #ef4444;
+        }
+
+        .filter-group {
+            margin-top: 20px;
+        }
+
+        .metric-btn {
+            display: block;
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .metric-btn:hover {
+            border-color: #10b981;
+        }
+
+        .metric-btn.active {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+
+        .chart-container {
+            flex: 1;
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+
+        .chart-area {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            padding-bottom: 30px;
+            position: relative;
+        }
+
+        .bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .bar-stack {
+            width: 100%;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            max-width: 40px;
+            margin: 0 auto;
+        }
+
+        .bar {
+            width: 100%;
+            border-radius: 3px 3px 0 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-height: 2px;
+        }
+
+        .bar:hover {
+            filter: brightness(1.1);
+        }
+
+        .bar.received {
+            background: linear-gradient(180deg, #34d399, #10b981);
+        }
+
+        .bar.sent {
+            background: linear-gradient(180deg, #60a5fa, #3b82f6);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .bar.total {
+            background: linear-gradient(180deg, #a78bfa, #8b5cf6);
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            font-size: 10px;
+            color: #6b7280;
+            white-space: nowrap;
+            transform: rotate(-45deg);
+            transform-origin: top left;
+        }
+
+        .y-axis {
+            position: absolute;
+            left: -40px;
+            top: 0;
+            bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .grid-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed #e5e7eb;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: #111827;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+        }
+
+        .year-divider {
+            position: absolute;
+            top: 0;
+            bottom: 30px;
+            width: 2px;
+            background: #d1d5db;
+        }
+
+        .year-label {
+            position: absolute;
+            top: -20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-bar">
+        <a href="../index.html">Home</a>
+        <a href="messages-viz.html">All Messages</a>
+        <a href="messages-groups.html">Groups</a>
+        <div class="title">Message Trends</div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <h3>Summary</h3>
+            <div class="stat-card">
+                <div class="value" id="totalValue">-</div>
+                <div class="label">Total Messages</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="avgValue">-</div>
+                <div class="label">Monthly Average</div>
+                <div class="change" id="avgChange"></div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="peakValue">-</div>
+                <div class="label" id="peakLabel">Peak Month</div>
+            </div>
+
+            <div class="filter-group">
+                <h3>View</h3>
+                <button class="metric-btn active" data-metric="stacked">Sent vs Received</button>
+                <button class="metric-btn" data-metric="total">Total Messages</button>
+                <button class="metric-btn" data-metric="sent">Sent Only</button>
+                <button class="metric-btn" data-metric="received">Received Only</button>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <div class="chart-title">Messages Over Time</div>
+                <div class="legend" id="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(180deg, #34d399, #10b981);"></div>
+                        <span>Received</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(180deg, #60a5fa, #3b82f6);"></div>
+                        <span>Sent</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-area" id="chartArea"></div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const monthlyData = [
+            {month: "2024-01", total: 578, received: 478, sent: 100},
+            {month: "2024-02", total: 813, received: 596, sent: 217},
+            {month: "2024-03", total: 1925, received: 1372, sent: 553},
+            {month: "2024-04", total: 1138, received: 801, sent: 337},
+            {month: "2024-05", total: 1958, received: 1260, sent: 698},
+            {month: "2024-06", total: 2721, received: 1592, sent: 1129},
+            {month: "2024-07", total: 2276, received: 1752, sent: 524},
+            {month: "2024-08", total: 1867, received: 1490, sent: 377},
+            {month: "2024-09", total: 2791, received: 2351, sent: 440},
+            {month: "2024-10", total: 2077, received: 1669, sent: 408},
+            {month: "2024-11", total: 2616, received: 2106, sent: 510},
+            {month: "2024-12", total: 2815, received: 2286, sent: 529},
+            {month: "2025-01", total: 2766, received: 2179, sent: 587},
+            {month: "2025-02", total: 2099, received: 1559, sent: 540},
+            {month: "2025-03", total: 2327, received: 1455, sent: 872},
+            {month: "2025-04", total: 2543, received: 1707, sent: 836},
+            {month: "2025-05", total: 2983, received: 1868, sent: 1115},
+            {month: "2025-06", total: 5278, received: 3183, sent: 2095},
+            {month: "2025-07", total: 4099, received: 2612, sent: 1487},
+            {month: "2025-08", total: 2667, received: 1761, sent: 906},
+            {month: "2025-09", total: 1591, received: 1209, sent: 382},
+            {month: "2025-10", total: 2772, received: 2016, sent: 756},
+            {month: "2025-11", total: 2270, received: 1783, sent: 487},
+            {month: "2025-12", total: 2069, received: 1533, sent: 536},
+            {month: "2026-01", total: 1161, received: 922, sent: 239}
+        ];
+
+        const tooltip = document.getElementById('tooltip');
+        let currentMetric = 'stacked';
+
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        function formatMonth(monthStr) {
+            const [year, month] = monthStr.split('-');
+            return monthNames[parseInt(month) - 1];
+        }
+
+        function getMaxValue() {
+            if (currentMetric === 'stacked' || currentMetric === 'total') {
+                return Math.max(...monthlyData.map(d => d.total));
+            } else if (currentMetric === 'sent') {
+                return Math.max(...monthlyData.map(d => d.sent));
+            } else {
+                return Math.max(...monthlyData.map(d => d.received));
+            }
+        }
+
+        function updateStats() {
+            const total = monthlyData.reduce((sum, d) => sum + d.total, 0);
+            const avg = Math.round(total / monthlyData.length);
+
+            // Compare 2025 avg to 2024 avg
+            const data2024 = monthlyData.filter(d => d.month.startsWith('2024'));
+            const data2025 = monthlyData.filter(d => d.month.startsWith('2025'));
+            const avg2024 = Math.round(data2024.reduce((s, d) => s + d.total, 0) / data2024.length);
+            const avg2025 = Math.round(data2025.reduce((s, d) => s + d.total, 0) / data2025.length);
+            const change = ((avg2025 - avg2024) / avg2024 * 100).toFixed(0);
+
+            const peak = monthlyData.reduce((max, d) => d.total > max.total ? d : max, monthlyData[0]);
+
+            document.getElementById('totalValue').textContent = total.toLocaleString();
+            document.getElementById('avgValue').textContent = avg.toLocaleString();
+            document.getElementById('avgChange').textContent = `${change > 0 ? '+' : ''}${change}% vs 2024`;
+            document.getElementById('avgChange').className = `change ${change >= 0 ? 'up' : 'down'}`;
+            document.getElementById('peakValue').textContent = peak.total.toLocaleString();
+            document.getElementById('peakLabel').textContent = `Peak: ${formatMonth(peak.month)} ${peak.month.split('-')[0]}`;
+        }
+
+        function updateLegend() {
+            const legend = document.getElementById('legend');
+            if (currentMetric === 'stacked') {
+                legend.innerHTML = `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(180deg, #34d399, #10b981);"></div>
+                        <span>Received</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(180deg, #60a5fa, #3b82f6);"></div>
+                        <span>Sent</span>
+                    </div>
+                `;
+            } else if (currentMetric === 'total') {
+                legend.innerHTML = `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(180deg, #a78bfa, #8b5cf6);"></div>
+                        <span>Total</span>
+                    </div>
+                `;
+            } else if (currentMetric === 'sent') {
+                legend.innerHTML = `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(180deg, #60a5fa, #3b82f6);"></div>
+                        <span>Sent</span>
+                    </div>
+                `;
+            } else {
+                legend.innerHTML = `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(180deg, #34d399, #10b981);"></div>
+                        <span>Received</span>
+                    </div>
+                `;
+            }
+        }
+
+        function renderChart() {
+            const container = document.getElementById('chartArea');
+            const maxVal = getMaxValue();
+            const chartHeight = container.clientHeight - 50;
+
+            updateLegend();
+
+            let html = '';
+
+            // Y-axis
+            html += `<div class="y-axis">
+                <span>${maxVal.toLocaleString()}</span>
+                <span>${Math.round(maxVal * 0.75).toLocaleString()}</span>
+                <span>${Math.round(maxVal * 0.5).toLocaleString()}</span>
+                <span>${Math.round(maxVal * 0.25).toLocaleString()}</span>
+                <span>0</span>
+            </div>`;
+
+            // Grid lines
+            [0, 25, 50, 75].forEach(pct => {
+                html += `<div class="grid-line" style="bottom: ${30 + (chartHeight * pct / 100)}px;"></div>`;
+            });
+
+            // Track year changes for dividers
+            let lastYear = null;
+            let yearPositions = [];
+
+            monthlyData.forEach((d, i) => {
+                const year = d.month.split('-')[0];
+                if (lastYear && year !== lastYear) {
+                    yearPositions.push({index: i, year: year});
+                }
+                lastYear = year;
+
+                let barsHtml = '';
+                if (currentMetric === 'stacked') {
+                    const recHeight = (d.received / maxVal) * chartHeight;
+                    const sentHeight = (d.sent / maxVal) * chartHeight;
+                    barsHtml = `
+                        <div class="bar received" style="height: ${recHeight}px;" data-value="${d.received}"></div>
+                        <div class="bar sent" style="height: ${sentHeight}px;" data-value="${d.sent}"></div>
+                    `;
+                } else if (currentMetric === 'total') {
+                    const height = (d.total / maxVal) * chartHeight;
+                    barsHtml = `<div class="bar total" style="height: ${height}px;" data-value="${d.total}"></div>`;
+                } else if (currentMetric === 'sent') {
+                    const height = (d.sent / maxVal) * chartHeight;
+                    barsHtml = `<div class="bar sent" style="height: ${height}px;" data-value="${d.sent}"></div>`;
+                } else {
+                    const height = (d.received / maxVal) * chartHeight;
+                    barsHtml = `<div class="bar received" style="height: ${height}px;" data-value="${d.received}"></div>`;
+                }
+
+                html += `
+                    <div class="bar-group" data-month="${d.month}" data-total="${d.total}" data-received="${d.received}" data-sent="${d.sent}">
+                        <div class="bar-stack">${barsHtml}</div>
+                        <div class="bar-label">${formatMonth(d.month)}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Add year labels
+            const barGroups = container.querySelectorAll('.bar-group');
+            yearPositions.forEach(yp => {
+                if (barGroups[yp.index]) {
+                    const rect = barGroups[yp.index].getBoundingClientRect();
+                    const containerRect = container.getBoundingClientRect();
+                    const left = rect.left - containerRect.left;
+
+                    const divider = document.createElement('div');
+                    divider.className = 'year-divider';
+                    divider.style.left = `${left - 2}px`;
+                    container.appendChild(divider);
+
+                    const label = document.createElement('div');
+                    label.className = 'year-label';
+                    label.style.left = `${left}px`;
+                    label.textContent = yp.year;
+                    container.appendChild(label);
+                }
+            });
+
+            // First year label
+            if (barGroups[0]) {
+                const rect = barGroups[0].getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                const label = document.createElement('div');
+                label.className = 'year-label';
+                label.style.left = `${rect.left - containerRect.left + rect.width/2}px`;
+                label.textContent = '2024';
+                container.appendChild(label);
+            }
+
+            // Tooltips
+            container.querySelectorAll('.bar-group').forEach(group => {
+                group.addEventListener('mouseenter', () => {
+                    const month = group.dataset.month;
+                    const [year, m] = month.split('-');
+                    const monthName = monthNames[parseInt(m) - 1];
+                    tooltip.innerHTML = `
+                        <strong>${monthName} ${year}</strong><br>
+                        Total: ${parseInt(group.dataset.total).toLocaleString()}<br>
+                        Received: ${parseInt(group.dataset.received).toLocaleString()}<br>
+                        Sent: ${parseInt(group.dataset.sent).toLocaleString()}
+                    `;
+                    tooltip.style.opacity = 1;
+                });
+                group.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = e.clientX + 10 + 'px';
+                    tooltip.style.top = e.clientY - 60 + 'px';
+                });
+                group.addEventListener('mouseleave', () => {
+                    tooltip.style.opacity = 0;
+                });
+            });
+        }
+
+        // Metric buttons
+        document.querySelectorAll('.metric-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.metric-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMetric = btn.dataset.metric;
+                renderChart();
+            });
+        });
+
+        // Initialize
+        updateStats();
+        renderChart();
+
+        // Redraw on resize
+        window.addEventListener('resize', renderChart);
+    </script>
+</body>
+</html>

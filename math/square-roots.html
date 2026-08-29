@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square Roots</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #22C55E, #16A34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+            max-height: calc(100vh - 80px);
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .equation-pair {
+            display: flex;
+            gap: 20px;
+        }
+
+        .equation-box {
+            flex: 1;
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .equation-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .equation {
+            font-size: 2rem;
+            font-family: 'Georgia', serif;
+        }
+
+        .equation .num { color: #22C55E; }
+        .equation .squared { color: #3B82F6; }
+        .equation .op { color: #666; }
+
+        .visual-section {
+            background: #111;
+            border-radius: 12px;
+            padding: 25px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .visual-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .square-grid {
+            display: grid;
+            gap: 3px;
+        }
+
+        .block {
+            width: 28px;
+            height: 28px;
+            background: #22C55E;
+            border-radius: 3px;
+        }
+
+        .dimension-labels {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .dim-label {
+            font-size: 1.2rem;
+            color: #22C55E;
+            font-weight: 600;
+        }
+
+        .dim-arrow {
+            color: #444;
+        }
+
+        .question-section {
+            display: flex;
+            gap: 15px;
+        }
+
+        .question-box {
+            flex: 1;
+            background: #1a1a24;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .question-title {
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-size: 0.95rem;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        .question-text .hl { color: #e0e0e0; font-weight: 500; }
+        .question-text .num { color: #22C55E; font-weight: 600; }
+        .question-text .squared { color: #3B82F6; font-weight: 600; }
+
+        .result-section {
+            background: #0d1f0d;
+            border-radius: 12px;
+            border: 2px solid #22C55E33;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-equation {
+            font-size: 1.5rem;
+            font-family: 'Georgia', serif;
+            color: #888;
+        }
+
+        .result-equation .num { color: #22C55E; }
+        .result-equation .squared { color: #3B82F6; }
+
+        .result-explain {
+            font-size: 0.95rem;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .sidebar {
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .num-btn {
+            width: 38px;
+            height: 38px;
+            border: 2px solid #333;
+            background: #1a1a1f;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .num-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .num-btn.selected {
+            border-color: #22C55E;
+            background: #22C55E22;
+            color: #22C55E;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #22C55E;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #22C55E;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .perfect-squares {
+            background: #111;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .perfect-squares h3 {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .squares-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .squares-list span {
+            padding: 4px 8px;
+            background: #1a1a1f;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>Square Roots</h1>
+        <p class="subtitle">What number times itself makes this?</p>
+    </header>
+
+    <main>
+        <div class="viz-section">
+            <div class="equation-pair">
+                <div class="equation-box">
+                    <div class="equation-label">Squaring</div>
+                    <div class="equation">
+                        <span class="num" id="eqNum">5</span><sup>2</sup> <span class="op">=</span> <span class="squared" id="eqSquared">25</span>
+                    </div>
+                </div>
+                <div class="equation-box">
+                    <div class="equation-label">Square Root</div>
+                    <div class="equation">
+                        √<span class="squared" id="eqRoot">25</span> <span class="op">=</span> <span class="num" id="eqResult">5</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visual-section">
+                <div class="visual-label">A <span id="dimLabel">5</span> × <span id="dimLabel2">5</span> square has <span id="areaLabel">25</span> blocks</div>
+                <div class="square-grid" id="squareGrid"></div>
+                <div class="dimension-labels">
+                    <span class="dim-label" id="sideLabel">5 blocks wide</span>
+                    <span class="dim-arrow">×</span>
+                    <span class="dim-label" id="sideLabel2">5 blocks tall</span>
+                </div>
+            </div>
+
+            <div class="question-section">
+                <div class="question-box">
+                    <div class="question-title">Square asks</div>
+                    <div class="question-text">
+                        <span class="num" id="qNum">5</span> × <span class="num" id="qNum2">5</span> = <span class="hl">?</span><br>
+                        "What's the area?"
+                    </div>
+                </div>
+                <div class="question-box">
+                    <div class="question-title">Square root asks</div>
+                    <div class="question-text">
+                        <span class="hl">?</span> × <span class="hl">?</span> = <span class="squared" id="qSquared">25</span><br>
+                        "What's the side length?"
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-section">
+                <div class="result-equation">
+                    √<span class="squared" id="resSquared">25</span> = <span class="num" id="resNum">5</span> because <span class="num" id="resNum2">5</span> × <span class="num" id="resNum3">5</span> = <span class="squared" id="resSquared2">25</span>
+                </div>
+                <div class="result-explain">
+                    Square root finds the side length when you know the area
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-label">Pick a number</div>
+                <div class="control-buttons" id="numberButtons"></div>
+            </div>
+
+            <div class="insight-box">
+                <h3>The inverse</h3>
+                <p>
+                    Squaring: I know the <span style="color:#22C55E">side</span>. What's the <span style="color:#3B82F6">area</span>?<br><br>
+                    Square root: I know the <span style="color:#3B82F6">area</span>. What's the <span style="color:#22C55E">side</span>?<br><br>
+                    They <em>undo</em> each other!
+                </p>
+            </div>
+
+            <div class="perfect-squares">
+                <h3>Perfect squares</h3>
+                <div class="squares-list">
+                    <span>1² = 1</span>
+                    <span>2² = 4</span>
+                    <span>3² = 9</span>
+                    <span>4² = 16</span>
+                    <span>5² = 25</span>
+                    <span>6² = 36</span>
+                    <span>7² = 49</span>
+                    <span>8² = 64</span>
+                    <span>9² = 81</span>
+                    <span>10² = 100</span>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h3>Why "square"?</h3>
+                <p>
+                    Because <span style="color:#22C55E">5</span> × <span style="color:#22C55E">5</span> literally makes a square shape!<br><br>
+                    The name comes from geometry. It's counting how many unit squares fit.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let num = 5;
+
+        const numberButtons = document.getElementById('numberButtons');
+        const squareGrid = document.getElementById('squareGrid');
+
+        // Build buttons 1-10
+        for (let i = 1; i <= 10; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (i === num ? ' selected' : '');
+            btn.textContent = i;
+            btn.onclick = () => { num = i; render(); };
+            numberButtons.appendChild(btn);
+        }
+
+        function render() {
+            const squared = num * num;
+
+            // Update button states
+            numberButtons.querySelectorAll('.num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (i + 1 === num ? ' selected' : '');
+            });
+
+            // Update all text
+            document.getElementById('eqNum').textContent = num;
+            document.getElementById('eqSquared').textContent = squared;
+            document.getElementById('eqRoot').textContent = squared;
+            document.getElementById('eqResult').textContent = num;
+
+            document.getElementById('dimLabel').textContent = num;
+            document.getElementById('dimLabel2').textContent = num;
+            document.getElementById('areaLabel').textContent = squared;
+            document.getElementById('sideLabel').textContent = `${num} blocks wide`;
+            document.getElementById('sideLabel2').textContent = `${num} blocks tall`;
+
+            document.getElementById('qNum').textContent = num;
+            document.getElementById('qNum2').textContent = num;
+            document.getElementById('qSquared').textContent = squared;
+
+            document.getElementById('resSquared').textContent = squared;
+            document.getElementById('resNum').textContent = num;
+            document.getElementById('resNum2').textContent = num;
+            document.getElementById('resNum3').textContent = num;
+            document.getElementById('resSquared2').textContent = squared;
+
+            // Build square grid
+            squareGrid.style.gridTemplateColumns = `repeat(${num}, 28px)`;
+            let gridHTML = '';
+            for (let i = 0; i < squared; i++) {
+                gridHTML += '<div class="block"></div>';
+            }
+            squareGrid.innerHTML = gridHTML;
+        }
+
+        render();
+    </script>
+</body>
+</html>

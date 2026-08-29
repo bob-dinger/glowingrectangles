@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egyptian Doubling</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #14B8A6;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .problem {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            font-size: 2rem;
+            font-family: 'Georgia', serif;
+        }
+
+        .table-container {
+            background: #111;
+            border-radius: 12px;
+            padding: 25px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .egyptian-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .egyptian-table th {
+            text-align: left;
+            padding: 12px 20px;
+            border-bottom: 2px solid #333;
+            color: #666;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .egyptian-table td {
+            padding: 12px 20px;
+            border-bottom: 1px solid #222;
+            font-size: 1.2rem;
+            font-family: 'SF Mono', monospace;
+        }
+
+        .egyptian-table tr.used td {
+            color: #22C55E;
+        }
+
+        .egyptian-table tr.unused td {
+            color: #444;
+        }
+
+        .egyptian-table .col-double {
+            color: #14B8A6;
+        }
+
+        .egyptian-table .col-result {
+            color: #F59E0B;
+        }
+
+        .egyptian-table .col-use {
+            width: 80px;
+            text-align: center;
+        }
+
+        .decomposition {
+            background: #1a1a24;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .decomposition-title {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .decomposition-value {
+            font-size: 1.2rem;
+            color: #888;
+        }
+
+        .decomposition-value .hl { color: #14B8A6; }
+
+        .result-section {
+            background: #0d1f0d;
+            border: 2px solid #22C55E33;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #22C55E;
+        }
+
+        .result-sum {
+            font-size: 1rem;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .num-btn {
+            width: 40px;
+            height: 36px;
+            border: 2px solid #333;
+            background: #1a1a1f;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .num-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .num-btn.selected {
+            border-color: #14B8A6;
+            background: #14B8A622;
+            color: #14B8A6;
+        }
+
+        .steps-box {
+            background: #111;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .steps-box h3 {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .step-item {
+            font-size: 0.85rem;
+            color: #888;
+            padding: 6px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .step-item:last-child {
+            border-bottom: none;
+        }
+
+        .step-num {
+            color: #14B8A6;
+            font-weight: 600;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #14B8A6;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #14B8A6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <a href="multiplication-methods.html" class="back-link">← Methods</a>
+
+    <header>
+        <h1>Egyptian Doubling</h1>
+        <p class="subtitle">4000 years old. Still how computers multiply.</p>
+    </header>
+
+    <main>
+        <div class="viz-section">
+            <div class="problem" id="problem">13 × 24 = ?</div>
+
+            <div class="table-container">
+                <table class="egyptian-table" id="table">
+                    <thead>
+                        <tr>
+                            <th>Powers of 2</th>
+                            <th>× Second number</th>
+                            <th class="col-use">Use?</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+
+                <div class="decomposition" id="decomposition"></div>
+            </div>
+
+            <div class="result-section">
+                <div class="result-label">Sum of selected rows</div>
+                <div class="result-value" id="result">312</div>
+                <div class="result-sum" id="resultSum"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">First number</div>
+                    <div class="control-buttons" id="num1Buttons"></div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Second number</div>
+                    <div class="control-buttons" id="num2Buttons"></div>
+                </div>
+            </div>
+
+            <div class="steps-box">
+                <h3>How it works</h3>
+                <div class="step-item"><span class="step-num">1.</span> Write powers of 2: 1, 2, 4, 8, 16...</div>
+                <div class="step-item"><span class="step-num">2.</span> Double the second number alongside</div>
+                <div class="step-item"><span class="step-num">3.</span> Find which powers sum to first number</div>
+                <div class="step-item"><span class="step-num">4.</span> Add corresponding doubled values</div>
+            </div>
+
+            <div class="insight-box">
+                <h3>Binary connection</h3>
+                <p>
+                    13 = 8 + 4 + 1<br>
+                    13 = 1101 in binary<br><br>
+                    The "used" rows are exactly the 1s in binary!<br><br>
+                    This is multiplication by shift-and-add—how CPUs do it.
+                </p>
+            </div>
+
+            <div class="insight-box">
+                <h3>Only need to double</h3>
+                <p>
+                    Ancient Egyptians didn't need multiplication tables. Just:<br><br>
+                    • Double numbers<br>
+                    • Add them up<br><br>
+                    That's enough to multiply anything!
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let num1 = 13;
+        let num2 = 24;
+
+        const nums1 = [7, 11, 13, 19, 23, 29, 37];
+        const nums2 = [12, 17, 24, 31, 42, 53];
+
+        nums1.forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num1 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num1 = n; render(); };
+            document.getElementById('num1Buttons').appendChild(btn);
+        });
+
+        nums2.forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num2 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num2 = n; render(); };
+            document.getElementById('num2Buttons').appendChild(btn);
+        });
+
+        function render() {
+            document.querySelectorAll('#num1Buttons .num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (nums1[i] === num1 ? ' selected' : '');
+            });
+            document.querySelectorAll('#num2Buttons .num-btn').forEach((btn, i) => {
+                btn.className = 'num-btn' + (nums2[i] === num2 ? ' selected' : '');
+            });
+
+            const answer = num1 * num2;
+            document.getElementById('problem').textContent = `${num1} × ${num2} = ?`;
+            document.getElementById('result').textContent = answer;
+
+            // Build table - powers of 2 up to num1
+            let power = 1;
+            let doubled = num2;
+            let rows = [];
+            let used = [];
+            let remaining = num1;
+
+            while (power <= num1) {
+                rows.push({ power, doubled });
+                power *= 2;
+                doubled *= 2;
+            }
+
+            // Find which powers to use (greedy from largest)
+            let usedPowers = [];
+            for (let i = rows.length - 1; i >= 0; i--) {
+                if (rows[i].power <= remaining) {
+                    remaining -= rows[i].power;
+                    rows[i].use = true;
+                    usedPowers.push(rows[i].power);
+                    used.push(rows[i].doubled);
+                } else {
+                    rows[i].use = false;
+                }
+            }
+
+            // Table HTML
+            let html = '';
+            rows.forEach(row => {
+                html += `
+                    <tr class="${row.use ? 'used' : 'unused'}">
+                        <td class="col-double">${row.power}</td>
+                        <td class="col-result">${row.doubled}</td>
+                        <td class="col-use">${row.use ? '✓' : ''}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('tableBody').innerHTML = html;
+
+            // Decomposition
+            document.getElementById('decomposition').innerHTML = `
+                <div class="decomposition-title">${num1} broken into powers of 2</div>
+                <div class="decomposition-value">
+                    <span class="hl">${num1}</span> = ${usedPowers.reverse().join(' + ')}
+                </div>
+            `;
+
+            // Result sum
+            document.getElementById('resultSum').textContent = used.reverse().join(' + ') + ' = ' + answer;
+        }
+
+        render();
+    </script>
+</body>
+</html>

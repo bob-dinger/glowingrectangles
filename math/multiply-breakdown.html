@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Breakdown</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #22C55E, #16A34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            gap: 30px;
+        }
+
+        .breakdown-section {
+            flex: 1;
+        }
+
+        .problem {
+            text-align: center;
+            font-size: 2.5rem;
+            font-family: 'Georgia', serif;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #111;
+            border-radius: 12px;
+        }
+
+        .step {
+            background: #111;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: #22C55E;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .step-equation {
+            font-size: 1.3rem;
+            font-family: 'Georgia', serif;
+            color: #888;
+        }
+
+        .step-equation .hl { color: #22C55E; font-weight: 600; }
+        .step-equation .op { color: #666; }
+
+        .step-blocks {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .block-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .block-grid {
+            display: grid;
+            gap: 2px;
+        }
+
+        .block {
+            width: 12px;
+            height: 12px;
+            background: #22C55E;
+            border-radius: 2px;
+        }
+
+        .block.alt {
+            background: #3B82F6;
+        }
+
+        .block-label {
+            font-size: 1rem;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .plus-sign {
+            font-size: 2rem;
+            color: #666;
+            align-self: center;
+        }
+
+        .equals-sign {
+            font-size: 2rem;
+            color: #666;
+            align-self: center;
+        }
+
+        .final-answer {
+            background: #0d1f0d;
+            border: 2px solid #22C55E33;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .final-value {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #22C55E;
+        }
+
+        .sidebar {
+            width: 280px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .num-btn {
+            width: 36px;
+            height: 36px;
+            border: 2px solid #333;
+            background: #1a1a1f;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .num-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .num-btn.selected {
+            border-color: #22C55E;
+            background: #22C55E22;
+            color: #22C55E;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #22C55E;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #22C55E;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .breakdown-tree {
+            font-family: 'SF Mono', monospace;
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.8;
+            background: #111;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .breakdown-tree .hl { color: #22C55E; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>Full Breakdown</h1>
+        <p class="subtitle">Break everything until you hit bedrock</p>
+    </header>
+
+    <main>
+        <div class="breakdown-section" id="breakdownSection">
+            <!-- Generated content -->
+        </div>
+
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">First number</div>
+                    <div class="control-buttons" id="num1Buttons"></div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Second number</div>
+                    <div class="control-buttons" id="num2Buttons"></div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h3>The principle</h3>
+                <p>
+                    Nothing is too big if you break it small enough.<br><br>
+                    13 × 7 is hard.<br>
+                    But 10×7 and 3×7? Those are easy.<br><br>
+                    Keep breaking until every piece is something you just <em>know</em>.
+                </p>
+            </div>
+
+            <div class="breakdown-tree" id="breakdownTree">
+                <!-- Tree view -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let num1 = 13;
+        let num2 = 7;
+
+        const num1Buttons = document.getElementById('num1Buttons');
+        const num2Buttons = document.getElementById('num2Buttons');
+        const breakdownSection = document.getElementById('breakdownSection');
+        const breakdownTree = document.getElementById('breakdownTree');
+
+        // Build buttons
+        [11, 12, 13, 14, 15, 16, 17, 18, 19].forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num1 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num1 = n; render(); };
+            num1Buttons.appendChild(btn);
+        });
+
+        [3, 4, 5, 6, 7, 8, 9].forEach(n => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (n === num2 ? ' selected' : '');
+            btn.textContent = n;
+            btn.onclick = () => { num2 = n; render(); };
+            num2Buttons.appendChild(btn);
+        });
+
+        function renderBlocks(rows, cols, alt = false) {
+            let html = `<div class="block-grid" style="grid-template-columns: repeat(${cols}, 12px);">`;
+            for (let i = 0; i < rows * cols; i++) {
+                html += `<div class="block${alt ? ' alt' : ''}"></div>`;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function render() {
+            // Update buttons
+            num1Buttons.querySelectorAll('.num-btn').forEach((btn, i) => {
+                const val = [11,12,13,14,15,16,17,18,19][i];
+                btn.className = 'num-btn' + (val === num1 ? ' selected' : '');
+            });
+            num2Buttons.querySelectorAll('.num-btn').forEach((btn, i) => {
+                const val = [3,4,5,6,7,8,9][i];
+                btn.className = 'num-btn' + (val === num2 ? ' selected' : '');
+            });
+
+            const tens = Math.floor(num1 / 10) * 10;
+            const ones = num1 % 10;
+            const answer = num1 * num2;
+
+            let html = '';
+
+            // Problem
+            html += `<div class="problem">${num1} × ${num2} = ?</div>`;
+
+            // Step 1: Break first number
+            html += `
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <div class="step-equation">
+                            Break <span class="hl">${num1}</span> into <span class="hl">${tens}</span> <span class="op">+</span> <span class="hl">${ones}</span>
+                        </div>
+                    </div>
+                    <div class="step-blocks">
+                        <div class="block-group">
+                            ${renderBlocks(1, tens)}
+                            <div class="block-label">${tens}</div>
+                        </div>
+                        <div class="plus-sign">+</div>
+                        <div class="block-group">
+                            ${renderBlocks(1, ones)}
+                            <div class="block-label">${ones}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Step 2: Two separate multiplications
+            const part1 = tens * num2;
+            const part2 = ones * num2;
+
+            html += `
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div class="step-equation">
+                            So ${num1} × ${num2} <span class="op">=</span> <span class="hl">${tens}×${num2}</span> <span class="op">+</span> <span class="hl">${ones}×${num2}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Step 3: Break down tens × num2
+            // 10 × num2 = (5×2) × num2 = 5 × (2 × num2)
+            const doubled = 2 * num2;
+            const fiveTimesDoubled = 5 * doubled;
+
+            html += `
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <div class="step-equation">
+                            <span class="hl">${tens} × ${num2}</span>: 10 = 5×2, so this is <span class="hl">5 × (2×${num2})</span> = 5 × ${doubled} = <span class="hl">${part1}</span>
+                        </div>
+                    </div>
+                    <div class="step-blocks">
+                        <div class="block-group">
+                            ${renderBlocks(5, doubled)}
+                            <div class="block-label">5 rows of ${doubled} = ${fiveTimesDoubled}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Step 4: Show ones × num2
+            html += `
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">4</div>
+                        <div class="step-equation">
+                            <span class="hl">${ones} × ${num2}</span> = <span class="hl">${part2}</span>
+                        </div>
+                    </div>
+                    <div class="step-blocks">
+                        <div class="block-group">
+                            ${renderBlocks(ones, num2, true)}
+                            <div class="block-label">${ones} rows of ${num2} = ${part2}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Step 5: Bond them together
+            html += `
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">5</div>
+                        <div class="step-equation">
+                            Bond: <span class="hl">${part1}</span> <span class="op">+</span> <span class="hl">${part2}</span> <span class="op">=</span> <span class="hl">${answer}</span>
+                        </div>
+                    </div>
+                    <div class="step-blocks">
+                        <div class="block-group">
+                            ${renderBlocks(5, doubled)}
+                            <div class="block-label">${part1}</div>
+                        </div>
+                        <div class="plus-sign">+</div>
+                        <div class="block-group">
+                            ${renderBlocks(ones, num2, true)}
+                            <div class="block-label">${part2}</div>
+                        </div>
+                        <div class="equals-sign">=</div>
+                        <div class="block-label" style="font-size: 2rem; color: #22C55E;">${answer}</div>
+                    </div>
+                </div>
+            `;
+
+            // Final answer
+            html += `
+                <div class="final-answer">
+                    <div class="final-value">${answer}</div>
+                </div>
+            `;
+
+            breakdownSection.innerHTML = html;
+
+            // Tree view
+            breakdownTree.innerHTML = `
+                <span class="hl">${num1} × ${num2}</span><br>
+                ├─ ${tens} × ${num2}<br>
+                │  └─ 5 × 2 × ${num2}<br>
+                │     └─ 5 × ${doubled} = ${part1}<br>
+                ├─ ${ones} × ${num2} = ${part2}<br>
+                └─ ${part1} + ${part2} = <span class="hl">${answer}</span>
+            `;
+        }
+
+        render();
+    </script>
+</body>
+</html>

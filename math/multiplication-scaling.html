@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplication is Scaling</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 20px 20px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #22C55E, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            padding-right: 360px;
+        }
+
+        .visualization {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .number-line-container {
+            position: relative;
+            height: 200px;
+            margin-bottom: 40px;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .control-label {
+            font-size: 1rem;
+            color: #888;
+            min-width: 120px;
+            text-align: right;
+        }
+
+        .control-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .base-value {
+            color: #3B82F6;
+        }
+
+        .multiplier-value {
+            color: #A855F7;
+        }
+
+        .result-value {
+            color: #22C55E;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #333;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #A855F7;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type="range"].base-slider::-webkit-slider-thumb {
+            background: #3B82F6;
+        }
+
+        .equation {
+            font-size: 2rem;
+            text-align: center;
+            margin-top: 20px;
+            font-family: 'Georgia', serif;
+        }
+
+        .equation .base {
+            color: #3B82F6;
+        }
+
+        .equation .multiplier {
+            color: #A855F7;
+        }
+
+        .equation .result {
+            color: #22C55E;
+        }
+
+        .equation .operator {
+            color: #666;
+            margin: 0 10px;
+        }
+
+        .sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 340px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            padding: 30px 25px;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            font-size: 1rem;
+            color: #22C55E;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar p {
+            color: #999;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .sidebar .highlight {
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        .insight {
+            background: #1a1a24;
+            border-left: 3px solid #A855F7;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .insight-title {
+            color: #A855F7;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight p {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        .try-this {
+            background: #1a1a1f;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .try-this h3 {
+            color: #3B82F6;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .try-this ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .try-this li {
+            color: #888;
+            font-size: 0.9rem;
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .try-this li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #555;
+        }
+
+        @media (max-width: 1300px) {
+            .sidebar {
+                display: none;
+            }
+            main {
+                padding-right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>Multiplication is Scaling</h1>
+        <p class="subtitle">Stretching and shrinking numbers on a line</p>
+    </header>
+
+    <main>
+        <div class="visualization">
+            <div class="number-line-container">
+                <svg id="numberLine"></svg>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <span class="control-label">Start with</span>
+                    <input type="range" class="base-slider" id="baseSlider" min="-5" max="5" step="0.5" value="4">
+                    <span class="control-value base-value" id="baseDisplay">4</span>
+                </div>
+
+                <div class="control-group">
+                    <span class="control-label">Scale by</span>
+                    <input type="range" id="multiplierSlider" min="-3" max="3" step="0.1" value="1">
+                    <span class="control-value multiplier-value" id="multiplierDisplay">1</span>
+                </div>
+
+                <div class="control-group">
+                    <span class="control-label">Result</span>
+                    <span class="control-value result-value" id="resultDisplay" style="flex: 1; text-align: left; font-size: 2rem;">4</span>
+                </div>
+            </div>
+
+            <div class="equation">
+                <span class="base" id="eqBase">4</span>
+                <span class="operator">×</span>
+                <span class="multiplier" id="eqMultiplier">1</span>
+                <span class="operator">=</span>
+                <span class="result" id="eqResult">4</span>
+            </div>
+        </div>
+    </main>
+
+    <aside class="sidebar">
+        <h2>The Idea</h2>
+        <p>
+            You were probably taught that <span class="highlight">3 × 4</span> means
+            "add 4 three times." That works for whole numbers, but it's a limited view.
+        </p>
+        <p>
+            Multiplication is really about <span class="highlight">scaling</span>—stretching
+            or shrinking a number along a line.
+        </p>
+
+        <div class="insight">
+            <div class="insight-title">Why this matters</div>
+            <p>
+                "Repeated addition" can't explain multiplying by 0.5 (half of something)
+                or by -1 (flip direction). Scaling explains all of it.
+            </p>
+        </div>
+
+        <p>
+            When you multiply by <span class="highlight">2</span>, the number stretches
+            to twice its distance from zero.
+        </p>
+        <p>
+            Multiply by <span class="highlight">0.5</span>, and it shrinks to half.
+        </p>
+        <p>
+            Multiply by <span class="highlight">-1</span>, and it flips across zero—same
+            distance, opposite direction.
+        </p>
+
+        <div class="try-this">
+            <h3>Try this</h3>
+            <ul>
+                <li>Set multiplier to 1 (nothing changes)</li>
+                <li>Slide to 2, then 3 (stretching)</li>
+                <li>Slide to 0.5 (shrinking)</li>
+                <li>Slide to 0 (everything becomes 0)</li>
+                <li>Slide to -1 (flip across zero)</li>
+                <li>Try a negative base number</li>
+            </ul>
+        </div>
+    </aside>
+
+    <script>
+        const svg = document.getElementById('numberLine');
+        const baseSlider = document.getElementById('baseSlider');
+        const multiplierSlider = document.getElementById('multiplierSlider');
+        const baseDisplay = document.getElementById('baseDisplay');
+        const multiplierDisplay = document.getElementById('multiplierDisplay');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const eqBase = document.getElementById('eqBase');
+        const eqMultiplier = document.getElementById('eqMultiplier');
+        const eqResult = document.getElementById('eqResult');
+
+        // SVG dimensions
+        const width = svg.clientWidth || 800;
+        const height = svg.clientHeight || 200;
+        const centerY = height / 2;
+        const padding = 60;
+        const lineY = centerY + 20;
+
+        // Scale: -10 to 10 mapped to padding to width-padding
+        const range = 10;
+        const scale = (width - 2 * padding) / (2 * range);
+
+        function toX(value) {
+            return padding + (value + range) * scale;
+        }
+
+        function formatNumber(n) {
+            if (Number.isInteger(n)) return n.toString();
+            return n.toFixed(1).replace(/\.0$/, '');
+        }
+
+        // Build static elements
+        function buildNumberLine() {
+            // Number line
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', padding);
+            line.setAttribute('y1', lineY);
+            line.setAttribute('x2', width - padding);
+            line.setAttribute('y2', lineY);
+            line.setAttribute('stroke', '#333');
+            line.setAttribute('stroke-width', '2');
+            svg.appendChild(line);
+
+            // Tick marks and labels
+            for (let i = -range; i <= range; i++) {
+                const x = toX(i);
+
+                // Tick
+                const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                tick.setAttribute('x1', x);
+                tick.setAttribute('y1', lineY - 8);
+                tick.setAttribute('x2', x);
+                tick.setAttribute('y2', lineY + 8);
+                tick.setAttribute('stroke', i === 0 ? '#666' : '#444');
+                tick.setAttribute('stroke-width', i === 0 ? '2' : '1');
+                svg.appendChild(tick);
+
+                // Label
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', x);
+                label.setAttribute('y', lineY + 28);
+                label.setAttribute('text-anchor', 'middle');
+                label.setAttribute('fill', i === 0 ? '#888' : '#555');
+                label.setAttribute('font-size', '14');
+                label.textContent = i;
+                svg.appendChild(label);
+            }
+
+            // Zero label
+            const zeroLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            zeroLabel.setAttribute('x', toX(0));
+            zeroLabel.setAttribute('y', lineY - 20);
+            zeroLabel.setAttribute('text-anchor', 'middle');
+            zeroLabel.setAttribute('fill', '#666');
+            zeroLabel.setAttribute('font-size', '12');
+            zeroLabel.textContent = 'zero';
+            svg.appendChild(zeroLabel);
+        }
+
+        // Dynamic elements
+        let baseMarker, baseLine, baseLabel;
+        let resultMarker, resultLine, resultLabel;
+        let scalingArrow, arrowHead;
+
+        function createDynamicElements() {
+            // Base point vertical line
+            baseLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            baseLine.setAttribute('stroke', '#3B82F6');
+            baseLine.setAttribute('stroke-width', '2');
+            baseLine.setAttribute('stroke-dasharray', '4,4');
+            baseLine.setAttribute('opacity', '0.5');
+            svg.appendChild(baseLine);
+
+            // Base marker
+            baseMarker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            baseMarker.setAttribute('r', '12');
+            baseMarker.setAttribute('fill', '#3B82F6');
+            baseMarker.setAttribute('cy', lineY);
+            svg.appendChild(baseMarker);
+
+            // Base label
+            baseLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            baseLabel.setAttribute('text-anchor', 'middle');
+            baseLabel.setAttribute('fill', '#3B82F6');
+            baseLabel.setAttribute('font-size', '14');
+            baseLabel.setAttribute('font-weight', '600');
+            svg.appendChild(baseLabel);
+
+            // Scaling arrow (line part)
+            scalingArrow = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            scalingArrow.setAttribute('stroke', '#A855F7');
+            scalingArrow.setAttribute('stroke-width', '3');
+            scalingArrow.setAttribute('opacity', '0.7');
+            svg.appendChild(scalingArrow);
+
+            // Arrow head
+            arrowHead = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            arrowHead.setAttribute('fill', '#A855F7');
+            arrowHead.setAttribute('opacity', '0.7');
+            svg.appendChild(arrowHead);
+
+            // Result point vertical line
+            resultLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            resultLine.setAttribute('stroke', '#22C55E');
+            resultLine.setAttribute('stroke-width', '2');
+            resultLine.setAttribute('stroke-dasharray', '4,4');
+            resultLine.setAttribute('opacity', '0.5');
+            svg.appendChild(resultLine);
+
+            // Result marker
+            resultMarker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            resultMarker.setAttribute('r', '12');
+            resultMarker.setAttribute('fill', '#22C55E');
+            resultMarker.setAttribute('cy', lineY);
+            svg.appendChild(resultMarker);
+
+            // Result label
+            resultLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            resultLabel.setAttribute('text-anchor', 'middle');
+            resultLabel.setAttribute('fill', '#22C55E');
+            resultLabel.setAttribute('font-size', '14');
+            resultLabel.setAttribute('font-weight', '600');
+            svg.appendChild(resultLabel);
+        }
+
+        function update() {
+            const base = parseFloat(baseSlider.value);
+            const multiplier = parseFloat(multiplierSlider.value);
+            const result = base * multiplier;
+
+            // Clamp result for display
+            const displayResult = Math.max(-range, Math.min(range, result));
+            const isClipped = Math.abs(result) > range;
+
+            // Update displays
+            baseDisplay.textContent = formatNumber(base);
+            multiplierDisplay.textContent = formatNumber(multiplier);
+            resultDisplay.textContent = formatNumber(result);
+            eqBase.textContent = formatNumber(base);
+            eqMultiplier.textContent = formatNumber(multiplier);
+            eqResult.textContent = formatNumber(result);
+
+            // Update base marker
+            const baseX = toX(base);
+            baseMarker.setAttribute('cx', baseX);
+            baseLine.setAttribute('x1', baseX);
+            baseLine.setAttribute('y1', lineY - 50);
+            baseLine.setAttribute('x2', baseX);
+            baseLine.setAttribute('y2', lineY);
+            baseLabel.setAttribute('x', baseX);
+            baseLabel.setAttribute('y', lineY - 60);
+            baseLabel.textContent = formatNumber(base);
+
+            // Update result marker
+            const resultX = toX(displayResult);
+            resultMarker.setAttribute('cx', resultX);
+            resultLine.setAttribute('x1', resultX);
+            resultLine.setAttribute('y1', lineY - 50);
+            resultLine.setAttribute('x2', resultX);
+            resultLine.setAttribute('y2', lineY);
+            resultLabel.setAttribute('x', resultX);
+            resultLabel.setAttribute('y', lineY - 60);
+            resultLabel.textContent = formatNumber(result) + (isClipped ? '...' : '');
+
+            // Update scaling arrow
+            const zeroX = toX(0);
+            const arrowY = lineY - 35;
+
+            if (Math.abs(result - base) > 0.1) {
+                scalingArrow.setAttribute('opacity', '0.7');
+                arrowHead.setAttribute('opacity', '0.7');
+
+                scalingArrow.setAttribute('x1', baseX);
+                scalingArrow.setAttribute('y1', arrowY);
+                scalingArrow.setAttribute('x2', resultX);
+                scalingArrow.setAttribute('y2', arrowY);
+
+                // Arrow head pointing in direction of movement
+                const direction = result > base ? 1 : -1;
+                const headSize = 8;
+                const headX = resultX;
+                arrowHead.setAttribute('points',
+                    `${headX},${arrowY} ${headX - direction * headSize},${arrowY - headSize/2} ${headX - direction * headSize},${arrowY + headSize/2}`
+                );
+            } else {
+                scalingArrow.setAttribute('opacity', '0');
+                arrowHead.setAttribute('opacity', '0');
+            }
+
+            // Visual feedback for special multipliers
+            if (multiplier === 0) {
+                resultMarker.setAttribute('fill', '#666');
+            } else if (multiplier < 0) {
+                resultMarker.setAttribute('fill', '#EF4444');
+            } else {
+                resultMarker.setAttribute('fill', '#22C55E');
+            }
+        }
+
+        // Initialize
+        buildNumberLine();
+        createDynamicElements();
+        update();
+
+        // Event listeners
+        baseSlider.addEventListener('input', update);
+        multiplierSlider.addEventListener('input', update);
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            // For simplicity, reload on resize
+            // In production, you'd recalculate dimensions
+        });
+    </script>
+</body>
+</html>

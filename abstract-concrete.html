@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abstract vs Concrete Thinking - Glowing Gardens</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            z-index: 100;
+        }
+        .back-link:hover { color: #fff; }
+
+        .main {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-right: 320px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        h1 .abstract { color: #8B5CF6; }
+        h1 .concrete { color: #F59E0B; }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .visual-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rock {
+            width: 200px;
+            height: 200px;
+            position: absolute;
+        }
+
+        .rock.concrete {
+            z-index: 2;
+        }
+
+        .rock.abstract {
+            opacity: 0.35;
+            z-index: 1;
+            transform: translate(-60px, -60px);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(-60px, -60px);
+            }
+            50% {
+                transform: translate(-65px, -70px);
+            }
+        }
+
+        .labels {
+            display: flex;
+            gap: 80px;
+            margin-top: 30px;
+        }
+
+        .label {
+            text-align: center;
+        }
+
+        .label-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .label-title.abstract { color: #8B5CF6; }
+        .label-title.concrete { color: #F59E0B; }
+
+        .label-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100vh;
+            background: #0f0f14;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 25px;
+            z-index: 50;
+        }
+
+        .sidebar h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .sidebar h3 {
+            font-size: 14px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .sidebar h3.abstract { color: #8B5CF6; }
+        .sidebar h3.concrete { color: #F59E0B; }
+
+        .sidebar p {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .sidebar strong {
+            color: #fff;
+        }
+
+        .sidebar em {
+            color: #22C55E;
+            font-style: normal;
+        }
+
+        .sidebar ul {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.8;
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .sidebar .insight {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        .sidebar .example {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .sidebar .example-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar .example-label.abstract { color: #8B5CF6; }
+        .sidebar .example-label.concrete { color: #F59E0B; }
+
+        .sidebar .example-text {
+            font-size: 13px;
+            color: #ccc;
+            font-style: italic;
+        }
+
+        @media (max-width: 900px) {
+            .main { padding-right: 0; }
+            .sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div class="main">
+        <h1><span class="abstract">Abstract</span> vs <span class="concrete">Concrete</span></h1>
+        <p class="subtitle">two ways of seeing the same thing</p>
+
+        <div class="visual-container">
+            <!-- Abstract version (ghostly, emerging) -->
+            <div class="rock abstract">
+                <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m404.18 102.99 32.3 154.53-85.3-46.66z" fill="#616d77"/>
+                    <path d="m436.48 257.52-16.95 139.68-68.35-186.34z" fill="#505c63"/>
+                    <path d="m351.18 210.86 68.35 186.34-191.36-48.1-50.14-63.85z" fill="#798795"/>
+                    <path d="m419.53 397.2-52.28 85.89-142.66-43.11 3.58-90.88z" fill="#616d77"/>
+                    <path d="m404.18 102.99-53 107.87-57.42-108.24.22-91.62z" fill="#8e99a3"/>
+                    <path d="m367.25 483.09-163.86 17.91-95.05-47.6 116.25-13.42z" fill="#505c63"/>
+                    <path d="m293.76 102.62 57.42 108.24-173.15 74.39 4.43-89.01z" fill="#616d77"/>
+                    <path d="m293.98 11-.22 91.62-93.18-22.33z" fill="#93a1ad"/>
+                    <path d="m293.76 102.62-111.3 93.62-73.82-76.96 91.94-38.99z" fill="#798795"/>
+                    <path d="m178.03 285.25 50.14 63.85-3.58 90.88-116.25 13.42-32.82-118.55z" fill="#8e99a3"/>
+                    <path d="m108.64 119.28 73.82 76.96-4.43 89.01-102.51 49.6z" fill="#93a1ad"/>
+                    <path d="m155.163 447.995-46.823 5.405 95.05 47.6 40.105-4.383z" fill="#414a4f"/>
+                    <path d="m293.98 11-93.4 69.29 40.987 9.822 52.313-37.346z" fill="#748089"/>
+                    <path d="m137.306 149.166-28.666-29.886-33.12 215.57 42.413-20.522z" fill="#79848c"/>
+                    <path d="m241.567 90.112-40.987-9.822-91.94 38.99 28.666 29.886z" fill="#5e6a75"/>
+                    <path d="m75.52 334.85 32.82 118.55 46.823-5.405-37.23-133.667z" fill="#747c82"/>
+                </svg>
+            </div>
+
+            <!-- Concrete version (solid) -->
+            <div class="rock concrete">
+                <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m404.18 102.99 32.3 154.53-85.3-46.66z" fill="#616d77"/>
+                    <path d="m436.48 257.52-16.95 139.68-68.35-186.34z" fill="#505c63"/>
+                    <path d="m351.18 210.86 68.35 186.34-191.36-48.1-50.14-63.85z" fill="#798795"/>
+                    <path d="m419.53 397.2-52.28 85.89-142.66-43.11 3.58-90.88z" fill="#616d77"/>
+                    <path d="m404.18 102.99-53 107.87-57.42-108.24.22-91.62z" fill="#8e99a3"/>
+                    <path d="m367.25 483.09-163.86 17.91-95.05-47.6 116.25-13.42z" fill="#505c63"/>
+                    <path d="m293.76 102.62 57.42 108.24-173.15 74.39 4.43-89.01z" fill="#616d77"/>
+                    <path d="m293.98 11-.22 91.62-93.18-22.33z" fill="#93a1ad"/>
+                    <path d="m293.76 102.62-111.3 93.62-73.82-76.96 91.94-38.99z" fill="#798795"/>
+                    <path d="m178.03 285.25 50.14 63.85-3.58 90.88-116.25 13.42-32.82-118.55z" fill="#8e99a3"/>
+                    <path d="m108.64 119.28 73.82 76.96-4.43 89.01-102.51 49.6z" fill="#93a1ad"/>
+                    <path d="m155.163 447.995-46.823 5.405 95.05 47.6 40.105-4.383z" fill="#414a4f"/>
+                    <path d="m293.98 11-93.4 69.29 40.987 9.822 52.313-37.346z" fill="#748089"/>
+                    <path d="m137.306 149.166-28.666-29.886-33.12 215.57 42.413-20.522z" fill="#79848c"/>
+                    <path d="m241.567 90.112-40.987-9.822-91.94 38.99 28.666 29.886z" fill="#5e6a75"/>
+                    <path d="m75.52 334.85 32.82 118.55 46.823-5.405-37.23-133.667z" fill="#747c82"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="labels">
+            <div class="label">
+                <div class="label-title abstract">The Idea</div>
+                <div class="label-desc">what it represents</div>
+            </div>
+            <div class="label">
+                <div class="label-title concrete">The Thing</div>
+                <div class="label-desc">what it is</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>Two Ways of Thinking</h2>
+
+        <p>When you look at a rock, what do you see?</p>
+
+        <h3 class="concrete">Concrete Thinkers</h3>
+        <p>See <strong>the thing itself</strong>. The rock is gray, heavy, rough. It's about 6 inches wide. You could use it to prop open a door.</p>
+        <ul>
+            <li>Focus on specific details</li>
+            <li>Think in terms of examples</li>
+            <li>Prefer step-by-step instructions</li>
+            <li>Remember facts and events</li>
+        </ul>
+
+        <h3 class="abstract">Abstract Thinkers</h3>
+        <p>See <strong>what it represents</strong>. The rock is permanence, stability, foundation. It's a symbol of something that endures.</p>
+        <ul>
+            <li>Focus on patterns and concepts</li>
+            <li>Think in terms of principles</li>
+            <li>Prefer understanding the "why"</li>
+            <li>Remember themes and meanings</li>
+        </ul>
+
+        <div class="example">
+            <div class="example-label concrete">Concrete</div>
+            <div class="example-text">"The rock weighs about 2 pounds and has a gray color."</div>
+        </div>
+
+        <div class="example">
+            <div class="example-label abstract">Abstract</div>
+            <div class="example-text">"The rock represents the foundation upon which we build."</div>
+        </div>
+
+        <div class="insight">
+            <strong>Neither is better.</strong> Concrete thinking excels at practical tasks and precise communication. Abstract thinking excels at finding patterns and transferring knowledge across domains.
+        </div>
+
+        <p>Most people blend both styles, but tend to favor one. Understanding your tendency helps you communicate better with those who think differently.</p>
+    </div>
+</body>
+</html>

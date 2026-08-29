@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>y = mx + b</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        header {
+            text-align: center;
+            padding: 12px 20px 8px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+            max-height: calc(100vh - 80px);
+        }
+
+        .graph-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .graph-container {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1;
+        }
+
+        .equation-display {
+            text-align: center;
+            font-family: 'Georgia', serif;
+            font-size: 1.8rem;
+            margin-top: 15px;
+            padding: 15px;
+            background: #111;
+            border-radius: 8px;
+        }
+
+        .equation-display .m { color: #22C55E; }
+        .equation-display .b { color: #A855F7; }
+        .equation-display .op { color: #666; }
+
+        .controls-section {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-group {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .control-name {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .control-value.m { color: #22C55E; }
+        .control-value.b { color: #A855F7; }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #333;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="range"].m-slider::-webkit-slider-thumb {
+            background: #22C55E;
+        }
+
+        input[type="range"].b-slider::-webkit-slider-thumb {
+            background: #A855F7;
+        }
+
+        .explanation {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+
+        .explanation .hl {
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #3B82F6;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #3B82F6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>y = mx + b</h1>
+        <p class="subtitle">The equation IS the picture. The picture IS the equation.</p>
+    </header>
+
+    <main>
+        <div class="graph-section">
+            <div class="graph-container">
+                <canvas id="graph" width="460" height="460"></canvas>
+            </div>
+            <div class="equation-display">
+                y <span class="op">=</span> <span class="m" id="eqM">2</span>x <span class="op">+</span> <span class="b" id="eqB">1</span>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div class="control-group">
+                <div class="control-label">
+                    <span class="control-name">m = slope (steepness)</span>
+                    <span class="control-value m" id="mValue">2</span>
+                </div>
+                <input type="range" class="m-slider" id="mSlider" min="-3" max="3" step="0.5" value="2">
+                <div class="explanation">
+                    <span class="hl">m</span> is how steep the line is.<br>
+                    Positive = going up. Negative = going down.<br>
+                    m = 2 means: go right 1, go up 2.
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">
+                    <span class="control-name">b = y-intercept (starting point)</span>
+                    <span class="control-value b" id="bValue">1</span>
+                </div>
+                <input type="range" class="b-slider" id="bSlider" min="-5" max="5" step="1" value="1">
+                <div class="explanation">
+                    <span class="hl">b</span> is where the line crosses the y-axis.<br>
+                    It's where you "start" when x = 0.
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h3>The connection</h3>
+                <p>
+                    Every equation <span style="color:#e0e0e0">y = mx + b</span> draws exactly one line.<br><br>
+                    Every line can be written as exactly one equation.<br><br>
+                    Algebra and geometry are the <span style="color:#e0e0e0">same thing</span> in different languages.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('graph');
+        const ctx = canvas.getContext('2d');
+        const mSlider = document.getElementById('mSlider');
+        const bSlider = document.getElementById('bSlider');
+        const mValue = document.getElementById('mValue');
+        const bValue = document.getElementById('bValue');
+        const eqM = document.getElementById('eqM');
+        const eqB = document.getElementById('eqB');
+
+        let m = 2;
+        let b = 1;
+
+        function draw() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const scale = 40; // pixels per unit
+
+            // Clear
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, w, h);
+
+            // Grid
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1;
+            for (let i = -5; i <= 5; i++) {
+                // Vertical
+                ctx.beginPath();
+                ctx.moveTo(cx + i * scale, 0);
+                ctx.lineTo(cx + i * scale, h);
+                ctx.stroke();
+                // Horizontal
+                ctx.beginPath();
+                ctx.moveTo(0, cy + i * scale);
+                ctx.lineTo(w, cy + i * scale);
+                ctx.stroke();
+            }
+
+            // Axes
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 2;
+            // X axis
+            ctx.beginPath();
+            ctx.moveTo(0, cy);
+            ctx.lineTo(w, cy);
+            ctx.stroke();
+            // Y axis
+            ctx.beginPath();
+            ctx.moveTo(cx, 0);
+            ctx.lineTo(cx, h);
+            ctx.stroke();
+
+            // Axis labels
+            ctx.fillStyle = '#666';
+            ctx.font = '12px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            for (let i = -5; i <= 5; i++) {
+                if (i !== 0) {
+                    ctx.fillText(i, cx + i * scale, cy + 15);
+                    ctx.fillText(i, cx - 15, cy - i * scale + 4);
+                }
+            }
+
+            // Y-intercept point
+            ctx.fillStyle = '#A855F7';
+            ctx.beginPath();
+            ctx.arc(cx, cy - b * scale, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Label y-intercept
+            ctx.fillStyle = '#A855F7';
+            ctx.font = '14px -apple-system, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`(0, ${b})`, cx + 12, cy - b * scale + 4);
+
+            // Draw the line
+            ctx.strokeStyle = '#3B82F6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            // Calculate line endpoints
+            const x1 = -6;
+            const y1 = m * x1 + b;
+            const x2 = 6;
+            const y2 = m * x2 + b;
+
+            ctx.moveTo(cx + x1 * scale, cy - y1 * scale);
+            ctx.lineTo(cx + x2 * scale, cy - y2 * scale);
+            ctx.stroke();
+
+            // Draw slope triangle if m != 0
+            if (m !== 0) {
+                // Start from a nice point
+                const px = 1;
+                const py = m * px + b;
+
+                ctx.strokeStyle = '#22C55E';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+
+                // Horizontal line (run = 1)
+                ctx.beginPath();
+                ctx.moveTo(cx + px * scale, cy - py * scale);
+                ctx.lineTo(cx + (px + 1) * scale, cy - py * scale);
+                ctx.stroke();
+
+                // Vertical line (rise = m)
+                ctx.beginPath();
+                ctx.moveTo(cx + (px + 1) * scale, cy - py * scale);
+                ctx.lineTo(cx + (px + 1) * scale, cy - (py + m) * scale);
+                ctx.stroke();
+
+                ctx.setLineDash([]);
+
+                // Labels
+                ctx.fillStyle = '#22C55E';
+                ctx.font = '12px -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('1', cx + (px + 0.5) * scale, cy - py * scale + 15);
+                ctx.fillText(m > 0 ? m : m, cx + (px + 1) * scale + 15, cy - (py + m/2) * scale);
+            }
+
+            // Origin label
+            ctx.fillStyle = '#666';
+            ctx.font = '12px -apple-system, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('0', cx + 5, cy + 15);
+        }
+
+        function update() {
+            m = parseFloat(mSlider.value);
+            b = parseFloat(bSlider.value);
+
+            mValue.textContent = m;
+            bValue.textContent = b;
+            eqM.textContent = m;
+            eqB.textContent = b >= 0 ? b : `(${b})`;
+
+            draw();
+        }
+
+        mSlider.addEventListener('input', update);
+        bSlider.addEventListener('input', update);
+
+        update();
+    </script>
+</body>
+</html>

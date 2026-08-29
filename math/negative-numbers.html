@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Negative Numbers</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 20px 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #3B82F6, #EF4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+            max-height: calc(100vh - 80px);
+        }
+
+        .viz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .number-line-container {
+            background: #111;
+            border-radius: 12px;
+            padding: 30px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .number-line {
+            position: relative;
+            height: 120px;
+            margin: 0 40px;
+        }
+
+        .line {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #444;
+        }
+
+        .zero-marker {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .zero-line {
+            width: 3px;
+            height: 44px;
+            background: #888;
+        }
+
+        .zero-label {
+            font-size: 1.2rem;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .tick {
+            position: absolute;
+            top: 52px;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tick-line {
+            width: 2px;
+            height: 20px;
+            background: #333;
+        }
+
+        .tick-label {
+            font-size: 0.9rem;
+            color: #555;
+            margin-top: 8px;
+        }
+
+        .tick-label.positive { color: #3B82F6; }
+        .tick-label.negative { color: #EF4444; }
+
+        .blocks-display {
+            position: absolute;
+            top: 0;
+            display: flex;
+            gap: 3px;
+        }
+
+        .blocks-display.positive {
+            left: 50%;
+            margin-left: 10px;
+        }
+
+        .blocks-display.negative {
+            right: 50%;
+            margin-right: 10px;
+            flex-direction: row-reverse;
+        }
+
+        .block {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+        }
+
+        .block.positive { background: #3B82F6; }
+        .block.negative { background: #EF4444; }
+
+        .pointer {
+            position: absolute;
+            top: 30px;
+            transform: translateX(-50%);
+            transition: left 0.3s ease;
+        }
+
+        .pointer-arrow {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid #22C55E;
+        }
+
+        .result-display {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-number {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .result-number.positive { color: #3B82F6; }
+        .result-number.negative { color: #EF4444; }
+        .result-number.zero { color: #888; }
+
+        .result-explain {
+            font-size: 1rem;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            background: #111;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .num-btn {
+            width: 38px;
+            height: 38px;
+            border: 2px solid #333;
+            background: #1a1a1f;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .num-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .num-btn.selected {
+            border-color: #22C55E;
+            background: #22C55E22;
+            color: #22C55E;
+        }
+
+        .num-btn.positive-sel {
+            border-color: #3B82F6;
+            background: #3B82F622;
+            color: #3B82F6;
+        }
+
+        .num-btn.negative-sel {
+            border-color: #EF4444;
+            background: #EF444422;
+            color: #EF4444;
+        }
+
+        .insight-box {
+            background: #1a1a24;
+            border-left: 3px solid #A855F7;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+        }
+
+        .insight-box h3 {
+            font-size: 0.75rem;
+            color: #A855F7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .insight-box .hl { color: #e0e0e0; }
+
+        .direction-box {
+            background: #111;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .direction {
+            text-align: center;
+        }
+
+        .direction-arrow {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .direction-label {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .direction.negative .direction-arrow { color: #EF4444; }
+        .direction.positive .direction-arrow { color: #3B82F6; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <header>
+        <h1>Negative Numbers</h1>
+        <p class="subtitle">It's just direction. Left or right from zero.</p>
+    </header>
+
+    <main>
+        <div class="viz-section">
+            <div class="number-line-container">
+                <div class="number-line" id="numberLine">
+                    <div class="line"></div>
+                    <div class="zero-marker">
+                        <div class="zero-line"></div>
+                        <div class="zero-label">0</div>
+                    </div>
+                    <div class="blocks-display positive" id="blocksPositive"></div>
+                    <div class="blocks-display negative" id="blocksNegative"></div>
+                    <div class="pointer" id="pointer">
+                        <div class="pointer-arrow"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-display">
+                <div class="result-number" id="resultNumber">0</div>
+                <div class="result-explain" id="resultExplain">You're at zero. The starting point.</div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="direction-box">
+                <div class="direction negative">
+                    <div class="direction-arrow">←</div>
+                    <div class="direction-label">Negative<br>Left of zero</div>
+                </div>
+                <div class="direction positive">
+                    <div class="direction-arrow">→</div>
+                    <div class="direction-label">Positive<br>Right of zero</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-label">Choose a number</div>
+                <div class="control-buttons" id="numberButtons"></div>
+            </div>
+
+            <div class="insight-box">
+                <h3>The insight</h3>
+                <p>
+                    <span class="hl">Negative</span> isn't scary or weird.<br><br>
+                    It just means <span class="hl" style="color:#EF4444">left</span> instead of <span class="hl" style="color:#3B82F6">right</span>.<br><br>
+                    <span style="color:#EF4444">-3</span> = 3 steps left from zero<br>
+                    <span style="color:#3B82F6">+3</span> = 3 steps right from zero<br><br>
+                    Same distance. <span class="hl">Opposite direction.</span>
+                </p>
+            </div>
+
+            <div class="insight-box">
+                <h3>Real life</h3>
+                <p>
+                    Temperature: 10° below zero = <span style="color:#EF4444">-10°</span><br><br>
+                    Money: $5 in debt = <span style="color:#EF4444">-$5</span><br><br>
+                    Floors: 2 below ground = <span style="color:#EF4444">-2</span>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentNumber = 0;
+        const unitWidth = 40; // pixels per unit
+
+        const numberButtons = document.getElementById('numberButtons');
+        const blocksPositive = document.getElementById('blocksPositive');
+        const blocksNegative = document.getElementById('blocksNegative');
+        const pointer = document.getElementById('pointer');
+        const resultNumber = document.getElementById('resultNumber');
+        const resultExplain = document.getElementById('resultExplain');
+
+        // Build buttons from -10 to 10
+        for (let i = -10; i <= 10; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn' + (i === currentNumber ? ' selected' : '');
+            btn.textContent = i;
+            btn.onclick = () => { currentNumber = i; render(); };
+            numberButtons.appendChild(btn);
+        }
+
+        // Add tick marks
+        const numberLine = document.getElementById('numberLine');
+        for (let i = -10; i <= 10; i++) {
+            if (i === 0) continue;
+            const tick = document.createElement('div');
+            tick.className = 'tick';
+            tick.style.left = `calc(50% + ${i * unitWidth}px)`;
+            tick.innerHTML = `
+                <div class="tick-line"></div>
+                <div class="tick-label ${i > 0 ? 'positive' : 'negative'}">${i}</div>
+            `;
+            numberLine.appendChild(tick);
+        }
+
+        function render() {
+            // Update button states
+            numberButtons.querySelectorAll('.num-btn').forEach((btn, i) => {
+                const val = i - 10;
+                let cls = 'num-btn';
+                if (val === currentNumber) {
+                    if (val > 0) cls += ' positive-sel';
+                    else if (val < 0) cls += ' negative-sel';
+                    else cls += ' selected';
+                }
+                btn.className = cls;
+            });
+
+            // Clear blocks
+            blocksPositive.innerHTML = '';
+            blocksNegative.innerHTML = '';
+
+            // Draw blocks
+            const absVal = Math.abs(currentNumber);
+            for (let i = 0; i < absVal; i++) {
+                const block = document.createElement('div');
+                block.className = 'block ' + (currentNumber >= 0 ? 'positive' : 'negative');
+                if (currentNumber >= 0) {
+                    blocksPositive.appendChild(block);
+                } else {
+                    blocksNegative.appendChild(block);
+                }
+            }
+
+            // Move pointer
+            pointer.style.left = `calc(50% + ${currentNumber * unitWidth}px)`;
+
+            // Update result
+            resultNumber.textContent = currentNumber;
+            resultNumber.className = 'result-number ' +
+                (currentNumber > 0 ? 'positive' : currentNumber < 0 ? 'negative' : 'zero');
+
+            if (currentNumber === 0) {
+                resultExplain.textContent = "You're at zero. The starting point.";
+            } else if (currentNumber > 0) {
+                resultExplain.textContent = `${currentNumber} steps to the RIGHT of zero`;
+            } else {
+                resultExplain.textContent = `${Math.abs(currentNumber)} steps to the LEFT of zero`;
+            }
+        }
+
+        render();
+    </script>
+</body>
+</html>

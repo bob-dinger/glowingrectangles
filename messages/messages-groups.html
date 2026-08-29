@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chat Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Carlito', sans-serif;
+            background-color: #fafafa;
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            gap: 12px;
+        }
+
+        .app-bar .title {
+            background: #111827;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+
+        .app-bar a {
+            color: #10b981;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 64px);
+            margin-top: 64px;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .group-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .group-item {
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .group-item:hover {
+            background: #f3f4f6;
+        }
+
+        .group-item.active {
+            background: #ecfdf5;
+            border-color: #10b981;
+        }
+
+        .group-item .name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .group-item .meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .chart-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .chart-subtitle {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .year-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .year-btn {
+            padding: 6px 12px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .year-btn:hover {
+            border-color: #10b981;
+        }
+
+        .year-btn.active {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            height: 36px;
+        }
+
+        .bar-label {
+            width: 180px;
+            font-size: 13px;
+            color: #374151;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 12px;
+            text-align: right;
+        }
+
+        .bar-label.you {
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .bar-wrapper {
+            flex: 1;
+            height: 24px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .bar-segment {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .bar-2024 { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .bar-2025 { background: linear-gradient(90deg, #10b981, #34d399); }
+        .bar-2026 { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+
+        .bar-single { background: linear-gradient(90deg, #10b981, #34d399); }
+        .bar-you { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+
+        .bar-count {
+            width: 80px;
+            font-size: 13px;
+            color: #6b7280;
+            padding-left: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .bar-percent {
+            width: 50px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+
+        .legend-color.y2024 { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .legend-color.y2025 { background: linear-gradient(90deg, #10b981, #34d399); }
+        .legend-color.y2026 { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+
+        .tooltip {
+            position: fixed;
+            background: #111827;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: #f3f4f6;
+            padding: 12px 16px;
+            border-radius: 8px;
+        }
+
+        .stat-box .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .stat-box .label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-bar">
+        <a href="../index.html">Home</a>
+        <a href="messages-viz.html">All Messages</a>
+        <a href="messages-trends.html">Trends</a>
+        <div class="title">Group Chat Analytics</div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <h3>Your Groups</h3>
+            <div class="group-list" id="groupList"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title" id="chartTitle">Select a group</div>
+                    <div class="chart-subtitle" id="chartSubtitle"></div>
+                </div>
+                <div class="year-buttons">
+                    <button class="year-btn active" data-year="all">All</button>
+                    <button class="year-btn" data-year="2024">2024</button>
+                    <button class="year-btn" data-year="2025">2025</button>
+                    <button class="year-btn" data-year="2026">2026</button>
+                </div>
+            </div>
+            <div class="stats-row" id="statsRow"></div>
+            <div class="legend" id="legend"></div>
+            <div id="chartArea"></div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const groups = {
+            54: {
+                name: "Grandma Ritchie Crew",
+                members: [
+                    {id: "+12147380884", y2024: 18620, y2025: 25102, y2026: 1638},
+                    {id: "+12149265353", y2024: 15008, y2025: 16898, y2026: 602},
+                    {id: "+12147977940", y2024: 15330, y2025: 13580, y2026: 420},
+                    {id: "You", y2024: 7658, y2025: 18018, y2026: 980},
+                    {id: "+12142743800", y2024: 9478, y2025: 13986, y2026: 1050},
+                    {id: "+12144975678", y2024: 8568, y2025: 12110, y2026: 490},
+                    {id: "+12144572397", y2024: 7112, y2025: 5838, y2026: 112},
+                    {id: "+12147178442", y2024: 5866, y2025: 5852, y2026: 392},
+                    {id: "+12145057323", y2024: 3332, y2025: 4340, y2026: 126},
+                    {id: "+12143947870", y2024: 1904, y2025: 3542, y2026: 238},
+                    {id: "+12142745264", y2024: 1750, y2025: 1554, y2026: 168},
+                    {id: "+12147933509", y2024: 1442, y2025: 1764, y2026: 70},
+                    {id: "craig.lechtenberg@gmail.com", y2024: 1722, y2025: 910, y2026: 14},
+                    {id: "+15126330700", y2024: 0, y2025: 1848, y2026: 56},
+                    {id: "+12144588849", y2024: 0, y2025: 644, y2026: 140}
+                ]
+            },
+            130: {
+                name: "All Gas, Occasional Brakes",
+                members: [
+                    {id: "+14043761930", y2024: 6105, y2025: 5175, y2026: 345},
+                    {id: "+14042752945", y2024: 4905, y2025: 4800, y2026: 465},
+                    {id: "+17138232509", y2024: 4110, y2025: 4740, y2026: 180},
+                    {id: "+17132012650", y2024: 5775, y2025: 765, y2026: 0},
+                    {id: "+12149242342", y2024: 3240, y2025: 3135, y2026: 150},
+                    {id: "+18173070421", y2024: 3315, y2025: 2925, y2026: 120},
+                    {id: "+12107717661", y2024: 2520, y2025: 3480, y2026: 165},
+                    {id: "+12147178442", y2024: 3105, y2025: 2670, y2026: 180},
+                    {id: "+18323878038", y2024: 2130, y2025: 2700, y2026: 120},
+                    {id: "You", y2024: 1320, y2025: 1680, y2026: 135},
+                    {id: "+18179446795", y2024: 1500, y2025: 1140, y2026: 30},
+                    {id: "+18177184210", y2024: 1260, y2025: 960, y2026: 165}
+                ]
+            },
+            5: {
+                name: "Twosday (1/13) Lunchers",
+                members: [
+                    {id: "+12142743800", y2024: 0, y2025: 2506, y2026: 224},
+                    {id: "+12147380884", y2024: 0, y2025: 2338, y2026: 210},
+                    {id: "+12149265353", y2024: 0, y2025: 2198, y2026: 112},
+                    {id: "+12147178442", y2024: 0, y2025: 1386, y2026: 56},
+                    {id: "You", y2024: 0, y2025: 1218, y2026: 14},
+                    {id: "+12144572397", y2024: 0, y2025: 1008, y2026: 42},
+                    {id: "+12144588849", y2024: 0, y2025: 896, y2026: 42},
+                    {id: "+12147977940", y2024: 0, y2025: 742, y2026: 28},
+                    {id: "+12144975678", y2024: 0, y2025: 658, y2026: 112},
+                    {id: "+12145057323", y2024: 0, y2025: 588, y2026: 98},
+                    {id: "+12147661796", y2024: 0, y2025: 658, y2026: 14},
+                    {id: "+12143947870", y2024: 0, y2025: 602, y2026: 70},
+                    {id: "+12143543815", y2024: 0, y2025: 476, y2026: 14},
+                    {id: "+12147933509", y2024: 0, y2025: 378, y2026: 14}
+                ]
+            },
+            44: {
+                name: "Nonni Poppi & Buster's fam",
+                members: [
+                    {id: "+12146758307", y2024: 418, y2025: 869, y2026: 66},
+                    {id: "+12147690278", y2024: 308, y2025: 924, y2026: 55},
+                    {id: "You", y2024: 297, y2025: 759, y2026: 55},
+                    {id: "+12145356966", y2024: 198, y2025: 594, y2026: 11},
+                    {id: "+12148133980", y2024: 143, y2025: 627, y2026: 22},
+                    {id: "+12145323364", y2024: 88, y2025: 517, y2026: 44},
+                    {id: "+12142357977", y2024: 198, y2025: 275, y2026: 22},
+                    {id: "+12147661024", y2024: 88, y2025: 275, y2026: 11},
+                    {id: "malone.winnie@icloud.com", y2024: 242, y2025: 110, y2026: 0},
+                    {id: "+12144508014", y2024: 66, y2025: 198, y2026: 11},
+                    {id: "juliamundinger@icloud.com", y2024: 55, y2025: 143, y2026: 33}
+                ]
+            },
+            75: {
+                name: "Six Squadron",
+                members: [
+                    {id: "+12142743800", y2024: 931, y2025: 154, y2026: 49},
+                    {id: "+12145364142", y2024: 945, y2025: 91, y2026: 42},
+                    {id: "+12144588849", y2024: 777, y2025: 98, y2026: 42},
+                    {id: "+18179650951", y2024: 700, y2025: 63, y2026: 7},
+                    {id: "+12147178442", y2024: 588, y2025: 84, y2026: 28},
+                    {id: "+12147380884", y2024: 504, y2025: 35, y2026: 42},
+                    {id: "+12143543815", y2024: 287, y2025: 28, y2026: 28},
+                    {id: "You", y2024: 231, y2025: 63, y2026: 0}
+                ]
+            },
+            85: {
+                name: "Rangers fans",
+                members: [
+                    {id: "You", y2024: 0, y2025: 330, y2026: 0},
+                    {id: "+12144975678", y2024: 0, y2025: 220, y2026: 0},
+                    {id: "+12149265353", y2024: 0, y2025: 175, y2026: 0},
+                    {id: "+12143543815", y2024: 0, y2025: 150, y2026: 0},
+                    {id: "+12144572397", y2024: 0, y2025: 130, y2026: 0},
+                    {id: "+12143947870", y2024: 0, y2025: 125, y2026: 0}
+                ]
+            },
+            59: {
+                name: "Toolbar FF",
+                members: [
+                    {id: "+17132012650", y2024: 468, y2025: 144, y2026: 9},
+                    {id: "+14043761930", y2024: 198, y2025: 99, y2026: 0},
+                    {id: "+12147178442", y2024: 180, y2025: 81, y2026: 0},
+                    {id: "+18323878038", y2024: 108, y2025: 90, y2026: 9},
+                    {id: "+12149242342", y2024: 153, y2025: 54, y2026: 0},
+                    {id: "colinscross@gmail.com", y2024: 63, y2025: 54, y2026: 9},
+                    {id: "You", y2024: 36, y2025: 18, y2026: 0}
+                ]
+            },
+            414: {
+                name: "KARMIL TOE",
+                members: [
+                    {id: "+17815615165", y2024: 170, y2025: 0, y2026: 0},
+                    {id: "+19712270679", y2024: 135, y2025: 0, y2026: 0},
+                    {id: "+12819619955", y2024: 65, y2025: 0, y2026: 0},
+                    {id: "+19728323114", y2024: 60, y2025: 0, y2026: 0},
+                    {id: "+12023403766", y2024: 60, y2025: 0, y2026: 0},
+                    {id: "You", y2024: 55, y2025: 0, y2026: 0}
+                ]
+            },
+            473: {
+                name: "Dinger!",
+                members: [
+                    {id: "+12149265353", y2024: 100, y2025: 0, y2026: 0},
+                    {id: "You", y2024: 80, y2025: 0, y2026: 0},
+                    {id: "+12147380884", y2024: 70, y2025: 0, y2026: 0},
+                    {id: "+17138232509", y2024: 60, y2025: 0, y2026: 0},
+                    {id: "+12143845805", y2024: 60, y2025: 0, y2026: 0},
+                    {id: "+12145057323", y2024: 50, y2025: 0, y2026: 0}
+                ]
+            }
+        };
+
+        const tooltip = document.getElementById('tooltip');
+        let currentGroup = null;
+        let currentYear = 'all';
+
+        function formatContact(contact) {
+            if (contact === 'You') return 'You';
+            if (contact.includes('@')) return contact.split('@')[0];
+            return contact;
+        }
+
+        function getTotal(member, year) {
+            if (year === 'all') {
+                return (member.y2024 || 0) + (member.y2025 || 0) + (member.y2026 || 0);
+            }
+            return member['y' + year] || 0;
+        }
+
+        function renderGroupList() {
+            const container = document.getElementById('groupList');
+            const sortedGroups = Object.entries(groups)
+                .map(([id, g]) => ({
+                    id,
+                    name: g.name,
+                    total: g.members.reduce((sum, m) => sum + getTotal(m, 'all'), 0),
+                    memberCount: g.members.length
+                }))
+                .sort((a, b) => b.total - a.total);
+
+            container.innerHTML = sortedGroups.map(g => `
+                <div class="group-item" data-id="${g.id}">
+                    <div class="name">${g.name}</div>
+                    <div class="meta">${g.memberCount} members · ${g.total.toLocaleString()} messages</div>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.group-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.group-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    currentGroup = item.dataset.id;
+                    renderChart();
+                });
+            });
+
+            // Select first group by default
+            if (sortedGroups.length > 0) {
+                container.querySelector('.group-item').click();
+            }
+        }
+
+        function renderChart() {
+            if (!currentGroup) return;
+
+            const group = groups[currentGroup];
+            const members = group.members
+                .map(m => ({...m, total: getTotal(m, currentYear)}))
+                .filter(m => m.total > 0)
+                .sort((a, b) => b.total - a.total);
+
+            const totalMessages = members.reduce((sum, m) => sum + m.total, 0);
+            const maxTotal = Math.max(...members.map(m => m.total));
+
+            document.getElementById('chartTitle').textContent = group.name;
+            document.getElementById('chartSubtitle').textContent =
+                currentYear === 'all' ? 'All time (past 2 years)' : currentYear;
+
+            // Stats
+            const youData = members.find(m => m.id === 'You');
+            const youPercent = youData ? ((youData.total / totalMessages) * 100).toFixed(1) : 0;
+            document.getElementById('statsRow').innerHTML = `
+                <div class="stat-box">
+                    <div class="value">${totalMessages.toLocaleString()}</div>
+                    <div class="label">Total Messages</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">${members.length}</div>
+                    <div class="label">Active Members</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">${youPercent}%</div>
+                    <div class="label">Your Share</div>
+                </div>
+            `;
+
+            // Legend
+            const legend = document.getElementById('legend');
+            if (currentYear === 'all') {
+                legend.innerHTML = `
+                    <div class="legend-item"><div class="legend-color y2024"></div><span>2024</span></div>
+                    <div class="legend-item"><div class="legend-color y2025"></div><span>2025</span></div>
+                    <div class="legend-item"><div class="legend-color y2026"></div><span>2026</span></div>
+                `;
+            } else {
+                legend.innerHTML = '';
+            }
+
+            // Bars
+            const container = document.getElementById('chartArea');
+            container.innerHTML = members.map(m => {
+                const percent = ((m.total / totalMessages) * 100).toFixed(1);
+                const isYou = m.id === 'You';
+                let barsHtml = '';
+
+                if (currentYear === 'all') {
+                    barsHtml = `
+                        <div class="bar-segment bar-2024" style="width: ${((m.y2024 || 0) / maxTotal) * 100}%"></div>
+                        <div class="bar-segment bar-2025" style="width: ${((m.y2025 || 0) / maxTotal) * 100}%"></div>
+                        <div class="bar-segment bar-2026" style="width: ${((m.y2026 || 0) / maxTotal) * 100}%"></div>
+                    `;
+                } else {
+                    barsHtml = `<div class="bar-segment ${isYou ? 'bar-you' : 'bar-single'}" style="width: ${(m.total / maxTotal) * 100}%"></div>`;
+                }
+
+                return `
+                    <div class="bar-row" data-id="${m.id}">
+                        <div class="bar-label ${isYou ? 'you' : ''}" title="${m.id}">${formatContact(m.id)}</div>
+                        <div class="bar-wrapper">${barsHtml}</div>
+                        <div class="bar-count">${m.total.toLocaleString()}</div>
+                        <div class="bar-percent">${percent}%</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Tooltips
+            container.querySelectorAll('.bar-row').forEach(row => {
+                const member = members.find(m => m.id === row.dataset.id);
+                row.addEventListener('mouseenter', () => {
+                    let html = `<strong>${member.id}</strong><br>`;
+                    if (currentYear === 'all') {
+                        html += `2024: ${(member.y2024 || 0).toLocaleString()}<br>`;
+                        html += `2025: ${(member.y2025 || 0).toLocaleString()}<br>`;
+                        html += `2026: ${(member.y2026 || 0).toLocaleString()}`;
+                    } else {
+                        html += `Messages: ${member.total.toLocaleString()}`;
+                    }
+                    tooltip.innerHTML = html;
+                    tooltip.style.opacity = 1;
+                });
+                row.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = e.clientX + 10 + 'px';
+                    tooltip.style.top = e.clientY + 10 + 'px';
+                });
+                row.addEventListener('mouseleave', () => {
+                    tooltip.style.opacity = 0;
+                });
+            });
+        }
+
+        // Year buttons
+        document.querySelectorAll('.year-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentYear = btn.dataset.year;
+                renderChart();
+            });
+        });
+
+        // Initialize
+        renderGroupList();
+    </script>
+</body>
+</html>

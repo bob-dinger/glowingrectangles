@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact: +12147380884</title>
+    <link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Carlito', sans-serif;
+            background-color: #fafafa;
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            gap: 12px;
+        }
+
+        .app-bar .title {
+            background: #111827;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+
+        .app-bar a {
+            color: #10b981;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 64px);
+            margin-top: 64px;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-card h3 {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .stat-card .sub {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border-color: #10b981;
+        }
+
+        .highlight .value {
+            color: #059669;
+        }
+
+        .group-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .group-item {
+            font-size: 13px;
+            color: #374151;
+            padding: 6px 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .chart-container {
+            flex: 1;
+            padding: 30px 50px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-header {
+            margin-bottom: 30px;
+        }
+
+        .chart-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .chart-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 25px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .legend-color.you { background: linear-gradient(180deg, #60a5fa, #3b82f6); }
+        .legend-color.them { background: linear-gradient(180deg, #34d399, #10b981); }
+
+        .chart-area {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 20px;
+            padding-bottom: 60px;
+        }
+
+        .year-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .bars-pair {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            height: 300px;
+        }
+
+        .bar-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 70px;
+        }
+
+        .bar {
+            width: 100%;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 10px;
+            min-height: 35px;
+            cursor: pointer;
+        }
+
+        .bar:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+
+        .bar.you { background: linear-gradient(180deg, #60a5fa, #3b82f6); }
+        .bar.them { background: linear-gradient(180deg, #34d399, #10b981); }
+
+        .bar-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .bar-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.85);
+            margin-top: 2px;
+        }
+
+        .year-label {
+            font-size: 20px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .ratio-badge {
+            font-size: 13px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: #f3f4f6;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .summary-stat {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #6b7280;
+        }
+
+        .summary-stat strong {
+            color: #111827;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: #111827;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-bar">
+        <a href="../index.html">Home</a>
+        <a href="messages-viz.html">All Messages</a>
+        <a href="messages-groups.html">Groups</a>
+        <a href="messages-sent.html">You vs Them</a>
+        <div class="title">Contact Detail</div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="stat-card highlight">
+                <h3>Contact</h3>
+                <div class="value" style="font-size: 18px;">+12147380884</div>
+                <div class="sub">Since October 2022</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Their Share</h3>
+                <div class="value">15%</div>
+                <div class="sub">415 of 2,840 messages</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Peak Share</h3>
+                <div class="value">25%</div>
+                <div class="sub">2022 (1 of 4 msgs)</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <div class="chart-title">+12147380884</div>
+                <div class="chart-subtitle">% of messages in shared chats</div>
+            </div>
+
+
+            <div class="chart-area" id="chartArea"></div>
+
+            <div class="summary-stat" id="summaryStat"></div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const data = [
+            {year: 2022, them: 1, total: 4},
+            {year: 2023, them: 27, total: 139},
+            {year: 2024, them: 120, total: 879},
+            {year: 2025, them: 246, total: 1709},
+            {year: 2026, them: 21, total: 109}
+        ];
+
+        const tooltip = document.getElementById('tooltip');
+
+        const maxHeight = 250;
+
+        const container = document.getElementById('chartArea');
+        container.innerHTML = data.map(d => {
+            const pct = d.total > 0 ? Math.round((d.them / d.total) * 100) : 0;
+            const themHeight = (pct / 100) * maxHeight;
+            const othersHeight = maxHeight - themHeight;
+
+            return `
+                <div class="year-group">
+                    <div class="bars-pair">
+                        <div class="bar-column" style="width: 60px;">
+                            <div style="display: flex; flex-direction: column; height: ${maxHeight}px;${d.total === 0 ? ' opacity: 0.15;' : ''}">
+                                <div style="flex: 1; background: #e5e7eb; border-radius: 6px 6px 0 0;"></div>
+                                <div class="bar them" style="height: ${themHeight}px; border-radius: 0 0 6px 6px; display: flex; align-items: center; justify-content: center;" data-year="${d.year}" data-them="${d.them}" data-total="${d.total}" data-pct="${pct}">
+                                    ${d.total > 0 ? `<span class="bar-value">${pct}%</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="year-label">${d.year}</div>
+                </div>
+            `;
+        }).join('');
+
+        // Summary
+        const totalThem = data.reduce((sum, d) => sum + d.them, 0);
+        const totalAll = data.reduce((sum, d) => sum + d.total, 0);
+        const avgPct = Math.round((totalThem / totalAll) * 100);
+        document.getElementById('summaryStat').innerHTML =
+            `<strong>${avgPct}% overall</strong> — ${totalThem} of ${totalAll.toLocaleString()} messages in shared chats`;
+
+        // Tooltips
+        container.querySelectorAll('.bar').forEach(bar => {
+            bar.addEventListener('mouseenter', () => {
+                const year = bar.dataset.year;
+                const them = parseInt(bar.dataset.them);
+                const total = parseInt(bar.dataset.total);
+                const pct = bar.dataset.pct;
+                tooltip.innerHTML = `<strong>${year}</strong><br>${them} of ${total} messages<br>${pct}% of conversation`;
+                tooltip.style.opacity = 1;
+            });
+            bar.addEventListener('mousemove', (e) => {
+                tooltip.style.left = e.clientX + 10 + 'px';
+                tooltip.style.top = e.clientY - 50 + 'px';
+            });
+            bar.addEventListener('mouseleave', () => {
+                tooltip.style.opacity = 0;
+            });
+        });
+    </script>
+</body>
+</html>
