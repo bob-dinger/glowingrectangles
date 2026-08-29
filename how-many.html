@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Many? - Glowing Rectangles</title>
+<style>
+  :root{--bg:#14141d;--ink:#e9e9f2;--dim:#8a8a9f;--faint:#5a5a70;--line:#2b2b3a;
+        --guess:#f0a92e;--real:#2dd4bf}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);min-height:100vh;
+       font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+       display:flex;flex-direction:column}
+  a{color:#8ab4f8}
+  .top{max-width:900px;width:100%;margin:0 auto;padding:18px 20px 0}
+  .back{font-size:13px;color:var(--dim);text-decoration:none}
+  main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+       padding:14px 20px 36px;gap:20px}
+
+  .q{font-size:25px;font-weight:500;text-align:center;margin:0;max-width:22ch;
+     line-height:1.35;text-wrap:balance}
+  .q b{font-weight:600}
+
+  .stagewrap{position:relative}
+  canvas{display:block;image-rendering:pixelated;border-radius:6px;
+         box-shadow:0 10px 40px #0009}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+       text-align:center;margin:0 0 10px;transition:color .3s}
+  .cap.g{color:var(--guess)} .cap.r{color:var(--real)}
+
+  .count{font-size:60px;font-weight:600;letter-spacing:-.03em;line-height:1;
+         font-variant-numeric:tabular-nums;text-align:center}
+  .count small{font-size:17px;font-weight:500;color:var(--dim);display:block;margin-top:8px;
+               letter-spacing:0}
+
+  .btns{display:flex;gap:10px}
+  button{font-family:inherit;background:#252534;color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:11px 24px;font-size:15px;cursor:pointer}
+  button:hover{border-color:#5a5a78}
+  button.go{background:#fff;border-color:#fff;color:#14141d;font-weight:600}
+  .src{font-size:11.5px;color:var(--faint);text-align:center;max-width:60ch;line-height:1.6;
+       margin:0}
+</style>
+</head>
+<body>
+<div class="top"><a class="back" href="index.html">← Back</a></div>
+<main>
+  <p class="q" id="q"></p>
+  <div class="stagewrap">
+    <div class="cap g" id="cap">What people picture</div>
+    <canvas id="cv"></canvas>
+  </div>
+  <div class="count" id="count"></div>
+  <div class="btns">
+    <button class="go" id="go">Show me what's actually there</button>
+    <button id="again" style="display:none">Again</button>
+  </div>
+  <p class="src" id="src"></p>
+</main>
+
+<script>
+/* ---------- sprites: plain pixel grids, one character per pixel ---------- */
+const PAL={
+  m:'#b9b9c9', p:'#8a5a2b', h:'#4a2f16', s:'#eab98f', e:'#1a1008',
+  t:'#93332c', l:'#4a3524', b:'#1c1510',
+  f:'#e8541f', y:'#f5a623', w:'#fff2b0',
+  g:'#3e9e3e', d:'#2c7a2c', k:'#6b4423'
+};
+const SPR={
+  guy:[
+    '..m.m.m.......',
+    '..m.m.m.......',
+    '...mmm........',
+    '....p...hhhhh.',
+    '....p..hhhhhhh',
+    '....p..hhhhhhh',
+    '....p..hsssssh',
+    '....p..hsesesh',
+    '....p...sssss.',
+    '....p....ee...',
+    '....p..ttttttt',
+    '...ss..ttttttt',
+    '....p..ttttttt',
+    '.......tttttt.',
+    '.......ll..ll.',
+    '.......ll..ll.',
+    '.......bb..bb.'
+  ],
+  fire:[
+    '...f...',
+    '..fff..',
+    '..fyf..',
+    '.ffyff.',
+    '.fyyyf.',
+    'ffyyyff',
+    'fywwyf.',
+    '.fyyf..',
+    '..ff...'
+  ],
+  tree:[
+    '...ggg...',
+    '..ggggg..',
+    '.ggggggg.',
+    'ggggggggg',
+    '.ggggggg.',
+    '.ggdgggg.',
+    '..ggggg..',
+    '...ggg...',
+    '....k....',
+    '....k....',
+    '...kkk...'
+  ]
+};
+const W=s=>SPR[s][0].length, H=s=>SPR[s].length;
+
+function blit(ctx,name,x,y,px,alpha,rot){
+  const g=SPR[name];
+  ctx.save();
+  if(alpha!==undefined) ctx.globalAlpha=alpha;
+  if(rot){ ctx.translate(x+W(name)*px/2,y+H(name)*px/2); ctx.rotate(rot);
+           ctx.translate(-W(name)*px/2,-H(name)*px/2); x=0; y=0; }
+  for(let r=0;r<g.length;r++) for(let c=0;c<g[r].length;c++){
+    const ch=g[r][c]; if(ch==='.') continue;
+    ctx.fillStyle=PAL[ch];
+    ctx.fillRect(x+c*px, y+r*px, px, px);
+  }
+  ctx.restore();
+}
+
+/* deterministic noise so the field looks the same every load */
+let seed=7;
+const rnd=()=>{seed=(seed*1664525+1013904223)%4294967296; return seed/4294967296};
+
+/* ---------- the item ---------- */
+const ITEM={
+  q:'Out of every 100 Americans, how many are <b>transgender</b>?',
+  guessed:21, actual:1,
+  noun:'people',
+  guessLabel:'What people picture',
+  realLabel:"What's actually there",
+  src:'YouGov, 2022, n = 1,000. Americans estimated 21%. The actual share of US adults who '
+     +'identify as transgender is about 1%. The figures are a picture of the estimate, not of '
+     +'anyone in particular.'
+};
+
+const PX=3, CW=560, CH=420;
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+cv.width=CW; cv.height=CH; cv.style.width=CW+'px'; cv.style.height=CH+'px';
+ctx.imageSmoothingEnabled=false;
+
+/* static scenery, computed once */
+let SPECK=[], FIRES=[], TREES=[];
+function buildScene(){
+  seed=7; SPECK=[]; FIRES=[]; TREES=[];
+  for(let i=0;i<340;i++) SPECK.push([Math.floor(rnd()*CW/PX)*PX, Math.floor(rnd()*CH/PX)*PX]);
+  const tw=W('tree')*PX, th=H('tree')*PX;
+  for(let x=0; x<CW-tw+2; x+=tw){ TREES.push([x,0]); TREES.push([x,CH-th]); }
+  for(let y=th; y<CH-th-2; y+=th){ TREES.push([0,y]); TREES.push([CW-tw,y]); }
+  const cx=CW/2, cy=CH/2, rx=CW*0.40, ry=CH*0.40;
+  for(let i=0;i<20;i++){
+    const a=(i/20)*Math.PI*2 + 0.25;
+    FIRES.push([cx+Math.cos(a)*rx - W('fire')*PX/2 + (rnd()*10-5),
+                cy+Math.sin(a)*ry - H('fire')*PX/2 + (rnd()*10-5)]);
+  }
+}
+
+/* figures laid out in a centred block — exact count, always */
+function layout(n){
+  const gw=W('guy')*PX, gh=H('guy')*PX, gap=PX*3;
+  const cols=Math.min(n, Math.ceil(Math.sqrt(n*1.5))||1);
+  const rows=Math.ceil(n/cols);
+  const totalH=rows*gh+(rows-1)*gap;
+  const out=[];
+  for(let i=0;i<n;i++){
+    const r=Math.floor(i/cols), inRow=Math.min(cols, n-r*cols);
+    const totalW=inRow*gw+(inRow-1)*gap;
+    out.push({
+      x:Math.round(CW/2-totalW/2+(i%cols)*(gw+gap)),
+      y:Math.round(CH/2-totalH/2+r*(gh+gap)),
+      vx:0, vy:0, rot:0, a:1, gone:false
+    });
+  }
+  return out;
+}
+
+let figs=[], phase='guess', t0=0;
+
+let firesLit=20;
+function drawScene(){
+  ctx.fillStyle='#e3ca82'; ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='#d4b96e';
+  SPECK.forEach(([x,y])=>ctx.fillRect(x,y,PX,PX));
+  const n=Math.max(1,firesLit);
+  for(let i=0;i<n;i++){
+    const [x,y]=FIRES[Math.round(i*FIRES.length/n)%FIRES.length];
+    blit(ctx,'fire',x,y,PX);
+  }
+  TREES.forEach(([x,y])=>blit(ctx,'tree',x,y,PX));
+}
+
+function draw(){
+  drawScene();
+  figs.forEach(f=>{ if(!f.gone) blit(ctx,'guy',f.x,f.y,PX,f.a,f.rot); });
+}
+
+function setCount(n,cls){
+  document.getElementById('count').innerHTML=
+    `<span style="color:var(--${cls})">${n}</span><small>${
+      n===1?'person':ITEM.noun} out of 100</small>`;
+}
+
+function start(){
+  buildScene();
+  figs=layout(ITEM.guessed);
+  firesLit=20;
+  phase='guess';
+  document.getElementById('q').innerHTML=ITEM.q;
+  document.getElementById('cap').textContent=ITEM.guessLabel;
+  document.getElementById('cap').className='cap g';
+  setCount(ITEM.guessed,'guess');
+  document.getElementById('go').style.display='';
+  document.getElementById('again').style.display='none';
+  document.getElementById('src').textContent=ITEM.src;
+  draw();
+}
+
+function reveal(){
+  if(phase!=='guess') return;
+  phase='falling';
+  document.getElementById('go').style.display='none';
+  // keep the middle one; everybody else tumbles out of frame
+  const keep=Math.floor(ITEM.guessed/2);
+  figs.forEach((f,i)=>{
+    if(i===keep) return;
+    f.vx=(Math.random()-0.5)*3.2;
+    f.vy=-1.6-Math.random()*2.2;
+    f.spin=(Math.random()-0.5)*0.22;
+    f.falling=true;
+    f.delay=Math.random()*260;
+  });
+  // the survivor slides to centre
+  const s=figs[keep];
+  s.tx=Math.round(CW/2-W('guy')*PX/2);
+  s.ty=Math.round(CH/2-H('guy')*PX/2);
+  s.sx=s.x; s.sy=s.y;
+  t0=performance.now();
+  document.getElementById('cap').textContent=ITEM.realLabel;
+  document.getElementById('cap').className='cap r';
+  requestAnimationFrame(step);
+}
+
+function step(now){
+  const el=now-t0;
+  let moving=false;
+  figs.forEach(f=>{
+    if(f.falling && el>f.delay){
+      f.vy+=0.42; f.x+=f.vx*3; f.y+=f.vy*3; f.rot+=f.spin;
+      if(f.y>CH+60){ f.gone=true; } else moving=true;
+    } else if(f.falling){ moving=true; }
+    if(f.tx!==undefined){
+      const k=Math.min(1,el/900), e=1-Math.pow(1-k,3);
+      f.x=Math.round(f.sx+(f.tx-f.sx)*e);
+      f.y=Math.round(f.sy+(f.ty-f.sy)*e);
+      if(k<1) moving=true;
+    }
+  });
+  // fires die back as the crowd clears
+  const p=Math.min(1,el/1400);
+  firesLit = Math.max(4, Math.round(20-(20-4)*p));
+  draw();
+  const alive=figs.filter(f=>!f.gone).length;
+  setCount(Math.max(ITEM.actual,alive-0), alive<=ITEM.actual?'real':'guess');
+  if(moving) requestAnimationFrame(step);
+  else{
+    phase='done';
+    setCount(ITEM.actual,'real');
+    document.getElementById('again').style.display='';
+  }
+}
+
+document.getElementById('go').onclick=reveal;
+document.getElementById('again').onclick=start;
+start();
+window.__hm={ITEM,reveal,start,figs:()=>figs,phase:()=>phase};
+</script>
+</body>
+</html>
