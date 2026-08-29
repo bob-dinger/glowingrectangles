@@ -1,0 +1,309 @@
+{
+  "_schema": {
+    "note": "Every item is a measured perception paired with a measured reality. Nothing here is modelled or estimated by us.",
+    "fields": {
+      "id": "stable slug",
+      "kind": "size | meta | trend | risk",
+      "direction": "over | under | accurate",
+      "ask": "the question as posed to the reader",
+      "unit": "what the number counts, for the sprite caption",
+      "perceived": "average estimate, %",
+      "actual": "true value, %",
+      "estimator": "who did the estimating",
+      "about": "who is being estimated",
+      "source": "short citation",
+      "year": "fieldwork year",
+      "n": "sample size",
+      "verified": "true = I read the number off the primary source in this session",
+      "note": "anything the caption must say to stay honest"
+    },
+    "sprite_hint": "perceived and actual are percentages, so 'out of every 100' renders directly as sprite counts. Round for display; keep the decimal here."
+  },
+
+  "sources": {
+    "yougov2022": {
+      "cite": "YouGov, 'From millionaires to Muslims, small subgroups of the population seem much larger to many Americans'",
+      "url": "https://yougov.com/en-us/articles/41556-americans-misestimate-small-subgroups-population",
+      "fielded": "January 14-20, 2022",
+      "n": "two surveys of 1,000 US adult citizens"
+    },
+    "moreincommon2019": {
+      "cite": "More in Common, 'The Perception Gap' (Yudkin, Hawkins & Dixon)",
+      "url": "https://www.moreincommon.com/media/0fmblxb3/the-perception-gap.pdf",
+      "fielded": "November 7-10, 2018, YouGov",
+      "n": "2,100 US adults (936 D, 755 R, 409 I), MoE +/- 2.1%"
+    },
+    "ahlersood2018": {
+      "cite": "Ahler & Sood, 'The Parties in Our Heads', Journal of Politics 80(3)",
+      "url": "https://gsood.com/research/papers/partisanComposition.pdf",
+      "fielded": "March 2015, YouGov",
+      "n": "1,000"
+    },
+    "gallupcrime": {
+      "cite": "Gallup, crime trend series",
+      "url": "https://news.gallup.com/poll/15247/crime-united-states.aspx",
+      "fielded": "annual"
+    },
+    "gapminder2017": {
+      "cite": "Gapminder / Rosling, Factfulness test",
+      "url": "https://www.gapminder.org/factfulness-book/",
+      "fielded": "2017",
+      "n": "~12,000 across 14 countries"
+    }
+  },
+
+  "items": [
+
+    { "id": "trans", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Americans, how many are transgender?",
+      "unit": "people", "perceived": 21, "actual": 0.6,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true,
+      "note": "Self-ID has risen since 2022 and estimates range ~0.5-1.6%. Cite the year." },
+
+    { "id": "muslim", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Americans, how many are Muslim?",
+      "unit": "people", "perceived": 27, "actual": 1,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true },
+
+    { "id": "jewish", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Americans, how many are Jewish?",
+      "unit": "people", "perceived": 30, "actual": 2,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true },
+
+    { "id": "gay-lesbian", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Americans, how many are gay or lesbian?",
+      "unit": "people", "perceived": 30, "actual": 3,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true },
+
+    { "id": "bisexual", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Americans, how many are bisexual?",
+      "unit": "people", "perceived": 29, "actual": 4,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true },
+
+    { "id": "native-american", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Americans, how many are Native American?",
+      "unit": "people", "perceived": 27, "actual": 1,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true },
+
+    { "id": "asian-american", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Americans, how many are Asian American?",
+      "unit": "people", "perceived": 29, "actual": 6,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true },
+
+    { "id": "black-american", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Americans, how many are Black?",
+      "unit": "people", "perceived": 41, "actual": 12,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true },
+
+    { "id": "left-handed", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Americans, how many are left-handed?",
+      "unit": "people", "perceived": 34, "actual": 11,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true,
+      "note": "THE KEY CONTROL ITEM. Nothing political about handedness and people are still badly wrong. Proves the effect is cognitive, not partisan. Actual is cited as 10-12%." },
+
+    { "id": "christian", "kind": "size", "direction": "under",
+      "ask": "Out of every 100 Americans, how many are Christian?",
+      "unit": "people", "perceived": 58, "actual": 70,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true,
+      "note": "Underestimate. Large groups get shrunk." },
+
+    { "id": "high-school", "kind": "size", "direction": "under",
+      "ask": "Out of every 100 Americans, how many finished high school?",
+      "unit": "people", "perceived": 65, "actual": 89,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true },
+
+    { "id": "married", "kind": "size", "direction": "accurate",
+      "ask": "Out of every 100 American adults, how many are married?",
+      "unit": "people", "perceived": 55, "actual": 51,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true,
+      "note": "Nearly right. Groups near 50% are estimated well. This is the item that proves the pattern is compression toward the middle rather than general innumeracy." },
+
+    { "id": "has-child", "kind": "size", "direction": "accurate",
+      "ask": "Out of every 100 American adults, how many have at least one child?",
+      "unit": "people", "perceived": 58, "actual": 57,
+      "estimator": "all Americans", "about": "US adults",
+      "source": "yougov2022", "year": 2022, "n": 1000, "verified": true,
+      "note": "Almost exact. Same reason as 'married'." },
+
+    { "id": "mic-immigration", "kind": "meta", "direction": "under",
+      "ask": "Out of every 100 Republicans, how many agree that properly controlled immigration can be good for America?",
+      "unit": "Republicans", "perceived": 52, "actual": 85,
+      "estimator": "Democrats", "about": "Republicans",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true,
+      "note": "Largest Democratic gap: 33 points. Independents guessed 65%." },
+
+    { "id": "mic-racism", "kind": "meta", "direction": "under",
+      "ask": "Out of every 100 Republicans, how many agree that racism still exists in America?",
+      "unit": "Republicans", "perceived": 51, "actual": 79,
+      "estimator": "Democrats", "about": "Republicans",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true,
+      "note": "Gap 28. Independents 56%." },
+
+    { "id": "mic-muslims", "kind": "meta", "direction": "under",
+      "ask": "Out of every 100 Republicans, how many agree that many Muslims are good Americans?",
+      "unit": "Republicans", "perceived": 41, "actual": 70,
+      "estimator": "Democrats", "about": "Republicans",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true,
+      "note": "Gap 29. Independents 47%." },
+
+    { "id": "mic-sexism", "kind": "meta", "direction": "under",
+      "ask": "Out of every 100 Republicans, how many agree that sexism still exists in America?",
+      "unit": "Republicans", "perceived": 47, "actual": 66,
+      "estimator": "Democrats", "about": "Republicans",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true },
+
+    { "id": "mic-guns", "kind": "meta", "direction": "under",
+      "ask": "Out of every 100 Republicans, how many agree the government should do more to keep guns from bad people?",
+      "unit": "Republicans", "perceived": 47, "actual": 65,
+      "estimator": "Democrats", "about": "Republicans",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true },
+
+    { "id": "mic-trump-flawed", "kind": "meta", "direction": "accurate",
+      "ask": "Out of every 100 Republicans, how many agree that Donald Trump is a flawed person?",
+      "unit": "Republicans", "perceived": 47, "actual": 48,
+      "estimator": "Democrats", "about": "Republicans",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true,
+      "note": "Gap of -1. Democrats nailed this one. Good palate cleanser — the gap is not universal." },
+
+    { "id": "mic-climate", "kind": "meta", "direction": "accurate",
+      "ask": "Out of every 100 Republicans, how many agree people are right to be concerned about climate change?",
+      "unit": "Republicans", "perceived": 44, "actual": 46,
+      "estimator": "Democrats", "about": "Republicans",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true,
+      "note": "Gap of -2. Also accurate." },
+
+    { "id": "mic-police", "kind": "meta", "direction": "under",
+      "ask": "Out of every 100 Democrats, how many DISAGREE that most police are bad people?",
+      "unit": "Democrats", "perceived": 48, "actual": 85,
+      "estimator": "Republicans", "about": "Democrats",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true,
+      "note": "Largest gap in the whole study: 37 points. Independents 54%." },
+
+    { "id": "mic-proud", "kind": "meta", "direction": "under",
+      "ask": "Out of every 100 Democrats, how many are proud to be American while acknowledging the country's flaws?",
+      "unit": "Democrats", "perceived": 54, "actual": 82,
+      "estimator": "Republicans", "about": "Democrats",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true },
+
+    { "id": "mic-false-accusations", "kind": "meta", "direction": "under",
+      "ask": "Out of every 100 Democrats, how many agree it is important that men are protected from false accusations of sexual assault?",
+      "unit": "Democrats", "perceived": 45, "actual": 74,
+      "estimator": "Republicans", "about": "Democrats",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true },
+
+    { "id": "mic-open-borders", "kind": "meta", "direction": "under",
+      "ask": "Out of every 100 Democrats, how many DISAGREE that the US should have completely open borders?",
+      "unit": "Democrats", "perceived": 38, "actual": 71,
+      "estimator": "Republicans", "about": "Democrats",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true,
+      "note": "Gap 33. Pairs with mic-immigration: each side thinks the other is far more extreme on immigration than it is." },
+
+    { "id": "mic-firearms", "kind": "meta", "direction": "under",
+      "ask": "Out of every 100 Democrats, how many agree that law-abiding citizens should have the right to bear firearms?",
+      "unit": "Democrats", "perceived": 44, "actual": 68,
+      "estimator": "Republicans", "about": "Democrats",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true },
+
+    { "id": "mic-socialist", "kind": "meta", "direction": "under",
+      "ask": "Out of every 100 Democrats, how many DISAGREE that America should be a socialist country?",
+      "unit": "Democrats", "perceived": 37, "actual": 62,
+      "estimator": "Republicans", "about": "Democrats",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true },
+
+    { "id": "mic-ice", "kind": "meta", "direction": "under",
+      "ask": "Out of every 100 Democrats, how many DISAGREE that the US should abolish ICE?",
+      "unit": "Democrats", "perceived": 40, "actual": 53,
+      "estimator": "Republicans", "about": "Democrats",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true,
+      "note": "Smallest gap in Table 2: 13 points." },
+
+    { "id": "mic-extreme-r", "kind": "meta", "direction": "over",
+      "ask": "Out of every 100 Republicans, how many hold views most would call extreme?",
+      "unit": "Republicans", "perceived": 53, "actual": 34,
+      "estimator": "Democrats", "about": "Republicans",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true },
+
+    { "id": "mic-extreme-d", "kind": "meta", "direction": "over",
+      "ask": "Out of every 100 Democrats, how many hold views most would call extreme?",
+      "unit": "Democrats", "perceived": 56, "actual": 29,
+      "estimator": "Republicans", "about": "Democrats",
+      "source": "moreincommon2019", "year": 2018, "n": 2100, "verified": true,
+      "note": "Republicans imagine nearly twice as many extreme Democrats as exist." },
+
+    { "id": "as-dem-black", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Democrats, how many are Black?",
+      "unit": "Democrats", "perceived": 41.9, "actual": 23.9,
+      "estimator": "all Americans", "about": "Democrats",
+      "source": "ahlersood2018", "year": 2015, "n": 1000, "verified": true },
+
+    { "id": "as-dem-union", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Democrats, how many belong to a labor union?",
+      "unit": "Democrats", "perceived": 39.3, "actual": 10.5,
+      "estimator": "all Americans", "about": "Democrats",
+      "source": "ahlersood2018", "year": 2015, "n": 1000, "verified": true },
+
+    { "id": "as-dem-lgb", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Democrats, how many are gay, lesbian or bisexual?",
+      "unit": "Democrats", "perceived": 31.7, "actual": 6.3,
+      "estimator": "all Americans", "about": "Democrats",
+      "source": "ahlersood2018", "year": 2015, "n": 1000, "verified": true },
+
+    { "id": "as-dem-atheist", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Democrats, how many are atheist or agnostic?",
+      "unit": "Democrats", "perceived": 28.7, "actual": 8.7,
+      "estimator": "all Americans", "about": "Democrats",
+      "source": "ahlersood2018", "year": 2015, "n": 1000, "verified": true },
+
+    { "id": "as-rep-250k", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Republicans, how many earn more than $250,000 a year?",
+      "unit": "Republicans", "perceived": 38.2, "actual": 2.2,
+      "estimator": "all Americans", "about": "Republicans",
+      "source": "ahlersood2018", "year": 2015, "n": 1000, "verified": true,
+      "note": "Largest ratio in the set: 17x." },
+
+    { "id": "as-rep-evangelical", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Republicans, how many are evangelical?",
+      "unit": "Republicans", "perceived": 41.6, "actual": 34.3,
+      "estimator": "all Americans", "about": "Republicans",
+      "source": "ahlersood2018", "year": 2015, "n": 1000, "verified": true },
+
+    { "id": "as-rep-southern", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Republicans, how many live in the South?",
+      "unit": "Republicans", "perceived": 40.4, "actual": 35.7,
+      "estimator": "all Americans", "about": "Republicans",
+      "source": "ahlersood2018", "year": 2015, "n": 1000, "verified": true },
+
+    { "id": "as-rep-65plus", "kind": "size", "direction": "over",
+      "ask": "Out of every 100 Republicans, how many are 65 or older?",
+      "unit": "Republicans", "perceived": 39.1, "actual": 21.3,
+      "estimator": "all Americans", "about": "Republicans",
+      "source": "ahlersood2018", "year": 2015, "n": 1000, "verified": true }
+  ],
+
+  "queued": {
+    "note": "Real leads, numbers NOT yet verified. Do not publish any of these until the primary source is read.",
+    "mines": [
+      "Ipsos 'Perils of Perception' — runs annually across ~30 countries since 2014. Dozens of items per wave on immigration, obesity, teen pregnancy, murder rate, vaccination, wealth distribution. Probably the single richest source of remaining items.",
+      "Gapminder / Factfulness 13-question test — global poverty, girls' schooling, life expectancy, vaccination, natural disasters. 2017, ~12,000 respondents in 14 countries, average score 2 of 12, and about 80% did worse than random. The 'chimpanzee benchmark' is here.",
+      "Gallup crime series — majorities say crime rose in almost every year including long stretches when it fell. ~80% said crime rose in 2023, when it fell. Violent victimisation went 80 per 1,000 (1994) to 19 per 1,000 (2010).",
+      "Bobby Duffy, 'The Perils of Perception' (2018) — book-length compilation of the Ipsos waves, good index of items.",
+      "Ahler & Sood follow-ups and the MTurk replications in the same paper (n = 382 / 1,036 / 821) — gives per-party breakdowns of the same eight items.",
+      "More in Common 2021-22 'history wars' application of the same method.",
+      "Causes-of-death misperception (Our World in Data has the media-coverage-vs-actual-deaths comparison: terrorism and homicide massively over-covered, heart disease and cancer under-covered).",
+      "Ingroup-norm misperception, PNAS Nexus 2024 — people also overestimate how much their OWN side dislikes the other. This is the 'undercounting your own side' direction and it is the one nobody builds."
+    ],
+    "target": "100 items. 38 verified so far."
+  }
+}
