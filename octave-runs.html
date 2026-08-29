@@ -138,6 +138,10 @@ const MAJOR=[0,2,4,5,7,9,11];
 const LETTERS=['C','D','E','F','G','A','B'], LPC={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
 
 let key='C', startStr=5, RUNS=[], active=0, soundOn=true;
+// Selection follows the MODE, not the list position. The runs are listed by
+// fret, so the same index means a different mode on a different open string —
+// index 3 is Aeolian from low E but Dorian from the A string.
+let activeDegree=3;
 
 function scaleOf(root){
   const acc=root.slice(1);
@@ -207,7 +211,8 @@ function buildRuns(){
                  gb:used.has(2)&&used.has(1), ...r});
     }
   }
-  active=Math.min(active,RUNS.length-1);
+  const keep=RUNS.findIndex(r=>r.degree===activeDegree);
+  active=keep>=0?keep:Math.min(active,RUNS.length-1);
   drawRuns(); show(active);
 }
 
@@ -261,6 +266,7 @@ function cellEl(s,f){return document.querySelector(`.cell[data-s="${s}"][data-f=
 
 function show(i){
   active=i;
+  if(RUNS[i]) activeDegree=RUNS[i].degree;
   document.querySelectorAll('.run').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));
   document.querySelectorAll('.cell').forEach(c=>{
     c.classList.remove('inrun','root','now');
