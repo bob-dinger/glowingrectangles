@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Parties in Our Heads - Glowing Rectangles</title>
+<style>
+  :root{
+    --bg:#14141d;--panel:#1d1d29;--line:#2b2b3a;--ink:#e9e9f2;--dim:#8a8a9f;--faint:#5a5a70;
+    --true:#2dd4bf;      /* reality */
+    --perc:#f0a92e;      /* what people think */
+    --you:#ffffff;       /* your guess */
+    --dem:#5b8def;--rep:#e05a5a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+  a{color:#8ab4f8}
+  .wrap{max-width:1080px;margin:0 auto;padding:24px 22px 80px}
+  .back{font-size:13px;color:var(--dim);text-decoration:none}
+  h1{font-size:30px;font-weight:600;margin:10px 0 6px;letter-spacing:-.01em}
+  .lede{color:var(--dim);font-size:14px;margin:0 0 6px;max-width:74ch;line-height:1.6}
+  .lede b{color:var(--ink)}
+  .src{font-size:12px;color:var(--faint);margin:0 0 22px}
+
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+  .bar span.lbl{font-size:12px;color:var(--dim);margin-right:2px}
+  button{font-family:inherit;background:#252534;color:var(--ink);border:1px solid var(--line);
+    border-radius:6px;padding:7px 12px;font-size:13px;cursor:pointer}
+  button:hover{border-color:#5a5a78}
+  button.on{background:#3b6ef6;border-color:#3b6ef6;color:#fff}
+  button.go{background:var(--perc);border-color:var(--perc);color:#1a1206;font-weight:600}
+  button:disabled{opacity:.4;cursor:default}
+
+  .chart{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+         padding:20px 22px 12px}
+  .axis{position:relative;height:20px;margin-left:210px;margin-bottom:6px}
+  .axis i{position:absolute;top:0;font-style:normal;font-size:10.5px;color:var(--faint);
+          transform:translateX(-50%);font-variant-numeric:tabular-nums}
+  .row{display:flex;align-items:center;gap:0;height:44px}
+  .row .name{width:210px;flex:none;font-size:13px;padding-right:14px;text-align:right;
+             line-height:1.25}
+  .row .name em{font-style:normal;display:inline-block;width:7px;height:7px;border-radius:50%;
+                margin-right:6px;vertical-align:middle}
+  .row .name em.d{background:var(--dem)} .row .name em.r{background:var(--rep)}
+  .track{position:relative;flex:1;height:44px;cursor:default}
+  .track::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;
+                 background:var(--line)}
+  .gridline{position:absolute;top:4px;bottom:4px;width:1px;background:#24243250}
+  .conn{position:absolute;top:50%;height:3px;border-radius:2px;transform:translateY(-50%);
+        background:linear-gradient(90deg,var(--true),var(--perc));opacity:.5}
+  .pt{position:absolute;top:50%;width:15px;height:15px;border-radius:50%;
+      transform:translate(-50%,-50%);transition:left .5s cubic-bezier(.4,0,.2,1)}
+  .pt.t{background:var(--true)}
+  .pt.p{background:var(--perc)}
+  .pt.y{background:transparent;border:2.5px solid var(--you);width:17px;height:17px}
+  .val{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:10px;font-weight:700;
+       color:#0e0e14;pointer-events:none;font-variant-numeric:tabular-nums;line-height:15px}
+  .plot{position:relative}
+  .meanline{position:absolute;top:18px;bottom:0;width:2px;background:var(--perc);opacity:0;
+            transition:opacity .4s;pointer-events:none;z-index:1}
+  .meanline.show{opacity:.32}
+  .meanline b{position:absolute;top:-16px;left:7px;font-size:10.5px;color:var(--perc);
+              white-space:nowrap;font-weight:600;opacity:.85}
+
+  input[type=range]{position:absolute;top:50%;left:0;width:100%;transform:translateY(-50%);
+    -webkit-appearance:none;appearance:none;background:transparent;margin:0;height:26px;cursor:grab}
+  input[type=range]:active{cursor:grabbing}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;
+    border-radius:50%;background:transparent;border:2.5px solid var(--you);cursor:grab}
+  input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
+    background:transparent;border:2.5px solid var(--you);cursor:grab}
+  input[type=range]::-webkit-slider-runnable-track{height:26px;background:transparent}
+
+  .key{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px;padding-top:14px;
+       border-top:1px solid var(--line);font-size:12px;color:var(--dim)}
+  .key div{display:flex;align-items:center;gap:7px}
+  .key i{width:13px;height:13px;border-radius:50%;display:inline-block}
+  .key i.t{background:var(--true)} .key i.p{background:var(--perc)}
+  .key i.y{border:2.5px solid var(--you)}
+
+  .findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;
+            margin-top:20px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .stat b{display:block;font-size:26px;font-weight:600;letter-spacing:-.02em;
+          font-variant-numeric:tabular-nums;margin-bottom:3px}
+  .stat span{font-size:12px;color:var(--dim);line-height:1.45;display:block}
+  .stat.a b{color:var(--perc)} .stat.b b{color:var(--true)}
+
+  .note{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+        padding:16px 20px 18px;margin-top:20px}
+  .note h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+           margin:0 0 10px;font-weight:600}
+  .note p{font-size:13.5px;color:var(--dim);line-height:1.65;margin:0 0 10px;max-width:82ch}
+  .note p:last-child{margin-bottom:0}
+  .note b{color:var(--ink)}
+  .youline{font-size:13.5px;color:var(--ink);margin-top:14px;display:none}
+  .youline.show{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Back</a>
+  <h1>The Parties in Our Heads</h1>
+  <p class="lede">Americans were asked what share of each party belongs to groups associated
+    with it. <b>Reality ranges from 2% to 36%. The guesses barely move.</b> People aren't
+    estimating a quantity — they're reporting how central the group feels to the brand.</p>
+  <p class="src">Ahler &amp; Sood, <i>The Parties in Our Heads</i>, Journal of Politics 80(3),
+    2018. YouGov, March 2015, n&nbsp;=&nbsp;1,000. <b>DATA</b> — measured, not modelled.</p>
+
+  <div class="bar">
+    <span class="lbl">Sort</span>
+    <button data-sort="true" class="on">By reality</button>
+    <button data-sort="gap">By size of error</button>
+    <button data-sort="party">By party</button>
+    <span style="flex:1"></span>
+    <button id="guess" class="go">Guess first</button>
+    <button id="reveal" disabled>Reveal</button>
+  </div>
+
+  <div class="chart">
+    <div class="axis" id="axis"></div>
+    <div class="plot">
+      <div class="meanline" id="meanline"><b>guesses cluster here</b></div>
+      <div id="rows"></div>
+    </div>
+    <div class="key">
+      <div><i class="t"></i> what's true</div>
+      <div><i class="p"></i> what people guessed</div>
+      <div><i class="y"></i> your guess</div>
+    </div>
+  </div>
+
+  <div class="findings" id="stats"></div>
+
+  <div class="note">
+    <h2>What the shape shows</h2>
+    <p>Sorted by reality, the true values climb steadily from 2% to 36% while the guesses sit in a
+      band around 38% the whole way. <b>Perception is nearly flat; only reality varies.</b>
+      Measured as spread, the true figures vary <b>2.7 times</b> as much as the perceptions of
+      them.</p>
+    <p>That reframes the finding. It isn't that people overestimate by some amount — it's that
+      the answer barely depends on the question. Asked how many Republicans earn over $250,000
+      (really 2.2%) and how many are Southern (really 35.7%), people say <b>38%</b> and
+      <b>40%</b>. Sixteen-fold difference in fact, two points in belief.</p>
+    <p>The authors tested the obvious alternative explanations — expressive responding, bad
+      arithmetic, ignorance of base rates — and rejected all three. And the people who follow
+      political news <b>most</b> closely held the most distorted beliefs on seven of the eight
+      groups. The single exception was Republicans earning over $250k, where media coverage of
+      "the 1%" happened to supply the correction.</p>
+    <p>The title is Walter Lippmann's. <i>Public Opinion</i> (1922) called them
+      "the pictures in our heads."</p>
+    <p class="youline" id="youline"></p>
+  </div>
+</div>
+
+<script>
+const MAX=50;                                   // axis top, %
+const DATA=[
+  {g:'Black',            party:'d', label:'Democrats who are Black',     perc:41.9, tru:23.9},
+  {g:'Union members',    party:'d', label:'Democrats in a union',        perc:39.3, tru:10.5},
+  {g:'Gay/lesbian/bi',   party:'d', label:'Democrats who are LGB',       perc:31.7, tru:6.3},
+  {g:'Atheist/agnostic', party:'d', label:'Democrats atheist or agnostic',perc:28.7, tru:8.7},
+  {g:'Earn over $250k',  party:'r', label:'Republicans earning >$250k',  perc:38.2, tru:2.2},
+  {g:'Evangelical',      party:'r', label:'Republicans evangelical',     perc:41.6, tru:34.3},
+  {g:'Southern',         party:'r', label:'Republicans Southern',        perc:40.4, tru:35.7},
+  {g:'Age 65+',          party:'r', label:'Republicans 65 or older',     perc:39.1, tru:21.3},
+];
+DATA.forEach(d=>{d.gap=d.perc-d.tru; d.you=null});
+
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const sd=a=>{const m=mean(a);return Math.sqrt(mean(a.map(x=>(x-m)**2)))};
+const MP=mean(DATA.map(d=>d.perc)), MT=mean(DATA.map(d=>d.tru));
+const SP=sd(DATA.map(d=>d.perc)), ST=sd(DATA.map(d=>d.tru));
+const pct=v=>v/MAX*100;
+
+let sortKey='true', mode='show';   // 'show' | 'guessing' | 'revealed'
+
+function order(){
+  const a=DATA.slice();
+  if(sortKey==='true')  a.sort((x,y)=>x.tru-y.tru);
+  if(sortKey==='gap')   a.sort((x,y)=>y.gap-x.gap);
+  if(sortKey==='party') a.sort((x,y)=>x.party===y.party ? y.gap-x.gap : (x.party<y.party?-1:1));
+  return a;
+}
+
+function drawAxis(){
+  const ax=document.getElementById('axis'); let h='';
+  for(let v=0;v<=MAX;v+=10) h+=`<i style="left:${pct(v)}%">${v}%</i>`;
+  ax.innerHTML=h;
+}
+
+function draw(){
+  const rows=document.getElementById('rows');
+  const showTruth = mode!=='guessing';
+  rows.innerHTML=order().map((d,i)=>{
+    const lo=Math.min(d.tru,d.perc), hi=Math.max(d.tru,d.perc);
+    let grid=''; for(let v=10;v<=MAX;v+=10) grid+=`<div class="gridline" style="left:${pct(v)}%"></div>`;
+    const truth = showTruth ? `
+        <div class="conn" style="left:${pct(lo)}%;width:${pct(hi-lo)}%"></div>
+        <div class="pt t" style="left:${pct(d.tru)}%"></div>
+        <div class="val" style="left:${pct(d.tru)}%">${d.tru.toFixed(0)}</div>
+        <div class="pt p" style="left:${pct(d.perc)}%"></div>
+        <div class="val" style="left:${pct(d.perc)}%">${d.perc.toFixed(0)}</div>` : '';
+    const you = mode==='guessing'
+      ? `<input type="range" min="0" max="${MAX}" step="1" value="${d.you??25}" data-g="${d.g}">`
+      : (d.you!=null ? `<div class="pt y" style="left:${pct(d.you)}%"></div>` : '');
+    return `<div class="row">
+      <div class="name"><em class="${d.party}"></em>${d.label}</div>
+      <div class="track">${grid}${truth}${you}</div>
+    </div>`;
+  }).join('');
+  rows.querySelectorAll('input[type=range]').forEach(r=>{
+    r.oninput=()=>{ DATA.find(d=>d.g===r.dataset.g).you=+r.value; };
+  });
+  const ml=document.getElementById('meanline');
+  ml.style.left=`calc(210px + (100% - 210px) * ${(MP/MAX).toFixed(4)})`;
+  ml.classList.toggle('show', showTruth && sortKey==='true');
+  drawStats();
+}
+
+function drawStats(){
+  const rows=[
+    ['a', MP.toFixed(1)+'%', 'average guess across all eight groups'],
+    ['b', MT.toFixed(1)+'%', 'average reality across the same eight'],
+    ['a', '342%',            'average overestimate reported by the authors'],
+    ['b', (ST/SP).toFixed(1)+'×', 'reality varies this much more than perception does'],
+  ];
+  document.getElementById('stats').innerHTML=rows.map(([c,b,s])=>
+    `<div class="stat ${c}"><b>${b}</b><span>${s}</span></div>`).join('');
+}
+
+document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{
+  sortKey=b.dataset.sort;
+  document.querySelectorAll('[data-sort]').forEach(x=>x.classList.toggle('on',x===b));
+  draw();
+});
+
+document.getElementById('guess').onclick=()=>{
+  mode='guessing'; DATA.forEach(d=>d.you=null);
+  document.getElementById('reveal').disabled=false;
+  document.getElementById('youline').classList.remove('show');
+  draw();
+};
+
+document.getElementById('reveal').onclick=()=>{
+  if(mode!=='guessing') return;
+  DATA.forEach(d=>{ if(d.you==null) d.you=25; });
+  mode='revealed';
+  document.getElementById('reveal').disabled=true;
+  const yourErr=mean(DATA.map(d=>Math.abs(d.you-d.tru)));
+  const theirErr=mean(DATA.map(d=>Math.abs(d.perc-d.tru)));
+  const yourSd=sd(DATA.map(d=>d.you));
+  const el=document.getElementById('youline');
+  el.innerHTML=`Your guesses were off by <b>${yourErr.toFixed(1)} points</b> on average; `
+    +`the survey's respondents were off by <b>${theirErr.toFixed(1)}</b>. `
+    +`Your answers had a spread of <b>${yourSd.toFixed(1)}</b> against reality's `
+    +`<b>${ST.toFixed(1)}</b> — `
+    +(yourSd < ST*0.8
+        ? `flatter than reality, which is the same pattern the study found.`
+        : `about as varied as reality, which is better than the survey average.`);
+  el.classList.add('show');
+  draw();
+};
+
+drawAxis(); draw();
+window.__pih={DATA,MP,MT,SP,ST,draw,set:(k)=>{sortKey=k;draw()}};
+</script>
+</body>
+</html>
