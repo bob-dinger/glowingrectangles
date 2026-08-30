@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octaves - Glowing Rectangles</title>
+<style>
+  :root{--bg:#15151f;--panel:#1e1e2b;--line:#2c2c3d;--ink:#e8e8f0;--dim:#8b8ba0;--faint:#5c5c72;
+        --o2:#ef4444;--o3:#f0a92e;--o4:#2dd4bf;--o5:#5b9cf8;--o6:#a855f7}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+  a{color:#8ab4f8}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 20px 70px}
+  .back{font-size:13px;color:var(--dim);text-decoration:none}
+  h1{font-size:28px;font-weight:600;margin:10px 0 6px}
+  .lede{color:var(--dim);font-size:13.5px;margin:0 0 20px;max-width:76ch;line-height:1.55}
+  .lede b{color:var(--ink)}
+
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  .bar .lbl{font-size:12px;color:var(--dim);margin-right:2px}
+  button{font-family:inherit;background:#252534;color:var(--ink);border:1px solid var(--line);
+    border-radius:6px;padding:7px 11px;font-size:13px;cursor:pointer}
+  button:hover{border-color:#5a5a78}
+  button.on{background:#3b6ef6;border-color:#3b6ef6;color:#fff}
+  .notes{display:inline-flex;gap:4px;flex-wrap:wrap}
+  .notes button{min-width:38px;padding:7px 8px;font-variant-numeric:tabular-nums}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{border:0;border-radius:0;border-left:1px solid var(--line)}
+  .seg button:first-child{border-left:0}
+
+  .boardwrap{position:relative;background:#241c16;border:1px solid #3a2d22;border-radius:10px;
+             padding:12px 10px 8px;overflow-x:auto}
+  .grid{display:grid;gap:0;min-width:900px;position:relative;z-index:2}
+  svg.links{position:absolute;left:0;top:0;pointer-events:none;z-index:1}
+  .fnum{font-size:10px;color:var(--faint);text-align:center;padding-bottom:5px;
+        font-variant-numeric:tabular-nums}
+  .slabel{font-size:11px;color:var(--dim);display:flex;align-items:center;justify-content:center;
+          padding-right:4px}
+  .cell{position:relative;height:40px;display:flex;align-items:center;justify-content:center;
+        border-left:1px solid #4a3a2c}
+  .cell.nut{border-left:3px solid #cbbba6}
+  .cell::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:#6b5844;opacity:.7}
+  .dot{position:relative;width:28px;height:28px;border-radius:50%;display:flex;flex-direction:column;
+       align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#12121a;
+       opacity:0;transition:opacity .15s}
+  .dot b{font-size:11px;line-height:1}
+  .dot i{font-style:normal;font-size:8px;line-height:1;opacity:.8}
+  .cell.on .dot{opacity:1}
+  .cell.faint .dot{opacity:.16}
+  .marker{position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;
+          border-radius:50%;background:#6b5844}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--dim)}
+  .legend div{display:flex;align-items:center;gap:6px}
+  .legend i{width:13px;height:13px;border-radius:50%;display:inline-block}
+
+  .shapes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:20px}
+  .shape{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .shape h3{margin:0 0 4px;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+  .shape p{margin:0 0 9px;font-size:12px;color:var(--dim);line-height:1.5}
+  .shape .pairs{font-size:11.5px;color:var(--faint);font-family:ui-monospace,Menlo,monospace}
+  .shape.seam{border-color:#6b5320}
+  .shape.seam h3{color:#f0b429}
+  .note{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+        padding:15px 18px 17px;margin-top:18px}
+  .note h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+           margin:0 0 9px;font-weight:600}
+  .note p{font-size:13px;color:var(--dim);line-height:1.65;margin:0 0 9px;max-width:82ch}
+  .note p:last-child{margin:0}
+  .note b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Back</a>
+  <h1>Octaves</h1>
+  <p class="lede">Every place one note lives on the neck, and the shapes that connect them.
+    The fretboard spans <b>3.4 octaves</b> — low E open is E2, the high E string at fret 17 is A5.</p>
+
+  <div class="bar">
+    <span class="lbl">Note</span>
+    <span class="notes" id="notes"></span>
+    <span style="flex:1"></span>
+    <div class="seg">
+      <button data-mode="one" class="on">One note</button>
+      <button data-mode="all">All notes</button>
+    </div>
+    <button id="links" class="on">Shapes</button>
+  </div>
+
+  <div class="boardwrap">
+    <svg class="links" id="svg"></svg>
+    <div class="grid" id="grid"></div>
+  </div>
+  <div class="legend" id="legend"></div>
+
+  <div class="shapes" id="shapes"></div>
+
+  <div class="note">
+    <h2>Why there are only four</h2>
+    <p>An octave is twelve semitones. Every string pair is a perfect fourth — five semitones —
+      <b>except G to B, which is a major third</b>. So jumping two strings normally covers ten
+      semitones, leaving two frets to make up. Cross the G–B seam and it only covers nine, so you
+      need three.</p>
+    <p>Same story going three strings: normally fifteen semitones, so you come <b>back</b> three
+      frets. Cross the seam and it's fourteen, so you only come back two.</p>
+    <p>Two of the four shapes are the plain ones and two are the seam. The seam is the reason
+      guitar has any irregularity at all — and the reason these have to be memorised in pairs
+      rather than learned once.</p>
+  </div>
+</div>
+
+<script>
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const STR=['E','B','G','D','A','E'];
+const OPEN=[64,59,55,50,45,40];
+const FRETS=18, MARKERS=[3,5,7,9,12,15,17];
+const OCT={2:'--o2',3:'--o3',4:'--o4',5:'--o5',6:'--o6'};
+let pc=0, mode='one', showLinks=true;
+
+const midi=(s,f)=>OPEN[s]+f;
+const octOf=m=>Math.floor(m/12)-1;
+const colOf=m=>`var(${OCT[octOf(m)]||'--o6'})`;
+
+document.getElementById('notes').innerHTML=
+  NOTES.map((n,i)=>`<button data-pc="${i}"${i===0?' class="on"':''}>${n}</button>`).join('');
+
+function build(){
+  const g=document.getElementById('grid');
+  g.style.gridTemplateColumns=`26px repeat(${FRETS},1fr)`;
+  let h='<div></div>';
+  for(let f=0;f<FRETS;f++) h+=`<div class="fnum">${f}</div>`;
+  for(let s=0;s<6;s++){
+    h+=`<div class="slabel">${STR[s]}</div>`;
+    for(let f=0;f<FRETS;f++){
+      const m=midi(s,f);
+      h+=`<div class="cell${f===0?' nut':''}" data-s="${s}" data-f="${f}" data-m="${m}">`
+       + `<div class="dot" style="background:${colOf(m)}">`
+       + `<b>${NOTES[m%12]}</b><i>${octOf(m)}</i></div>`
+       + (s===5&&MARKERS.includes(f)?'<div class="marker"></div>':'')+`</div>`;
+    }
+  }
+  g.innerHTML=h;
+  draw();
+}
+
+function draw(){
+  document.querySelectorAll('.cell').forEach(c=>{
+    const m=+c.dataset.m;
+    c.classList.toggle('on', mode==='all' || m%12===pc);
+    c.classList.toggle('faint', mode==='one' && m%12!==pc);
+  });
+  drawLinks(); drawLegend(); drawShapes();
+}
+
+function drawLinks(){
+  const svg=document.getElementById('svg');
+  const wrap=document.querySelector('.boardwrap');
+  const grid=document.getElementById('grid');
+  svg.setAttribute('width',grid.scrollWidth); svg.setAttribute('height',grid.scrollHeight);
+  svg.style.left=getComputedStyle(wrap).paddingLeft;
+  svg.style.top=getComputedStyle(wrap).paddingTop;
+  if(!showLinks || mode!=='one'){ svg.innerHTML=''; return; }
+  const box=grid.getBoundingClientRect();
+  const cen=el=>{const r=el.getBoundingClientRect();
+                 return [r.left-box.left+r.width/2, r.top-box.top+r.height/2];};
+  let out='';
+  document.querySelectorAll('.cell.on').forEach(a=>{
+    const s=+a.dataset.s, f=+a.dataset.f, m=+a.dataset.m;
+    for(const up of [2,3]){
+      const t=s-up; if(t<0) continue;
+      const nf=m+12-OPEN[t];
+      if(nf<0||nf>=FRETS) continue;
+      const b=document.querySelector(`.cell[data-s="${t}"][data-f="${nf}"]`);
+      if(!b) continue;
+      const [x1,y1]=cen(a),[x2,y2]=cen(b);
+      const seam=(s>=2&&t<=1);          // the jump crosses G-B
+      out+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${seam?'#f0b429':'#7c8db5'}"
+             stroke-width="2" stroke-linecap="round" opacity="${seam?.85:.55}"
+             ${seam?'stroke-dasharray="5 4"':''}/>`;
+    }
+  });
+  svg.innerHTML=out;
+}
+
+function drawLegend(){
+  const shown=[...document.querySelectorAll('.cell.on')].map(c=>octOf(+c.dataset.m));
+  const uniq=[...new Set(shown)].sort();
+  document.getElementById('legend').innerHTML=
+    uniq.map(o=>`<div><i style="background:var(${OCT[o]||'--o6'})"></i> octave ${o}</div>`).join('')
+    + (mode==='one'
+       ? `<div><span style="width:18px;height:2px;background:#7c8db5;display:inline-block"></span> octave jump</div>`
+        +`<div><span style="width:18px;height:2px;background:#f0b429;display:inline-block"></span> crosses the G–B seam</div>`
+       : '');
+}
+
+const SHAPES=[
+  {n:'2 strings up, +2 frets', pairs:'E→D, A→G', seam:false,
+   d:'The plain one. Two fourths make ten semitones, so you add two frets to reach twelve.'},
+  {n:'2 strings up, +3 frets', pairs:'D→B, G→E', seam:true,
+   d:'Same jump, but it crosses G–B. A fourth plus a third is only nine, so you need one more fret.'},
+  {n:'3 strings up, −3 frets', pairs:'E→G', seam:false,
+   d:'Three fourths overshoot to fifteen, so you come back three.'},
+  {n:'3 strings up, −2 frets', pairs:'A→B, D→E', seam:true,
+   d:'Crosses the seam, so it only reaches fourteen — come back two instead of three.'}
+];
+function drawShapes(){
+  document.getElementById('shapes').innerHTML=SHAPES.map(s=>
+    `<div class="shape${s.seam?' seam':''}">
+       <h3>${s.n}</h3><p>${s.d}</p><div class="pairs">${s.pairs}</div></div>`).join('');
+}
+
+document.getElementById('notes').onclick=e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  pc=+b.dataset.pc;
+  document.querySelectorAll('#notes button').forEach(x=>x.classList.toggle('on',x===b));
+  draw();
+};
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{
+  mode=b.dataset.mode;
+  document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('on',x===b));
+  draw();
+});
+document.getElementById('links').onclick=e=>{
+  showLinks=!showLinks; e.target.classList.toggle('on',showLinks); drawLinks();
+};
+addEventListener('resize',drawLinks);
+build();
+window.__oct={set:(p)=>{pc=p;draw()},get mode(){return mode},
+              lit:()=>document.querySelectorAll('.cell.on').length,
+              links:()=>document.querySelectorAll('#svg line').length};
+</script>
+</body>
+</html>
