@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How few</title><style>
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:#1a1a2e;color:#e0e0e0;
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
+  .wrap{height:100vh;display:flex;flex-direction:column;padding:14px 18px 10px}
+  h1{font-size:17px;margin:0 0 3px;font-weight:500;letter-spacing:.02em}
+  .meta{color:#6a6a8a;font-size:11.5px;line-height:1.45;margin-bottom:10px;max-width:760px}
+  .big{display:flex;align-items:center;gap:30px;margin:0 0 12px;padding:10px 0;
+    border-top:1px solid #2a2a4a;border-bottom:1px solid #2a2a4a}
+  .hero{display:flex;align-items:baseline;gap:12px}
+  .hero b{font-size:92px;line-height:.82;font-weight:700;color:#7da3e8;
+    letter-spacing:-.04em}
+  .hero span{font-size:12px;color:#8a8ab0;text-transform:uppercase;
+    letter-spacing:.11em;line-height:1.5}
+  .bs{display:flex;gap:26px}
+  .b{display:flex;flex-direction:column}
+  .b b{font-size:22px;font-weight:600;color:#fff;line-height:1}
+  .b span{font-size:10px;color:#6a6a8a;text-transform:uppercase;
+    letter-spacing:.1em;margin-top:3px}
+  .b.hi b{color:#7da3e8}
+  .cols{flex:1;display:flex;gap:26px;min-height:0}
+  .col{flex:1;display:flex;flex-direction:column;min-width:0}
+  .col.shapes{flex:1.45}
+  .col.shapes table{font-size:15px}
+  .col.shapes td{padding:5px 8px 5px 0}
+  .col.shapes td.n{width:34px;font-size:14px}
+  .col.shapes td.pat{width:210px}
+  .col.shapes td.ch{width:110px;font-size:13px}
+  .col.shapes .l{width:22px;height:22px;line-height:22px;font-size:13px;
+    margin-right:3px;border-radius:4px}
+  h2{font-size:11.5px;text-transform:uppercase;letter-spacing:.11em;color:#8a8ab0;
+    margin:0 0 6px;font-weight:600}
+  .sc{overflow-y:auto;min-height:0;flex:1}
+  table{width:100%;border-collapse:collapse;font-size:11.5px}
+  td{padding:3px 6px 3px 0;border-bottom:1px solid #23233c;vertical-align:middle}
+  td.n{color:#7a7a9a;width:26px;text-align:right;font-variant-numeric:tabular-nums}
+  td.pat{width:150px;white-space:nowrap}
+  td.dur{width:104px;font-family:ui-monospace,Menlo,monospace;color:#8a8ab0;
+    font-size:10px}
+  td.rbw{width:150px;padding-right:10px}
+  .rb{position:relative;height:15px;background:#22223c;border-radius:2px}
+  .rb u{position:absolute;top:0;bottom:0;width:1px;background:#2e2e4e}
+  .rb u.bar{background:#4a4a70;width:1px}
+  .rb i{position:absolute;top:2px;bottom:2px;border-radius:2px}
+  .rb i.s0{background:#5060a0} .rb i.s1{background:#2a6a52}
+  .rb i.s2{background:#8a5a2a}
+  .rb i.off{box-shadow:inset 0 0 0 1px #e0b060}
+  td.sng{color:#b8b8cc} td.sng i{color:#6a6a8a;font-style:normal}
+  td.ch{font-family:ui-monospace,Menlo,monospace;color:#8a8ab0;width:86px}
+  .l{display:inline-block;width:15px;height:15px;line-height:15px;text-align:center;
+    border-radius:3px;font-size:9.5px;font-weight:700;margin-right:2px}
+  .lA{background:#5060a0;color:#fff} .lB{background:#2a6a52;color:#fff}
+  .lC{background:#8a5a2a;color:#fff}
+  .note{font-size:10.5px;color:#6a6a8a;line-height:1.5;margin-top:8px;
+    border-top:1px solid #23233c;padding-top:7px}
+  .note b{color:#9a9ab8;font-weight:600}
+</style></head><body>
+<div class="wrap">
+  <h1>Three chords, eight bars</h1>
+  <p class="meta">How many ways can three chords fill eight measures? The
+    arithmetic says hundreds. Real songs use a dozen, and the distribution is
+    brutally top-heavy.</p>
+
+  <div class="big">
+    <div class="hero"><b>12</b><span>shapes<br>actually used</span></div>
+    <div class="bs">
+      <div class="b"><b>966</b><span>possible</span></div>
+      <div class="b"><b>1.2%</b><span>of the space</span></div>
+      <div class="b"><b>24</b><span>rhythms</span></div>
+      <div class="b hi"><b>94%</b><span>in nine of them</span></div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="col shapes">
+      <h2>Which shapes &mdash; 32 sections, one chord per bar</h2>
+      <div class="sc"><table><tr><td class="n">7</td><td class="pat"><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lB">B</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lB">B</span></td><td class="sng">Heaven Is A Place On Earth <i>Verse I</i></td><td class="ch">C-G-F</td></tr><tr><td class="n">5</td><td class="pat"><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lC">C</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lC">C</span></td><td class="sng">The Scientist <i>intro</i></td><td class="ch">Am-F-C</td></tr><tr><td class="n">4</td><td class="pat"><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lA">A</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lA">A</span></td><td class="sng">Louisiana Saturday Night <i>chorus</i></td><td class="ch">C-G-F</td></tr><tr><td class="n">4</td><td class="pat"><span class="l lA">A</span><span class="l lB">B</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lB">B</span></td><td class="sng">Wonderwall <i>chorus</i></td><td class="ch">F-Am-C</td></tr><tr><td class="n">2</td><td class="pat"><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lB">B</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lA">A</span></td><td class="sng">John Deere Green <i>Bridge</i></td><td class="ch">G-C-F</td></tr><tr><td class="n">2</td><td class="pat"><span class="l lA">A</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lA">A</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span></td><td class="sng">Friday Night Blues <i>Intro</i></td><td class="ch">C-Dm-G</td></tr><tr><td class="n">2</td><td class="pat"><span class="l lA">A</span><span class="l lB">B</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lC">C</span></td><td class="sng">Maggie May <i>chorus</i></td><td class="ch">Dm-G-C</td></tr><tr><td class="n">2</td><td class="pat"><span class="l lA">A</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lC">C</span><span class="l lA">A</span><span class="l lB">B</span></td><td class="sng">Pancho And Lefty_Ly_Z <i>Verse</i></td><td class="ch">C-G-F</td></tr><tr><td class="n">1</td><td class="pat"><span class="l lA">A</span><span class="l lB">B</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lB">B</span><span class="l lC">C</span></td><td class="sng">Speed Of Sound <i>Intro</i></td><td class="ch">G-Dm-C</td></tr><tr><td class="n">1</td><td class="pat"><span class="l lA">A</span><span class="l lB">B</span><span class="l lA">A</span><span class="l lC">C</span><span class="l lA">A</span><span class="l lC">C</span><span class="l lA">A</span><span class="l lC">C</span></td><td class="sng">Come As You Are <i>verse</i></td><td class="ch">Em-D-Dm</td></tr><tr><td class="n">1</td><td class="pat"><span class="l lA">A</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lB">B</span><span class="l lA">A</span><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span></td><td class="sng">Losing My Religion <i>intro</i></td><td class="ch">F-Am-Em</td></tr><tr><td class="n">1</td><td class="pat"><span class="l lA">A</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lC">C</span><span class="l lB">B</span><span class="l lB">B</span><span class="l lC">C</span><span class="l lA">A</span></td><td class="sng">Losing My Religion <i>bridge</i></td><td class="ch">G-F-Am</td></tr></table></div>
+      <p class="note"><b>Eight bars is two four-bar halves.</b> Five of these
+        are an exact 4-bar cell played twice. Most of the rest are two halves
+        where the second changes only its ending.</p>
+    </div>
+    <div class="col">
+      <h2>Which rhythms &mdash; 539 two-bar cells in 4/4</h2>
+      <h2 style="color:#5a8a72;margin-top:2px">on the grid &mdash; 459
+        cells, and only 5 patterns</h2>
+      <div class="sc" style="flex:0 0 auto"><table><tr><td class="n">257</td><td class="rbw"><div class="rb"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:50.0000%"></i><i class="s1 " style="left:50.0000%;width:50.0000%"></i></div></td><td class="dur">4-4</td><td class="sng">Louisiana Saturday Night <i>chorus</i></td></tr><tr><td class="n">97</td><td class="rbw"><div class="rb"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:25.0000%"></i><i class="s1 " style="left:25.0000%;width:25.0000%"></i><i class="s2 " style="left:50.0000%;width:25.0000%"></i><i class="s0 " style="left:75.0000%;width:25.0000%"></i></div></td><td class="dur">2-2-2-2</td><td class="sng">Heaven Is A Place On Earth <i>Intro/Chorus</i></td></tr><tr><td class="n">49</td><td class="rbw"><div class="rb"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:50.0000%"></i><i class="s1 " style="left:50.0000%;width:25.0000%"></i><i class="s2 " style="left:75.0000%;width:25.0000%"></i></div></td><td class="dur">4-2-2</td><td class="sng">I Want It That Way <i>Section</i></td></tr><tr><td class="n">36</td><td class="rbw"><div class="rb"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:25.0000%"></i><i class="s1 " style="left:25.0000%;width:25.0000%"></i><i class="s2 " style="left:50.0000%;width:50.0000%"></i></div></td><td class="dur">2-2-4</td><td class="sng">More Than A Feeling <i>pre-chorus</i></td></tr><tr><td class="n">20</td><td class="rbw"><div class="rb"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:100.0000%"></i></div></td><td class="dur">8</td><td class="sng">No Rain <i>Verse</i></td></tr></table></div>
+      <h2 style="color:#a07a4a;margin-top:9px">pushed &mdash; 80 cells,
+        changes landing early</h2>
+      <div class="sc"><table><tr><td class="n">16</td><td class="rbw"><div class="rb p"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:43.7500%"></i><i class="s1 off" style="left:43.7500%;width:56.2500%"></i></div></td><td class="dur">3.5-4.5</td><td class="sng">Mr Jones <i>intro</i></td></tr><tr><td class="n">12</td><td class="rbw"><div class="rb p"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:18.7500%"></i><i class="s1 off" style="left:18.7500%;width:31.2500%"></i><i class="s2 " style="left:50.0000%;width:18.7500%"></i><i class="s0 off" style="left:68.7500%;width:31.2500%"></i></div></td><td class="dur">1.5-2.5-1.5-2.5</td><td class="sng">More Than A Feeling <i>Intro</i></td></tr><tr><td class="n">11</td><td class="rbw"><div class="rb p"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:18.7500%"></i><i class="s1 off" style="left:18.7500%;width:25.0000%"></i><i class="s2 off" style="left:43.7500%;width:25.0000%"></i><i class="s0 off" style="left:68.7500%;width:31.2500%"></i></div></td><td class="dur">1.5-2-2-2.5</td><td class="sng">Fire Escape <i>verse</i></td></tr><tr><td class="n">10</td><td class="rbw"><div class="rb p"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:31.2500%"></i><i class="s1 off" style="left:31.2500%;width:18.7500%"></i><i class="s2 " style="left:50.0000%;width:31.2500%"></i><i class="s0 off" style="left:81.2500%;width:18.7500%"></i></div></td><td class="dur">2.5-1.5-2.5-1.5</td><td class="sng">Smells Like Teen Spirit <i>intro</i></td></tr><tr><td class="n">5</td><td class="rbw"><div class="rb p"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:25.0000%"></i><i class="s1 " style="left:25.0000%;width:12.5000%"></i><i class="s2 off" style="left:37.5000%;width:12.5000%"></i><i class="s0 " style="left:50.0000%;width:25.0000%"></i><i class="s1 " style="left:75.0000%;width:12.5000%"></i><i class="s2 off" style="left:87.5000%;width:12.5000%"></i></div></td><td class="dur">2-1-1-2-1-1</td><td class="sng">Lightning Bolt <i>verse</i></td></tr><tr><td class="n">4</td><td class="rbw"><div class="rb p"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:50.0000%"></i><i class="s1 " style="left:50.0000%;width:25.0000%"></i><i class="s2 " style="left:75.0000%;width:12.5000%"></i><i class="s0 off" style="left:87.5000%;width:12.5000%"></i></div></td><td class="dur">4-2-1-1</td><td class="sng">Shes In Love With The Boy <i>pre-chorus</i></td></tr><tr><td class="n">3</td><td class="rbw"><div class="rb p"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:43.7500%"></i><i class="s1 off" style="left:43.7500%;width:25.0000%"></i><i class="s2 off" style="left:68.7500%;width:31.2500%"></i></div></td><td class="dur">3.5-2-2.5</td><td class="sng">Hanginaround <i>Intro</i></td></tr><tr><td class="n">3</td><td class="rbw"><div class="rb p"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:25.0000%"></i><i class="s1 " style="left:25.0000%;width:25.0000%"></i><i class="s2 " style="left:50.0000%;width:25.0000%"></i><i class="s0 " style="left:75.0000%;width:12.5000%"></i><i class="s1 off" style="left:87.5000%;width:12.5000%"></i></div></td><td class="dur">2-2-2-1-1</td><td class="sng">Take A Picture <i>Verse I</i></td></tr><tr><td class="n">3</td><td class="rbw"><div class="rb p"><u style="left:12.5000%"></u><u style="left:25.0000%"></u><u style="left:37.5000%"></u><u style="left:50.0000%" class=bar></u><u style="left:62.5000%"></u><u style="left:75.0000%"></u><u style="left:87.5000%"></u><i class="s0 " style="left:0.0000%;width:18.7500%"></i><i class="s1 off" style="left:18.7500%;width:18.7500%"></i><i class="s2 off" style="left:37.5000%;width:62.5000%"></i></div></td><td class="dur">1.5-1.5-5</td><td class="sng">You Wreck Me <i>Intro</i></td></tr></table></div>
+      <p class="note"><b>A push is the even grid with the first chord clipped
+        and the last one stretched.</b> More Than a Feeling and Teen Spirit
+        are the same device in opposite phase &mdash; 1.5&ndash;2.5 against
+        2.5&ndash;1.5.</p>
+    </div>
+  </div>
+</div></body></html>
