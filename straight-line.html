@@ -26,6 +26,10 @@
   .radline b{color:var(--curve);font-weight:600}
   .legend{font-size:12px;color:var(--mute);display:flex;flex-direction:column;gap:6px}
   .legend i{display:inline-block;width:15px;height:2px;vertical-align:middle;margin-right:7px}
+  .chip{display:inline-block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+        padding:3px 8px;border-radius:99px;border:1px solid currentColor;opacity:.95}
+  .src{font-size:11px;color:#6a7185;line-height:1.5;margin-top:9px;
+       border-top:1px solid var(--rule);padding-top:9px}
   main{flex:1;position:relative}
   canvas{display:block;width:100%;height:100%}
   .hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
@@ -59,15 +63,19 @@
     <div><i style="background:#5b8ce8"></i>the straight line you'd draw today</div>
   </div>
 
-  <div class="lede" id="note" style="margin-top:auto"></div>
+  <div style="margin-top:auto">
+    <span class="chip" id="chip"></span>
+    <div class="lede" id="note" style="margin-top:9px"></div>
+    <div class="src" id="src"></div>
+  </div>
 </aside>
 
 <main>
   <canvas id="c"></canvas>
   <div class="hint">drag to turn it</div>
   <div class="cite">
-    UN World Population Prospects (via Gapminder)<br>
-    after Hans Rosling, <i>Factfulness</i> &mdash; the straight line instinct
+    after Hans Rosling, <i>Factfulness</i> &mdash; the straight line instinct<br>
+    each curve's own source is in the panel
   </div>
 </main>
 
@@ -90,40 +98,91 @@
    =================================================================== */
 
 const DATA = {
+  laffer: {
+    label: 'Laffer curve', x: 'tax rate, 0\u2013100%', y: 'revenue collected',
+    status: 'contested', anchor: 25,
+    source: 'Shape illustrative. Peak estimates: Trabandt &amp; Uhlig (2011) ~70% ' +
+            'for US labour tax; Diamond &amp; Saez (2011) 73% revenue-maximising ' +
+            'top rate. Both disputed \u2014 see Cato (2019).',
+    note: 'The only two certain points are the ends. At 0% you collect nothing, ' +
+          'and at 100% nobody earns anything to collect \u2014 that is arithmetic, ' +
+          'not economics. Everything between is argued over, including where it ' +
+          'turns. But it has to turn, because both ends are nailed to the floor.',
+    pts: [[0,0],[5,12],[10,23],[15,33],[20,44],[25,53],[30,62],[35,70],[40,77],
+          [45,83],[50,89],[55,93],[60,97],[65,99],[70,100],[75,99],[80,96],
+          [85,90],[90,80],[95,63],[100,0]],
+  },
+  forgetting: {
+    label: 'Forgetting', x: 'days since learning', y: '% retained',
+    status: 'measured', anchor: 1,
+    source: 'Ebbinghaus (1885), savings method, on his own memorisation. ' +
+            'Replicated closely by Murre &amp; Dros, PLOS ONE (2015).',
+    note: 'The straight line says you lose memory at a steady rate. You do not. ' +
+          'Most of the loss happens on the first day and then it almost stops \u2014 ' +
+          'what survives a week mostly survives a month.',
+    pts: [[0,100],[0.013,58],[0.044,44],[0.37,36],[1,34],[2,28],[6,25],[31,21]],
+  },
+  yerkes: {
+    label: 'Pressure and performance', x: 'arousal', y: 'performance',
+    status: 'interpreted', anchor: 20,
+    source: 'Yerkes &amp; Dodson (1908) \u2014 Japanese dancing mice, 2\u20134 per ' +
+            'condition, shocked for choosing the wrong box. They measured neither ' +
+            'arousal nor performance; the inverted U was drawn on later by others.',
+    note: 'The most-cited curve here, and the shakiest. It is a real shape that ' +
+          'people really do experience \u2014 and it was fitted onto an experiment ' +
+          'that did not contain it. Worth keeping for exactly that reason: a curve ' +
+          'can be as wrong as a line.',
+    pts: [[0,8],[10,26],[20,46],[30,66],[40,83],[50,95],[60,100],[70,96],[80,84],
+          [90,62],[100,30]],
+  },
   population: {
-    label: 'World population', unit: 'billions',
+    label: 'World population', x: 'year', y: 'billions',
+    status: 'measured', anchor: 2020,
+    source: 'UN World Population Prospects, via Gapminder. Inherited from the ' +
+            'earlier version of this page and not yet checked against the UN tables.',
     note: 'The line from 1950 looks like it goes up forever. It does not: the ' +
-          'projection turns over around 2090. The curve was always bending -- ' +
+          'projection turns over around 2090. The curve was always bending \u2014 ' +
           'from inside the 20th century you could not see the far side.',
     pts: [[1950,2.5],[1960,3.0],[1970,3.7],[1980,4.4],[1990,5.3],[2000,6.1],
           [2010,6.9],[2020,7.8],[2030,8.5],[2040,9.2],[2050,9.7],[2060,10.1],
           [2070,10.4],[2080,10.5],[2090,10.6],[2100,10.4]],
-    from: 1950, today: 2020,
   },
   birthrate: {
-    label: 'Births per woman', unit: 'children',
+    label: 'Births per woman', x: 'year', y: 'children',
+    status: 'measured', anchor: 2020,
+    source: 'UN World Population Prospects, via Gapminder. Inherited and not yet ' +
+            'checked against the UN tables.',
     note: 'Nobody draws this one as a rising line, because it falls. But the ' +
-          'instinct is the same in reverse -- it does not fall to zero. It ' +
+          'instinct is the same in reverse \u2014 it does not fall to zero. It ' +
           'flattens, because it is an arc and not a ray.',
     pts: [[1950,5.0],[1960,5.0],[1970,4.7],[1980,3.7],[1990,3.2],[2000,2.7],
           [2010,2.5],[2020,2.3],[2030,2.1],[2040,2.0],[2050,1.9],[2060,1.8],
           [2070,1.8],[2080,1.8],[2090,1.8],[2100,1.8]],
-    from: 1950, today: 2020,
   },
   children: {
-    label: 'Children under 15', unit: 'billions',
+    label: 'Children under 15', x: 'year', y: 'billions',
+    status: 'measured', anchor: 2020,
+    source: 'UN World Population Prospects, via Gapminder. Inherited and not yet ' +
+            'checked against the UN tables.',
     note: 'The one that breaks people. The number of children in the world ' +
-          'stopped growing around 2000 and has been flat ever since. Peak ' +
-          'child already happened, and almost nobody noticed it.',
+          'stopped growing around 2000 and has been flat ever since. Peak child ' +
+          'already happened, and almost nobody noticed it.',
     pts: [[1950,0.87],[1960,1.1],[1970,1.35],[1980,1.57],[1990,1.75],[2000,1.94],
           [2010,1.95],[2020,2.0],[2030,2.05],[2040,2.03],[2050,2.0],[2060,1.97],
           [2070,1.93],[2080,1.9],[2090,1.88],[2100,1.85]],
-    from: 1950, today: 2020,
   },
 };
 
+/* Not every curve here is the same kind of claim, and flattening that
+   distinction would be the same sin as drawing everything straight. */
+const STATUS = {
+  measured:    ['measured', '#4ea36b'],
+  contested:   ['ends certain, peak contested', '#d9982f'],
+  interpreted: ['shape fitted on later', '#c2564f'],
+};
+
 const W = 46, H = 26;                 // the extent of the flat graph, in world units
-let R = Infinity, key = 'population', drag = null, yaw = -0.34, pitch = 0.30;
+let R = Infinity, key = 'laffer', drag = null, yaw = -0.34, pitch = 0.30;
 
 const cv = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({canvas:cv, antialias:true});
@@ -188,7 +247,7 @@ function buildSeries(R){
 
   // the straight line you'd draw from today: a true tangent, so it leaves the
   // surface the moment the surface has any curvature at all
-  const iNow = d.pts.findIndex(p => p[0] >= d.today);
+  const iNow = Math.max(1, d.pts.findIndex(p => p[0] >= d.anchor));
   const a = d.pts[iNow-1], b = d.pts[iNow];
   const slope = (b[1]-a[1]) / (b[0]-a[0]);
   const flatA = new THREE.Vector2(px(a[0]), py(a[1]));
@@ -197,7 +256,7 @@ function buildSeries(R){
   const base = project(flatB.x, flatB.y, R);
   // tangent direction on the surface, by finite difference along the map
   const nudge = project(flatB.x + dir.x*0.01, flatB.y + dir.y*0.01, R).sub(base).normalize();
-  const len = W * (x1 - d.today) / (x1 - x0) * 1.15;
+  const len = W * (x1 - d.anchor) / (x1 - x0) * 1.15;
   g.add(lineFrom([base, base.clone().addScaledVector(nudge, len)], 0x5b8ce8, 2, .95));
 
   // where "today" sits
@@ -242,9 +301,12 @@ function setRadius(v){
   } else if (R > 260){
     el.innerHTML = `<b>R = ${Math.round(R)}</b><br>Still looks flat from where you ` +
                    `stand. The curve and the straight line have not visibly parted yet.`;
-  } else if (R > 70){
+  } else if (R > 95){
     el.innerHTML = `<b>R = ${Math.round(R)}</b><br>Now they part. The straight line ` +
                    `leaves the world; the data stays on it.`;
+  } else if (R > 42){
+    el.innerHTML = `<b>R = ${Math.round(R)}</b><br>The curve is visibly riding a surface ` +
+                   `now, and the surface is closing.`;
   } else {
     el.innerHTML = `<b>R = ${Math.round(R)}</b><br>A world small enough to see all of. ` +
                    `The line was an arc the whole time.`;
@@ -289,13 +351,21 @@ Object.entries(DATA).forEach(([k, d]) => {
     key = k;
     [...btns.children].forEach(c => c.classList.remove('on'));
     b.classList.add('on');
-    document.getElementById('note').textContent = d.note;
+    showMeta(d);
     rebuild();
   };
   btns.appendChild(b);
 });
+function showMeta(d){
+  const [text, colour] = STATUS[d.status];
+  const chip = document.getElementById('chip');
+  chip.textContent = text; chip.style.color = colour;
+  document.getElementById('note').textContent = d.note;
+  document.getElementById('src').innerHTML =
+    `<b style="color:#8b93a8">${d.x}</b> against <b style="color:#8b93a8">${d.y}</b><br>${d.source}`;
+}
 document.getElementById('rad').addEventListener('input', e => setRadius(+e.target.value));
-document.getElementById('note').textContent = DATA[key].note;
+showMeta(DATA[key]);
 resize(); setRadius(1000); frame();
 </script>
 </body>
