@@ -13,12 +13,19 @@ Instead put the new tab in a window that already has a tab for that site. That
 window IS the signed-in profile, with nothing to configure and nothing that
 can drift out of sync. Window indices shift as windows get activated, so the
 window has to be resolved on every call.
+
+When the site is not open anywhere there is no window to borrow, so the
+profile has to be named outright — `--profile-directory`. Which one is
+answered by visit history rather than cookies: the profile actually used has
+hundreds of visits to the site, the rest have one or two.
 """
 import functools
 import json
 import os
 import re
+import sqlite3
 import subprocess
+import urllib.parse
 
 MUSIC = os.path.expanduser('~/Desktop/glowinggardens_claude/_music')
 
@@ -85,6 +92,79 @@ tell application "Brave Browser"
   set index of window {w} to 1
   activate
 end tell''')
+
+
+BRAVE = os.path.expanduser(
+    '~/Library/Application Support/BraveSoftware/Brave-Browser')
+
+
+def profile_dirs():
+    """Every profile directory name, as `--profile-directory` wants it.
+
+    Read from Local State rather than globbed, because the names are not all
+    `Profile N` — one of them is literally `hookpad`."""
+    try:
+        state = json.load(open(os.path.join(BRAVE, 'Local State')))
+        return list(state['profile']['info_cache'].keys())
+    except Exception:
+        return ['Default'] + [f'Profile {i}' for i in range(1, 10)]
+
+
+@functools.lru_cache(maxsize=8)
+def profile_for(url_substr):
+    """The profile signed in to a site, decided by how much it has been used.
+
+    Cookie presence does not settle this — four profiles hold hooktheory
+    cookies and five hold ultimate-guitar ones, mostly from a stray visit
+    years ago. Visits are lopsided in a way cookies are not: Profile 3 has
+    428 hookpad visits and 501 UG ones, every other profile has at most five.
+
+    The History file is locked while Brave runs; opening it `immutable=1`
+    reads it in place without a copy and without touching the lock.
+    """
+    best = None
+    for name in profile_dirs():
+        path = os.path.join(BRAVE, name, 'History')
+        if not os.path.exists(path):
+            continue
+        try:
+            con = sqlite3.connect(
+                'file:' + urllib.parse.quote(path) + '?immutable=1', uri=True)
+            n, last = con.execute(
+                'select count(*), max(last_visit_time) from urls '
+                'where url like ?', (f'%{url_substr}%',)).fetchone()
+            con.close()
+        except Exception:
+            continue
+        if n and (best is None or (n, last or 0) > (best[1], best[2])):
+            best = (name, n, last or 0)
+    return best[0] if best else None
+
+
+def open_in_profile(profile, url):
+    """A new window in a named profile. Brave forwards the command line to the
+    instance already running, so this does not start a second browser."""
+    subprocess.run(['/usr/bin/open', '-na', 'Brave Browser', '--args',
+                    f'--profile-directory={profile}', url])
+
+
+def open_url(url_substr, url):
+    """Put a URL in front of the user in the profile that can actually load it.
+
+    Borrow a window that already has the site if there is one — that window IS
+    the right profile, and the tab lands next to the others. Otherwise name
+    the profile explicitly. Returns what it did, or None if the site has never
+    been visited in any profile.
+    """
+    w = window_with_most(url_substr)
+    if w is not None:
+        new_tab(w, url)
+        return 'tab'
+    profile = profile_for(url_substr)
+    if profile is None:
+        return None
+    open_in_profile(profile, url)
+    return profile
 
 
 def score(hay, q):

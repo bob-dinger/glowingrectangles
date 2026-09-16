@@ -75,18 +75,14 @@ def main():
     # taken from drill.py, which is the working reference
     url = f'https://hookpad.hooktheory.com/?idOfUserSong={HASHIDS.encode(int(song["ID"]))}'
 
-    # The song only loads in the Brave profile that is logged in to Hookpad,
-    # and four profiles hold hooktheory cookies, so `open -a Brave` lands in
-    # whichever window happens to be frontmost and shows "Untitled". Put the
-    # tab in the window that already holds Hookpad tabs instead -- that window
-    # IS the right profile, with nothing to configure. Window indices shift as
-    # windows are activated, so it has to be resolved at call time.
-    w = bt.window_with_most(HOOKPAD)
-    if w is None:
-        print(f'{song["song"]}: no Hookpad window open. Open Hookpad once in '
-              f'the profile you use for it, then try again.')
+    # The song only loads in the Brave profile that is logged in to Hookpad;
+    # anywhere else it renders as "Untitled" with no error. open_url reuses a
+    # window that already has Hookpad, and names the profile when none does.
+    where = bt.open_url(HOOKPAD, url)
+    if where is None:
+        print(f'{song["song"]}: Hookpad has never been opened in any Brave '
+              f'profile. Sign in once, then try again.')
         return 1
-    bt.new_tab(w, url)
     extra = f'  (+{len(hits) - 1} more)' if len(hits) > 1 else ''
     print(f'{song["song"]}  (opening){extra}')
     return 0

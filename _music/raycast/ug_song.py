@@ -123,13 +123,13 @@ def main():
         label = f"search: {' '.join(sys.argv[1:])}"
 
     # UG is only logged in on one Brave profile, and `open -a Brave` would land
-    # in whatever window is frontmost — so reuse a window that already has UG.
-    w = bt.window_with_most(UG)
-    if w is None:
-        print(f'{label}: no Ultimate Guitar window open. Open UG once in the '
-              f'profile you use for it, then try again.')
+    # in whatever window is frontmost — so reuse a window that already has UG,
+    # and when none is open, name the profile that does.
+    where = bt.open_url(UG, url)
+    if where is None:
+        print(f'{label}: Ultimate Guitar has never been opened in any Brave '
+              f'profile. Sign in once, then try again.')
         return 1
-    bt.new_tab(w, url)
     extra = f'  (+{len(hits) - 1} more)' if len(hits) > 1 else ''
     print(f'{label}{extra}')
     return 0
