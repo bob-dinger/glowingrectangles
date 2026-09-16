@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Ball In The Air</title>
+<style>
+  :root{--bg:#080a0f;--panel:#11141c;--ink:#e8e9ee;--mute:#878ea1;--dim:#5b6274;
+        --rule:#1d212c;--straight:#e0605a;--flat:#f0b429;--true:#5b8ce8;--earth:#2a3547}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;display:flex;
+       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  aside{flex:0 0 330px;background:var(--panel);border-right:1px solid var(--rule);
+        padding:26px 22px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+  h1{font-size:21px;font-weight:650;letter-spacing:-.015em;line-height:1.2}
+  .lede{font-size:13px;color:var(--mute);line-height:1.58}
+  .lede b{color:var(--ink);font-weight:600}
+  .sec{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+  .btns{display:flex;flex-direction:column;gap:4px}
+  .btn{background:#181c26;border:1px solid var(--rule);color:#b6bccb;padding:7px 11px;
+       border-radius:6px;font-size:12.5px;cursor:pointer;text-align:left;
+       display:flex;justify-content:space-between;gap:8px}
+  .btn:hover{color:var(--ink)}
+  .btn.on{background:#212a3b;border-color:#3d4a66;color:var(--ink);font-weight:550}
+  .btn span{color:var(--dim);font-size:11px}
+  .key{display:flex;flex-direction:column;gap:7px;font-size:12px}
+  .key div{display:flex;gap:9px;align-items:flex-start;line-height:1.4}
+  .sw{flex:0 0 14px;height:3px;margin-top:7px;border-radius:2px}
+  .src{font-size:11px;color:var(--dim);line-height:1.55;border-top:1px solid var(--rule);
+       padding-top:10px;margin-top:auto}
+  main{flex:1;position:relative}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .hud{position:absolute;left:0;right:0;bottom:0;padding:0 40px 26px;pointer-events:none}
+  .verdict{font-size:15px;line-height:1.5;margin-bottom:12px;text-shadow:0 1px 8px #000}
+  .verdict b{font-weight:650}
+  .nums{display:flex;gap:40px;margin-bottom:14px}
+  .n .v{font-size:23px;font-weight:600;font-family:ui-monospace,Menlo,monospace;line-height:1.15}
+  .n .l{font-size:11px;color:var(--mute)}
+  .speed{pointer-events:auto}
+  input[type=range]{width:100%;accent-color:var(--flat)}
+</style>
+</head>
+<body>
+
+<aside>
+  <h1>A Ball In The Air</h1>
+  <div class="lede">
+    Throw a ball and it does not travel in a straight line. Everyone knows that.
+    The correction they teach you is a <b>parabola</b> &mdash; and that is not right
+    either.
+  </div>
+  <div class="lede">
+    A parabola assumes gravity pulls the same direction everywhere, which is another
+    way of saying it assumes the ground is flat. The real path is an <b>ellipse</b>
+    with the centre of the Earth at one focus. Every throw is a piece of an orbit that
+    happens to hit the ground first.
+  </div>
+
+  <div>
+    <div class="sec">how hard you throw it</div>
+    <div class="btns" id="btns"></div>
+  </div>
+
+  <div class="key">
+    <div><span class="sw" style="background:#e0605a"></span><span>straight &mdash; no gravity at all</span></div>
+    <div><span class="sw" style="background:#f0b429"></span><span>parabola &mdash; flat ground, gravity straight down</span></div>
+    <div><span class="sw" style="background:#5b8ce8"></span><span>ellipse &mdash; round Earth, gravity toward a point</span></div>
+  </div>
+
+  <div class="lede" id="note"></div>
+
+  <div class="src">
+    Both paths solved exactly, not simulated. The flat range is
+    v&middot;&radic;(2h/g). The true path is the conic through the same initial
+    state: p = h&sup2;/GM with h = r&#8320;v, e = |p/r&#8320; &minus; 1|, and
+    r(&theta;) = p/(1 &minus; e&thinsp;cos&thinsp;&theta;). Ground distance is the
+    arc R&middot;&Delta;&theta;. GM = 3.986&times;10&sup1;&#8308; m&sup3;/s&sup2;,
+    R = 6,371 km, g = 9.80665. Air resistance ignored throughout &mdash; which for a
+    real bullet matters far more than the curvature does.
+  </div>
+</aside>
+
+<main>
+  <canvas id="c"></canvas>
+  <div class="hud">
+    <div class="verdict" id="verdict"></div>
+    <div class="nums">
+      <div class="n"><div class="v" id="vFlat" style="color:var(--flat)">–</div>
+        <div class="l">flat ground says</div></div>
+      <div class="n"><div class="v" id="vTrue" style="color:var(--true)">–</div>
+        <div class="l">round Earth says</div></div>
+      <div class="n"><div class="v" id="vDiff">–</div>
+        <div class="l">difference</div></div>
+    </div>
+    <div class="speed">
+      <input type="range" id="sp" min="0" max="1000" value="120">
+    </div>
+  </div>
+</main>
+
+<script>
+const GM=3.986004418e14, R=6371000, g=9.80665;
+
+const CASES=[
+  {k:'ball',   n:'a thrown ball',    v:10,   h:2,      s:'10 m/s'},
+  {k:'hard',   n:'a hard throw',     v:40,   h:2,      s:'40 m/s'},
+  {k:'rifle',  n:'a rifle bullet',   v:900,  h:2,      s:'900 m/s'},
+  {k:'arty',   n:'artillery',        v:1500, h:100,    s:'1.5 km/s'},
+  {k:'big',    n:'a very big gun',   v:3000, h:1000,   s:'3 km/s'},
+  {k:'newton', n:"Newton's cannon",  v:5000, h:10000,  s:'5 km/s'},
+  {k:'faster', n:'faster still',     v:7000, h:100000, s:'7 km/s'},
+  {k:'orbit',  n:'orbital speed',    v:7850, h:100000, s:'7.85 km/s'},
+];
+let cur = CASES[0];
+
+/* ---- exact, no integration ----
+   Fired horizontally, so the launch point is an apse: radial velocity is zero
+   there. That fixes the conic outright and both curves come out in closed form.
+   Nothing here is a simulation, so nothing here has simulation error --
+   which matters, because the claim at the small end is that the flat answer is
+   RIGHT, and an integrator's drift would have quietly faked that. */
+function conic(v,h){
+  const r0=R+h, L=r0*v, p=L*L/GM, e=Math.abs(p/r0-1);
+  const atApo = p/r0 < 1;                 // slower than circular: launch is the high point
+  return {p,e,r0,atApo};
+}
+function radiusAt(c, th){
+  return c.atApo ? c.p/(1 - c.e*Math.cos(th)) : c.p/(1 + c.e*Math.cos(th));
+}
+function landingAngle(c){
+  if (!c.atApo) return null;              // periapsis at launch: it only climbs away
+  const cs = (1 - c.p/R)/c.e;
+  if (cs < -1 || cs > 1) return null;     // never comes down
+  return Math.acos(cs);
+}
+const flatRange = (v,h) => v*Math.sqrt(2*h/g);
+
+const cv=document.getElementById('c'), g2=cv.getContext('2d');
+function fit(){ const b=cv.getBoundingClientRect(), S=Math.min(devicePixelRatio,2);
+  cv.width=b.width*S; cv.height=b.height*S; g2.setTransform(S,0,0,S,0,0); return b; }
+
+const metres = m => Math.abs(m)<0.01 ? (m*1000).toFixed(1)+' mm'
+                 : Math.abs(m)<1 ? (m*100).toFixed(1)+' cm'
+                 : Math.abs(m)<1000 ? m.toFixed(1)+' m'
+                 : Math.abs(m)<1e6 ? (m/1000).toFixed(1)+' km'
+                 : (m/1000).toFixed(0)+' km';
+
+function draw(){
+  const b = fit(), W=b.width, H=b.height;
+  g2.clearRect(0,0,W,H);
+  const {v,h} = cur;
+  const c = conic(v,h), thLand = landingAngle(c);
+  const thMax = thLand !== null ? thLand : Math.PI*2;
+
+  // sample the true path
+  const N=900, pts=[];
+  for(let i=0;i<=N;i++){
+    const th = thMax*i/N, r = radiusAt(c,th);
+    if (r < R*0.999) break;
+    pts.push([r*Math.sin(th), r*Math.cos(th)]);
+  }
+  // flat parabola, in the same world frame (ground = the line y = R)
+  const tEnd = Math.sqrt(2*h/g), par=[];
+  for(let i=0;i<=200;i++){ const t=tEnd*i/200; par.push([v*t, R+h-0.5*g*t*t]); }
+  // and the straight line, same horizontal extent as the true path
+  const far = Math.max(pts[pts.length-1][0], par[par.length-1][0]);
+  const str = [[0,R+h],[far*1.02, R+h]];
+
+  // frame everything, with the launch point near the left
+  let minX=0,maxX=0,minY=1e12,maxY=-1e12;
+  [...pts,...par,...str].forEach(([x,y])=>{ minX=Math.min(minX,x); maxX=Math.max(maxX,x);
+                                            minY=Math.min(minY,y); maxY=Math.max(maxY,y); });
+  minY = Math.min(minY, R);
+  const padX=(maxX-minX)*0.10+1, padY=(maxY-minY)*0.22+1;
+  const sx=(W-90)/((maxX-minX)+2*padX), sy=(H-150)/((maxY-minY)+2*padY);
+  const s=Math.min(sx,sy);
+  const cx = (minX+maxX)/2, cy=(minY+maxY)/2;
+  const T = ([x,y]) => [W/2 + (x-cx)*s, H/2 - (y-cy)*s - 26];
+
+  // the Earth, drawn at its real curvature
+  g2.beginPath();
+  if (thMax >= Math.PI*1.9){
+    // once the view wraps the planet, draw the planet -- closing an arc down to
+    // the bottom of the screen leaves stray edges through open space
+    for(let th=0; th<=Math.PI*2+0.01; th+=Math.PI/180){
+      const q=T([R*Math.sin(th), R*Math.cos(th)]);
+      th===0?g2.moveTo(q[0],q[1]):g2.lineTo(q[0],q[1]);
+    }
+    g2.closePath();
+  } else {
+    const step = Math.max(thMax/400, 1e-9);
+    const lo = -thMax*0.25, hi = thMax*1.25;
+    for(let th=lo; th<=hi; th+=step){
+      const q=T([R*Math.sin(th), R*Math.cos(th)]);
+      th===lo?g2.moveTo(q[0],q[1]):g2.lineTo(q[0],q[1]);
+    }
+    const a=T([R*Math.sin(hi),R*Math.cos(hi)]), z=T([R*Math.sin(lo),R*Math.cos(lo)]);
+    g2.lineTo(a[0],H+50); g2.lineTo(z[0],H+50); g2.closePath();
+  }
+  g2.fillStyle='#161d29'; g2.fill();
+  g2.strokeStyle='#2f3b4f'; g2.lineWidth=1.4; g2.stroke();
+
+  const path=(arr,col,dash,wid)=>{
+    g2.save(); g2.setLineDash(dash||[]); g2.strokeStyle=col; g2.lineWidth=wid||2;
+    g2.beginPath(); arr.forEach((q,i)=>{ const P=T(q); i?g2.lineTo(P[0],P[1]):g2.moveTo(P[0],P[1]); });
+    g2.stroke(); g2.restore();
+  };
+  path(str,'#e0605a',[6,5],1.6);
+  path(par,'#f0b429',[],2);
+  path(pts,'#5b8ce8',[],2);
+
+  const P0=T([0,R+h]);
+  g2.fillStyle='#fff'; g2.beginPath(); g2.arc(P0[0],P0[1],4,0,7); g2.fill();
+
+  /* Where each one says it lands. The paths themselves run nearly parallel at
+     these aspect ratios -- the disagreement is a distance along the ground, so
+     mark it on the ground rather than hope it reads off two hairlines. */
+  const frx = flatRange(v,h);
+  const mark = (x, col, label, up) => {
+    const gy = Math.sqrt(Math.max(R*R - x*x, 0));
+    const A = T([x, gy]), B = T([x, gy + (maxY-minY)*(up?0.55:0.34)]);
+    g2.save(); g2.strokeStyle=col; g2.lineWidth=1.3; g2.setLineDash([3,3]);
+    g2.beginPath(); g2.moveTo(A[0],A[1]); g2.lineTo(B[0],B[1]); g2.stroke();
+    g2.setLineDash([]); g2.fillStyle=col; g2.beginPath(); g2.arc(A[0],A[1],3.4,0,7); g2.fill();
+    g2.font='11px -apple-system,sans-serif'; g2.textAlign='center';
+    g2.fillText(label, B[0], B[1]-6); g2.restore();
+  };
+  if (thLand !== null){
+    const trueX = R*Math.sin(thLand);
+    mark(frx, '#f0b429', 'flat says here', false);
+    mark(trueX, '#5b8ce8', 'it actually lands here', true);
+    const A=T([frx, Math.sqrt(Math.max(R*R-frx*frx,0))]);
+    const B=T([trueX, Math.sqrt(Math.max(R*R-trueX*trueX,0))]);
+    if (Math.abs(B[0]-A[0]) > 14){
+      const y=Math.max(A[1],B[1])+18;
+      g2.save(); g2.strokeStyle='#8a8fa0'; g2.lineWidth=1;
+      g2.beginPath(); g2.moveTo(A[0],y); g2.lineTo(B[0],y); g2.stroke();
+      g2.fillStyle='#b8bdca'; g2.font='11px ui-monospace,Menlo,monospace'; g2.textAlign='center';
+      g2.fillText(metres(Math.abs(R*thLand - frx)), (A[0]+B[0])/2, y+14); g2.restore();
+    }
+  }
+
+  // readouts
+  const fr = flatRange(v,h);
+  const tr = thLand!==null ? R*thLand : null;
+  document.getElementById('vFlat').textContent = metres(fr);
+  document.getElementById('vTrue').textContent = tr===null ? 'never lands' : metres(tr);
+  const dEl = document.getElementById('vDiff');
+  if (tr===null){ dEl.textContent='—'; dEl.style.color='#5b8ce8'; }
+  else { dEl.textContent = metres(tr-fr); dEl.style.color = Math.abs(tr-fr) > fr*0.01 ? '#e0605a' : '#63b37a'; }
+
+  const vEl=document.getElementById('verdict');
+  if (tr===null){
+    vEl.innerHTML = `It doesn't come down. The fall has closed into an <b style="color:#5b8ce8">orbit</b> — the same curve, all the way round.`;
+  } else {
+    const rel = Math.abs(tr-fr)/fr;
+    vEl.innerHTML = rel < 0.002
+      ? `Flat ground and round Earth disagree by <b style="color:#63b37a">${metres(Math.abs(tr-fr))}</b>. At this size the parabola is simply <b>correct</b>.`
+      : `Flat ground is off by <b style="color:#e0605a">${metres(Math.abs(tr-fr))}</b> — ${(rel*100).toFixed(rel>0.1?0:1)}% of the throw. The parabola has started to lie.`;
+  }
+  document.getElementById('note').textContent =
+    tr===null ? 'Nothing changed except the speed. The ellipse simply stopped intersecting the ground.'
+    : `Fired horizontally from ${metres(h)} up, at ${cur.s}.`;
+}
+
+const btns=document.getElementById('btns');
+CASES.forEach((c,i)=>{
+  const b=document.createElement('button');
+  b.className='btn'+(i===0?' on':'');
+  b.innerHTML=`${c.n}<span>${c.s}</span>`;
+  b.onclick=()=>{ cur=c; [...btns.children].forEach(x=>x.classList.remove('on'));
+                  b.classList.add('on');
+                  document.getElementById('sp').value=Math.round(i/(CASES.length-1)*1000);
+                  draw(); };
+  btns.appendChild(b);
+});
+document.getElementById('sp').addEventListener('input',e=>{
+  const i=Math.round(+e.target.value/1000*(CASES.length-1));
+  cur=CASES[i];
+  [...btns.children].forEach((x,j)=>x.classList.toggle('on', j===i));
+  draw();
+});
+new ResizeObserver(draw).observe(cv);
+draw();
+</script>
+</body>
+</html>
