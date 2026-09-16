@@ -5,43 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ten Thousand A Week</title>
 <style>
-  :root{--bg:#0b0d12;--panel:#12151d;--ink:#e8e9ee;--mute:#868da0;--dim:#5c6376;
+  :root{--bg:#07080c;--panel:#12151d;--ink:#e8e9ee;--mute:#868da0;--dim:#5c6376;
         --rule:#1e2230;--belief:#5b8ce8;--demand:#f0b429}
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;display:flex;
        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
   .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-  aside{flex:0 0 330px;background:var(--panel);border-right:1px solid var(--rule);
-        padding:26px 22px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+  aside{flex:0 0 322px;background:var(--panel);border-right:1px solid var(--rule);
+        padding:26px 22px;display:flex;flex-direction:column;gap:15px;overflow-y:auto;z-index:2}
   h1{font-size:21px;font-weight:650;letter-spacing:-.015em;line-height:1.2}
   .lede{font-size:13px;color:var(--mute);line-height:1.58}
   .lede b{color:var(--ink);font-weight:600}
-  .sec{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
-  .btn{background:#1a1e29;border:1px solid var(--rule);color:#b9bfcf;padding:7px 11px;
-       border-radius:6px;font-size:12.5px;cursor:pointer;text-align:left;width:100%}
-  .btn.on{background:#222b3d;border-color:#3d4a66;color:var(--ink);font-weight:550}
-  .btns{display:flex;flex-direction:column;gap:5px}
+  .key{display:flex;flex-direction:column;gap:9px;font-size:12.5px}
+  .key div{display:flex;gap:9px;align-items:flex-start;line-height:1.45}
+  .sw{flex:0 0 13px;height:13px;margin-top:2px;border-radius:3px}
   .money{border:1px solid var(--rule);border-radius:7px;padding:11px 13px;background:#1a1e29}
-  .money .v{font-size:22px;font-weight:600;color:#c2564f}
+  .money .v{font-size:20px;font-weight:600;color:#c2564f}
   .money .l{font-size:11.5px;color:var(--mute);line-height:1.5;margin-top:5px}
   .src{font-size:11px;color:var(--dim);line-height:1.55;border-top:1px solid var(--rule);
        padding-top:10px;margin-top:auto}
-  main{flex:1;position:relative;display:flex;flex-direction:column}
-  #gl{flex:1;display:block;width:100%}
-  .labels{position:absolute;top:26px;left:0;right:0;display:flex;justify-content:space-around;
-          pointer-events:none}
-  .lab{text-align:center}
-  .lab .t{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
-  .lab .n{font-size:34px;font-weight:600;line-height:1.15;font-family:ui-monospace,Menlo,monospace}
-  .lab .u{font-size:11.5px;color:var(--mute)}
-  .foot{padding:0 40px 26px;display:flex;flex-direction:column;gap:9px}
-  .year{display:flex;align-items:baseline;gap:14px}
-  .year .y{font-size:40px;font-weight:600;font-family:ui-monospace,Menlo,monospace;
-           letter-spacing:-.02em}
-  .year .ev{font-size:13px;color:var(--mute);line-height:1.45}
+  main{flex:1;position:relative}
+  #gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .hud{position:absolute;inset:0;pointer-events:none;padding:30px 40px;
+       display:flex;flex-direction:column;justify-content:space-between}
+  .counts{display:flex;gap:46px}
+  .ct .t{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase}
+  .ct .n{font-size:32px;font-weight:600;font-family:ui-monospace,Menlo,monospace;line-height:1.2}
+  .ct .p{font-size:11.5px;color:var(--mute)}
+  .bottom{pointer-events:auto}
+  .year{display:flex;align-items:baseline;gap:15px;margin-bottom:5px}
+  .year .y{font-size:42px;font-weight:600;font-family:ui-monospace,Menlo,monospace;
+           letter-spacing:-.02em;text-shadow:0 2px 10px #000}
+  .year .ev{font-size:13px;color:#b1b7c6;line-height:1.45;text-shadow:0 1px 6px #000}
+  .gap{font-size:13.5px;color:var(--mute);margin-bottom:9px;text-shadow:0 1px 6px #000}
+  .gap b{color:var(--ink);font-weight:650}
   input[type=range]{width:100%;accent-color:var(--demand)}
-  .ratio{font-size:13.5px;color:var(--mute)}
-  .ratio b{color:var(--ink);font-weight:650}
 </style>
 </head>
 <body>
@@ -49,160 +47,188 @@
 <aside>
   <h1>Ten Thousand A Week</h1>
   <div class="lede">
-    Before one unit shipped, about <b>$100 million</b> had been spent building the Segway,
-    and its inventor was talking about ten thousand a week. Two spheres here: what was
-    believed, and what was bought. Both are units, both are drawn so <b>area</b> is the
-    count.
+    You are standing inside the Segway. Not the machine &mdash; the number of them.
+    <b>Every panel on the wall is a thousand units.</b> The near wall is what people
+    actually bought. The fine mesh behind it is the world that was promised.
   </div>
   <div class="lede">
-    The belief was not stupid. It was induction &mdash; a very big conclusion from very
-    little data, which is the same machinery that gets everything else right. It just ran
-    ahead of the only evidence that settles it, which arrives last: whether anybody buys one.
+    From in here you cannot see the size of anything directly &mdash; a bigger world
+    subtends exactly the same angle. You can only see <b>how finely the wall is
+    divided.</b> Which is the position everybody was actually in.
   </div>
 
-  <div>
-    <div class="sec">what was believed</div>
-    <div class="btns" id="btns"></div>
+  <div class="key">
+    <div><span class="sw" style="background:#f0b429"></span>
+      <span>what was bought &mdash; the near wall, coarse panels</span></div>
+    <div><span class="sw" style="background:#5b8ce8"></span>
+      <span>what was promised &mdash; the far mesh, ten thousand a week</span></div>
   </div>
 
   <div class="money">
     <div class="v">~$100M</div>
-    <div class="l">spent developing the Segway PT before launch &mdash; finance committed
+    <div class="l">spent developing the Segway PT before launch. The money moved first,
       while demand was still exactly zero.</div>
   </div>
 
+  <div class="lede">
+    The belief was not stupid. It was induction &mdash; a very big conclusion from very
+    little data, the same machinery that gets language and cause right. It simply ran
+    ahead of the one measurement that settles a product, which always arrives last.
+  </div>
+
   <div class="src">
-    Cumulative sales milestones and the company's own projections from the Segway Inc.
-    record: 6,000 units by 2003; ~23,500 by September 2006 (all recalled that month);
-    30,000 by 2007; over 50,000 shipped by March 2009; roughly 140,000 across the
-    product's life. Launched December 2001 at about $5,000. Production ended
-    15 July 2020. The 10,000-a-week figure is Dean Kamen's, widely reported rather
-    than filed; the 40,000-a-year plan is the company's own.
+    Cumulative units from the Segway Inc. record: 6,000 by 2003; ~23,500 by September
+    2006, every one of which was recalled that month; 30,000 by 2007; over 50,000 by
+    March 2009; roughly 140,000 across the product's life. Launched December 2001 at
+    about $5,000; production ended 15 July 2020. Ten thousand a week is Dean Kamen's
+    figure, widely reported rather than filed. Only the milestones are known; between
+    them the count is drawn straight.
   </div>
 </aside>
 
 <main>
   <canvas id="gl"></canvas>
-  <div class="labels">
-    <div class="lab"><div class="t" style="color:var(--belief)">believed</div>
-      <div class="n" id="nBelief" style="color:var(--belief)">0</div>
-      <div class="u">units, cumulative</div></div>
-    <div class="lab"><div class="t" style="color:var(--demand)">bought</div>
-      <div class="n" id="nDemand" style="color:var(--demand)">0</div>
-      <div class="u">units, cumulative</div></div>
-  </div>
-  <div class="foot">
-    <div class="year"><span class="y" id="yr">2001</span><span class="ev" id="ev"></span></div>
-    <div class="ratio" id="ratio"></div>
-    <input type="range" id="scrub" min="2001" max="2020" step="1" value="2001">
+  <div class="hud">
+    <div class="counts">
+      <div class="ct"><div class="t" style="color:var(--demand)">bought</div>
+        <div class="n" id="nD" style="color:var(--demand)">0</div>
+        <div class="p" id="pD">0 panels</div></div>
+      <div class="ct"><div class="t" style="color:var(--belief)">promised</div>
+        <div class="n" id="nB" style="color:var(--belief)">0</div>
+        <div class="p" id="pB">0 panels</div></div>
+    </div>
+    <div class="bottom">
+      <div class="year"><span class="y" id="yr">2001</span><span class="ev" id="ev"></span></div>
+      <div class="gap" id="gap"></div>
+      <input type="range" id="scrub" min="2001" max="2020" step="1" value="2001">
+    </div>
   </div>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-/* Cumulative units actually sold. Only the milestones are known, so the line
-   between them is drawn straight and nothing pretends otherwise. */
 const SOLD = [[2001,0],[2002,1000],[2003,6000],[2006,23500],[2007,30000],
               [2009,50000],[2020,140000]];
-
-/* Two sizes of belief, because belief had two sizes: the plan the company
-   wrote down, and the number its inventor said out loud. */
-const BELIEFS = {
-  plan:  {label:'40,000 a year', note:"the company's own annual target", rate:40000},
-  pitch: {label:'10,000 a week', note:"Dean Kamen, widely quoted", rate:520000},
-};
-let belief = 'pitch', year = 2001;
+const PROMISE_PER_YEAR = 520000;          // ten thousand a week
+const PER_PANEL = 1000;                   // one panel on the wall = a thousand machines
 
 const EVENTS = {
-  2001:'December: unveiled on Good Morning America after a year of rumours.',
-  2002:'First customers take delivery. Price about $5,000.',
-  2003:'6,000 sold. The plan said 40,000 a year.',
-  2006:'Every unit ever sold — 23,500 — recalled for a software fault.',
+  2001:'December: unveiled after a year of rumours. Nothing sold yet.',
+  2002:'First deliveries, about $5,000 each.',
+  2003:'6,000 sold. Six panels.',
+  2006:'September: every unit ever sold is recalled for a software fault.',
+  2007:'30,000. The promise for that one year was 520,000.',
   2009:'Past 50,000 shipped, eight years in.',
   2015:'Ninebot, a Chinese competitor, buys Segway.',
-  2020:'15 July: production ends. About 140,000 units across nineteen years.',
+  2020:'15 July: production ends. About 140,000, across nineteen years.',
 };
 
-const lerp = (a,b,k)=>a+(b-a)*k;
+const lerp=(a,b,k)=>a+(b-a)*k;
 function sold(y){
   for (let i=0;i<SOLD.length-1;i++){
-    const [ax,av]=SOLD[i], [bx,bv]=SOLD[i+1];
+    const [ax,av]=SOLD[i],[bx,bv]=SOLD[i+1];
     if (y>=ax && y<=bx) return lerp(av,bv,(y-ax)/(bx-ax));
   }
   return SOLD[SOLD.length-1][1];
 }
-const believed = y => Math.max(0, (y-2001)) * BELIEFS[belief].rate;
+const promised = y => Math.max(0,(y-2001)) * PROMISE_PER_YEAR;
 
-/* ---- two spheres, area proportional to the count ---- */
-const cv = document.getElementById('gl');
-const renderer = new THREE.WebGLRenderer({canvas:cv, antialias:true, alpha:true});
+/* A wall divided into panels of a FIXED size. That is the only way size shows
+   from the inside: scaling a featureless sphere around its own centre changes
+   nothing you can see, because every direction still subtends the same angle.
+   So the count has to live in the tiling, not the radius. */
+/* A wall divided into panels of a FIXED size. That is the only way size shows
+   from the inside: scaling a featureless sphere around its own centre changes
+   nothing you can see, because every direction still subtends the same angle.
+   So the count lives in the tiling, not the radius.
+
+   Drawn as real meridians and parallels rather than a wrapped texture. A
+   repeating texture cannot do this job: the border is a fixed fraction of a
+   cell, so at six panels the line became a band wider than a door, and
+   mipmapping smeared it further. Geometry stays one pixel wide at any density,
+   and it is only rebuilt when the year changes. */
+const cv=document.getElementById('gl');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-const scene = new THREE.Scene();
-const mk = col => {
-  const m = new THREE.Mesh(new THREE.SphereGeometry(1,52,36),
-        new THREE.MeshStandardMaterial({color:col, roughness:.55, metalness:.05}));
-  scene.add(m); return m;
-};
-const sB = mk(0x5b8ce8), sD = mk(0xf0b429);
-const wire = c => {
-  const w = new THREE.LineSegments(
-    new THREE.WireframeGeometry(new THREE.SphereGeometry(1,20,13)),
-    new THREE.LineBasicMaterial({color:c, transparent:true, opacity:.16}));
-  scene.add(w); return w;
-};
-const wB = wire(0x9dc0ff), wD = wire(0xffd98a);
-scene.add(new THREE.AmbientLight(0xffffff,.44));
-const k1 = new THREE.DirectionalLight(0xffffff,1.0); k1.position.set(-2,2.4,3); scene.add(k1);
-const k2 = new THREE.DirectionalLight(0x4a6fa5,.55); k2.position.set(3,-2,-2); scene.add(k2);
-const cam = new THREE.PerspectiveCamera(40,1,.1,200);
+const scene=new THREE.Scene();
+
+function wall(radius, cols, rows, colour, opacity){
+  const g = new THREE.Group();
+  const mat = new THREE.LineBasicMaterial({color:colour, transparent:true,
+                                           opacity:opacity, depthWrite:false});
+  const RES = 72;
+  for (let i=0;i<cols;i++){                      // meridians
+    const lon = i/cols * Math.PI*2, pts=[];
+    for (let k=0;k<=RES;k++){
+      const lat = -Math.PI/2 + Math.PI*k/RES;
+      pts.push(new THREE.Vector3(radius*Math.cos(lat)*Math.cos(lon),
+                                 radius*Math.sin(lat),
+                                 radius*Math.cos(lat)*Math.sin(lon)));
+    }
+    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
+  }
+  for (let j=1;j<rows;j++){                      // parallels
+    const lat = -Math.PI/2 + Math.PI*j/rows, pts=[];
+    const r = radius*Math.cos(lat), y = radius*Math.sin(lat);
+    for (let k=0;k<=RES*2;k++){
+      const lon = k/(RES*2)*Math.PI*2;
+      pts.push(new THREE.Vector3(r*Math.cos(lon), y, r*Math.sin(lon)));
+    }
+    g.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), mat));
+  }
+  return g;
+}
+
+let wallD=null, wallB=null;
+function rebuildWalls(dCols,dRows,bCols,bRows){
+  [wallD,wallB].forEach(w=>{ if(w){ scene.remove(w);
+    w.traverse(o=>o.geometry&&o.geometry.dispose()); } });
+  wallB = wall(30, bCols, bRows, 0x5b8ce8, .42);
+  wallD = wall(14, dCols, dRows, 0xf0b429, .95);
+  scene.add(wallB); scene.add(wallD);
+}
+
+const cam=new THREE.PerspectiveCamera(76,1,.1,120);
 
 function resize(){
-  const w = cv.clientWidth, h = cv.clientHeight;
-  renderer.setSize(w,h,false);
-  cam.aspect = w/h; cam.updateProjectionMatrix();
+  const w=cv.clientWidth,h=cv.clientHeight;
+  renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix();
 }
 new ResizeObserver(resize).observe(cv);
 
-/* the scale is fixed across the whole run, so the spheres can be compared with
-   each other AND with themselves in other years. Biggest thing on the board is
-   the pitch at 2020, and everything is measured against that. */
-const REF = 520000*19;
-const radius = n => 4.6 * Math.sqrt(Math.max(n,0)/REF);
+/* panels -> a grid that wraps the sphere twice as wide as it is tall */
+function repeatFor(units){
+  const panels = Math.max(units/PER_PANEL, 0);
+  const a = Math.sqrt(Math.max(panels,1)/2);
+  return [Math.max(1,Math.round(a*2)), Math.max(1,Math.round(a))];
+}
+
+let year=2001;
+const fmt=n=>Math.round(n).toLocaleString();
+function update(){
+  const d=sold(year), b=promised(year);
+  const [dw,dh]=repeatFor(d), [bw,bh]=repeatFor(b);
+  rebuildWalls(dw,dh,bw,bh);
+  wallD.visible = d > 0;
+
+  document.getElementById('nD').textContent=fmt(d);
+  document.getElementById('nB').textContent=fmt(b);
+  document.getElementById('pD').textContent=`${fmt(d/PER_PANEL)} panels`;
+  document.getElementById('pB').textContent=`${fmt(b/PER_PANEL)} panels`;
+  document.getElementById('yr').textContent=year;
+  let ev=''; for(const y of Object.keys(EVENTS).map(Number).sort((a,b)=>a-b)) if(y<=year) ev=EVENTS[y];
+  document.getElementById('ev').textContent=ev;
+  document.getElementById('gap').innerHTML = d>0
+    ? `The far wall is divided <b>${(b/d).toFixed(b/d>=10?0:1)}&times;</b> more finely than the near one.`
+    : `Nothing has been sold. The promised world is already ${fmt(b/PER_PANEL)} panels wide.`;
+}
 
 function frame(now){
-  const rB = radius(believed(year)), rD = radius(sold(year));
-  [sB,wB].forEach(o=>{ o.scale.setScalar(Math.max(rB,.0001)); o.position.set(-7.2,0,0); });
-  [sD,wD].forEach(o=>{ o.scale.setScalar(Math.max(rD,.0001)); o.position.set( 7.2,0,0); });
-  [sB,wB,sD,wD].forEach(o=>{ o.rotation.y = now/5200; o.rotation.x = .3; });
-  cam.position.set(0,0,31); cam.lookAt(0,0,0);
+  cam.rotation.set(Math.sin(now/13000)*.10, now/17000, 0);
   renderer.render(scene,cam);
   requestAnimationFrame(frame);
 }
-
-const fmt = n => Math.round(n).toLocaleString();
-function update(){
-  const b = believed(year), d = sold(year);
-  document.getElementById('nBelief').textContent = fmt(b);
-  document.getElementById('nDemand').textContent = fmt(d);
-  document.getElementById('yr').textContent = year;
-  let ev = '';
-  for (const y of Object.keys(EVENTS).map(Number).sort((a,b)=>a-b)) if (y<=year) ev = EVENTS[y];
-  document.getElementById('ev').textContent = ev;
-  document.getElementById('ratio').innerHTML = d > 0 && b > 0
-    ? `Belief is running <b>${(b/d).toFixed(b/d>=10?0:1)}&times;</b> ahead of what anyone bought.`
-    : `Nothing sold yet. ${BELIEFS[belief].note}.`;
-}
-
-const btns = document.getElementById('btns');
-Object.entries(BELIEFS).forEach(([k,v])=>{
-  const b = document.createElement('button');
-  b.className = 'btn' + (k===belief?' on':'');
-  b.innerHTML = `${v.label}<br><span style="color:#5c6376;font-size:11px">${v.note}</span>`;
-  b.onclick = ()=>{ belief=k; [...btns.children].forEach(c=>c.classList.remove('on'));
-                    b.classList.add('on'); update(); };
-  btns.appendChild(b);
-});
-document.getElementById('scrub').addEventListener('input',e=>{ year=+e.target.value; update(); });
+document.getElementById('scrub').addEventListener('input',e=>{year=+e.target.value;update();});
 resize(); update(); requestAnimationFrame(frame);
 </script>
 </body>
