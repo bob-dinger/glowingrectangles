@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which Side Of The Hill</title>
+<style>
+  :root{--bg:#12100e;--panel:#1a1713;--ink:#efe9df;--mute:#8d8477;--rule:#2b2721;
+        --gold:#f0b429;--us:#5b8ce8;--warn:#e0605a;--ok:#63b37a}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;display:flex;
+       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  aside{flex:0 0 330px;background:var(--panel);border-right:1px solid var(--rule);
+        padding:26px 22px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+  h1{font-size:20px;font-weight:650;letter-spacing:-.015em;line-height:1.2}
+  .lede{font-size:13px;color:var(--mute);line-height:1.55}
+  .lede b{color:var(--ink);font-weight:600}
+  .sec{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute)}
+  .formula{background:#221e19;border:1px solid var(--rule);border-radius:7px;padding:11px 13px;
+           font-size:14px;text-align:center;color:var(--ink)}
+  .formula small{display:block;font-size:11px;color:var(--mute);margin-top:6px;line-height:1.45}
+  input[type=range]{width:100%;accent-color:var(--gold)}
+  .marks{display:flex;justify-content:space-between;font-size:10.5px;color:var(--mute);margin-top:3px}
+  .verdict{border-radius:7px;padding:12px 13px;font-size:13px;line-height:1.5;
+           border:1px solid currentColor}
+  .verdict b{font-weight:650}
+  .jump{display:flex;flex-direction:column;gap:5px;margin-top:9px}
+  .jump button{background:#221e19;border:1px solid var(--rule);color:#b5ad9f;
+    padding:6px 10px;border-radius:6px;font-size:11.5px;cursor:pointer;text-align:left}
+  .jump button:hover{color:var(--ink);border-color:#3c362e}
+  .src{font-size:11px;color:#6a7185;line-height:1.5;border-top:1px solid var(--rule);
+       padding-top:10px;margin-top:auto}
+  main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+       gap:14px;padding:24px 34px}
+  .stat{display:flex;gap:40px;align-items:baseline}
+  .stat .n{text-align:center}
+  .stat .v{font-size:30px;font-weight:600;line-height:1}
+  .stat .l{font-size:11px;color:var(--mute);margin-top:6px}
+  canvas{image-rendering:pixelated}
+  #curve{image-rendering:auto}
+  .ratewrap{width:560px}
+</style>
+</head>
+<body>
+
+<aside>
+  <h1>Which Side Of The Hill</h1>
+  <div class="lede">
+    Everyone agrees the Laffer curve exists. Both ends are arithmetic: at 0% you
+    collect nothing, at 100% nobody earns anything to collect. <b>The whole fight is
+    one number</b> &mdash; how sharply people pull back when you tax them.
+  </div>
+
+  <div class="formula">
+    &tau;* = 1 / (1 + <i>a</i>&middot;<i>e</i>)
+    <small>Diamond &amp; Saez (2011). <i>a</i> = 1.5, the Pareto parameter.
+    <i>e</i> is the elasticity of taxable income &mdash; the contested one.</small>
+  </div>
+
+  <div>
+    <div class="sec">e &mdash; how much people pull back</div>
+    <input type="range" id="elas" min="10" max="130" value="25">
+    <div class="marks"><span>0.10 barely</span><span>1.30 sharply</span></div>
+    <div class="jump">
+      <button data-e="25">0.25 &mdash; mid-range estimate</button>
+      <button data-e="90">0.90 &mdash; what it would take</button>
+    </div>
+  </div>
+
+  <div class="verdict" id="verdict"></div>
+
+  <div class="lede" id="explain"></div>
+
+  <div class="src">
+    Peter Diamond &amp; Emmanuel Saez, &ldquo;The Case for a Progressive Tax,&rdquo;
+    <i>Journal of Economic Perspectives</i> 25(4), 2011, pp.165&ndash;190. Their words:
+    &ldquo;with <i>a</i>=1.5, if <i>e</i>=.25&hellip; &tau;*=73 percent, substantially higher
+    than the current 42.5 percent top US marginal tax rate (combining all taxes). The
+    current rate would be optimal only if the elasticity <i>e</i> were extremely high,
+    equal to 0.9.&rdquo; The curve drawn here is &tau;(1&minus;&tau;)^(<i>ae</i>), which
+    peaks at exactly their &tau;*.
+  </div>
+</aside>
+
+<main>
+  <canvas id="crowd"></canvas>
+  <div class="stat">
+    <div class="n"><div class="v" id="vRate" style="color:var(--us)">–</div><div class="l">tax rate</div></div>
+    <div class="n"><div class="v" id="vWork" style="color:#c9c2b4">–</div><div class="l">still earning</div></div>
+    <div class="n"><div class="v" id="vRev" style="color:var(--gold)">–</div><div class="l">revenue</div></div>
+  </div>
+  <canvas id="curve" width="560" height="190"></canvas>
+  <div class="ratewrap">
+    <input type="range" id="rate" min="0" max="100" value="43" style="width:100%">
+    <div class="marks"><span>0%</span><span>tax rate</span><span>100%</span></div>
+  </div>
+</main>
+
+<script>
+/* villagers, same engine as belief-overlap.html: the point of this page is that
+   revenue is a slice of a crowd, and the crowd has to be visible for that to
+   mean anything. */
+const BODY=['....HHHH....','...HHHHHHh..','..HHHHHHHHh.','..HSSSSSSh..','..HSESSESh..',
+  '..HSSSSSSh..','...SSSSSs...','....NNNs....','..TTTTTTtt..','.STTTTTTTtS.',
+  '.STTTTTTTtS.','.sTTTTTTTts.','..TTTTTTtt..'];
+const BODY2=['....HHHH....','...HHHHHHh..','..HHHHHHHHh.','..HSSSSSSHh.','..HSESSESHh.',
+  '..HSSSSSSHh.','..HHSSSSHHh.','....NNNs....','..TTTTTTtt..','.STTTTTTTtS.',
+  '.STTTTTTTtS.','.sTTTTTTTts.','..TTTTTTtt..'];
+const BODY3=['...KKKKKK...','..KKKKKKKK..','.KKKKKKKKKK.','..HSSSSSSh..','..HSESSESh..',
+  '..HSSSSSSh..','...SSSSSs...','....NNNs....','..TTTTTTtt..','.STTTTTTTtS.',
+  '.STTTTTTTtS.','.sTTTTTTTts.','..TTTTTTtt..'];
+const BODIES=[BODY,BODY2,BODY3];
+const LEGS=['..LLL..LLl..','..LLL..LLl..','..BBB..BBb..'];
+const SKINS=[[240,195,145],[226,171,120],[198,140,95],[163,110,72],[126,82,52],[247,214,178]];
+const HAIRS=[[74,47,22],[38,28,20],[122,80,36],[168,128,64],[96,96,102],[140,52,38]];
+const HATS =[[122,82,38],[92,62,112],[58,102,72],[150,60,50]];
+const TUNICS=[[178,58,46],[52,96,148],[58,124,74],[150,104,40],[112,72,140],[196,132,52],
+              [64,112,124],[158,72,112],[88,104,52],[190,96,72]];
+const LEGCOL=[[74,53,36],[58,60,74],[88,72,50]];
+const shade=(c,f=.74)=>c.map(v=>Math.round(v*f));
+function palette(s,h,t,l,k,lit){
+  const dim=c=>c.map(v=>Math.round(v*0.28+18*0.72)), f=lit?(c=>c):dim;
+  return {H:f(HAIRS[h]),h:f(shade(HAIRS[h])),S:f(SKINS[s]),s:f(shade(SKINS[s],.86)),
+          N:f(shade(SKINS[s],.88)),T:f(TUNICS[t]),t:f(shade(TUNICS[t])),
+          K:f(HATS[k]),k:f(shade(HATS[k])),L:f(LEGCOL[l]),l:f(shade(LEGCOL[l])),
+          B:f([36,26,18]),b:f([21,15,10]),E:f([26,16,8]),O:lit?[23,16,10]:[16,13,11]};
+}
+const PX=3,TW=14,TH=18,COLS=20,ROWS=5,CW=TW*PX+3,CH=TH*PX-4;
+const cache=new Map();
+function tile(key,rows,pal,flip){
+  const ck=key+'|'+flip; if(cache.has(ck))return cache.get(ck);
+  const c=document.createElement('canvas'); c.width=TW*PX; c.height=TH*PX;
+  const g=c.getContext('2d'), filled=new Map();
+  rows.forEach((r,y)=>[...r].forEach((ch,x)=>{ if(ch!=='.') filled.set((x+1)+','+(y+1),ch); }));
+  const put=(x,y,col)=>{g.fillStyle=`rgb(${col})`;g.fillRect(x*PX,y*PX,PX,PX);};
+  for(const k of filled.keys()){ const [x,y]=k.split(',').map(Number);
+    [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{ const n=(x+dx)+','+(y+dy);
+      if(!filled.has(n)&&x+dx>=0&&x+dx<TW&&y+dy>=0&&y+dy<TH) put(x+dx,y+dy,pal.O); }); }
+  for(const [k,ch] of filled){ const [x,y]=k.split(',').map(Number); if(pal[ch]) put(x,y,pal[ch]); }
+  if(!flip){ cache.set(ck,c); return c; }
+  const f=document.createElement('canvas'); f.width=c.width; f.height=c.height;
+  const fg=f.getContext('2d'); fg.translate(c.width,0); fg.scale(-1,1); fg.drawImage(c,0,0);
+  cache.set(ck,f); return f;
+}
+function seeded(str){ let h=2166136261;
+  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}
+  return ()=>{h^=h<<13;h^=h>>>17;h^=h<<5;return ((h>>>0)%100000)/100000;}; }
+const rr=seeded('laffer-2011');
+const CROWD=Array.from({length:100},()=>({body:Math.floor(rr()*3),s:Math.floor(rr()*6),
+  h:Math.floor(rr()*6),t:Math.floor(rr()*10),l:Math.floor(rr()*3),k:Math.floor(rr()*4),
+  flip:rr()<.5}));
+
+const crowdCv=document.getElementById('crowd');
+crowdCv.width=COLS*CW; crowdCv.height=ROWS*CH+8;
+function drawCrowd(working){
+  const g=crowdCv.getContext('2d'); g.imageSmoothingEnabled=false;
+  g.clearRect(0,0,crowdCv.width,crowdCv.height);
+  CROWD.forEach((c,i)=>{
+    const lit=i<working;
+    const key=`${c.body}-${c.s}-${c.h}-${c.t}-${c.l}-${c.k}-${lit}`;
+    const img=tile(key,BODIES[c.body].concat(LEGS),palette(c.s,c.h,c.t,c.l,c.k,lit),c.flip);
+    g.drawImage(img,(i%COLS)*CW,Math.floor(i/COLS)*CH);
+  });
+}
+
+/* ---------------- the model ----------------
+   Revenue is the slice times the people still showing up:
+
+       working(tau) = (1 - tau)^(a e)        <- the behavioural response
+       revenue(tau) = tau * working(tau)
+
+   and d/dtau of that is zero at tau = 1/(1 + a e), which is exactly Diamond &
+   Saez's revenue-maximising rate. So the curve is not an illustration bolted
+   onto their formula -- it is their formula, drawn.                          */
+const A = 1.5, US_RATE = 0.425;
+let e = 0.25, tau = 0.43;
+
+const working = t => Math.pow(Math.max(0, 1-t), A*e);
+const revenue = t => t * working(t);
+const peak    = () => 1/(1 + A*e);
+
+const cCv=document.getElementById('curve'), cg=cCv.getContext('2d');
+function drawCurve(){
+  const W=cCv.width, H=cCv.height, pad=22;
+  const px=t=>pad+(W-2*pad)*t, py=v=>H-pad-(H-2*pad)*(v/maxRev());
+  cg.clearRect(0,0,W,H);
+
+  cg.strokeStyle='#2b2721'; cg.lineWidth=1;
+  cg.beginPath(); cg.moveTo(pad,H-pad); cg.lineTo(W-pad,H-pad); cg.stroke();
+
+  cg.strokeStyle='#f0b429'; cg.lineWidth=2; cg.beginPath();
+  for(let i=0;i<=200;i++){ const t=i/200; const x=px(t), y=py(revenue(t));
+    i?cg.lineTo(x,y):cg.moveTo(x,y); }
+  cg.stroke();
+
+  // the peak, which moves with e
+  const p=peak();
+  cg.strokeStyle='#6b6255'; cg.setLineDash([3,3]); cg.beginPath();
+  cg.moveTo(px(p),H-pad); cg.lineTo(px(p),py(revenue(p))); cg.stroke(); cg.setLineDash([]);
+  cg.fillStyle='#f0b429'; cg.beginPath(); cg.arc(px(p),py(revenue(p)),4,0,7); cg.fill();
+  cg.font='11px ui-monospace,Menlo,monospace'; cg.fillStyle='#8d8477';
+  cg.textAlign = Math.abs(p-US_RATE) < 0.09 ? (p < US_RATE ? 'right' : 'left') : 'center';
+  const nudge = cg.textAlign==='center' ? 0 : (p < US_RATE ? -8 : 8);
+  cg.fillText('peak '+Math.round(p*100)+'%', px(p)+nudge, py(revenue(p))-11);
+  cg.textAlign='center';
+
+  // where the US actually sits -- fixed, from the paper
+  cg.strokeStyle='#5b8ce8'; cg.lineWidth=1.5; cg.beginPath();
+  cg.moveTo(px(US_RATE),H-pad); cg.lineTo(px(US_RATE),pad-6); cg.stroke();
+  cg.fillStyle='#5b8ce8'; cg.fillText('US 42.5%',px(US_RATE),pad-11);
+
+  // and where you have put the slider
+  cg.fillStyle='#fff'; cg.beginPath(); cg.arc(px(tau),py(revenue(tau)),4.5,0,7); cg.fill();
+}
+function maxRev(){ return revenue(peak())*1.15; }
+
+function update(){
+  const w=Math.round(working(tau)*100);
+  drawCrowd(w); drawCurve();
+  document.getElementById('vRate').textContent=Math.round(tau*100)+'%';
+  document.getElementById('vWork').textContent=w;
+  document.getElementById('vRev').textContent=
+    Math.round(revenue(tau)/revenue(peak())*100)+'%';
+
+  document.getElementById('explain').innerHTML =
+    `At a rate of ${Math.round(tau*100)}%, <b>${w} of 100</b> are still earning, and you ` +
+    `collect ${Math.round(revenue(tau)/revenue(peak())*100)}% of what the hill can give. ` +
+    `Revenue is just those two things multiplied: the slice you take, and the people ` +
+    `left to take it from.`;
+
+  const p=peak(), v=document.getElementById('verdict');
+  const left = US_RATE < p;
+  // the knife edge is the paper's own punchline: 42.5% is only the top of the
+  // hill if you believe e = 0.9, and the mid-range estimate is 0.25
+  if (Math.abs(p - US_RATE) < 0.012){
+    v.style.color = '#d9982f';
+    v.innerHTML = `At <b>e = ${e.toFixed(2)}</b> the hill tops out at exactly where the ` +
+      `US already sits. This is the elasticity you have to believe for 42.5% to be ` +
+      `the most revenue anyone could collect &mdash; and the mid-range estimate is 0.25.`;
+    return;
+  }
+  v.style.color = left ? '#63b37a' : '#e0605a';
+  v.innerHTML = left
+    ? `At <b>e = ${e.toFixed(2)}</b> the hill tops out at <b>${Math.round(p*100)}%</b>. ` +
+      `The US sits at 42.5% &mdash; <b>on the way up</b>. On this side of the hill the ` +
+      `curve says a tax cut <b>loses</b> revenue.`
+    : `At <b>e = ${e.toFixed(2)}</b> the hill tops out at <b>${Math.round(p*100)}%</b>, ` +
+      `below the US rate of 42.5% &mdash; <b>over the top</b>. Only here does the curve ` +
+      `say a cut pays for itself.`;
+}
+
+document.getElementById('elas').addEventListener('input',ev=>{ e=+ev.target.value/100; update(); });
+document.querySelectorAll('.jump button').forEach(b => b.onclick = () => {
+  document.getElementById('elas').value = b.dataset.e;
+  e = +b.dataset.e/100; update();
+});
+document.getElementById('rate').addEventListener('input',ev=>{ tau=+ev.target.value/100; update(); });
+update();
+</script>
+</body>
+</html>
