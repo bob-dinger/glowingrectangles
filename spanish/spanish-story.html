@@ -354,7 +354,7 @@
         <div class="vocab-english" id="popupEnglish"></div>
     </div>
 
-    <script src="freepik-api.js"></script>
+    <script src="/icon-library.js"></script>
     <script>
         // Stories data
         const stories = {
@@ -593,7 +593,7 @@
         let currentStory = 'morning';
         let currentSentenceIndex = -1;
         let imageCache = new Map();
-        let freepik = null;
+        let icons = null;
 
         // DOM elements
         const storySelect = document.getElementById('storySelect');
@@ -614,7 +614,7 @@
 
         // Initialize Freepik API
         try {
-            freepik = new FreepikAPI('', true); // Using proxy
+            icons = new IconLibrary();
         } catch (e) {
             console.log('Freepik API not available, using placeholder images');
         }
@@ -695,7 +695,7 @@
 
         // Preload images for vocabulary
         async function preloadImages(vocab) {
-            if (!freepik) return;
+            if (!icons) return;
 
             for (const [spanish, data] of Object.entries(vocab)) {
                 if (!imageCache.has(spanish)) {
@@ -703,7 +703,7 @@
                     loadingIndicator.textContent = 'Loading images';
 
                     try {
-                        const result = await freepik.searchAndGetIcon(data.search, 512);
+                        const result = await icons.searchAndGetIcon(data.search, 512);
                         if (result && result.pngUrl) {
                             // Convert to 512px version
                             imageCache.set(spanish, get512Url(result.pngUrl));
@@ -726,9 +726,9 @@
             // Try to get cached image or load new one
             let imageUrl = imageCache.get(spanish);
 
-            if (!imageUrl && freepik) {
+            if (!imageUrl && icons) {
                 try {
-                    const result = await freepik.searchAndGetIcon(data.search, 512);
+                    const result = await icons.searchAndGetIcon(data.search, 512);
                     if (result && result.pngUrl) {
                         imageUrl = get512Url(result.pngUrl);
                         imageCache.set(spanish, imageUrl);

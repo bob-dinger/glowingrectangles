@@ -184,7 +184,7 @@
         let iconData = {};
 
         // Load icon data
-        fetch('noun-icons.json')
+        fetch('/noun-icons.json')
             .then(r => r.json())
             .then(data => {
                 iconData = data;

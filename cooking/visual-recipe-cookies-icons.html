@@ -503,7 +503,7 @@
         </div>
     </div>
 
-    <script src="freepik-api.js"></script>
+    <script src="/icon-library.js"></script>
     <script>
         // Ingredient data with search terms and amounts
         const ingredients = [
@@ -524,7 +524,7 @@
         const loadedIcons = new Map();
 
         async function loadIngredientIcons() {
-            const freepik = new FreepikAPI();
+            const icons = new IconLibrary();
             const grid = document.getElementById('ingredientsGrid');
             const status = document.getElementById('loadingStatus');
 
@@ -545,7 +545,7 @@
             let loaded = 0;
             for (const ing of ingredients) {
                 try {
-                    const result = await freepik.searchAndGetIcon(ing.search, 128);
+                    const result = await icons.searchAndGetIcon(ing.search, 128);
                     const iconContainer = document.getElementById(`icon-${ing.id}`);
 
                     if (result && result.pngUrl) {

@@ -217,7 +217,7 @@
     <div class="tooltip"></div>
     <div id="loadingStatus" class="loading-status">Loading icons...</div>
 
-    <script src="freepik-api.js"></script>
+    <script src="/icon-library.js"></script>
     <script>
         const gradients = [
             {
@@ -460,14 +460,14 @@
 
         // Load icons for each gradient
         async function loadIcons() {
-            const freepik = new FreepikAPI();
+            const icons = new IconLibrary();
             let loaded = 0;
             const total = gradients.length * 2;
 
             for (const g of gradients) {
                 // Load left icon
                 try {
-                    const leftResult = await freepik.searchAndGetIcon(g.leftIcon, 128);
+                    const leftResult = await icons.searchAndGetIcon(g.leftIcon, 128);
                     const leftContainer = document.getElementById(`icon-${g.id}-left`);
                     if (leftResult && leftResult.pngUrl) {
                         leftContainer.innerHTML = `<img src="${leftResult.pngUrl}" alt="${g.leftLabel}" />`;
@@ -481,7 +481,7 @@
 
                 // Load right icon
                 try {
-                    const rightResult = await freepik.searchAndGetIcon(g.rightIcon, 128);
+                    const rightResult = await icons.searchAndGetIcon(g.rightIcon, 128);
                     const rightContainer = document.getElementById(`icon-${g.id}-right`);
                     if (rightResult && rightResult.pngUrl) {
                         rightContainer.innerHTML = `<img src="${rightResult.pngUrl}" alt="${g.rightLabel}" />`;

@@ -195,7 +195,7 @@
     <div class="tooltip"></div>
     <div id="loadingStatus" class="loading-status">Loading icons...</div>
 
-    <script src="freepik-api.js"></script>
+    <script src="/icon-library.js"></script>
     <script>
         const width = 650;
         const height = 600;
@@ -562,14 +562,14 @@
 
         // Load all category icons
         async function loadCategoryIcons() {
-            const freepik = new FreepikAPI();
+            const icons = new IconLibrary();
             const keys = Object.keys(categories);
             let loaded = 0;
 
             for (const key of keys) {
                 const cat = categories[key];
                 try {
-                    const result = await freepik.searchAndGetIcon(cat.iconSearch, 128);
+                    const result = await icons.searchAndGetIcon(cat.iconSearch, 128);
                     const iconContainer = document.getElementById(`cat-icon-${key}`);
 
                     if (result && result.pngUrl) {
