@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Villagers</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#6d9a44}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1d2c14}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated}
+
+  .head{position:fixed;top:26px;left:32px;pointer-events:none}
+  .head h1{font-size:20px;font-weight:700;letter-spacing:-.01em;color:#1d2c14}
+  .head p{font-size:12.5px;color:#39561f;margin-top:3px}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;align-items:center;
+       justify-content:center;padding:20px;flex-wrap:wrap}
+  .bar button,.bar label{
+    background:rgba(255,255,255,.22);border:1px solid rgba(0,0,0,.16);color:#1d2c14;
+    font:inherit;font-size:12px;padding:7px 13px;border-radius:6px;cursor:pointer;
+    backdrop-filter:blur(4px);display:flex;align-items:center;gap:8px;
+  }
+  .bar button:hover{background:rgba(255,255,255,.4)}
+  .bar button.on{background:#1d2c14;border-color:#1d2c14;color:#d8ecb8;font-weight:600}
+  .bar input{accent-color:#1d2c14;width:110px}
+  .bar .v{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;min-width:26px}
+
+  #frames{position:fixed;top:24px;right:32px;background:rgba(255,255,255,.28);
+          border:1px solid rgba(0,0,0,.16);border-radius:8px;padding:10px 12px;
+          backdrop-filter:blur(4px);display:none}
+  #frames.on{display:block}
+  #frames div{font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+              color:#39561f;margin-bottom:6px;font-weight:600}
+  #frames canvas{position:static;width:auto;height:auto}
+</style>
+</head>
+<body>
+
+<canvas id="cv"></canvas>
+
+<div class="head">
+  <h1>Villagers</h1>
+  <p>A four-frame walk cycle, twelve pixels wide</p>
+</div>
+
+<div id="frames"><div>the cycle</div><canvas id="strip"></canvas></div>
+
+<div class="bar">
+  <label>villagers <input type="range" id="count" min="1" max="60" value="18">
+    <span class="v" id="countv">18</span></label>
+  <label>speed <input type="range" id="speed" min="0.2" max="3" step="0.1" value="1">
+    <span class="v" id="speedv">1.0</span></label>
+  <button id="showframes">Show frames</button>
+  <button id="scatter">Scatter</button>
+</div>
+
+<script>
+/* ==================================================================
+   THE CHARACTER — 12 x 16. Rows 13-15 are the legs; swapping just
+   those rows is the entire walk cycle. Body bobs 1px on the passing
+   frames, which is what sells it as walking rather than sliding.
+   ================================================================== */
+const PAL_BASE = {
+  E:[26,16,8], O:[23,16,10],
+};
+const BODY = [
+  '....HHHH....','...HHHHHHh..','..HHHHHHHHh.','..HSSSSSSh..',
+  '..HSESSESh..','..HSSSSSSh..','...SSSSSs...','....NNNs....',
+  '..TTTTTTtt..','.STTTTTTTtS.','.STTTTTTTtS.','.sTTTTTTTts.',
+  '..TTTTTTtt..',
+];
+const LEGS = {
+  stand: ['..LLL..LLl..','..LLL..LLl..','..BBB..BBb..'],
+  strideA:['..LLL..LLl..','.LLL....LLl.','BBB......BBb'],
+};
+LEGS.strideB = LEGS.strideA.map(r => [...r].reverse().join(''));
+
+/* frame order: stride, pass, other stride, pass */
+const CYCLE = ['strideA','stand','strideB','stand'];
+const BOB   = [0, -1, 0, -1];          // px lift on the passing frames
+
+const SKINS =[[240,195,145],[226,171,120],[198,140,95],[163,110,72],[126,82,52],[247,214,178]];
+const HAIRS =[[74,47,22],[38,28,20],[122,80,36],[168,128,64],[96,96,102],[140,52,38]];
+const TUNICS=[[178,58,46],[52,96,148],[58,124,74],[150,104,40],[112,72,140],
+              [196,132,52],[64,112,124],[158,72,112],[88,104,52],[190,96,72]];
+const LEGCOL=[[74,53,36],[58,60,74],[88,72,50]];
+const shade=(c,f=.74)=>c.map(v=>Math.round(v*f));
+
+function palette(s,h,t,l){
+  return {H:HAIRS[h], h:shade(HAIRS[h]),
+          S:SKINS[s], s:shade(SKINS[s],.86), N:shade(SKINS[s],.88),
+          T:TUNICS[t], t:shade(TUNICS[t]),
+          L:LEGCOL[l], l:shade(LEGCOL[l]),
+          B:[36,26,18], b:[21,15,10],
+          E:PAL_BASE.E, O:PAL_BASE.O};
+}
+
+/* build one frame as an offscreen canvas, with a 1px outline */
+const tileCache = new Map();
+function tile(key, rows, pal, flip, px){
+  const ck = key+'|'+flip+'|'+px;
+  if (tileCache.has(ck)) return tileCache.get(ck);
+  const W=12, H=16, TW=W+2, TH=H+2;
+  const c=document.createElement('canvas');
+  c.width=TW*px; c.height=TH*px;
+  const g=c.getContext('2d');
+
+  const filled=new Map();
+  rows.forEach((row,r)=>[...row].forEach((ch,cc)=>{
+    if(ch!=='.') filled.set((cc+1)+','+(r+1), ch);
+  }));
+  const put=(x,y,col)=>{ g.fillStyle=`rgb(${col[0]},${col[1]},${col[2]})`;
+                         g.fillRect(x*px,y*px,px,px); };
+  // outline
+  for(const k of filled.keys()){
+    const [x,y]=k.split(',').map(Number);
+    [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
+      const n=(x+dx)+','+(y+dy);
+      if(!filled.has(n) && x+dx>=0 && x+dx<TW && y+dy>=0 && y+dy<TH) put(x+dx,y+dy,pal.O);
+    });
+  }
+  for(const [k,ch] of filled){ const [x,y]=k.split(',').map(Number); put(x,y,pal[ch]); }
+
+  if(flip){
+    const f=document.createElement('canvas'); f.width=c.width; f.height=c.height;
+    const fg=f.getContext('2d');
+    fg.translate(c.width,0); fg.scale(-1,1); fg.drawImage(c,0,0);
+    tileCache.set(ck,f); return f;
+  }
+  tileCache.set(ck,c); return c;
+}
+
+/* ================= scene ================= */
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let PX=4, W=0, H=0, GROUND=0;
+let chars=[], speedMul=1;
+
+function rnd(n){ return Math.floor(Math.random()*n); }
+
+function makeChar(){
+  const s=rnd(SKINS.length), h=rnd(HAIRS.length), t=rnd(TUNICS.length), l=rnd(LEGCOL.length);
+  const c={
+    pal: palette(s,h,t,l), key:`${s}-${h}-${t}-${l}`,
+    x: Math.random()*W, y: 0, dir: Math.random()<.5?-1:1,
+    frame: Math.random()*4, walking:true, speed: 14+Math.random()*20,
+    depth: Math.random(),        // 0 = far, 1 = near
+    tl: null,
+  };
+  c.y = GROUND - 120 + c.depth*100;
+  schedule(c);
+  return c;
+}
+
+/* GSAP owns the wandering: walk a while, stand a while, turn around */
+function schedule(c){
+  if(c.tl) c.tl.kill();
+  const dist = 80 + Math.random()*340;
+  const dur  = dist / (c.speed*speedMul);
+  const tgt  = Math.max(10, Math.min(W-30, c.x + c.dir*dist));
+  c.tl = gsap.timeline({onComplete:()=>{ c.dir*=-1; schedule(c); }})
+    .set(c,{walking:true})
+    .to(c,{x:tgt, duration:dur, ease:'none'})
+    .set(c,{walking:false})
+    .to({},{duration:.4+Math.random()*2.2});
+}
+
+function build(n){
+  chars.forEach(c=>c.tl&&c.tl.kill());
+  chars = Array.from({length:n}, makeChar);
+  chars.sort((a,b)=>a.depth-b.depth);
+}
+
+function resize(){
+  W=Math.floor(innerWidth/PX); H=Math.floor(innerHeight/PX);
+  cv.width=W*PX; cv.height=H*PX;
+  cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
+  ctx.imageSmoothingEnabled=false;
+  GROUND=Math.floor(H*0.78);
+  chars.forEach(c=>{ c.y = GROUND-120+c.depth*100; });
+}
+addEventListener('resize',()=>{resize();});
+
+/* grass tufts, fixed once so the field doesn't shimmer */
+let tufts=[];
+function seedTufts(){
+  tufts=[];
+  for(let i=0;i<520;i++) tufts.push([rnd(W), rnd(H)]);
+}
+
+let last=performance.now();
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt=Math.min(.05,(now-last)/1000); last=now;
+
+  ctx.fillStyle='#7fae4e'; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#6d9a44';
+  tufts.forEach(([x,y])=>{
+    ctx.fillRect(x*PX,(y+1)*PX,PX,PX); ctx.fillRect((x+1)*PX,y*PX,PX,PX);
+    ctx.fillRect((x+2)*PX,(y+1)*PX,PX,PX);
+  });
+
+  chars.forEach(c=>{
+    if(c.walking) c.frame=(c.frame + dt*8*speedMul)%4;
+    const fi=Math.floor(c.frame);
+    const legs = c.walking ? CYCLE[fi] : 'stand';
+    const bob  = c.walking ? BOB[fi] : 0;
+    const rows = [...BODY, ...LEGS[legs]];
+    const img = tile(c.key+'|'+legs, rows, c.pal, c.dir<0, PX);
+    ctx.drawImage(img, Math.round(c.x)*PX, Math.round(c.y+bob)*PX);
+  });
+  last=now;
+}
+
+/* frame strip */
+function drawStrip(){
+  const s=document.getElementById('strip'), g=s.getContext('2d'), px=5;
+  const pal=palette(0,0,0,0);
+  s.width=(14*px+8)*4; s.height=18*px;
+  g.imageSmoothingEnabled=false;
+  CYCLE.forEach((legs,i)=>{
+    const img=tile('demo|'+legs,[...BODY,...LEGS[legs]],pal,false,px);
+    g.drawImage(img, i*(14*px+8), BOB[i]*px + 3);
+  });
+}
+
+/* controls */
+const $=id=>document.getElementById(id);
+$('count').oninput=e=>{ $('countv').textContent=e.target.value; build(+e.target.value); };
+$('speed').oninput=e=>{ speedMul=+e.target.value; $('speedv').textContent=speedMul.toFixed(1);
+                        chars.forEach(schedule); };
+$('showframes').onclick=function(){ $('frames').classList.toggle('on');
+                                    this.classList.toggle('on'); drawStrip(); };
+$('scatter').onclick=()=>{
+  chars.forEach(c=>{ c.tl&&c.tl.kill();
+    gsap.to(c,{x:Math.random()*(W-40)+10, duration:.9, ease:'power2.out',
+               onComplete:()=>schedule(c)});
+    c.walking=true; });
+};
+
+resize(); seedTufts(); build(18); drawStrip(); requestAnimationFrame(frame);
+</script>
+</body>
+</html>

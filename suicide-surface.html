@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Suicide Surface</title>
+<style>
+  html,body{margin:0;height:100%;background:#07070a;font-family:Georgia,serif;
+            color:#e8e8e8;overflow:hidden}
+  .wrap{display:flex;height:100vh;box-sizing:border-box}
+  .main{flex:1;position:relative;min-width:0}
+  #vis{position:absolute;inset:0}
+  .hdr{position:absolute;top:22px;left:28px;z-index:2;pointer-events:none}
+  h1{margin:0 0 3px;font-size:24px;font-weight:normal;color:#fff;letter-spacing:-.01em}
+  .sub{margin:0;color:#8a8a8a;font-size:13px;line-height:1.45;max-width:520px}
+  .hint{position:absolute;bottom:16px;left:28px;font-family:-apple-system,sans-serif;
+        font-size:10.5px;color:#4a4a52;z-index:2;pointer-events:none}
+  aside{width:244px;flex:0 0 244px;border-left:1px solid #17171c;padding:24px 20px;
+        display:flex;flex-direction:column;gap:14px;
+        font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0a0e}
+  .lab{font-size:9px;text-transform:uppercase;letter-spacing:.13em;color:#5c5c5c;
+       margin-bottom:4px}
+  aside p{margin:0;font-size:11.5px;line-height:1.6;color:#9a9a9a}
+  .row{display:flex;justify-content:space-between;font-size:11.5px;color:#b5b5b5;
+       padding:2px 0;font-variant-numeric:tabular-nums}
+  .row b{color:#fff;font-weight:600}
+  .ramp{height:9px;border-radius:5px;margin:2px 0 3px;
+        background:linear-gradient(90deg,#2b4b8c,#3f8fb0,#c9b24a,#d8763c,#c8382c)}
+  .ends{display:flex;justify-content:space-between;font-size:9.5px;color:#6a6a6a}
+  .note{margin-top:auto;font-size:10px;line-height:1.6;color:#565656;
+        border-top:1px solid #17171c;padding-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="main">
+    <div class="hdr">
+      <h1>The suicide surface</h1>
+      <p class="sub">US male suicide rate by age and year. Each sphere is one age
+        band in one year; height and colour are the rate.</p>
+    </div>
+    <div id="vis"></div>
+    <div class="hint">drag to rotate &middot; scroll to zoom</div>
+  </div>
+  <aside>
+    <div>
+      <div class="lab">deaths per 100,000</div>
+      <div class="ramp"></div>
+      <div class="ends"><span>0</span><span>70</span></div>
+    </div>
+    <div>
+      <div class="lab">1950 &mdash; a ramp</div>
+      <div class="row"><span>10&ndash;14</span><b>0.5</b></div>
+      <div class="row"><span>45&ndash;54</span><b>32.0</b></div>
+      <div class="row"><span>85+</span><b>58.3</b></div>
+    </div>
+    <div>
+      <div class="lab">2018 &mdash; a plateau</div>
+      <div class="row"><span>20&ndash;24</span><b>27.9</b></div>
+      <div class="row"><span>45&ndash;54</span><b>30.2</b></div>
+      <div class="row"><span>65&ndash;74</span><b>27.8</b></div>
+    </div>
+    <p>In 1950 the surface climbs steeply from front to back &mdash; suicide was
+      something that happened to the old. By 2018 the middle of the range is
+      almost level. The ramp became a plateau.</p>
+    <p>The far ridge never goes away. Men over 85 are still the highest of any
+      group, at 47.2.</p>
+    <div class="note">
+      Crude rates, males, all races. Years are spaced by their real distance,
+      so the 1950&ndash;1980 gap is wide: CDC published decade snapshots until
+      1981 and annual figures after.<br><br>
+      Source: CDC/NCHS, Health United States, suicide by sex and age.
+    </div>
+  </aside>
+</div>
+<script src="suicide-surface-data.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const el=document.getElementById('vis');
+const scene=new THREE.Scene();
+scene.fog=new THREE.Fog(0x07070a, 210, 460);
+const cam=new THREE.PerspectiveCamera(42, el.clientWidth/el.clientHeight, 1, 900);
+const rend=new THREE.WebGLRenderer({antialias:true});
+rend.setPixelRatio(Math.min(devicePixelRatio,2));
+rend.setSize(el.clientWidth, el.clientHeight);
+rend.setClearColor(0x07070a);
+el.appendChild(rend.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff,.55));
+const key=new THREE.DirectionalLight(0xffffff,.85); key.position.set(60,110,70); scene.add(key);
+const rim=new THREE.DirectionalLight(0x6688cc,.35); rim.position.set(-70,40,-60); scene.add(rim);
+
+const Y0=YEARS[0], Y1=YEARS[YEARS.length-1];
+// position by the real year, not by index — the 1950-1980 gap is 30 years of
+// decade snapshots and squashing it to four even steps would be a lie
+const SPAN=240, DEPTH=120, HT=1.85;
+const xOf=y=>(y-Y0)/(Y1-Y0)*SPAN - SPAN/2;
+const zOf=i=>i/(BANDS.length-1)*DEPTH - DEPTH/2;
+
+const STOPS=[[0x2b4b8c,0],[0x3f8fb0,.25],[0xc9b24a,.5],[0xd8763c,.72],[0xc8382c,1]];
+function ramp(t){
+  t=Math.max(0,Math.min(1,t));
+  for(let i=1;i<STOPS.length;i++){
+    if(t<=STOPS[i][1]){
+      const [ca,pa]=STOPS[i-1],[cb,pb]=STOPS[i];
+      const f=(t-pa)/(pb-pa);
+      const a=new THREE.Color(ca), b=new THREE.Color(cb);
+      return a.lerp(b,f);
+    }
+  }
+  return new THREE.Color(STOPS[STOPS.length-1][0]);
+}
+
+const MAXR=70;
+const geo=new THREE.SphereGeometry(1,18,14);
+const group=new THREE.Group();
+GRID.forEach((row,bi)=>{
+  row.forEach((v,yi)=>{
+    const t=v/MAXR;
+    const m=new THREE.MeshStandardMaterial({color:ramp(t),roughness:.42,metalness:.12,
+                                            emissive:ramp(t).multiplyScalar(.14)});
+    const s=new THREE.Mesh(geo,m);
+    s.scale.setScalar(1.5+t*3.1);
+    s.position.set(xOf(YEARS[yi]), v*HT, zOf(bi));
+    group.add(s);
+    // a faint stem so the height is readable without a grid behind it
+    const st=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,v*HT,6),
+      new THREE.MeshBasicMaterial({color:0x2a2a34}));
+    st.position.set(xOf(YEARS[yi]), v*HT/2, zOf(bi));
+    group.add(st);
+  });
+});
+scene.add(group);
+
+const gridh=new THREE.GridHelper(SPAN, 12, 0x1e1e26, 0x14141a);
+gridh.scale.z=DEPTH/SPAN; scene.add(gridh);
+
+function label(text,x,y,z,size=11,col='#8a8a8a'){
+  const c=document.createElement('canvas'); const s=4;
+  c.width=256*s/2; c.height=64*s/2;
+  const g=c.getContext('2d');
+  g.font=`600 ${size*s}px -apple-system,sans-serif`; g.fillStyle=col;
+  g.textAlign='center'; g.textBaseline='middle';
+  g.fillText(text,c.width/2,c.height/2);
+  const t=new THREE.CanvasTexture(c); t.minFilter=THREE.LinearFilter;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));
+  sp.position.set(x,y,z); sp.scale.set(30,7.5,1); scene.add(sp);
+}
+[1950,1970,1990,2010,2018].forEach(y=>label(String(y),xOf(y),-6,DEPTH/2+14));
+BANDS.forEach((b,i)=>label(b.replace(' years','').replace(' and over','+'),
+                           -SPAN/2-22,-2,zOf(i),9,'#6a6a72'));
+
+let rx=.62, ry=-.62, dist=270, drag=false, px=0, py=0;
+function place(){
+  cam.position.set(Math.sin(ry)*Math.cos(rx)*dist, Math.sin(rx)*dist,
+                   Math.cos(ry)*Math.cos(rx)*dist);
+  cam.lookAt(0,34,0);
+}
+place();
+el.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY;});
+addEventListener('pointerup',()=>drag=false);
+addEventListener('pointermove',e=>{
+  if(!drag)return;
+  ry-=(e.clientX-px)*.006; rx=Math.max(.06,Math.min(1.35,rx+(e.clientY-py)*.005));
+  px=e.clientX; py=e.clientY; place();
+});
+el.addEventListener('wheel',e=>{e.preventDefault();
+  dist=Math.max(140,Math.min(520,dist+e.deltaY*.4)); place();},{passive:false});
+addEventListener('resize',()=>{
+  cam.aspect=el.clientWidth/el.clientHeight; cam.updateProjectionMatrix();
+  rend.setSize(el.clientWidth,el.clientHeight);
+});
+(function loop(){requestAnimationFrame(loop); rend.render(scene,cam);})();
+</script>
+</body>
+</html>

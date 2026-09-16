@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venn</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:#0d0d10;color:#e9e7e4;height:100vh;overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+
+  header{padding:26px 34px 0}
+  header h1{font-size:20px;font-weight:600;letter-spacing:-.01em}
+  header p{font-size:13px;color:#75737f;margin-top:3px}
+
+  .row{flex:1;display:flex;align-items:center;justify-content:center;gap:26px;padding:0 34px 10px}
+
+  .card{
+    background:#141419;border:1px solid #23232c;border-radius:12px;
+    padding:18px;display:flex;flex-direction:column;align-items:center;
+    flex:1;max-width:420px;height:100%;max-height:520px;
+  }
+  .card h2{font-size:13px;font-weight:600;color:#b9b7c4;margin-bottom:2px;align-self:flex-start}
+  .card .note{font-size:11.5px;color:#5f5d6b;margin-bottom:6px;align-self:flex-start}
+  .card svg{flex:1;width:100%}
+
+  /* circles */
+  .set{fill-opacity:.42;stroke-width:1.5;transition:fill-opacity .18s}
+  .a{fill:#38bdf8;stroke:#7dd3fc}
+  .b{fill:#f472b6;stroke:#f9a8d4}
+  .c{fill:#facc15;stroke:#fde047}
+
+  /* invisible hit-regions layered on top */
+  .hit{fill:#fff;fill-opacity:0;cursor:pointer}
+  .hit.on{fill-opacity:.20}
+
+  .lbl{font-size:12.5px;font-weight:600;fill:#e9e7e4;text-anchor:middle}
+  .cnt{font-size:11px;fill:#0d0d10;font-weight:700;text-anchor:middle;
+       font-family:ui-monospace,Menlo,monospace;pointer-events:none}
+
+  .readout{
+    height:34px;margin-top:4px;font-size:12px;color:#8b8996;text-align:center;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .readout b{color:#5eead4;font-weight:600}
+
+  .ctl{display:flex;align-items:center;gap:10px;font-size:11.5px;color:#75737f;margin-top:2px}
+  .ctl input{accent-color:#5eead4;width:150px}
+  .ctl span{font-family:ui-monospace,Menlo,monospace;color:#5eead4;min-width:30px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Venn</h1>
+  <p>Three ways to draw one. Hover any region.</p>
+</header>
+
+<div class="row">
+
+  <!-- ============ 1 · two sets ============ -->
+  <div class="card">
+    <h2>Two sets</h2>
+    <div class="note">The Eisenhower split</div>
+    <svg viewBox="0 0 340 300" id="v2">
+      <circle class="set a" cx="132" cy="150" r="86"/>
+      <circle class="set b" cx="208" cy="150" r="86"/>
+
+      <!-- hit regions, drawn with clip paths -->
+      <defs>
+        <clipPath id="c2a"><circle cx="132" cy="150" r="86"/></clipPath>
+        <clipPath id="c2b"><circle cx="208" cy="150" r="86"/></clipPath>
+      </defs>
+      <!-- A only = circle A clipped, minus B (use a mask) -->
+      <mask id="m2a">
+        <circle cx="132" cy="150" r="86" fill="#fff"/>
+        <circle cx="208" cy="150" r="86" fill="#000"/>
+      </mask>
+      <mask id="m2b">
+        <circle cx="208" cy="150" r="86" fill="#fff"/>
+        <circle cx="132" cy="150" r="86" fill="#000"/>
+      </mask>
+
+      <circle class="hit" data-l="Urgent, not important — the trap" cx="132" cy="150" r="86" mask="url(#m2a)"/>
+      <circle class="hit" data-l="Important, not urgent — the good stuff" cx="208" cy="150" r="86" mask="url(#m2b)"/>
+      <circle class="hit" data-l="Urgent AND important — do it now" cx="208" cy="150" r="86" clip-path="url(#c2a)"/>
+
+      <text class="lbl" x="86"  y="46">Urgent</text>
+      <text class="lbl" x="256" y="46">Important</text>
+    </svg>
+    <div class="readout" id="r2">&nbsp;</div>
+  </div>
+
+  <!-- ============ 2 · three sets ============ -->
+  <div class="card">
+    <h2>Three sets</h2>
+    <div class="note">Seven regions, the classic</div>
+    <svg viewBox="0 0 340 300" id="v3">
+      <circle class="set a" cx="170" cy="118" r="80"/>
+      <circle class="set b" cx="128" cy="188" r="80"/>
+      <circle class="set c" cx="212" cy="188" r="80"/>
+
+      <defs>
+        <clipPath id="ca"><circle cx="170" cy="118" r="80"/></clipPath>
+        <clipPath id="cb"><circle cx="128" cy="188" r="80"/></clipPath>
+        <clipPath id="cc"><circle cx="212" cy="188" r="80"/></clipPath>
+      </defs>
+
+      <g id="hits3"></g>
+
+      <text class="lbl" x="170" y="26">Fast</text>
+      <text class="lbl" x="40"  y="262">Cheap</text>
+      <text class="lbl" x="300" y="262">Good</text>
+    </svg>
+    <div class="readout" id="r3">&nbsp;</div>
+  </div>
+
+  <!-- ============ 3 · proportional ============ -->
+  <div class="card">
+    <h2>Proportional</h2>
+    <div class="note">Overlap area matches the number</div>
+    <svg viewBox="0 0 340 300" id="vp">
+      <circle class="set a" id="pa" cx="130" cy="150" r="80"/>
+      <circle class="set b" id="pb" cx="210" cy="150" r="62"/>
+      <text class="lbl" id="pla" x="70"  y="44">A · 100</text>
+      <text class="lbl" id="plb" x="268" y="44">B · 60</text>
+      <text class="cnt" id="pct" x="170" y="155"></text>
+    </svg>
+    <div class="ctl">
+      overlap <input type="range" id="ov" min="0" max="60" value="24"> <span id="ovv">24</span>
+    </div>
+    <div class="readout" id="rp">&nbsp;</div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- shared hover wiring ---------------- */
+function wire(svgSel, outSel, idle){
+  const out = document.querySelector(outSel);
+  out.innerHTML = idle;
+  document.querySelectorAll(svgSel+' .hit').forEach(h=>{
+    h.addEventListener('mouseenter',()=>{
+      h.classList.add('on');
+      out.innerHTML = '<b>'+h.dataset.l+'</b>';
+    });
+    h.addEventListener('mouseleave',()=>{
+      h.classList.remove('on');
+      out.innerHTML = idle;
+    });
+  });
+}
+
+/* ---------------- 2 · build the seven regions ---------------- */
+const S3 = [
+  {cx:170, cy:118, id:'ca'},
+  {cx:128, cy:188, id:'cb'},
+  {cx:212, cy:188, id:'cc'}
+];
+const LABELS3 = {
+  '100':'Fast only — rushed and wrong',
+  '010':'Cheap only — you get what you pay for',
+  '001':'Good only — and it will take forever',
+  '110':'Fast + Cheap — so, not good',
+  '101':'Fast + Good — so, not cheap',
+  '011':'Cheap + Good — so, not fast',
+  '111':'All three — pick two'
+};
+
+// Each region is: intersect the "in" circles (nested clip-paths),
+// then knock out the "out" circles with a mask.
+const hits3 = document.getElementById('hits3');
+const SVGNS = 'http://www.w3.org/2000/svg';
+const defs = document.querySelector('#v3 defs');
+
+[[1,0,0],[0,1,0],[0,0,1],[1,1,0],[1,0,1],[0,1,1],[1,1,1]].forEach(bits=>{
+  const key = bits.join('');
+  const ins  = S3.filter((_,i)=>bits[i]);
+  const outs = S3.filter((_,i)=>!bits[i]);
+
+  // mask: white = the first "in" circle, black = every "out" circle
+  const mask = document.createElementNS(SVGNS,'mask');
+  mask.id = 'mk'+key;
+  const white = document.createElementNS(SVGNS,'circle');
+  white.setAttribute('cx',ins[0].cx); white.setAttribute('cy',ins[0].cy);
+  white.setAttribute('r',80); white.setAttribute('fill','#fff');
+  mask.appendChild(white);
+  outs.forEach(o=>{
+    const c=document.createElementNS(SVGNS,'circle');
+    c.setAttribute('cx',o.cx); c.setAttribute('cy',o.cy);
+    c.setAttribute('r',80); c.setAttribute('fill','#000');
+    mask.appendChild(c);
+  });
+  defs.appendChild(mask);
+
+  // nest a <g> per additional "in" circle so they intersect
+  let host = hits3;
+  ins.slice(1).forEach(c=>{
+    const g=document.createElementNS(SVGNS,'g');
+    g.setAttribute('clip-path','url(#'+c.id+')');
+    host.appendChild(g); host = g;
+  });
+
+  const hit=document.createElementNS(SVGNS,'circle');
+  hit.setAttribute('class','hit');
+  hit.setAttribute('cx',ins[0].cx); hit.setAttribute('cy',ins[0].cy);
+  hit.setAttribute('r',80);
+  hit.setAttribute('mask','url(#mk'+key+')');
+  hit.dataset.l = LABELS3[key];
+  host.appendChild(hit);
+});
+
+/* ---------------- 3 · proportional ---------------- */
+// Area of a circle-circle lens, solved for the distance that produces
+// a given overlap. No closed form, so bisect — it converges instantly.
+function lensArea(r1,r2,d){
+  if(d>=r1+r2) return 0;
+  if(d<=Math.abs(r1-r2)) return Math.PI*Math.min(r1,r2)**2;
+  const a1=Math.acos((d*d+r1*r1-r2*r2)/(2*d*r1));
+  const a2=Math.acos((d*d+r2*r2-r1*r1)/(2*d*r2));
+  return r1*r1*(a1-Math.sin(2*a1)/2) + r2*r2*(a2-Math.sin(2*a2)/2);
+}
+function distanceFor(r1,r2,target){
+  let lo=Math.abs(r1-r2), hi=r1+r2;
+  for(let i=0;i<60;i++){
+    const mid=(lo+hi)/2;
+    if(lensArea(r1,r2,mid) > target) lo=mid; else hi=mid;
+  }
+  return (lo+hi)/2;
+}
+
+const A_N=100, B_N=60;
+const pa=document.getElementById('pa'), pb=document.getElementById('pb');
+const K = Math.PI*80*80 / A_N;                    // px² per unit
+const rA = 80, rB = Math.sqrt(K*B_N/Math.PI);
+pa.setAttribute('r',rA); pb.setAttribute('r',rB);
+
+function drawProp(n){
+  const d = distanceFor(rA,rB,K*n);
+  const cx = 170;
+  pa.setAttribute('cx', cx - d/2); pb.setAttribute('cx', cx + d/2);
+  document.getElementById('pla').setAttribute('x', cx - d/2 - rA + 26);
+  document.getElementById('plb').setAttribute('x', cx + d/2 + rB - 26);
+  document.getElementById('pct').textContent = n;
+  document.getElementById('ovv').textContent = n;
+  document.getElementById('rp').innerHTML =
+    '<b>'+n+'</b> of A ('+A_N+') and B ('+B_N+') — circles moved to match the area';
+}
+document.getElementById('ov').oninput = e => drawProp(+e.target.value);
+
+/* ---------------- go ---------------- */
+wire('#v2','#r2','&nbsp;');
+wire('#v3','#r3','&nbsp;');
+drawProp(24);
+</script>
+</body>
+</html>

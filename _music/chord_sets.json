@@ -898,6 +898,381 @@
       ],
       "notes": "4th chord unclear in transcript; aeolian/funk",
       "source": "bennett"
+    },
+    {
+      "key": "pillars",
+      "name": "Pillars (I IV V)",
+      "artist": "AC/DC — You Shook Me All Night Long",
+      "n": 3,
+      "ordered": false,
+      "degrees": [
+        1,
+        4,
+        5
+      ],
+      "roman": "I IV V",
+      "chords_C": "C F G",
+      "has_I": true,
+      "n_minor": 0,
+      "family": "pillars",
+      "corpus_sections": 113
+    },
+    {
+      "key": "wouldnt_it_be_nice",
+      "name": "Wouldn't It Be Nice",
+      "artist": "Beach Boys",
+      "n": 4,
+      "ordered": false,
+      "degrees": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "roman": "I ii IV V",
+      "chords_C": "C Dm F G",
+      "has_I": true,
+      "n_minor": 1,
+      "family": "pillars + supertonic",
+      "corpus_sections": 47
+    },
+    {
+      "key": "day_tripper",
+      "name": "Day Tripper",
+      "artist": "The Beatles",
+      "n": 2,
+      "ordered": false,
+      "degrees": [
+        1,
+        4
+      ],
+      "roman": "I IV",
+      "chords_C": "C F",
+      "has_I": true,
+      "n_minor": 0,
+      "family": "pillars",
+      "corpus_sections": 36
+    },
+    {
+      "key": "yellow_submarine",
+      "name": "Yellow Submarine",
+      "artist": "The Beatles",
+      "n": 5,
+      "ordered": false,
+      "degrees": [
+        1,
+        2,
+        4,
+        5,
+        6
+      ],
+      "roman": "I ii IV V vi",
+      "chords_C": "C Dm F G Am",
+      "has_I": true,
+      "n_minor": 2,
+      "family": "all but the mediant",
+      "corpus_sections": 32
+    },
+    {
+      "key": "chattahoochee",
+      "name": "Chattahoochee",
+      "artist": "Alan Jackson",
+      "n": 2,
+      "ordered": false,
+      "degrees": [
+        1,
+        5
+      ],
+      "roman": "I V",
+      "chords_C": "C G",
+      "has_I": true,
+      "n_minor": 0,
+      "family": "pillars",
+      "corpus_sections": 19
+    },
+    {
+      "key": "ticket_to_ride",
+      "name": "Ticket to Ride",
+      "artist": "The Beatles",
+      "n": 3,
+      "ordered": false,
+      "degrees": [
+        1,
+        2,
+        5
+      ],
+      "roman": "I ii V",
+      "chords_C": "C Dm G",
+      "has_I": true,
+      "n_minor": 1,
+      "family": "pillars + supertonic",
+      "corpus_sections": 18
+    },
+    {
+      "key": "strawberry_fields",
+      "name": "Strawberry Fields Forever",
+      "artist": "The Beatles",
+      "n": 5,
+      "ordered": false,
+      "degrees": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "roman": "I iii IV V vi",
+      "chords_C": "C Em F G Am",
+      "has_I": true,
+      "n_minor": 2,
+      "family": "all but the supertonic",
+      "corpus_sections": 17
+    },
+    {
+      "key": "obladi",
+      "name": "Ob-La-Di, Ob-La-Da",
+      "artist": "The Beatles",
+      "n": 3,
+      "ordered": false,
+      "degrees": [
+        1,
+        5,
+        6
+      ],
+      "roman": "I V vi",
+      "chords_C": "C G Am",
+      "has_I": true,
+      "n_minor": 1,
+      "family": "pillars + tonic-shadow",
+      "corpus_sections": 17
+    },
+    {
+      "key": "full_six",
+      "name": "The Full Six",
+      "artist": "Avril Lavigne — My Happy Ending",
+      "n": 6,
+      "ordered": false,
+      "degrees": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "roman": "I ii iii IV V vi",
+      "chords_C": "C Dm Em F G Am",
+      "has_I": true,
+      "n_minor": 3,
+      "family": "complete",
+      "corpus_sections": 14
+    },
+    {
+      "key": "too_little_too_late",
+      "name": "Too Little Too Late",
+      "artist": "JoJo",
+      "n": 4,
+      "ordered": false,
+      "degrees": [
+        1,
+        2,
+        5,
+        6
+      ],
+      "roman": "I ii V vi",
+      "chords_C": "C Dm G Am",
+      "has_I": true,
+      "n_minor": 2,
+      "family": "pillars + supertonic",
+      "corpus_sections": 14
+    },
+    {
+      "key": "dont_fear_the_reaper",
+      "name": "(Don't Fear) The Reaper",
+      "artist": "Blue Öyster Cult",
+      "n": 3,
+      "ordered": false,
+      "degrees": [
+        4,
+        5,
+        6
+      ],
+      "roman": "IV V vi",
+      "chords_C": "F G Am",
+      "has_I": false,
+      "n_minor": 1,
+      "family": "tonic-less",
+      "corpus_sections": 13
+    },
+    {
+      "key": "wonderwall",
+      "name": "Wonderwall",
+      "artist": "Oasis",
+      "n": 3,
+      "ordered": false,
+      "degrees": [
+        1,
+        4,
+        6
+      ],
+      "roman": "I IV vi",
+      "chords_C": "C F Am",
+      "has_I": true,
+      "n_minor": 1,
+      "family": "pillars + tonic-shadow",
+      "corpus_sections": 11
+    },
+    {
+      "key": "jeremy",
+      "name": "Jeremy",
+      "artist": "Pearl Jam",
+      "n": 2,
+      "ordered": false,
+      "degrees": [
+        4,
+        5
+      ],
+      "roman": "IV V",
+      "chords_C": "F G",
+      "has_I": false,
+      "n_minor": 0,
+      "family": "tonic-less",
+      "corpus_sections": 10
+    },
+    {
+      "key": "roar",
+      "name": "Roar",
+      "artist": "Katy Perry",
+      "n": 4,
+      "ordered": false,
+      "degrees": [
+        1,
+        2,
+        4,
+        6
+      ],
+      "roman": "I ii IV vi",
+      "chords_C": "C Dm F Am",
+      "has_I": true,
+      "n_minor": 2,
+      "family": "pillars + supertonic",
+      "corpus_sections": 10
+    },
+    {
+      "key": "man_in_the_mirror",
+      "name": "Man in the Mirror",
+      "artist": "Michael Jackson",
+      "n": 3,
+      "ordered": false,
+      "degrees": [
+        1,
+        2,
+        4
+      ],
+      "roman": "I ii IV",
+      "chords_C": "C Dm F",
+      "has_I": true,
+      "n_minor": 1,
+      "family": "pillars + supertonic",
+      "corpus_sections": 10
+    },
+    {
+      "key": "lean_on_me",
+      "name": "Lean on Me",
+      "artist": "Bill Withers",
+      "n": 5,
+      "ordered": false,
+      "degrees": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "roman": "I ii iii IV V",
+      "chords_C": "C Dm Em F G",
+      "has_I": true,
+      "n_minor": 2,
+      "family": "all but the tonic-shadow",
+      "corpus_sections": 8
+    },
+    {
+      "key": "i_feel_fine",
+      "name": "I Feel Fine",
+      "artist": "The Beatles",
+      "n": 4,
+      "ordered": false,
+      "degrees": [
+        1,
+        3,
+        4,
+        5
+      ],
+      "roman": "I iii IV V",
+      "chords_C": "C Em F G",
+      "has_I": true,
+      "n_minor": 1,
+      "family": "pillars + mediant",
+      "corpus_sections": 7
+    },
+    {
+      "key": "my_happiness",
+      "name": "My Happiness",
+      "artist": "Powderfinger",
+      "n": 4,
+      "ordered": false,
+      "degrees": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "roman": "iii IV V vi",
+      "chords_C": "Em F G Am",
+      "has_I": false,
+      "n_minor": 2,
+      "family": "tonic-less",
+      "corpus_sections": 6
+    },
+    {
+      "key": "you_really_got_me",
+      "name": "You Really Got Me",
+      "artist": "The Kinks",
+      "n": 2,
+      "ordered": false,
+      "degrees": [
+        1,
+        2
+      ],
+      "roman": "I ii",
+      "chords_C": "C Dm",
+      "has_I": true,
+      "n_minor": 1,
+      "family": "pillars + supertonic",
+      "corpus_sections": 6
+    },
+    {
+      "key": "ship_to_wreck",
+      "name": "Ship to Wreck",
+      "artist": "Florence + the Machine",
+      "n": 3,
+      "ordered": false,
+      "degrees": [
+        2,
+        4,
+        6
+      ],
+      "roman": "ii IV vi",
+      "chords_C": "Dm F Am",
+      "has_I": false,
+      "n_minor": 2,
+      "family": "tonic-less in major, tonic-ful in minor",
+      "corpus_sections": 2,
+      "note": "The verse is Am-F-Dm-Am (roots 6,4,2,6 in Hookpad's C major file), so the set has two readings: ii-IV-vi with no tonic in C, or i-VI-iv WITH the tonic in A minor. Which one you hear depends on landing on Am, and the verse both starts and ends there. RARE: only 2 sections in the corpus use exactly this set — this one and the Shins' 'Caring Is Creepy' bridge. Not because it hides in minor: the set i-iv-VI appears 0 times in minor-notated sections. The corpus is 2896 major-notated sections to 110 minor, so relative-minor passages live inside major files sitting on vi. Shares degrees with 'starlight' (Muse, Bennett) but that is an ordered loop ii-vi-IV; this is the unordered set.",
+      "examples": [
+        "Florence + the Machine — Ship to Wreck (verse)",
+        "The Shins — Caring Is Creepy (bridge)"
+      ]
     }
   ]
 }

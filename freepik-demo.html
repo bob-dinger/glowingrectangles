@@ -352,7 +352,13 @@
 
     <script src="freepik-api.js"></script>
     <script>
-        const API_KEY = 'FPSX98b5430c546d73ef259e47ed0df6eabd';
+        // This page is served by GitHub Pages, so anything written here is
+        // handed to every visitor -- a key cannot live in it. Paste one at
+        // runtime and it stays in this browser, or run freepik-proxy.py and
+        // point the page at localhost:3002.
+        const API_KEY = localStorage.getItem('freepik_api_key')
+            || prompt('Freepik API key (kept in this browser only):');
+        if (API_KEY) localStorage.setItem('freepik_api_key', API_KEY);
 
         const freepik = new FreepikAPI(API_KEY);
         const statusEl = document.getElementById('status');

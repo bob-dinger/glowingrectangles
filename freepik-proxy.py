@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Simple proxy server for Freepik API to handle CORS
-Run: python3 freepik-proxy.py
+Run: FREEPIK_API_KEY=... python3 freepik-proxy.py
 Then access: http://localhost:3002/icons?term=cooking
 """
 
@@ -9,8 +9,13 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request
 import ssl
 import json
+import os
+import sys
 
-API_KEY = 'FPSX98b5430c546d73ef259e47ed0df6eabd'
+# Never hardcode this: the repo is public and GitHub Pages serves this
+# directory, so a committed key is a published key.
+#   export FREEPIK_API_KEY=...
+API_KEY = os.environ.get('FREEPIK_API_KEY')
 FREEPIK_BASE = 'https://api.freepik.com/v1'
 PORT = 3002
 
@@ -68,6 +73,8 @@ class ProxyHandler(BaseHTTPRequestHandler):
         print(f"[Proxy] {args[0]}")
 
 if __name__ == '__main__':
+    if not API_KEY:
+        sys.exit('set FREEPIK_API_KEY in the environment first')
     server = HTTPServer(('localhost', PORT), ProxyHandler)
     print(f"Freepik API Proxy running on http://localhost:{PORT}")
     print(f"Example: http://localhost:{PORT}/icons?term=cooking")

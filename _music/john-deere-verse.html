@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>John Deere Green — Verse (ABAC)</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.wrap { width: 880px; padding: 20px; }
+h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; color: #e0e0e0; }
+.sub { color: #6a6a8a; font-size: 13px; margin-bottom: 28px; }
+
+.row {
+    display: grid;
+    grid-template-columns: 60px repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: stretch;
+}
+.label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 26px;
+    color: #6a6a8a;
+}
+.label.A { color: #c0c0e0; }
+.label.B { color: #8a8aa8; }
+.label.C { color: #8a8aa8; }
+
+.chord {
+    height: 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 28px;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+.chord .deg {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+    letter-spacing: 1px;
+}
+
+.deg-1 { background: rgba(220, 60, 60, 0.25); color: #ffa0a0; }
+.deg-2 { background: rgba(230, 140, 40, 0.25); color: #ffc888; }
+.deg-3 { background: rgba(220, 200, 40, 0.25); color: #f0e888; }
+.deg-4 { background: rgba(50, 180, 80, 0.25); color: #88e8a0; }
+.deg-5 { background: rgba(60, 120, 220, 0.25); color: #90b8f8; }
+.deg-6 { background: rgba(160, 80, 220, 0.25); color: #d0a0f8; }
+
+.legend { margin-top: 24px; font-size: 12px; color: #6a6a8a; line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <h1>Joe Diffie — John Deere Green <span style="color:#6a6a8a;font-weight:400;font-size:15px;">· verse · key of C</span></h1>
+    <div class="sub">16 bars · 4-bar phrases · pattern <strong style="color:#e0e0e0;">A B A C</strong></div>
+
+    <div class="row">
+        <div class="label A">A</div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-4">F<div class="deg">IV</div></div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+    </div>
+    <div class="row">
+        <div class="label B">B</div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-5">G<div class="deg">V</div></div>
+        <div class="chord deg-5">G<div class="deg">V</div></div>
+    </div>
+    <div class="row">
+        <div class="label A">A</div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-4">F<div class="deg">IV</div></div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+    </div>
+    <div class="row">
+        <div class="label C">C</div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-5">G<div class="deg">V</div></div>
+        <div class="chord deg-4">F<div class="deg">IV</div></div>
+        <div class="chord deg-5">G<div class="deg">V</div></div>
+    </div>
+
+    <div class="legend">
+        Phrase A repeats at bars 1-4 and 9-12 (statement, restated). B is the question (going to V). C is the new answer — the only phrase with all three chords moving (C-G-F-G).
+    </div>
+</div>
+</body>
+</html>

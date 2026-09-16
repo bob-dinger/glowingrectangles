@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Event, Sixteen Responses</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#0c0c11}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#e9e7e4}
+  svg{display:block;width:100vw;height:100vh}
+
+  .head{position:fixed;top:24px;left:32px;pointer-events:none;max-width:330px}
+  .head h1{font-size:19px;font-weight:600;letter-spacing:-.01em}
+  .head p{font-size:12.5px;color:#6f6e7a;margin-top:3px;line-height:1.5}
+  .warn{margin-top:9px;font-size:11px;color:#8a6d3b;background:rgba(180,140,60,.12);
+        border:1px solid rgba(180,140,60,.35);border-radius:4px;padding:5px 8px;
+        display:inline-block}
+
+  .key{position:fixed;top:24px;right:32px;text-align:right;pointer-events:none;
+       font-size:11.5px;color:#6f6e7a;line-height:1.7}
+  .key b{color:#c9c7d1;font-weight:600}
+  .sw{display:inline-block;width:10px;height:10px;border-radius:2px;
+      margin-left:7px;position:relative;top:1px}
+
+  .link{stroke:#23232e;stroke-width:1.3}
+  .node circle{cursor:grab;stroke:#0c0c11;stroke-width:2.5}
+  .node.dragging circle{cursor:grabbing}
+  .node text{
+    font-size:11px;font-weight:600;fill:#d6d4de;text-anchor:middle;
+    pointer-events:none;paint-order:stroke;stroke:#0c0c11;stroke-width:3.5px;
+  }
+  .core circle{stroke:#0c0c11;stroke-width:4}
+  .core text{font-size:13px;font-weight:700;fill:#0c0c11;stroke:none}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:7px;flex-wrap:wrap;
+       justify-content:center;padding:18px 20px}
+  .bar button{
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);
+    color:#cfcdd6;font:inherit;font-size:12px;padding:8px 14px;border-radius:6px;
+    cursor:pointer;backdrop-filter:blur(6px);transition:.15s;
+  }
+  .bar button:hover{border-color:#5eead4;color:#fff}
+  .bar button.on{background:#5eead4;border-color:#5eead4;color:#062e29;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1 id="title">One event, sixteen responses</h1>
+  <p id="sub">Distance = how strongly the group reacts. Colour = which way.</p>
+  <div class="warn">Illustrative sketch — the reactions are invented,
+    not measured. Edit SCENARIOS to use real numbers.</div>
+</div>
+
+<div class="key">
+  <b>closer</b> = reacts more strongly<br>
+  <span class="sw" style="background:#e0483a"></span> against &nbsp;
+  <span class="sw" style="background:#6b6a78"></span> indifferent &nbsp;
+  <span class="sw" style="background:#3fa87a"></span> in favour
+</div>
+
+<svg id="svg"></svg>
+<div class="bar" id="bar"></div>
+
+<script>
+/* ------------------------------------------------------------------
+   THE SIXTEEN. Swap freely — labels sit under the circles so length
+   does not matter.
+   ------------------------------------------------------------------ */
+const GROUPS = [
+  'Women, 20s',        'Men, 20s',
+  'Suburban mothers',  'Black men, 50s',
+  'Black women, 30s',  'Rural white men',
+  'College students',  'Retirees, 70s',
+  'Latino families',   'Small business owners',
+  'Union workers',     'Evangelical women',
+  'Tech workers, 30s', 'Single mothers',
+  'Veterans',          'Asian American professionals',
+];
+
+/* ------------------------------------------------------------------
+   THE SCENARIOS — INVENTED VALUES, PLACEHOLDERS ONLY.
+   Each entry lists only the groups that react notably; everyone else
+   defaults to a mild, neutral response. That is deliberate: most
+   events do not move most people much.
+       s = strength of reaction, 0 to 1
+       v = valence, -1 against ... +1 in favour
+   ------------------------------------------------------------------ */
+const DEFAULT = { s: 0.15, v: 0 };
+const SCENARIOS = [
+  { name: 'The factory closes',
+    react: {
+      'Union workers':        { s: 1.00, v: -1.0 },
+      'Rural white men':      { s: 0.85, v: -0.9 },
+      'Small business owners':{ s: 0.75, v: -0.7 },
+      'Veterans':             { s: 0.45, v: -0.4 },
+      'Retirees, 70s':        { s: 0.40, v: -0.3 },
+      'Tech workers, 30s':    { s: 0.10, v:  0.0 },
+    }},
+  { name: 'Rents rise 30%',
+    react: {
+      'Women, 20s':           { s: 0.95, v: -1.0 },
+      'Men, 20s':             { s: 0.90, v: -1.0 },
+      'Single mothers':       { s: 1.00, v: -1.0 },
+      'College students':     { s: 0.85, v: -0.9 },
+      'Latino families':      { s: 0.75, v: -0.8 },
+      'Retirees, 70s':        { s: 0.35, v:  0.2 },
+      'Small business owners':{ s: 0.45, v:  0.1 },
+    }},
+  { name: 'A new stadium is built',
+    react: {
+      'Men, 20s':             { s: 0.80, v:  0.9 },
+      'Small business owners':{ s: 0.70, v:  0.6 },
+      'Tech workers, 30s':    { s: 0.40, v:  0.3 },
+      'Suburban mothers':     { s: 0.55, v: -0.4 },
+      'Retirees, 70s':        { s: 0.50, v: -0.6 },
+      'Union workers':        { s: 0.45, v:  0.7 },
+    }},
+  { name: 'Schools go remote',
+    react: {
+      'Suburban mothers':     { s: 1.00, v: -0.9 },
+      'Single mothers':       { s: 1.00, v: -1.0 },
+      'Latino families':      { s: 0.70, v: -0.8 },
+      'Tech workers, 30s':    { s: 0.50, v:  0.2 },
+      'College students':     { s: 0.45, v: -0.2 },
+      'Retirees, 70s':        { s: 0.10, v:  0.0 },
+    }},
+  { name: 'Interest rates jump',
+    react: {
+      'Small business owners':{ s: 0.95, v: -0.9 },
+      'Suburban mothers':     { s: 0.65, v: -0.6 },
+      'Retirees, 70s':        { s: 0.70, v:  0.6 },
+      'Tech workers, 30s':    { s: 0.60, v: -0.5 },
+      'Women, 20s':           { s: 0.40, v: -0.4 },
+      'Men, 20s':             { s: 0.40, v: -0.4 },
+    }},
+  { name: 'A hurricane hits',
+    react: {
+      'Veterans':             { s: 0.70, v:  0.3 },
+      'Retirees, 70s':        { s: 0.85, v: -0.8 },
+      'Single mothers':       { s: 0.80, v: -0.9 },
+      'Latino families':      { s: 0.75, v: -0.8 },
+      'Black men, 50s':       { s: 0.70, v: -0.7 },
+      'Black women, 30s':     { s: 0.70, v: -0.7 },
+      'Small business owners':{ s: 0.65, v: -0.7 },
+    }},
+];
+
+/* ---------------------------------------------------------------- */
+const svg = d3.select('#svg');
+let W = innerWidth, H = innerHeight;
+let ringR = Math.min(W, H) * 0.34;
+let scen = 0;
+
+const valence = d3.scaleLinear()
+  .domain([-1, 0, 1]).range(['#e0483a', '#6b6a78', '#3fa87a'])
+  .interpolate(d3.interpolateRgb);
+
+const nodes = [
+  { id: 'EVENT', core: true, r: 58 },
+  ...GROUPS.map(g => ({ id: g, ...DEFAULT, r: 22 })),
+];
+const links = nodes.slice(1).map(n => ({ source: 'EVENT', target: n.id }));
+
+const gLink = svg.append('g'), gNode = svg.append('g');
+const link = gLink.selectAll('line').data(links).join('line').attr('class', 'link');
+const node = gNode.selectAll('g').data(nodes).join('g')
+  .attr('class', d => d.core ? 'node core' : 'node');
+
+node.append('circle').attr('r', d => d.r);
+node.append('text').attr('dy', d => d.core ? 5 : d.r + 16).text(d => d.id);
+
+/* strength pulls a group INWARD — a strong reaction sits close to the event */
+const wantR = d => d.core ? 0 : ringR * (1 - d.s * 0.52);
+const wantSize = d => d.core ? 58 : 15 + d.s * 24;
+
+const sim = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(links).id(d => d.id).strength(0.06))
+  .force('charge', d3.forceManyBody().strength(d => d.core ? -900 : -140))
+  .force('collide', d3.forceCollide(d => d.core ? d.r + 14 : d.r + 34).strength(1))
+  .force('radial', d3.forceRadial(wantR, W/2, H/2).strength(d => d.core ? 1 : 0.5))
+  .on('tick', tick);
+
+function tick() {
+  link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+  node.attr('transform', d => `translate(${d.x},${d.y})`);
+}
+
+const core = nodes[0];
+core.fx = W/2; core.fy = H/2;
+
+function apply(i) {
+  scen = i;
+  const sc = SCENARIOS[i];
+  core.label = sc.name;
+
+  nodes.forEach(n => {
+    if (n.core) return;
+    const r = sc.react[n.id] || DEFAULT;
+    n.s = r.s; n.v = r.v;
+    n.r = wantSize(n);
+  });
+
+  node.select('circle').transition().duration(700).ease(d3.easeCubicOut)
+      .attr('r', d => d.r)
+      .attr('fill', d => d.core ? '#f4f2ee' : valence(d.v))
+      .attr('fill-opacity', d => d.core ? 1 : 0.15 + d.s * 0.8);
+
+  node.select('text').transition().duration(700)
+      .attr('dy', d => d.core ? 5 : d.r + 15)
+      .attr('fill-opacity', d => d.core ? 1 : 0.35 + d.s * 0.65);
+
+  node.filter(d => d.core).select('text').text(sc.name.replace(/^(The |A )/, ''));
+
+  sim.force('radial').radius(wantR);
+  sim.force('collide').radius(d => d.core ? d.r + 14 : d.r + 34);
+  sim.alpha(0.85).restart();
+
+  document.querySelectorAll('#bar button')
+    .forEach((b, k) => b.classList.toggle('on', k === i));
+  document.getElementById('sub').textContent =
+    'Distance = how strongly the group reacts. Colour = which way.';
+}
+
+/* buttons */
+const bar = document.getElementById('bar');
+SCENARIOS.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.textContent = s.name;
+  b.onclick = () => apply(i);
+  bar.appendChild(b);
+});
+
+node.filter(d => !d.core).call(
+  d3.drag()
+    .on('start', function (e, d) {
+      if (!e.active) sim.alphaTarget(0.3).restart();
+      d.fx = d.x; d.fy = d.y; d3.select(this).classed('dragging', true);
+    })
+    .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+    .on('end', function (e, d) {
+      if (!e.active) sim.alphaTarget(0);
+      d.fx = d.fy = null; d3.select(this).classed('dragging', false);
+    })
+);
+
+addEventListener('resize', () => {
+  W = innerWidth; H = innerHeight;
+  ringR = Math.min(W, H) * 0.34;
+  core.fx = W/2; core.fy = H/2;
+  sim.force('radial').x(W/2).y(H/2).radius(wantR);
+  sim.alpha(0.6).restart();
+});
+
+apply(0);
+</script>
+</body>
+</html>

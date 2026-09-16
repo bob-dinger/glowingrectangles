@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viz Lab — SVG · D3 · GSAP</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:#0d0d10;color:#e8e6e3;height:100vh;overflow:hidden;display:flex;
+  }
+  code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  /* ---------- left rail ---------- */
+  nav{width:186px;flex:0 0 186px;background:#141419;border-right:1px solid #24242c;padding:18px 0;display:flex;flex-direction:column}
+  nav h1{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:#6b6b78;padding:0 18px 14px}
+  nav button{
+    display:block;width:100%;text-align:left;background:none;border:0;color:#9a98a4;
+    font:inherit;font-size:13px;padding:9px 18px;cursor:pointer;border-left:2px solid transparent;
+  }
+  nav button:hover{color:#e8e6e3;background:#1a1a21}
+  nav button.on{color:#fff;background:#1a1a21;border-left-color:#5eead4}
+  nav .hint{margin-top:auto;padding:14px 18px 0;font-size:11px;line-height:1.5;color:#55555f;border-top:1px solid #24242c}
+
+  /* ---------- main ---------- */
+  main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .head{padding:20px 26px 14px;border-bottom:1px solid #24242c}
+  .head h2{font-size:17px;font-weight:600;margin-bottom:3px}
+  .head p{font-size:12.5px;color:#7c7a88;line-height:1.5;max-width:640px}
+  .stage{flex:1;position:relative;overflow:hidden}
+  .panel{position:absolute;inset:0;display:none;flex-direction:column}
+  .panel.on{display:flex}
+
+  .ctl{
+    border-top:1px solid #24242c;background:#111116;padding:12px 26px;
+    display:flex;gap:20px;align-items:center;flex-wrap:wrap;font-size:12px;
+  }
+  .ctl label{display:flex;align-items:center;gap:7px;color:#8b8996}
+  .ctl select,.ctl input[type=range]{accent-color:#5eead4}
+  .ctl select{background:#1c1c24;color:#e8e6e3;border:1px solid #33333f;border-radius:4px;padding:4px 7px;font:inherit;font-size:12px}
+  .ctl button{background:#5eead4;color:#08302b;border:0;border-radius:4px;padding:6px 13px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+  .ctl button.ghost{background:#1c1c24;color:#c9c7d1;border:1px solid #33333f}
+  .val{color:#5eead4;min-width:34px;display:inline-block}
+
+  svg{display:block;width:100%;height:100%}
+  .cap{position:absolute;left:26px;bottom:14px;font-size:11.5px;color:#55555f}
+</style>
+</head>
+<body>
+
+<nav>
+  <h1>Viz Lab</h1>
+  <button data-p="ease" class="on">Eases</button>
+  <button data-p="stagger">Stagger</button>
+  <button data-p="timeline">Timeline</button>
+  <div class="hint">Everything here is one <code>gsap.timeline()</code> plus d3 for the math. Nothing scrolls.</div>
+</nav>
+
+<main>
+  <div class="head">
+    <h2 id="t">Eases</h2>
+    <p id="d"></p>
+  </div>
+
+  <div class="stage">
+
+    <!-- ===================== 1. EASES ===================== -->
+    <div class="panel on" id="p-ease">
+      <svg id="s-ease"></svg>
+      <div class="cap">Curve = value over time. Dot = what that feels like.</div>
+      <div class="ctl">
+        <label>ease
+          <select id="ease-pick"></select>
+        </label>
+        <button id="ease-go">Play</button>
+        <span style="color:#55555f">or click any curve</span>
+      </div>
+    </div>
+
+    <!-- ===================== 2. STAGGER ===================== -->
+    <div class="panel" id="p-stagger">
+      <svg id="s-stagger"></svg>
+      <div class="ctl">
+        <label>from
+          <select id="st-from">
+            <option>start</option><option selected>center</option><option>end</option>
+            <option>edges</option><option>random</option>
+          </select>
+        </label>
+        <label>axis
+          <select id="st-axis">
+            <option value="">both</option><option value="x">x</option><option value="y">y</option>
+          </select>
+        </label>
+        <label>amount <input type="range" id="st-amt" min="0.1" max="3" step="0.1" value="1.2">
+          <span class="val" id="st-amt-v">1.2</span>s</label>
+        <label>ease
+          <select id="st-ease">
+            <option>power2.out</option><option>back.out(2)</option>
+            <option>elastic.out(1,0.4)</option><option>none</option>
+          </select>
+        </label>
+        <button id="st-go">Run</button>
+      </div>
+    </div>
+
+    <!-- ===================== 3. TIMELINE ===================== -->
+    <div class="panel" id="p-timeline">
+      <svg id="s-timeline"></svg>
+      <div class="ctl">
+        <button id="tl-play">Play</button>
+        <button class="ghost" id="tl-back">↺</button>
+        <label style="flex:1;min-width:220px">
+          <input type="range" id="tl-scrub" min="0" max="1000" value="0" style="width:100%">
+        </label>
+        <span class="val mono" id="tl-time">0.00s</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const TEAL='#5eead4', PINK='#f472b6', AMBER='#fbbf24', VIOLET='#a78bfa';
+
+const BLURB = {
+  ease:'The single highest-leverage thing in GSAP. Same duration, same distance — only the shape of the curve changes, and it changes everything about how the motion reads.',
+  stagger:'One tween, many targets. `stagger` is an object, not a number: from, axis, grid, amount. This is how you animate 254 counties in one line.',
+  timeline:'A timeline is seekable and labeled — so it can be scrubbed, stepped, and replayed. That is the whole reason to prefer it over d3 transitions.'
+};
+
+/* =====================================================================
+   1 · EASES
+   ===================================================================== */
+(() => {
+  const EASES = ['none','power1.out','power2.out','power4.out','power2.in','power2.inOut',
+                 'back.out(1.7)','back.out(3)','elastic.out(1,0.3)','elastic.out(1,0.75)',
+                 'bounce.out','circ.out','expo.out','sine.inOut','steps(6)'];
+  const sel = $('#ease-pick');
+  EASES.forEach(e => sel.add(new Option(e, e)));
+  sel.value = 'power2.out';
+
+  const svg = d3.select('#s-ease');
+  let cells = [];
+
+  function draw() {
+    svg.selectAll('*').remove();
+    const {width:W, height:H} = svg.node().getBoundingClientRect();
+    const cols = 5, rows = Math.ceil(EASES.length/cols);
+    const cw = W/cols, ch = H/rows, pad = 20;
+    const box = Math.min(cw, ch) - pad*2;
+
+    cells = EASES.map((name, i) => {
+      const cx = (i%cols)*cw + (cw-box)/2, cy = Math.floor(i/cols)*ch + (ch-box)/2;
+      const g = svg.append('g').attr('transform',`translate(${cx},${cy})`)
+                   .style('cursor','pointer').on('click', () => { sel.value=name; play(); });
+
+      const x = d3.scaleLinear([0,1],[0,box]), y = d3.scaleLinear([0,1],[box,0]);
+      // sample the ease itself — gsap.parseEase gives you the function
+      const fn = gsap.parseEase(name);
+      const pts = d3.range(0,1.001,0.01).map(t => [x(t), y(fn(t))]);
+
+      g.append('rect').attr('width',box).attr('height',box)
+        .attr('fill','#15151b').attr('stroke','#26262f').attr('rx',5);
+      g.append('path').attr('d', d3.line()(pts))
+        .attr('fill','none').attr('stroke','#3f3f4d').attr('stroke-width',1.6)
+        .attr('class','curve');
+      const dot = g.append('circle').attr('r',5).attr('cx',0).attr('cy',box).attr('fill',TEAL);
+      g.append('text').text(name).attr('x',box/2).attr('y',box+13)
+        .attr('text-anchor','middle').attr('font-size',9.5).attr('fill','#6b6b78')
+        .attr('font-family','ui-monospace,Menlo,monospace');
+      return {name, g, dot, box, x, y};
+    });
+  }
+
+  function play() {
+    const pick = sel.value;
+    cells.forEach(c => {
+      const active = c.name === pick;
+      c.g.select('.curve').attr('stroke', active ? TEAL : '#3f3f4d')
+                          .attr('stroke-width', active ? 2.4 : 1.6);
+      c.dot.attr('fill', active ? TEAL : '#3f3f4d');
+      gsap.killTweensOf(c.dot.node());
+      gsap.set(c.dot.node(), {attr:{cx:0, cy:c.box}});
+      gsap.to(c.dot.node(), {
+        attr:{cx:c.box, cy:0}, duration:1.5, ease:c.name,
+        delay: active ? 0 : 0        // everything runs, so you can compare
+      });
+    });
+  }
+
+  $('#ease-go').onclick = play;
+  sel.onchange = play;
+  window.addEventListener('resize', () => { draw(); });
+  window._easeInit = () => { draw(); play(); };
+})();
+
+/* =====================================================================
+   2 · STAGGER
+   ===================================================================== */
+(() => {
+  const COLS = 22, ROWS = 12;
+  const svg = d3.select('#s-stagger');
+  let dots = [];
+
+  function draw() {
+    svg.selectAll('*').remove();
+    const {width:W, height:H} = svg.node().getBoundingClientRect();
+    const gx = d3.scaleBand(d3.range(COLS), [30, W-30]).paddingInner(0.35);
+    const gy = d3.scaleBand(d3.range(ROWS), [26, H-26]).paddingInner(0.35);
+    const r = Math.min(gx.bandwidth(), gy.bandwidth())/2;
+
+    const data = d3.cross(d3.range(ROWS), d3.range(COLS));
+    dots = svg.selectAll('circle').data(data).join('circle')
+      .attr('cx', d => gx(d[1]) + gx.bandwidth()/2)
+      .attr('cy', d => gy(d[0]) + gy.bandwidth()/2)
+      .attr('r', r).attr('fill', TEAL).nodes();
+  }
+
+  function run() {
+    const from = $('#st-from').value;
+    const axis = $('#st-axis').value || null;
+    const amount = +$('#st-amt').value;
+    const ease = $('#st-ease').value;
+
+    gsap.killTweensOf(dots);
+    gsap.set(dots, {scale:0, opacity:0, transformOrigin:'50% 50%'});
+    gsap.to(dots, {
+      scale:1, opacity:1, duration:0.5, ease,
+      stagger:{ amount, from, axis, grid:[ROWS,COLS] }
+    });
+  }
+
+  $('#st-amt').oninput = e => $('#st-amt-v').textContent = e.target.value;
+  ['#st-from','#st-axis','#st-ease'].forEach(s => $(s).onchange = run);
+  $('#st-go').onclick = run;
+  window.addEventListener('resize', draw);
+  window._staggerInit = () => { draw(); run(); };
+})();
+
+/* =====================================================================
+   3 · TIMELINE
+   ===================================================================== */
+(() => {
+  const svg = d3.select('#s-timeline');
+  let tl = null;
+
+  function build() {
+    svg.selectAll('*').remove();
+    const {width:W, height:H} = svg.node().getBoundingClientRect();
+    const cy = H/2;
+
+    const bars = d3.range(9);
+    const x = d3.scaleBand(bars, [W*0.12, W*0.88]).paddingInner(0.3);
+    const g = svg.append('g');
+
+    const rects = g.selectAll('rect').data(bars).join('rect')
+      .attr('x', d => x(d)).attr('width', x.bandwidth())
+      .attr('y', cy).attr('height', 0)
+      .attr('fill', TEAL).attr('rx', 3).nodes();
+
+    const dot = svg.append('circle').attr('cx', W*0.06).attr('cy', cy)
+      .attr('r', 13).attr('fill', PINK).node();
+
+    const label = svg.append('text').attr('x', W/2).attr('y', H*0.18)
+      .attr('text-anchor','middle').attr('font-size',15).attr('fill', AMBER)
+      .attr('opacity',0).attr('font-family','ui-monospace,Menlo,monospace')
+      .text('labels make it steppable').node();
+
+    if (tl) tl.kill();
+    tl = gsap.timeline({paused:true, defaults:{ease:'power2.out'}});
+
+    tl.addLabel('grow')
+      .to(rects, {attr:{height:(i)=> 30+i*14, y:(i)=> cy-(30+i*14)/2},
+                  duration:0.7, stagger:0.07})
+
+      .addLabel('travel')
+      // "<" = start together with the previous tween
+      .to(dot, {attr:{cx:W*0.94}, duration:1.4, ease:'power1.inOut'})
+      .to(rects, {fill:VIOLET, duration:0.5, stagger:0.05}, '<')
+
+      .addLabel('reveal')
+      // "-=0.3" = overlap the previous by 300ms
+      .to(label, {opacity:1, duration:0.5}, '-=0.3')
+      .to(rects, {attr:{height:8, y:cy-4}, duration:0.5, stagger:{each:0.05, from:'end'}})
+      .addLabel('end');
+
+    $('#tl-scrub').max = 1000;
+    tl.eventCallback('onUpdate', sync);
+    sync();
+  }
+
+  function sync() {
+    if (!tl) return;
+    $('#tl-scrub').value = (tl.progress()*1000)|0;
+    $('#tl-time').textContent = tl.time().toFixed(2)+'s';
+  }
+
+  $('#tl-scrub').oninput = e => { tl && tl.pause().progress(e.target.value/1000); };
+  $('#tl-play').onclick = () => { if(!tl) return; if(tl.progress()>=1) tl.progress(0); tl.play(); };
+  $('#tl-back').onclick = () => tl && tl.pause(0);
+  window.addEventListener('resize', build);
+  window._timelineInit = () => { build(); tl.play(); };
+})();
+
+/* ===================== tabs ===================== */
+const INIT = {ease:'_easeInit', stagger:'_staggerInit', timeline:'_timelineInit'};
+const started = {};
+function show(name) {
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.p===name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id==='p-'+name));
+  $('#t').textContent = {ease:'Eases', stagger:'Stagger', timeline:'Timeline'}[name];
+  $('#d').textContent = BLURB[name];
+  // panels are display:none until shown, so measure only after they're visible
+  requestAnimationFrame(() => window[INIT[name]]());
+  started[name] = true;
+}
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.dataset.p));
+show('ease');
+</script>
+</body>
+</html>

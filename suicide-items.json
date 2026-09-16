@@ -1,0 +1,718 @@
+{
+  "_schema": {
+    "note": "Rate cards, NOT perception cards. There is no 'what people think' side here \u2014 both panels are measured facts. Kept in a separate file from perception-items.json because that file's contract is 'a measured perception paired with a measured reality', which these are not.",
+    "critical": "These numbers are per 100,000 PEOPLE PER YEAR, not percentages. The perception cards light N of 100 villagers because those numbers are percentages; doing that here would read as 13% when the truth is 13 per 100,000 \u2014 wrong by a factor of a thousand. So rate cards draw the lit figures as a COUNT with no 100-slot frame, and the caption always carries the denominator.",
+    "pairing_rule": "Both sides of a card must come from the SAME series with the SAME rate_type. The file mixes crude age-specific rates with age-adjusted all-ages rates, and comparing across them is invalid \u2014 that trap makes 1932 (17.4 crude) look worse than 2023 (14.2 age-adjusted).",
+    "fields": {
+      "id": "stable slug",
+      "ask": "the question the card answers",
+      "left": "{label, value}",
+      "right": "{label, value}",
+      "unit": "the denominator, printed on the card",
+      "rate_type": "crude | age-adjusted \u2014 must match on both sides",
+      "series": "which dataset in the CSV",
+      "point": "what the card is showing",
+      "source_url": "CDC primary source",
+      "verified": "read off the CSV this session"
+    },
+    "race_note": "Race breakdowns are NOT in the source CSV, which carries only sex and age. They come from CDC directly: Data Brief 464 for rates by race WITHIN sex (2021, the most recent year CDC publishes that cross-tab) and MMWR 74/35 for race overall (2023). Do not mix the two years on one card. CDC states AI/AN suicide deaths are undercounted by roughly 34% through race misclassification on death certificates \u2014 any AI/AN figure is a floor."
+  },
+  "items": [
+    {
+      "id": "gradient-1932",
+      "ask": "In 1932, who was killing themselves?",
+      "left": {
+        "label": "AGED 15-24",
+        "value": 7.3
+      },
+      "right": {
+        "label": "AGED 65-74",
+        "value": 51.3
+      },
+      "unit": "deaths per 100,000 per year",
+      "rate_type": "crude",
+      "series": "Depression-era age-specific",
+      "year": 1932,
+      "point": "Seven times. In the Depression the old, not the young, were dying.",
+      "source_url": "https://www.cdc.gov/nchs/data/dvs/hist290_0039.pdf",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "young-men-1950-1990",
+      "ask": "Boys aged 15-19, 1950 against 1990",
+      "left": {
+        "label": "1950",
+        "value": 3.5
+      },
+      "right": {
+        "label": "1990",
+        "value": 18.1
+      },
+      "unit": "deaths per 100,000 boys per year",
+      "rate_type": "crude",
+      "series": "Youth suicide rates by age and sex",
+      "point": "Five times higher in forty years. The largest move in the whole record.",
+      "source_url": "https://www.cdc.gov/mmwr/preview/mmwrhtml/00031525.htm",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "young-women-1950-1990",
+      "ask": "And girls aged 15-19, over the same forty years",
+      "left": {
+        "label": "1950",
+        "value": 1.8
+      },
+      "right": {
+        "label": "1990",
+        "value": 3.7
+      },
+      "unit": "deaths per 100,000 girls per year",
+      "rate_type": "crude",
+      "series": "Youth suicide rates by age and sex",
+      "point": "Girls doubled. Boys went up fivefold. Same country, same decades.",
+      "source_url": "https://www.cdc.gov/mmwr/preview/mmwrhtml/00031525.htm",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "young-men-plateau",
+      "ask": "Young men aged 15-24, 1990 against 2023",
+      "left": {
+        "label": "1990",
+        "value": 22.0
+      },
+      "right": {
+        "label": "2023",
+        "value": 21.2
+      },
+      "unit": "deaths per 100,000 men per year",
+      "rate_type": "crude",
+      "series": "Youth 1990 vs Modern age-specific 2023",
+      "point": "Thirty-three years. Nothing changed. The crisis arrived before 1990 and stayed.",
+      "source_url": "https://www.cdc.gov/nchs/products/databriefs/db541.htm",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "oldest-men-vs-women",
+      "ask": "Americans aged 75 and over, 2023",
+      "left": {
+        "label": "WOMEN",
+        "value": 5.1
+      },
+      "right": {
+        "label": "MEN",
+        "value": 40.7
+      },
+      "unit": "deaths per 100,000 per year",
+      "rate_type": "crude",
+      "series": "Modern age-specific",
+      "year": 2023,
+      "point": "Eight to one. The widest sex gap of any age group in America.",
+      "source_url": "https://www.cdc.gov/nchs/products/databriefs/db541.htm",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "men-young-vs-old",
+      "ask": "American males, youngest against oldest, 2023",
+      "left": {
+        "label": "AGED 10-14",
+        "value": 2.5
+      },
+      "right": {
+        "label": "AGED 75+",
+        "value": 40.7
+      },
+      "unit": "deaths per 100,000 males per year",
+      "rate_type": "crude",
+      "series": "Modern age-specific",
+      "year": 2023,
+      "point": "Sixteen times. Old men are the most at-risk group in the country.",
+      "source_url": "https://www.cdc.gov/nchs/products/databriefs/db541.htm",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "sexes-1932",
+      "ask": "Men and women in 1932",
+      "left": {
+        "label": "WOMEN",
+        "value": 7.1
+      },
+      "right": {
+        "label": "MEN",
+        "value": 27.4
+      },
+      "unit": "deaths per 100,000 per year",
+      "rate_type": "crude",
+      "series": "Depression-era",
+      "year": 1932,
+      "point": "3.86 to one.",
+      "source_url": "https://www.cdc.gov/nchs/data/dvs/hist290_0039.pdf",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "sexes-2023",
+      "ask": "Men and women in 2023",
+      "left": {
+        "label": "WOMEN",
+        "value": 5.9
+      },
+      "right": {
+        "label": "MEN",
+        "value": 22.7
+      },
+      "unit": "deaths per 100,000 per year",
+      "rate_type": "age-adjusted",
+      "series": "Annual suicide rate by sex",
+      "year": 2023,
+      "point": "3.85 to one. Ninety-one years later, the ratio has not moved.",
+      "source_url": "https://www.cdc.gov/nchs/products/databriefs/db541.htm",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "modern-rise",
+      "ask": "The American suicide rate, 2003 against 2018",
+      "left": {
+        "label": "2003",
+        "value": 10.8
+      },
+      "right": {
+        "label": "2018",
+        "value": 14.2
+      },
+      "unit": "deaths per 100,000 per year",
+      "rate_type": "age-adjusted",
+      "series": "Annual suicide rate by sex",
+      "point": "Up a third in fifteen years, and it has stayed there since.",
+      "source_url": "https://www.cdc.gov/nchs/products/databriefs/db541.htm",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "women-modern-rise",
+      "ask": "American women, 2003 against 2018",
+      "left": {
+        "label": "2003",
+        "value": 4.2
+      },
+      "right": {
+        "label": "2018",
+        "value": 6.2
+      },
+      "unit": "deaths per 100,000 women per year",
+      "rate_type": "age-adjusted",
+      "series": "Annual suicide rate by sex",
+      "point": "Up by half. Women's rate rose faster than men's, from a far lower base.",
+      "source_url": "https://www.cdc.gov/nchs/products/databriefs/db541.htm",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "white-vs-black-men",
+      "ask": "American men, White against Black",
+      "left": {
+        "label": "BLACK MEN",
+        "value": 14.6
+      },
+      "right": {
+        "label": "WHITE MEN",
+        "value": 28.0
+      },
+      "unit": "deaths per 100,000 men per year",
+      "rate_type": "age-adjusted",
+      "series": "NCHS Data Brief 464",
+      "year": 2021,
+      "point": "1.9 to one. But the gap is closing from the wrong end: Black rates rose 25% from 2018 to 2023 while White rates fell 3%.",
+      "source_url": "https://www.cdc.gov/nchs/products/databriefs/db464.htm",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "native-men",
+      "ask": "The most at-risk group in America",
+      "left": {
+        "label": "WHITE MEN",
+        "value": 28.0
+      },
+      "right": {
+        "label": "NATIVE MEN",
+        "value": 42.6
+      },
+      "unit": "deaths per 100,000 men per year",
+      "rate_type": "age-adjusted",
+      "series": "NCHS Data Brief 464",
+      "year": 2021,
+      "point": "American Indian and Alaska Native men. CDC notes these deaths are undercounted by about a third through misclassification, so the true figure is higher still.",
+      "source_url": "https://www.cdc.gov/nchs/products/databriefs/db464.htm",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "widest-race-gap",
+      "ask": "The widest gap between two groups of American men",
+      "left": {
+        "label": "ASIAN MEN",
+        "value": 9.9
+      },
+      "right": {
+        "label": "NATIVE MEN",
+        "value": 42.6
+      },
+      "unit": "deaths per 100,000 men per year",
+      "rate_type": "age-adjusted",
+      "series": "NCHS Data Brief 464",
+      "year": 2021,
+      "point": "Four to one. Both are American men, counted the same way in the same year.",
+      "source_url": "https://www.cdc.gov/nchs/products/databriefs/db464.htm",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "race-2023",
+      "ask": "Suicide by race in America, 2023",
+      "left": {
+        "label": "ASIAN",
+        "value": 6.5
+      },
+      "right": {
+        "label": "NATIVE",
+        "value": 23.8
+      },
+      "unit": "deaths per 100,000 per year",
+      "rate_type": "age-adjusted",
+      "series": "MMWR 74/35, both sexes",
+      "year": 2023,
+      "point": "White 17.6, Native Hawaiian 17.3, Black 9.1, Hispanic 8.2. The national rate is 14.1.",
+      "source_url": "https://www.cdc.gov/mmwr/volumes/74/wr/mm7435a2.htm",
+      "verified": true,
+      "suffix": "per 100k"
+    },
+    {
+      "id": "tries-vs-dies",
+      "ask": "Who tries, and who dies",
+      "rows": [
+        {
+          "title": "who tries",
+          "unit": "out of 100 high school students, past year  \u00b7  YRBS 2023",
+          "values": [
+            [
+              "BLACK",
+              10.3
+            ],
+            [
+              "WHITE",
+              8.3
+            ]
+          ],
+          "suffix": "%"
+        },
+        {
+          "title": "who dies",
+          "unit": "per 100,000 men per year  \u00b7  age-adjusted, 2021",
+          "values": [
+            [
+              "BLACK MEN",
+              14.6
+            ],
+            [
+              "WHITE MEN",
+              28.0
+            ]
+          ],
+          "suffix": "per 100k"
+        }
+      ],
+      "point": "Black students attempt suicide at a significantly HIGHER rate. Black men die at half the rate. More people trying and fewer dying is not a fact about despair \u2014 it is a fact about method. Firearms are 5% of attempts and 50% of deaths.",
+      "cite": "CDC: YRBS 2023 (MMWR 73/su) and NCHS Data Brief 464",
+      "rate_type": "mixed - each row is labelled with its own denominator",
+      "verified": true,
+      "note": "The two rows CANNOT share an axis: attempts are a percentage of high school students, deaths are per 100,000 adult men. Different denominators and different populations. That is why this is two labelled rows and not one chart."
+    },
+    {
+      "id": "age-inversion-white-men",
+      "ask": "White men: the young and the old, then and now",
+      "rows": [
+        {
+          "title": "1950",
+          "unit": "per 100,000 white men per year  \u00b7  crude",
+          "suffix": "per 100k",
+          "values": [
+            [
+              "AGED 15-24",
+              6.6
+            ],
+            [
+              "AGED 65+",
+              55.8
+            ]
+          ]
+        },
+        {
+          "title": "2018",
+          "unit": "per 100,000 white men per year  \u00b7  crude",
+          "suffix": "per 100k",
+          "values": [
+            [
+              "AGED 15-24",
+              24.4
+            ],
+            [
+              "AGED 65+",
+              36.2
+            ]
+          ]
+        }
+      ],
+      "point": "In 1950 an old white man was eight times likelier to kill himself than a young one. Now the two are almost level \u2014 the young quadrupled while the old got much safer.",
+      "cite": "CDC, Health United States Table 9",
+      "rate_type": "crude",
+      "verified": true
+    },
+    {
+      "id": "young-white-men",
+      "ask": "White men aged 15-24, 1950 against 2018",
+      "left": {
+        "label": "1950",
+        "value": 6.6
+      },
+      "right": {
+        "label": "2018",
+        "value": 24.4
+      },
+      "unit": "per 100,000 white men per year",
+      "suffix": "per 100k",
+      "rate_type": "crude",
+      "series": "Health, United States Table 9 \u2014 white males, crude",
+      "point": "Nearly quadrupled. The only age group at an all-time high.",
+      "source_url": "https://data.cdc.gov/National-Center-for-Health-Statistics/Death-rates-for-suicide-by-sex-race-Hispanic-origi/9j2v-jamp",
+      "verified": true
+    },
+    {
+      "id": "old-white-men",
+      "ask": "White men aged 65 and over, 1950 against 2018",
+      "left": {
+        "label": "1950",
+        "value": 55.8
+      },
+      "right": {
+        "label": "2018",
+        "value": 36.2
+      },
+      "unit": "per 100,000 white men per year",
+      "suffix": "per 100k",
+      "rate_type": "crude",
+      "series": "Health, United States Table 9 \u2014 white males, crude",
+      "point": "Down by a third. The biggest improvement anywhere in the record \u2014 and nobody talks about it.",
+      "source_url": "https://data.cdc.gov/National-Center-for-Health-Statistics/Death-rates-for-suicide-by-sex-race-Hispanic-origi/9j2v-jamp",
+      "verified": true
+    },
+    {
+      "id": "midlife-white-men",
+      "ask": "White men aged 45-64, 1999 against 2018",
+      "left": {
+        "label": "1999",
+        "value": 22.6
+      },
+      "right": {
+        "label": "2018",
+        "value": 35.5
+      },
+      "unit": "per 100,000 white men per year",
+      "suffix": "per 100k",
+      "rate_type": "crude",
+      "series": "Health, United States Table 9 \u2014 white males, crude",
+      "point": "Up 57% in nineteen years. This is the band the deaths-of-despair research is about.",
+      "source_url": "https://data.cdc.gov/National-Center-for-Health-Statistics/Death-rates-for-suicide-by-sex-race-Hispanic-origi/9j2v-jamp",
+      "verified": true
+    },
+    {
+      "id": "midlife-white-men-long",
+      "ask": "White men aged 45-64, across seventy years",
+      "left": {
+        "label": "1950",
+        "value": 39.3
+      },
+      "right": {
+        "label": "2018",
+        "value": 35.5
+      },
+      "unit": "per 100,000 white men per year",
+      "suffix": "per 100k",
+      "rate_type": "crude",
+      "series": "Health, United States Table 9 \u2014 white males, crude",
+      "point": "The rebound is real, but midlife is still below where it stood in 1950. It fell to 22.6 in 1999 and has been climbing back ever since.",
+      "source_url": "https://data.cdc.gov/National-Center-for-Health-Statistics/Death-rates-for-suicide-by-sex-race-Hispanic-origi/9j2v-jamp",
+      "verified": true
+    },
+    {
+      "id": "three-deaths",
+      "ask": "Three ways Americans die violently. Two of them are moving.",
+      "rows": [
+        {
+          "title": "drug overdose",
+          "unit": "deaths in those twelve months, per 100,000 people",
+          "suffix": "per 100k",
+          "values": [
+            [
+              "APR 2022 \u2013 MAR 2023",
+              32.6
+            ],
+            [
+              "JUL 2024 \u2013 JUN 2025",
+              20.8
+            ]
+          ]
+        },
+        {
+          "title": "suicide",
+          "unit": "deaths in those twelve months, per 100,000 people",
+          "suffix": "per 100k",
+          "values": [
+            [
+              "APR 2022 \u2013 MAR 2023",
+              14.3
+            ],
+            [
+              "JUL 2024 \u2013 JUN 2025",
+              13.7
+            ]
+          ]
+        },
+        {
+          "title": "homicide",
+          "unit": "deaths in those twelve months, per 100,000 people",
+          "suffix": "per 100k",
+          "values": [
+            [
+              "APR 2022 \u2013 MAR 2023",
+              7.7
+            ],
+            [
+              "JUL 2024 \u2013 JUN 2025",
+              5.7
+            ]
+          ]
+        }
+      ],
+      "point": "Overdose down 36%, homicide down 26%, suicide down 0.6. These are the earliest and latest years CDC publishes in this series \u2014 not a chosen window. The two causes that respond to something are moving. Suicide is not.",
+      "cite": "CDC VSRR quarterly provisional mortality estimates",
+      "rate_type": "age-adjusted",
+      "verified": true
+    },
+    {
+      "id": "three-deaths-1yr",
+      "ask": "Three ways Americans die violently. One year apart.",
+      "rows": [
+        {
+          "title": "drug overdose",
+          "unit": "deaths in those twelve months, per 100,000 people",
+          "suffix": "per 100k",
+          "values": [
+            [
+              "JUL 2023 \u2013 JUN 2024",
+              27.6
+            ],
+            [
+              "JUL 2024 \u2013 JUN 2025",
+              20.8
+            ]
+          ]
+        },
+        {
+          "title": "suicide",
+          "unit": "deaths in those twelve months, per 100,000 people",
+          "suffix": "per 100k",
+          "values": [
+            [
+              "JUL 2023 \u2013 JUN 2024",
+              13.9
+            ],
+            [
+              "JUL 2024 \u2013 JUN 2025",
+              13.7
+            ]
+          ]
+        },
+        {
+          "title": "homicide",
+          "unit": "deaths in those twelve months, per 100,000 people",
+          "suffix": "per 100k",
+          "values": [
+            [
+              "JUL 2023 \u2013 JUN 2024",
+              6.6
+            ],
+            [
+              "JUL 2024 \u2013 JUN 2025",
+              5.7
+            ]
+          ]
+        }
+      ],
+      "point": "Same twelve months, one year apart. Overdose fell a quarter. Homicide fell an eighth. Suicide fell 0.2 \u2014 within the noise. Two of these respond to something. One does not.",
+      "cite": "CDC VSRR quarterly provisional mortality estimates",
+      "rate_type": "age-adjusted",
+      "verified": true
+    },
+    {
+      "id": "overdose-falling",
+      "ask": "Drug overdose deaths in America",
+      "left": {
+        "label": "YEAR TO MAR 2023",
+        "value": 32.6
+      },
+      "right": {
+        "label": "YEAR TO JUN 2025",
+        "value": 20.8
+      },
+      "unit": "deaths per 100,000 people per year",
+      "suffix": "per 100k",
+      "rate_type": "age-adjusted",
+      "series": "CDC VSRR",
+      "point": "Down a third in two years. The fastest fall in any American cause of death \u2014 and almost nobody has reported it.",
+      "source_url": "https://data.cdc.gov/d/489q-934x",
+      "verified": true
+    },
+    {
+      "id": "homicide-falling",
+      "ask": "Homicides in America",
+      "left": {
+        "label": "YEAR TO MAR 2023",
+        "value": 7.7
+      },
+      "right": {
+        "label": "YEAR TO JUN 2025",
+        "value": 5.7
+      },
+      "unit": "deaths per 100,000 people per year",
+      "suffix": "per 100k",
+      "rate_type": "age-adjusted",
+      "series": "CDC VSRR",
+      "point": "Down a quarter in two years, and now below where it stood in 1999.",
+      "source_url": "https://data.cdc.gov/d/489q-934x",
+      "verified": true
+    },
+    {
+      "id": "suicide-not-moving",
+      "ask": "Suicide in America",
+      "left": {
+        "label": "YEAR TO MAR 2023",
+        "value": 14.3
+      },
+      "right": {
+        "label": "YEAR TO JUN 2025",
+        "value": 13.7
+      },
+      "unit": "deaths per 100,000 people per year",
+      "suffix": "per 100k",
+      "rate_type": "age-adjusted",
+      "series": "CDC VSRR",
+      "point": "Overdose fell a third over these same two years. Homicide fell a quarter. Suicide moved 0.6.",
+      "source_url": "https://data.cdc.gov/d/489q-934x",
+      "verified": true
+    },
+    {
+      "id": "maine",
+      "ask": "In Maine, how are you more likely to die?",
+      "left": {
+        "label": "MURDERED",
+        "value": 0.9
+      },
+      "right": {
+        "label": "BY YOUR OWN HAND",
+        "value": 18.6
+      },
+      "unit": "deaths per 100,000 people per year",
+      "suffix": "per 100k",
+      "rate_type": "crude",
+      "series": "CDC, twelve months to April 2026",
+      "point": "Twenty-one to one. Maine has the lowest homicide rate in America \u2014 and it barely registers next to its suicide rate.",
+      "source_url": "https://data.cdc.gov/d/fpsi-y8tj",
+      "verified": true
+    },
+    {
+      "id": "dc-only-place",
+      "ask": "Washington DC is the only place in America where this is true",
+      "left": {
+        "label": "SUICIDE",
+        "value": 6.2
+      },
+      "right": {
+        "label": "HOMICIDE",
+        "value": 14.6
+      },
+      "unit": "deaths per 100,000 people per year",
+      "suffix": "per 100k",
+      "rate_type": "crude",
+      "series": "CDC, twelve months to April 2026",
+      "point": "In all fifty states more people kill themselves than are killed. DC is the sole exception \u2014 and it also has the LOWEST suicide rate in the country.",
+      "source_url": "https://data.cdc.gov/d/fpsi-y8tj",
+      "verified": true
+    },
+    {
+      "id": "alaska-vs-dc",
+      "ask": "Suicide: the widest gap between two American places",
+      "left": {
+        "label": "WASHINGTON DC",
+        "value": 6.2
+      },
+      "right": {
+        "label": "ALASKA",
+        "value": 30.4
+      },
+      "unit": "deaths per 100,000 people per year",
+      "suffix": "per 100k",
+      "rate_type": "crude",
+      "series": "CDC, twelve months to April 2026",
+      "point": "Five to one. Alaska, Montana and Wyoming are all near 30; New Jersey, Massachusetts and New York are all under 9.",
+      "source_url": "https://data.cdc.gov/d/fpsi-y8tj",
+      "verified": true
+    },
+    {
+      "id": "overdose-states",
+      "ask": "Drug overdose: New Mexico against Nebraska",
+      "left": {
+        "label": "NEBRASKA",
+        "value": 6.6
+      },
+      "right": {
+        "label": "NEW MEXICO",
+        "value": 46.4
+      },
+      "unit": "deaths per 100,000 people per year",
+      "suffix": "per 100k",
+      "rate_type": "crude",
+      "series": "CDC, twelve months to April 2026",
+      "point": "Seven to one, in the same country in the same year.",
+      "source_url": "https://data.cdc.gov/d/fpsi-y8tj",
+      "verified": true
+    },
+    {
+      "id": "white-men-share",
+      "share": true,
+      "ask": "White men, as a share of America and of its suicides",
+      "left": {
+        "label": "OF THE POPULATION",
+        "value": 30.7
+      },
+      "right": {
+        "label": "OF ALL SUICIDES",
+        "value": 62.5
+      },
+      "unit": "out of every 100",
+      "suffix": "%",
+      "rate_type": "crude",
+      "series": "CDC/NCHS injury mortality, 2016",
+      "point": "28,110 of the 44,965 Americans who killed themselves in 2016 were white men. Twice their share of the country.",
+      "source_url": "https://data.cdc.gov/d/vc9m-u7tv",
+      "verified": true,
+      "year": 2016
+    }
+  ]
+}

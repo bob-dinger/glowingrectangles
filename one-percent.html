@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1% is not 0%</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:#14141a;color:#e9e7e4;height:100vh;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;gap:34px;padding:26px;
+  }
+
+  #stage{background:#fff;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.5);flex:0 0 auto}
+  svg{display:block}
+
+  aside{width:430px;display:flex;flex-direction:column;gap:12px;height:600px}
+  h1{font-size:18px;font-weight:600;letter-spacing:-.01em}
+  .lede{font-size:12.5px;line-height:1.5;color:#8a8894}
+
+  .tabs{display:flex;gap:5px}
+  .tabs button{
+    background:#1c1c24;border:1px solid #2c2c37;color:#9a98a4;font:inherit;
+    font-size:11px;padding:5px 9px;border-radius:4px;cursor:pointer;
+  }
+  .tabs button.on{background:#e0483a;border-color:#e0483a;color:#fff;font-weight:600}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;overflow-y:auto;flex:1;
+        padding-right:4px}
+  .grid::-webkit-scrollbar{width:6px}
+  .grid::-webkit-scrollbar-thumb{background:#2c2c37;border-radius:3px}
+  .ex{
+    text-align:left;background:#1a1a21;border:1px solid #26262f;border-radius:5px;
+    padding:8px 10px;cursor:pointer;color:#c9c7d1;font:inherit;font-size:11.5px;
+    line-height:1.35;
+  }
+  .ex:hover{border-color:#e0483a;color:#fff}
+  .ex.on{background:#2a1512;border-color:#e0483a;color:#fff}
+  .ex b{display:block;font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+        color:#6b6a75;margin-bottom:2px;font-weight:600}
+
+  .read{background:#1a1a21;border:1px solid #26262f;border-radius:6px;padding:12px 14px;
+        min-height:104px}
+  .read .hit{font-size:20px;font-weight:700;color:#ff6a5a;line-height:1.15;margin-bottom:5px}
+  .read .exp{font-size:12.5px;line-height:1.55;color:#9a98a4}
+
+  .btns{display:flex;gap:6px}
+  .btns button{background:#1f1f27;border:1px solid #33333f;color:#c9c7d1;font:inherit;
+               font-size:11.5px;padding:7px 12px;border-radius:5px;cursor:pointer}
+  .btns button.pri{background:#e0483a;border-color:#e0483a;color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <svg id="svg" width="600" height="600" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+    <rect id="bg" width="600" height="600" fill="#ffffff"/>
+    <text id="title" x="300" y="64" text-anchor="middle"
+      font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+      font-size="34" font-weight="700" fill="#16161a">1% is not 0%</text>
+    <g id="grid"></g>
+    <text id="cap" x="300" y="554" text-anchor="middle"
+      font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+      font-size="16" fill="#6f6f78">one square in a hundred</text>
+    <text id="cap2" x="300" y="580" text-anchor="middle"
+      font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+      font-size="15" font-weight="700" fill="#e0483a"></text>
+  </svg>
+</div>
+
+<aside>
+  <div>
+    <h1>1% is not 0%</h1>
+    <p class="lede">One square in a hundred looks like nothing. Here is what
+       nothing does once you repeat it, compound it, or scale it up.
+       <em>Arithmetic on 1% — computed, not cited. The scenarios are
+       illustrations; the numbers inside them are exact.</em></p>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="grid" id="list"></div>
+
+  <div class="read">
+    <div class="hit" id="hit">Pick an example</div>
+    <div class="exp" id="exp">Each one keeps the same 1% and changes only what you do with it.</div>
+  </div>
+
+  <div class="btns">
+    <button class="pri" id="png">Download PNG</button>
+    <button id="svgbtn">SVG</button>
+    <button id="dark">Invert</button>
+  </div>
+</aside>
+
+<script>
+/* ------------------------------------------------------------------
+   Every number is arithmetic on 1% — computed, not cited.
+   lit = how many of the hundred squares to light for that example.
+   ------------------------------------------------------------------ */
+const EX = [
+  // REPEAT — the same 1% chance, taken more than once
+  {g:'repeat', t:'Try it 10 times',     lit:10, hit:'9.6%',  e:'A 1% chance taken ten times goes off at least once about one time in ten.'},
+  {g:'repeat', t:'Try it 30 times',     lit:26, hit:'26%',   e:'Roughly the odds of rolling a six. Nobody calls that impossible.'},
+  {g:'repeat', t:'Try it 70 times',     lit:51, hit:'50.5%', e:'The tipping point. Past seventy tries the 1% event is more likely than not.'},
+  {g:'repeat', t:'Try it 100 times',    lit:63, hit:'63.4%', e:'A hundred tries and it happens at least once about two times in three.'},
+  {g:'repeat', t:'Try it 300 times',    lit:95, hit:'95.1%', e:'Near certain. Nothing about the 1% ever changed.'},
+  {g:'repeat', t:'1% a year, 30 years', lit:26, hit:'26%',   e:'A 1% annual risk is a one-in-four event across a working life.'},
+  {g:'repeat', t:'1% a year, 40 years', lit:33, hit:'33.1%', e:'A third. Annual risks sound small because the year is the flattering unit.'},
+
+  // COMPOUND — 1% better or worse, over and over
+  {g:'compound', t:'1% better, 90 days',   lit:100, hit:'2.45x', e:'Three months of 1% daily gains more than doubles you. 0% is still 1.00x.'},
+  {g:'compound', t:'1% better, one year',  lit:100, hit:'37.8x', e:'The whole argument in one number: 1.01 to the 365th. Zero percent stays at one.'},
+  {g:'compound', t:'1% worse, one year',   lit:3,   hit:'0.03x', e:'It runs the other way just as hard. Losing 1% a day leaves 2.6% of what you had.'},
+  {g:'compound', t:'1% a month, 10 years', lit:100, hit:'3.30x', e:'Even at a monthly pace, one percent triples you inside a decade.'},
+  {g:'compound', t:'A 1% fee, 30 years',   lit:25,  hit:'24.5%', e:'Assume a 7% gross return over 30 years: a 1% annual fee costs a quarter of the final balance. The fee never looked like 24%.'},
+
+  // SCALE — 1% of something large
+  {g:'scale', t:'1% of the USA',           lit:1, hit:'3.4 million', e:'More people than live in Chicago (2.7M). US population 342.6M, Census 2026.'},
+  {g:'scale', t:'1% of the world',         lit:1, hit:'82 million',  e:'More people than live in the United Kingdom (69.5M, ONS mid-2025).'},
+  {g:'scale', t:'1% of Texas',             lit:1, hit:'313,000',     e:'About the population of Pittsburgh (302,971). Texas 31.3M, Census 2024.'},
+  {g:'scale', t:'1% of a million users',   lit:1, hit:'10,000',      e:'A 1% bug rate across a million users is ten thousand angry people.'},
+  {g:'scale', t:'One in a million, daily', lit:1, hit:'343 a day',   e:'In a country of 342.6 million, a one-in-a-million daily event hits 343 people. Every day.'},
+  {g:'scale', t:'1% of your life',         lit:1, hit:'9.6 months',  e:'Across eighty years, one percent is nine and a half months of being alive.'},
+  {g:'scale', t:'1% of a year',            lit:1, hit:'3.7 days',    e:'One percent of a year is most of a long weekend.'},
+  {g:'scale', t:'1% of a day',             lit:1, hit:'14 minutes',  e:'One percent of a day is a coffee break.'},
+  {g:'scale', t:'1% of a work week',       lit:1, hit:'24 minutes',  e:'Small enough to ignore on Monday, big enough to notice by Friday.'},
+
+  // CHAINS — when 99% has to hold many times in a row
+  {g:'chain', t:'10 steps at 99%',    lit:90, hit:'90.4%', e:'Ten links that each work 99% of the time give a chain that works 90% of the time.'},
+  {g:'chain', t:'50 steps at 99%',    lit:61, hit:'60.5%', e:'Fifty links and the chain fails two times in five.'},
+  {g:'chain', t:'100 steps at 99%',   lit:37, hit:'36.6%', e:'A hundred parts each 99% reliable make a machine that works barely a third of the time.'},
+  {g:'chain', t:'A 99% accurate test', lit:1, hit:'10,000', e:'Run a 99% accurate test on a million people and it is wrong about ten thousand of them.'},
+];
+
+const GROUPS=[['all','All 25'],['repeat','Repeat'],['compound','Compound'],
+              ['scale','Scale'],['chain','Chains']];
+
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('svg'), gridG=document.getElementById('grid');
+const COLS=10, BOX=430, X0=(600-BOX)/2, Y0=100, GAP=6, S=(BOX-GAP*(COLS-1))/COLS;
+
+const THEME={
+  light:{bg:'#ffffff',off:'#e6e6ea',on:'#e0483a',ink:'#16161a',cap:'#6f6f78'},
+  dark :{bg:'#14141a',off:'#26262e',on:'#ff5b4a',ink:'#f2f0ee',cap:'#8a8894'},
+};
+let inverted=false, lit=1, cur=null, filter='all';
+
+const cells=[];
+for(let i=0;i<100;i++){
+  const r=Math.floor(i/COLS), c=i%COLS;
+  const el=document.createElementNS(NS,'rect');
+  el.setAttribute('x',X0+c*(S+GAP)); el.setAttribute('y',Y0+r*(S+GAP));
+  el.setAttribute('width',S); el.setAttribute('height',S); el.setAttribute('rx',4);
+  gridG.appendChild(el); cells.push(el);
+}
+
+function render(){
+  const t=inverted?THEME.dark:THEME.light;
+  document.getElementById('bg').setAttribute('fill',t.bg);
+  document.getElementById('title').setAttribute('fill',t.ink);
+  document.getElementById('cap').setAttribute('fill',t.cap);
+  document.getElementById('cap2').setAttribute('fill',t.on);
+  document.getElementById('stage').style.background=t.bg;
+  cells.forEach((el,i)=>el.setAttribute('fill', i<lit?t.on:t.off));
+
+  document.getElementById('title').textContent = cur ? cur.t : '1% is not 0%';
+  document.getElementById('cap').textContent   = cur ? cur.e.split('.')[0]+'.'
+                                                     : 'one square in a hundred';
+  document.getElementById('cap2').textContent  = cur ? cur.hit : '';
+}
+
+const tabs=document.getElementById('tabs');
+GROUPS.forEach(([k,label])=>{
+  const b=document.createElement('button');
+  b.textContent=label; b.dataset.g=k; b.className = k==='all'?'on':'';
+  b.onclick=()=>{ filter=k;
+    [...tabs.children].forEach(x=>x.classList.toggle('on',x.dataset.g===k));
+    buildList(); };
+  tabs.appendChild(b);
+});
+
+const list=document.getElementById('list');
+function buildList(){
+  list.innerHTML='';
+  EX.filter(e=>filter==='all'||e.g===filter).forEach(e=>{
+    const b=document.createElement('button');
+    b.className='ex'+(cur===e?' on':'');
+    b.innerHTML='<b>'+e.g+'</b>'+e.t;
+    b.onclick=()=>{
+      cur=e; lit=e.lit;
+      document.getElementById('hit').textContent=e.hit;
+      document.getElementById('exp').textContent=e.e;
+      buildList(); render();
+    };
+    list.appendChild(b);
+  });
+}
+
+const ser=()=>{const c=svg.cloneNode(true);c.setAttribute('xmlns',NS);
+  return new XMLSerializer().serializeToString(c);};
+const save=(blob,name)=>{const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
+const slug=()=>(cur?cur.t:'1-percent').toLowerCase().replace(/[^a-z0-9]+/g,'-');
+
+document.getElementById('svgbtn').onclick=()=>
+  save(new Blob([ser()],{type:'image/svg+xml'}), slug()+'.svg');
+document.getElementById('png').onclick=()=>{
+  const img=new Image();
+  img.onload=()=>{const cv=document.createElement('canvas');
+    cv.width=1200; cv.height=1200;
+    cv.getContext('2d').drawImage(img,0,0,1200,1200);
+    cv.toBlob(b=>save(b,slug()+'.png'),'image/png');};
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(ser());
+};
+document.getElementById('dark').onclick=()=>{inverted=!inverted;render();};
+
+buildList(); render();
+</script>
+</body>
+</html>

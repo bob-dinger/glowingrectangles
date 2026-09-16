@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The offense tells you</title><style>
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:#0d0d14;color:#e8e8e8;
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
+  .wrap{height:100vh;display:flex;flex-direction:column;padding:20px 26px 14px}
+  h1{margin:0 0 3px;font-size:23px;font-weight:500;color:#fff;letter-spacing:-.01em}
+  .sub{margin:0 0 14px;color:#7a7a8c;font-size:13px;line-height:1.5;max-width:720px}
+  .sub b{color:#b8b8cc;font-weight:600}
+  .board{flex:1;display:flex;gap:20px;min-height:0}
+  .grid{flex:1;display:grid;grid-template-columns:70px repeat(4,1fr);
+    grid-template-rows:26px repeat(3,1fr);gap:6px;min-height:0}
+  .hd{display:flex;align-items:center;justify-content:center;font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.11em;color:#5a5a70}
+  .rh{display:flex;align-items:center;justify-content:flex-end;padding-right:10px;
+    font-size:15px;font-weight:600;color:#9a9ab0}
+  .cell{border-radius:7px;padding:9px 11px;display:flex;flex-direction:column;
+    justify-content:space-between;border:1px solid rgba(255,255,255,.07);
+    position:relative;overflow:hidden}
+  .cell .big{font-size:29px;font-weight:700;line-height:1;letter-spacing:-.02em}
+  .cell .lab{font-size:9px;text-transform:uppercase;letter-spacing:.1em;
+    color:rgba(255,255,255,.5);margin-top:2px}
+  .cell .rows{font-size:11px;line-height:1.55;color:rgba(255,255,255,.72)}
+  .cell .rows i{font-style:normal;float:right;font-weight:600;color:#fff}
+  .cell .n{position:absolute;top:8px;right:10px;font-size:9.5px;
+    color:rgba(255,255,255,.4)}
+  .cell.empty{background:#14141c;border-style:dashed;opacity:.5}
+  aside{width:250px;flex:0 0 250px;border-left:1px solid #1e1e2a;padding-left:20px;
+    display:flex;flex-direction:column;gap:13px}
+  .lab{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#5a5a70;
+    margin-bottom:4px}
+  .big2{font-size:30px;color:#fff;line-height:1;font-weight:600}
+  .big2 em{font-style:normal;font-size:12.5px;color:#7a7a8c;margin-left:6px}
+  aside p{margin:0;font-size:11.5px;line-height:1.6;color:#8a8a9c}
+  .ramp{height:9px;border-radius:5px;margin:3px 0;
+    background:linear-gradient(90deg,#1d3a5c,#2f6ea8,#4a9ad4,#7dc4ea)}
+  .ends{display:flex;justify-content:space-between;font-size:9.5px;color:#5a5a70}
+  .note{margin-top:auto;font-size:10px;line-height:1.6;color:#4a4a5c;
+    border-top:1px solid #1e1e2a;padding-top:10px}
+</style></head><body>
+<div class="wrap">
+  <h1>The offense tells you what it's doing</h1>
+  <p class="sub">Every snap from last weekend, by down and distance. Fill is how
+    often the quarterback lined up in <b>shotgun</b>. Inside each cell: how often
+    the play was a <b>pass</b>, and how often it was <b>play-action</b>.</p>
+  <div class="board">
+    <div class="grid" id="grid"></div>
+    <aside>
+      <div>
+        <div class="lab">shotgun rate</div>
+        <div class="ramp"></div>
+        <div class="ends"><span>15%</span><span>95%</span></div>
+      </div>
+      <div>
+        <div class="lab">1st &amp; short</div>
+        <div class="big2" id="a">&nbsp;<em>shotgun</em></div>
+      </div>
+      <div>
+        <div class="lab">3rd &amp; medium</div>
+        <div class="big2" id="b">&nbsp;<em>shotgun</em></div>
+      </div>
+      <p id="story"></p>
+      <div class="note" id="src"></div>
+    </aside>
+  </div>
+</div>
+<!-- data as a script, not a fetch: over file:// a fetch is blocked by CORS
+     and the page renders its title and nothing else -->
+<script src="last-weekend-data.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+(function(D){
+  const dists=['1-3','4-7','8-10','11+'];
+  const g=d3.select('#grid');
+  g.append('div').attr('class','hd');
+  dists.forEach(d=>g.append('div').attr('class','hd').text('to go  '+d));
+  const col=d3.scaleLinear().domain([15,95])
+              .range(['#1d3a5c','#7dc4ea']).clamp(true);
+  const ink=v=>v>62?'#08131d':'#eaf4fb';
+  for(const dn of [1,2,3]){
+    g.append('div').attr('class','rh')
+     .text(dn===1?'1st':dn===2?'2nd':'3rd');
+    for(const ds of dists){
+      const r=D.grid.find(x=>x.down===dn&&x.dist===ds);
+      if(!r){ g.append('div').attr('class','cell empty'); continue; }
+      const c=g.append('div').attr('class','cell')
+        .style('background',col(r.shotgun))
+        .style('color',ink(r.shotgun));
+      c.append('div').attr('class','n').style('color',ink(r.shotgun)).text(r.n+' plays');
+      const t=c.append('div');
+      t.append('div').attr('class','big').text(r.shotgun+'%');
+      t.append('div').attr('class','lab').style('color',ink(r.shotgun)).text('shotgun');
+      c.append('div').attr('class','rows').style('color',ink(r.shotgun)).html(
+        `pass <i style="color:${ink(r.shotgun)}">${r.pas}%</i><br>`+
+        `play-action <i style="color:${ink(r.shotgun)}">${r.pa}%</i>`);
+    }
+  }
+  const s13=D.grid.find(x=>x.down===1&&x.dist==='1-3');
+  const s34=D.grid.find(x=>x.down===3&&x.dist==='4-7');
+  d3.select('#a').html(s13.shotgun+'%<em>shotgun</em>');
+  d3.select('#b').html(s34.shotgun+'%<em>shotgun</em>');
+  const pa1=D.grid.find(x=>x.down===1&&x.dist==='8-10').pa;
+  d3.select('#story').html(
+    `On first and ten, <b>${pa1}%</b> of plays are play-action &mdash; the offence `+
+    `is still pretending. By third and eight it is <b>0%</b>. Nobody fakes a `+
+    `handoff when everyone knows you have to throw.`);
+  d3.select('#src').html(
+    `${D.n.toLocaleString()} plays from ${D.games} games, 13&ndash;14 September 2026.`+
+    `<br><br>nflverse play_by_play_2026 joined to FTN charting. Cells with fewer `+
+    `than twelve snaps are left blank.`);
+})(NFLWK);
+</script></body></html>

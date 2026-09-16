@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Times They Are a-Changin' — Verse</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.wrap { width: 1100px; padding: 20px; }
+h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+.sub { color: #6a6a8a; font-size: 13px; margin-bottom: 24px; }
+
+.row {
+    display: grid;
+    grid-template-columns: 70px repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: stretch;
+}
+.label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    color: #8a8aa8;
+    letter-spacing: 1px;
+}
+.chord {
+    height: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    font-size: 22px;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+.chord .deg {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 3px;
+    letter-spacing: 1px;
+}
+
+.deg-1 { background: rgba(220, 60, 60, 0.25); color: #ffa0a0; }
+.deg-2 { background: rgba(230, 140, 40, 0.25); color: #ffc888; }
+.deg-3 { background: rgba(220, 200, 40, 0.25); color: #f0e888; }
+.deg-4 { background: rgba(50, 180, 80, 0.25); color: #88e8a0; }
+.deg-5 { background: rgba(60, 120, 220, 0.25); color: #90b8f8; }
+.deg-6 { background: rgba(160, 80, 220, 0.25); color: #d0a0f8; }
+
+.legend { margin-top: 22px; font-size: 12px; color: #6a6a8a; line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <h1>Bob Dylan — The Times They Are a-Changin' <span style="color:#6a6a8a;font-weight:400;font-size:15px;">· verse · key of C · 3/4 waltz</span></h1>
+    <div class="sub">26 bars · phrases of 4 + 5 + 5 + 5 + 7</div>
+
+    <div class="row">
+        <div class="label">P1</div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-6">Am<div class="deg">vi</div></div>
+        <div class="chord deg-4">F<div class="deg">IV</div></div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div></div><div></div><div></div>
+    </div>
+    <div class="row">
+        <div class="label">P2</div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-2">Dm<div class="deg">ii</div></div>
+        <div class="chord deg-4">F<div class="deg">IV</div></div>
+        <div class="chord deg-5">G<div class="deg">V</div></div>
+        <div></div><div></div>
+    </div>
+    <div class="row">
+        <div class="label">P3</div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-6">Am<div class="deg">vi</div></div>
+        <div class="chord deg-4">F<div class="deg">IV</div></div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div></div><div></div>
+    </div>
+    <div class="row">
+        <div class="label">P4</div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-2">Dm<div class="deg">ii</div></div>
+        <div class="chord deg-4">F<div class="deg">IV</div></div>
+        <div class="chord deg-5">G<div class="deg">V</div></div>
+        <div class="chord deg-5">G<div class="deg">V</div></div>
+        <div></div><div></div>
+    </div>
+    <div class="row">
+        <div class="label">TAG</div>
+        <div class="chord deg-4">F<div class="deg">IV</div></div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-5">G<div class="deg">V</div></div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+        <div class="chord deg-4">F<div class="deg">IV</div></div>
+        <div class="chord deg-5">G<div class="deg">V</div></div>
+        <div class="chord deg-1">C<div class="deg">I</div></div>
+    </div>
+
+    <div class="legend">
+        P1 &amp; P3 share the same opening shape (C–Am–F–C). P2 &amp; P4 climb upward (C–Dm–F–G). The 7-bar tag is the famous "for the times they are a-chaaaa-ngin'" — plagal then authentic cadence to land home.
+    </div>
+</div>
+</body>
+</html>

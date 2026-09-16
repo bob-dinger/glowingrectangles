@@ -1,0 +1,1337 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>Beatles by Recording Project</title>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #1a1a2e; color: #e0e0e0; font-family: -apple-system, sans-serif; font-size: 13px; }
+.layout { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 220px; min-width: 220px; background: #0f0f1f;
+  border-right: 1px solid #2a2a4a; padding: 14px;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.sidebar h2 { font-size: 11px; color: #6a6a8a; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px; }
+.sidebar .stats { font-size: 11px; color: #8a8ab0; margin-bottom: 14px; line-height: 1.6; }
+.sidebar .stats b { color: #e0e0e0; }
+.proj-link {
+  display: block; padding: 5px 8px; color: #b0b0cc; text-decoration: none; font-size: 12px;
+  border-left: 3px solid transparent; border-radius: 0 3px 3px 0; margin-bottom: 2px;
+}
+.proj-link:hover { background: #1e1e3a; color: #e0e0e0; border-left-color: #6366f1; }
+.proj-link .pn {
+  display: inline-block; width: 22px; height: 18px; background: #2a2a4a; color: #e0e0e0;
+  border-radius: 3px; text-align: center; font-weight: 700; font-size: 11px; margin-right: 6px;
+}
+
+.main { flex: 1; padding: 14px 22px; }
+.main h1 { font-size: 20px; margin: 0 0 4px; }
+.main .subtitle { font-size: 12px; color: #8a8ab0; margin-bottom: 18px; }
+
+.project { margin-bottom: 28px; }
+.proj-header {
+  display: flex; align-items: baseline; gap: 12px; padding: 8px 14px;
+  background: #16162a; border-radius: 5px 5px 0 0; border: 1px solid #2a2a4a; border-bottom: none;
+}
+.proj-header .proj-num {
+  background: #6366f1; color: white; padding: 2px 10px; border-radius: 11px;
+  font-weight: 700; font-size: 12px;
+}
+.proj-header .proj-name { font-weight: 700; font-size: 15px; color: #e0e0e0; }
+.proj-header .proj-period { font-size: 11px; color: #8a8ab0; }
+.proj-header .proj-count { margin-left: auto; font-size: 11px; color: #b0b0cc; }
+
+table.songs {
+  width: 100%; border-collapse: collapse; background: #20203a;
+  border: 1px solid #2a2a4a; border-radius: 0 0 5px 5px;
+}
+table.songs th {
+  text-align: left; padding: 6px 10px; background: #1e1e3a; color: #6a6a8a;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 500;
+  border-bottom: 1px solid #2a2a4a;
+}
+table.songs td { padding: 6px 10px; border-bottom: 1px solid rgba(42,42,74,0.4); font-size: 13px; }
+table.songs tr:last-child td { border-bottom: none; }
+table.songs tr.song:hover { background: #1e1e3a; }
+table.songs tr.cover .title { color: #8a8ab0; font-style: italic; }
+table.songs td.code { color: #6a6a8a; font-family: monospace; font-size: 11px; width: 50px; }
+table.songs td.date { color: #8a8ab0; font-family: monospace; font-size: 11px; width: 80px; }
+table.songs td.title a { color: #e0e0e0; text-decoration: none; font-weight: 500; }
+table.songs td.title a:hover { color: #6366f1; text-decoration: underline; }
+table.songs td.kind-cell { width: 80px; }
+
+.kind {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.5px;
+}
+</style>
+</head><body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="stats">
+      <b>224</b> songs total<br>
+      <b>210</b> with UG official<br>
+      <b>214</b> with any UG link
+    </div>
+    <h2>projects</h2>
+    <a class="proj-link" href="#proj-1"><span class="pn">1</span> Please Please Me</a><a class="proj-link" href="#proj-2"><span class="pn">2</span> With The Beatles</a><a class="proj-link" href="#proj-3"><span class="pn">3</span> A Hard Day&#x27;s Night</a><a class="proj-link" href="#proj-4"><span class="pn">4</span> Beatles For Sale</a><a class="proj-link" href="#proj-5"><span class="pn">5</span> Help!</a><a class="proj-link" href="#proj-6"><span class="pn">6</span> Rubber Soul</a><a class="proj-link" href="#proj-7"><span class="pn">7</span> Revolver</a><a class="proj-link" href="#proj-8"><span class="pn">8</span> Sgt. Pepper&#x27;s</a><a class="proj-link" href="#proj-9"><span class="pn">9</span> Magical Mystery Tour</a><a class="proj-link" href="#proj-10"><span class="pn">10</span> White Album</a><a class="proj-link" href="#proj-11"><span class="pn">11</span> Let It Be</a><a class="proj-link" href="#proj-12"><span class="pn">12</span> Abbey Road</a>
+  </aside>
+  <main class="main">
+    <h1>The Beatles · by Recording Project</h1>
+    <div class="subtitle">All 224 officially recorded songs, grouped by Tuomas Eerola's 12-project chronology. Click a title to open its Ultimate Guitar tab.</div>
+    <div class="project" id="proj-1">
+        <div class="proj-header">
+            <span class="proj-num">1</span>
+            <span class="proj-name">Please Please Me</span>
+            <span class="proj-period">4.9.1962 - 28.4.63</span>
+            <span class="proj-count">17 songs · 17 UG official</span>
+        </div>
+        <table class="songs">
+            <thead><tr><th>code</th><th>date</th><th>title</th><th>UG</th></tr></thead>
+            <tbody><tr class="song">
+        <td class="code">001</td>
+        <td class="date">04.09.62</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/love-me-do-official-2115605" target="_blank">Love Me Do</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">002</td>
+        <td class="date">04.09.62</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-walters/i-love-you-so-official-2524656" target="_blank">P.S. I Love You</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">003</td>
+        <td class="date">11.09.62</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/please-please-me-official-2045603" target="_blank">Please Please Me</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">004</td>
+        <td class="date">26.11.62</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/ask-me-why-official-2073919" target="_blank">Ask Me Why</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">005</td>
+        <td class="date">11.02.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-saw-her-standing-there-official-1948015" target="_blank">I Saw Her Standing There</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">006</td>
+        <td class="date">11.02.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/misery-official-2076863" target="_blank">Misery</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C01</td>
+        <td class="date">11.02.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/anna-go-to-him-official-2063525" target="_blank">Anna (Go To Him)</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C02</td>
+        <td class="date">11.02.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/chains-official-2281521" target="_blank">Chains</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C03</td>
+        <td class="date">11.02.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/boys-official-2279969" target="_blank">Boys</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C04</td>
+        <td class="date">11.02.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/baby-its-you-official-2039415" target="_blank">Baby It&#x27;s You</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">007</td>
+        <td class="date">11.02.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/do-you-want-to-know-a-secret-official-2038225" target="_blank">Do You Want To Know A Secret</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C05</td>
+        <td class="date">11.02.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/a-taste-of-honey-official-2118067" target="_blank">A Taste of Honey</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">008</td>
+        <td class="date">11.02.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/theres-a-place-official-2072837" target="_blank">There&#x27;s A Place</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C06</td>
+        <td class="date">11.02.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/twist-and-shout-official-1948105" target="_blank">Twist and Shout</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">009</td>
+        <td class="date">05.03.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/from-me-to-you-official-2063105" target="_blank">From Me To You</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">010</td>
+        <td class="date">05.03.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/thank-you-girl-official-2290679" target="_blank">Thank You Girl</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code"> </td>
+        <td class="date"></td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/with-a-little-help-from-my-friends-official-1998951" target="_blank">Recording project 2: With The Beatles (1.5.1963 - 30.11.63)</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr></tbody>
+        </table>
+    </div><div class="project" id="proj-2">
+        <div class="proj-header">
+            <span class="proj-num">2</span>
+            <span class="proj-name">With The Beatles</span>
+            <span class="proj-period">1.5.1963 - 30.11.63</span>
+            <span class="proj-count">19 songs · 18 UG official</span>
+        </div>
+        <table class="songs">
+            <thead><tr><th>code</th><th>date</th><th>title</th><th>UG</th></tr></thead>
+            <tbody><tr class="song">
+        <td class="code">011</td>
+        <td class="date">01.07.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/she-loves-you-official-1958849" target="_blank">She Loves You</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">012</td>
+        <td class="date">01.07.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/ill-get-you-official-2115055" target="_blank">I&#x27;ll Get You</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C07</td>
+        <td class="date">18.07.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/you-really-got-a-hold-on-me-official-2138147" target="_blank">You Really Got A Hold On Me</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C08</td>
+        <td class="date">18.07.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/devil-in-her-heart-official-2288999" target="_blank">Devil In Her Heart</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C09</td>
+        <td class="date">18.07.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/money-thats-what-i-want-official-2095499" target="_blank">Money (That&#x27;s What I Want)</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C10</td>
+        <td class="date">18.07.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/till-there-was-you-official-2148583" target="_blank">Till There Was You</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">013</td>
+        <td class="date">30.07.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/it-wont-be-long-official-2000659" target="_blank">It Won&#x27;t Be Long</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">014</td>
+        <td class="date">30.07.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/all-my-loving-official-1945855" target="_blank">All My Loving</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C11</td>
+        <td class="date">30.07.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/please-mister-postman-chords-17342" target="_blank">Please Mister Postman</a></td>
+        <td class="kind-cell"><span class="kind kind-chords" style="background:#3a9c9c">chords</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C12</td>
+        <td class="date">30.07.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/roll-over-beethoven-official-2143575" target="_blank">Roll Over Beethoven</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">015</td>
+        <td class="date">11.09.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/all-ive-got-to-do-official-2033963" target="_blank">All I&#x27;ve Got To Do</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">016</td>
+        <td class="date">11.09.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/dont-bother-me-official-2235749" target="_blank">Don&#x27;t Bother Me</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">017</td>
+        <td class="date">11.09.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/little-child-official-2282893" target="_blank">Little Child</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">018</td>
+        <td class="date">11.09.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-wanna-be-your-man-official-2643465" target="_blank">I Wanna Be Your Man</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">019</td>
+        <td class="date">11.09.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/not-a-second-time-official-2115609" target="_blank">Not A Second Time</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">020</td>
+        <td class="date">12.09.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/hold-me-tight-official-1995073" target="_blank">Hold Me Tight</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">021</td>
+        <td class="date">17.10.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-want-to-hold-your-hand-official-2114523" target="_blank">I Want To Hold Your Hand</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">022</td>
+        <td class="date">17.10.63</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/this-boy-official-2116271" target="_blank">This Boy</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code"> </td>
+        <td class="date"></td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/a-hard-days-night-official-1946313" target="_blank">Recording project 3: A Hard Day&#x27;s Night (1.12.1963 - 30.6.64)</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr></tbody>
+        </table>
+    </div><div class="project" id="proj-3">
+        <div class="proj-header">
+            <span class="proj-num">3</span>
+            <span class="proj-name">A Hard Day&#x27;s Night</span>
+            <span class="proj-period">1.12.1963 - 30.6.64</span>
+            <span class="proj-count">18 songs · 17 UG official</span>
+        </div>
+        <table class="songs">
+            <thead><tr><th>code</th><th>date</th><th>title</th><th>UG</th></tr></thead>
+            <tbody><tr class="song">
+        <td class="code">023</td>
+        <td class="date">29.01.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/cant-buy-me-love-official-1948111" target="_blank">Can&#x27;t Buy Me Love</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">024</td>
+        <td class="date">25.02.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-should-have-known-better-official-2070659" target="_blank">I Should Have Known Better</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">025</td>
+        <td class="date">25.02.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/and-i-love-her-official-2042407" target="_blank">And I Love Her</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">026</td>
+        <td class="date">25.02.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/you-cant-do-that-official-2113771" target="_blank">You Can&#x27;t Do That</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">027</td>
+        <td class="date">27.02.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/if-i-fell-official-1991149" target="_blank">If I Fell</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">028</td>
+        <td class="date">27.02.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/tell-me-why-official-2123325" target="_blank">Tell Me Why</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C13</td>
+        <td class="date">01.03.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/long-tall-sally-official-2658915" target="_blank">Long Tall Sally</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">029</td>
+        <td class="date">01.03.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-call-your-name-official-2270425" target="_blank">I Call Your Name</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">030</td>
+        <td class="date">01.03.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/im-happy-just-to-dance-with-you-official-2117379" target="_blank">I&#x27;m Happy Just To Dance With You</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">031</td>
+        <td class="date">16.04.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/a-hard-days-night-official-1946313" target="_blank">A Hard Day&#x27;s Night</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C14</td>
+        <td class="date">01.06.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/slow-down-official-2717997" target="_blank">Slow Down</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C15</td>
+        <td class="date">01.06.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/matchbox-official-2780845" target="_blank">Matchbox</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">032</td>
+        <td class="date">01.06.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/ill-cry-instead-official-2121197" target="_blank">I&#x27;ll Cry Instead</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">033</td>
+        <td class="date">01.06.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/ill-be-back-official-2063165" target="_blank">I&#x27;ll Be Back</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">034</td>
+        <td class="date">02.06.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/any-time-at-all-official-2121201" target="_blank">Any Time At All</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">035</td>
+        <td class="date">02.06.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/things-we-said-today-official-2043213" target="_blank">Things We Said Today</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">036</td>
+        <td class="date">02.06.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/when-i-get-home-official-2731158" target="_blank">When I Get Home</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code"> </td>
+        <td class="date"></td>
+        <td class="title">Recording project 4: Beatles For Sale (1.7.1964 - 31.1.65)</td>
+        <td class="kind-cell"></td>
+    </tr></tbody>
+        </table>
+    </div><div class="project" id="proj-4">
+        <div class="proj-header">
+            <span class="proj-num">4</span>
+            <span class="proj-name">Beatles For Sale</span>
+            <span class="proj-period">1.7.1964 - 31.1.65</span>
+            <span class="proj-count">17 songs · 16 UG official</span>
+        </div>
+        <table class="songs">
+            <thead><tr><th>code</th><th>date</th><th>title</th><th>UG</th></tr></thead>
+            <tbody><tr class="song">
+        <td class="code">037</td>
+        <td class="date">11.08.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/babys-in-black-official-2229713" target="_blank">Baby&#x27;s In Black</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">038</td>
+        <td class="date">14.08.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/im-a-loser-official-2237263" target="_blank">I&#x27;m A Loser</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">039</td>
+        <td class="date">29.09.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/every-little-thing-official-2123323" target="_blank">Every Little Thing</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">040</td>
+        <td class="date">29.09.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-dont-want-to-spoil-the-party-official-2228785" target="_blank">I Don&#x27;t Want To Spoil The Party</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">041</td>
+        <td class="date">29.09.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/what-youre-doing-official-2047707" target="_blank">What You&#x27;re Doing</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">042</td>
+        <td class="date">30.09.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/no-reply-official-2048239" target="_blank">No Reply</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">043</td>
+        <td class="date">06.10.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/eight-days-a-week-official-1994649" target="_blank">Eight Days A Week</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">044</td>
+        <td class="date">08.10.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/shes-a-woman-official-2100915" target="_blank">She&#x27;s A Woman</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">045</td>
+        <td class="date">18.10.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-feel-fine-official-1987427" target="_blank">I Feel Fine</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C16</td>
+        <td class="date">18.10.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/rock-and-roll-music-official-2143187" target="_blank">Rock And Roll Music</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">046</td>
+        <td class="date">18.10.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/ill-follow-the-sun-official-2042845" target="_blank">I&#x27;ll Follow The Sun</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C17</td>
+        <td class="date">18.10.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-killers/mr-brightside-official-1915707" target="_blank">Mr. Moonlight</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C18</td>
+        <td class="date">18.10.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/hey-jude-official-1910973" target="_blank">Kansas City - Hey, Hey, Hey, Hey</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C19</td>
+        <td class="date">18.10.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/words-of-love-official-2053125" target="_blank">Words Of Love</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C20</td>
+        <td class="date">18.10.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/everybodys-trying-to-be-my-baby-official-2278979" target="_blank">Everybody&#x27;s Trying To Be My Baby</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C21</td>
+        <td class="date">26.10.64</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/honey-dont-official-2222405" target="_blank">Honey Don&#x27;t</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code"> </td>
+        <td class="date"></td>
+        <td class="title">Recording project 5: Help! (1.2.1965 - 30.8.65)</td>
+        <td class="kind-cell"></td>
+    </tr></tbody>
+        </table>
+    </div><div class="project" id="proj-5">
+        <div class="proj-header">
+            <span class="proj-num">5</span>
+            <span class="proj-name">Help!</span>
+            <span class="proj-period">1.2.1965 - 30.8.65</span>
+            <span class="proj-count">19 songs · 18 UG official</span>
+        </div>
+        <table class="songs">
+            <thead><tr><th>code</th><th>date</th><th>title</th><th>UG</th></tr></thead>
+            <tbody><tr class="song">
+        <td class="code">047</td>
+        <td class="date">15.02.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-need-you-official-1991583" target="_blank">I Need You</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">048</td>
+        <td class="date">15.02.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/another-girl-official-2652804" target="_blank">Another Girl</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">049</td>
+        <td class="date">15.02.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/ticket-to-ride-official-1990393" target="_blank">Ticket To Ride</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">050</td>
+        <td class="date">16.02.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/yes-it-is-official-2660679" target="_blank">Yes It Is</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">051</td>
+        <td class="date">17.02.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/the-night-before-official-2039481" target="_blank">The Night Before</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">052</td>
+        <td class="date">17.02.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/you-like-me-too-much-official-2125945" target="_blank">You Like Me Too Much</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">053</td>
+        <td class="date">18.02.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/youve-got-to-hide-your-love-away-official-2063733" target="_blank">You&#x27;ve Got To Hide Your Love Away</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">054</td>
+        <td class="date">18.02.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/tell-me-what-you-see-official-2126357" target="_blank">Tell Me What You See</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">055</td>
+        <td class="date">19.02.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/youre-going-to-lose-that-girl-official-2647578" target="_blank">You&#x27;re Going To Lose That Girl</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">056</td>
+        <td class="date">13.04.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/elvis-presley/cant-help-falling-in-love-official-2099065" target="_blank">Help!</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C22</td>
+        <td class="date">10.05.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/bad-boy-official-2291777" target="_blank">Bad Boy</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C23</td>
+        <td class="date">10.05.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/dizzy-miss-lizzy-official-2580048" target="_blank">Dizzy Miss Lizzy</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">057</td>
+        <td class="date">14.06.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/im-down-official-2658372" target="_blank">I&#x27;m Down</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">058</td>
+        <td class="date">14.06.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/ive-just-seen-a-face-official-2049777" target="_blank">I&#x27;ve Just Seen A Face</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">059</td>
+        <td class="date">14.06.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/yesterday-official-1981167" target="_blank">Yesterday</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">060</td>
+        <td class="date">15.06.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/its-only-love-official-2072723" target="_blank">It&#x27;s Only Love</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song cover">
+        <td class="code">C24</td>
+        <td class="date">17.06.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/act-naturally-official-2212843" target="_blank">Act Naturally</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">061</td>
+        <td class="date">17.06.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/wait-official-2091583" target="_blank">Wait</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code"> </td>
+        <td class="date"></td>
+        <td class="title">Recording project 6: Rubber Soul (1.9.1965 - 31.3.66)</td>
+        <td class="kind-cell"></td>
+    </tr></tbody>
+        </table>
+    </div><div class="project" id="proj-6">
+        <div class="proj-header">
+            <span class="proj-num">6</span>
+            <span class="proj-name">Rubber Soul</span>
+            <span class="proj-period">1.9.1965 - 31.3.66</span>
+            <span class="proj-count">16 songs · 14 UG official</span>
+        </div>
+        <table class="songs">
+            <thead><tr><th>code</th><th>date</th><th>title</th><th>UG</th></tr></thead>
+            <tbody><tr class="song">
+        <td class="code">062</td>
+        <td class="date">12.10.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-wooden-sky/this-bird-has-flown-chords-1908455" target="_blank">Norwegian Wood (This Bird Has Flown)</a></td>
+        <td class="kind-cell"><span class="kind kind-chords" style="background:#3a9c9c">chords</span></td>
+    </tr><tr class="song">
+        <td class="code">063</td>
+        <td class="date">12.10.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/run-for-your-life-official-2064459" target="_blank">Run For Your Life</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">064</td>
+        <td class="date">13.10.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/drive-my-car-official-1947479" target="_blank">Drive My Car</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">065</td>
+        <td class="date">16.10.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/day-tripper-official-1988433" target="_blank">Day Tripper</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">066</td>
+        <td class="date">16.10.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/if-i-needed-someone-official-2117381" target="_blank">If I Needed Someone</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">067</td>
+        <td class="date">18.10.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/in-my-life-official-1981547" target="_blank">In My Life</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">068</td>
+        <td class="date">20.10.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/we-can-work-it-out-official-2091581" target="_blank">We Can Work It Out</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">069</td>
+        <td class="date">03.11.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/michelle-official-2130979" target="_blank">Michelle</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">070</td>
+        <td class="date">04.11.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/what-goes-on-official-2644521" target="_blank">What Goes On</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">071</td>
+        <td class="date">06.11.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/im-looking-through-you-official-2100427" target="_blank">I&#x27;m Looking Through You</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">072</td>
+        <td class="date">08.11.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/think-for-yourself-official-2543313" target="_blank">Think For Yourself</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">073</td>
+        <td class="date">10.11.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/the-word-official-2089513" target="_blank">The Word</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">074</td>
+        <td class="date">11.11.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/you-wont-see-me-official-2093131" target="_blank">You Won&#x27;t See Me</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">075</td>
+        <td class="date">11.11.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/girl-official-2105899" target="_blank">Girl</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">076</td>
+        <td class="date">21.11.65</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/nowhere-man-official-1991561" target="_blank">Nowhere Man</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code"> </td>
+        <td class="date"></td>
+        <td class="title">Recording project 7: Revolver (1.4.1966 - 31.10.66)</td>
+        <td class="kind-cell"></td>
+    </tr></tbody>
+        </table>
+    </div><div class="project" id="proj-7">
+        <div class="proj-header">
+            <span class="proj-num">7</span>
+            <span class="proj-name">Revolver</span>
+            <span class="proj-period">1.4.1966 - 31.10.66</span>
+            <span class="proj-count">17 songs · 16 UG official</span>
+        </div>
+        <table class="songs">
+            <thead><tr><th>code</th><th>date</th><th>title</th><th>UG</th></tr></thead>
+            <tbody><tr class="song">
+        <td class="code">077</td>
+        <td class="date">07.04.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/got-to-get-you-into-my-life-official-2100913" target="_blank">Got To Get You Into My Life</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">078</td>
+        <td class="date">11.04.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/love-you-to-official-4688720" target="_blank">Love You To</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">079</td>
+        <td class="date">13.04.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/paperback-writer-official-1995023" target="_blank">Paperback Writer</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">080</td>
+        <td class="date">14.04.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/rain-official-2643462" target="_blank">Rain</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">081</td>
+        <td class="date">17.04.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/doctor-robert-official-2075301" target="_blank">Doctor Robert</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">082</td>
+        <td class="date">20.04.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/taxman-official-2134589" target="_blank">Taxman</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">083</td>
+        <td class="date">20.04.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/and-your-bird-can-sing-official-1994141" target="_blank">And Your Bird Can Sing</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">084</td>
+        <td class="date">22.04.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/tomorrow-never-knows-official-3868022" target="_blank">Tomorrow Never Knows</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">085</td>
+        <td class="date">27.04.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/im-only-sleeping-official-2145103" target="_blank">I&#x27;m Only Sleeping</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">086</td>
+        <td class="date">29.04.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/eleanor-rigby-official-2094557" target="_blank">Eleanor Rigby</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">087</td>
+        <td class="date">09.05.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/for-no-one-official-2054734" target="_blank">For No One</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">088</td>
+        <td class="date">26.05.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/yellow-submarine-official-2148821" target="_blank">Yellow Submarine</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">089</td>
+        <td class="date">02.06.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-want-to-tell-you-official-2130977" target="_blank">I Want To Tell You</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">090</td>
+        <td class="date">07.06.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/good-day-sunshine-official-1997739" target="_blank">Good Day Sunshine</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">091</td>
+        <td class="date">14.06.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/here-there-and-everywhere-official-1996737" target="_blank">Here, There, And Everywhere</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">092</td>
+        <td class="date">21.06.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/she-said-she-said-official-1997145" target="_blank">She Said She Said</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code"> </td>
+        <td class="date"></td>
+        <td class="title">Recording project 8: Sgt. Pepper&#x27;s (1.11.1966 - 30.4.67)</td>
+        <td class="kind-cell"></td>
+    </tr></tbody>
+        </table>
+    </div><div class="project" id="proj-8">
+        <div class="proj-header">
+            <span class="proj-num">8</span>
+            <span class="proj-name">Sgt. Pepper&#x27;s</span>
+            <span class="proj-period">1.11.1966 - 30.4.67</span>
+            <span class="proj-count">18 songs · 17 UG official</span>
+        </div>
+        <table class="songs">
+            <thead><tr><th>code</th><th>date</th><th>title</th><th>UG</th></tr></thead>
+            <tbody><tr class="song">
+        <td class="code">093</td>
+        <td class="date">24.11.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/strawberry-fields-forever-official-2496873" target="_blank">Strawberry Fields Forever</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">094</td>
+        <td class="date">06.12.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/when-im-sixty-four-official-2145899" target="_blank">When I&#x27;m Sixty-Four</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">095</td>
+        <td class="date">29.12.66</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/penny-lane-official-2142031" target="_blank">Penny Lane</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">096</td>
+        <td class="date">19.01.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/a-day-in-the-life-official-2146997" target="_blank">A Day In The Life</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">097</td>
+        <td class="date">01.02.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/sgt-peppers-lonely-hearts-club-band-official-1996739" target="_blank">Sgt. Pepper&#x27;s Lonely Hearts Club Band</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">098</td>
+        <td class="date">08.02.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/good-morning-good-morning-official-3874856" target="_blank">Good Morning, Good Morning</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">099</td>
+        <td class="date">09.02.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/fixing-a-hole-official-2135033" target="_blank">Fixing A Hole</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">100</td>
+        <td class="date">13.02.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/only-a-northern-song-official-4689020" target="_blank">Only A Northern Song</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">101</td>
+        <td class="date">17.02.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/being-for-the-benefit-of-mr-kite-official-2580090" target="_blank">Being For The Benefit Of Mr. Kite</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">102</td>
+        <td class="date">23.02.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/lovely-rita-official-2147221" target="_blank">Lovely Rita</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">103</td>
+        <td class="date">01.03.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/lucy-in-the-sky-with-diamonds-official-1952109" target="_blank">Lucy In The Sky With Diamonds</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">104</td>
+        <td class="date">09.03.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/getting-better-official-2135459" target="_blank">Getting Better</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">105</td>
+        <td class="date">15.03.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/within-you-without-you-official-4687547" target="_blank">Within You Without You</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">106</td>
+        <td class="date">17.03.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/shes-leaving-home-official-2099243" target="_blank">She&#x27;s Leaving Home</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">107</td>
+        <td class="date">29.03.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/with-a-little-help-from-my-friends-official-1998951" target="_blank">With A Little Help From My Friends</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">108</td>
+        <td class="date">01.04.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/sgt-peppers-lonely-hearts-club-band-official-1996739" target="_blank">Sgt. Pepper&#x27;s Lonely Hearts Club Band (Reprise)</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">109</td>
+        <td class="date">25.04.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/magical-mystery-tour-official-2257203" target="_blank">Magical Mystery Tour</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code"> </td>
+        <td class="date"></td>
+        <td class="title">Recording project 9: Magical Mystery Tour (1.5.1967 - 31.3.68)</td>
+        <td class="kind-cell"></td>
+    </tr></tbody>
+        </table>
+    </div><div class="project" id="proj-9">
+        <div class="proj-header">
+            <span class="proj-num">9</span>
+            <span class="proj-name">Magical Mystery Tour</span>
+            <span class="proj-period">1.5.1967 - 31.3.68</span>
+            <span class="proj-count">16 songs · 14 UG official</span>
+        </div>
+        <table class="songs">
+            <thead><tr><th>code</th><th>date</th><th>title</th><th>UG</th></tr></thead>
+            <tbody><tr class="song">
+        <td class="code">110</td>
+        <td class="date">11.05.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/baby-youre-a-rich-man-official-3898178" target="_blank">Baby You&#x27;re A Rich Man</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">111</td>
+        <td class="date">12.05.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/all-together-now-official-3636773" target="_blank">All Together Now</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">112</td>
+        <td class="date">17.05.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/do-you-want-to-know-a-secret-official-2038225" target="_blank">You Know My Name (Look Up The Number)</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">113</td>
+        <td class="date">25.05.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/its-all-too-much-official-4693478" target="_blank">It&#x27;s All Too Much</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">114</td>
+        <td class="date">14.06.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/all-you-need-is-love-official-2601915" target="_blank">All You Need Is Love</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">115</td>
+        <td class="date">22.08.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/your-mother-should-know-official-2093295" target="_blank">Your Mother Should Know</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">116</td>
+        <td class="date">05.09.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-am-the-walrus-official-2461796" target="_blank">I Am The Walrus</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">117</td>
+        <td class="date">06.09.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/blue-jay-way-official-4688990" target="_blank">Blue Jay Way</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">118</td>
+        <td class="date">08.09.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/flying-official-2002371" target="_blank">Flying</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">119</td>
+        <td class="date">25.09.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/the-fool-on-the-hill-official-1994633" target="_blank">The Fool On The Hill</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">120</td>
+        <td class="date">02.10.67</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/hello-goodbye-official-2113775" target="_blank">Hello Goodbye</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">121</td>
+        <td class="date">12.01.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/the-inner-light-chords-1977847" target="_blank">The Inner Light</a></td>
+        <td class="kind-cell"><span class="kind kind-chords" style="background:#3a9c9c">chords</span></td>
+    </tr><tr class="song">
+        <td class="code">122</td>
+        <td class="date">03.02.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/lady-madonna-official-2145111" target="_blank">Lady Madonna</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">123</td>
+        <td class="date">04.02.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/across-the-universe-official-2141841" target="_blank">Across The Universe</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">124</td>
+        <td class="date">11.02.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/hey-bulldog-official-1990663" target="_blank">Hey Bulldog</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code"> </td>
+        <td class="date"></td>
+        <td class="title">Recording project 10: White Album (1.4.1968 - 31.10.68)</td>
+        <td class="kind-cell"></td>
+    </tr></tbody>
+        </table>
+    </div><div class="project" id="proj-10">
+        <div class="proj-header">
+            <span class="proj-num">10</span>
+            <span class="proj-name">White Album</span>
+            <span class="proj-period">1.4.1968 - 31.10.68</span>
+            <span class="proj-count">34 songs · 32 UG official</span>
+        </div>
+        <table class="songs">
+            <thead><tr><th>code</th><th>date</th><th>title</th><th>UG</th></tr></thead>
+            <tbody><tr class="song">
+        <td class="code">125</td>
+        <td class="date">30.05.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/revolution-official-1948113" target="_blank">Revolution</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">126</td>
+        <td class="date">30.05.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/revolution-1-official-2768308" target="_blank">Revolution (1)</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">127</td>
+        <td class="date">30.05.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/revolution-official-1948113" target="_blank">Revolution #9</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">128</td>
+        <td class="date">05.06.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/dont-pass-me-by-official-4693667" target="_blank">Don&#x27;t Pass Me By</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">129</td>
+        <td class="date">11.06.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/blackbird-official-2093927" target="_blank">Blackbird</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">130</td>
+        <td class="date">27.06.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/youve-got-to-hide-your-love-away-official-2063733" target="_blank">Everybody&#x27;s Got Something To Hide Except For Me And My Monkey</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">131</td>
+        <td class="date">28.06.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/good-night-official-4679333" target="_blank">Good Night</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">132</td>
+        <td class="date">03.07.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/ob-la-di-ob-la-da-official-2217263" target="_blank">Ob-La-Di, Ob-La-Da</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">133</td>
+        <td class="date">16.07.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/cry-baby-cry-official-2096467" target="_blank">Cry Baby Cry</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">134</td>
+        <td class="date">18.07.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/helter-skelter-official-2141113" target="_blank">Helter Skelter</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">135</td>
+        <td class="date">19.07.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/sexy-sadie-official-2143983" target="_blank">Sexy Sadie</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">136</td>
+        <td class="date">25.07.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/while-my-guitar-gently-weeps-official-1962225" target="_blank">While My Guitar Gently Weeps</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">137</td>
+        <td class="date">29.07.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/hey-jude-official-1910973" target="_blank">Hey Jude</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">138</td>
+        <td class="date">09.08.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/mother-natures-son-official-2132529" target="_blank">Mother Nature&#x27;s Son</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">139</td>
+        <td class="date">13.08.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/yer-blues-official-2838899" target="_blank">Yer Blues</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">140</td>
+        <td class="date">15.08.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/rocky-raccoon-official-2511870" target="_blank">Rocky Raccoon</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">141</td>
+        <td class="date">20.08.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/wild-honey-pie-official-2076331" target="_blank">Wild Honey Pie</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">142</td>
+        <td class="date">22.08.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/back-in-the-ussr-official-1989845" target="_blank">Back In The USSR</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">143</td>
+        <td class="date">28.08.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/dear-prudence-official-2960699" target="_blank">Dear Prudence</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">144</td>
+        <td class="date">11.09.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/glass-onion-official-2003329" target="_blank">Glass Onion</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">145</td>
+        <td class="date">16.09.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/can-you-take-me-back-tabs-4033729" target="_blank">Can You Take Me Back</a></td>
+        <td class="kind-cell"><span class="kind kind-tabs" style="background:#b35610">tabs</span></td>
+    </tr><tr class="song">
+        <td class="code">146</td>
+        <td class="date">16.09.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-will-official-2054668" target="_blank">I Will</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">147</td>
+        <td class="date">18.09.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/birthday-official-2135031" target="_blank">Birthday</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">148</td>
+        <td class="date">19.09.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/piggies-official-2144441" target="_blank">Piggies</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">149</td>
+        <td class="date">23.09.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/happiness-is-a-warm-gun-official-1997803" target="_blank">Happiness Is A Warm Gun</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">150</td>
+        <td class="date">01.10.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/honey-pie-official-2004331" target="_blank">Honey Pie</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">151</td>
+        <td class="date">03.10.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/savoy-truffle-official-3893939" target="_blank">Savoy Truffle</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">152</td>
+        <td class="date">04.10.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/martha-my-dear-official-2125949" target="_blank">Martha My Dear</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">153</td>
+        <td class="date">07.10.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/long-long-long-official-2632471" target="_blank">Long, Long, Long</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">154</td>
+        <td class="date">08.10.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/im-so-tired-official-2146629" target="_blank">I&#x27;m So Tired</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">155</td>
+        <td class="date">09.10.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/the-continuing-story-of-bungalow-bill-official-3927782" target="_blank">The Continuing Story Of Bungalow Bill</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">156</td>
+        <td class="date">09.10.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/why-dont-we-do-it-in-the-road-official-2058035" target="_blank">Why Don&#x27;t We Do It In the Road</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">157</td>
+        <td class="date">13.10.68</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/julia-official-2061691" target="_blank">Julia</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code"> </td>
+        <td class="date"></td>
+        <td class="title">Recording project 11: Let It Be (1.11.1968 - 31.1.1969)</td>
+        <td class="kind-cell"></td>
+    </tr></tbody>
+        </table>
+    </div><div class="project" id="proj-11">
+        <div class="proj-header">
+            <span class="proj-num">11</span>
+            <span class="proj-name">Let It Be</span>
+            <span class="proj-period">1.11.1968 - 31.1.1969</span>
+            <span class="proj-count">12 songs · 11 UG official</span>
+        </div>
+        <table class="songs">
+            <thead><tr><th>code</th><th>date</th><th>title</th><th>UG</th></tr></thead>
+            <tbody><tr class="song cover">
+        <td class="code">C25</td>
+        <td class="date">24.01.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/maggie-mae-official-2076765" target="_blank">Maggie Mae</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">158</td>
+        <td class="date">25.01.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/for-you-blue-official-2602647" target="_blank">For You Blue</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">159</td>
+        <td class="date">25.01.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/let-it-be-official-1939035" target="_blank">Let It Be</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">160</td>
+        <td class="date">26.01.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/dig-it-official-4679675" target="_blank">Dig It</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">161</td>
+        <td class="date">27.01.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/get-back-official-1954975" target="_blank">Get Back</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">162</td>
+        <td class="date">28.01.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/dont-let-me-down-official-1962071" target="_blank">Don&#x27;t Let Me Down</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">163</td>
+        <td class="date">30.01.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/dig-a-pony-official-2660964" target="_blank">Dig A Pony</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">164</td>
+        <td class="date">30.01.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/ive-got-a-feeling-official-2631297" target="_blank">I&#x27;ve Got A Feeling</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">165</td>
+        <td class="date">30.01.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/one-after-909-official-2493960" target="_blank">One After 909</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">166</td>
+        <td class="date">31.01.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/two-of-us-official-2148807" target="_blank">Two Of Us</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">167</td>
+        <td class="date">31.01.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/the-long-and-winding-road-official-2134585" target="_blank">The Long And Winding Road</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code"> </td>
+        <td class="date"></td>
+        <td class="title">Recording project 12: Abbey Road (1.2.1969 - 3.1.1970)</td>
+        <td class="kind-cell"></td>
+    </tr></tbody>
+        </table>
+    </div><div class="project" id="proj-12">
+        <div class="proj-header">
+            <span class="proj-num">12</span>
+            <span class="proj-name">Abbey Road</span>
+            <span class="proj-period">1.2.1969 - 3.1.1970</span>
+            <span class="proj-count">21 songs · 20 UG official</span>
+        </div>
+        <table class="songs">
+            <thead><tr><th>code</th><th>date</th><th>title</th><th>UG</th></tr></thead>
+            <tbody><tr class="song">
+        <td class="code">168</td>
+        <td class="date">22.02.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-want-you-shes-so-heavy-official-2030521" target="_blank">I Want You (She&#x27;s So Heavy)</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">169</td>
+        <td class="date">25.02.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/old-brown-shoe-official-4192600" target="_blank">Old Brown Shoe</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">170</td>
+        <td class="date">25.02.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/something-official-1997363" target="_blank">Something</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">171</td>
+        <td class="date">14.04.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/the-ballad-of-john-and-yoko-official-2092745" target="_blank">The Ballad Of John And Yoko</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">172</td>
+        <td class="date">20.04.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/oh-darling-official-1981151" target="_blank">Oh! Darling</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">173</td>
+        <td class="date">26.04.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/octopuss-garden-official-1957271" target="_blank">Octopus&#x27;s Garden</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">174</td>
+        <td class="date">06.05.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/you-never-give-me-your-money-official-2001389" target="_blank">You Never Give Me Your Money</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">175</td>
+        <td class="date">02.07.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/golden-slumbers-official-1994179" target="_blank">Golden Slumbers</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">176</td>
+        <td class="date">02.07.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/carry-that-weight-official-2595309" target="_blank">Carry That Weight</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">177</td>
+        <td class="date">02.07.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/her-majesty-official-2068831" target="_blank">Her Majesty</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">178</td>
+        <td class="date">07.07.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/here-comes-the-sun-official-1990437" target="_blank">Here Comes The Sun</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">179</td>
+        <td class="date">09.07.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/maxwells-silver-hammer-official-2590260" target="_blank">Maxwell&#x27;s Silver Hammer</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">180</td>
+        <td class="date">21.07.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/come-together-official-1950291" target="_blank">Come Together</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">181</td>
+        <td class="date">23.07.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/the-end-official-2003365" target="_blank">The End</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">182</td>
+        <td class="date">24.07.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/sun-king-official-2002197" target="_blank">Sun King</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">183</td>
+        <td class="date">24.07.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/mean-mr-mustard-official-2065051" target="_blank">Mean Mr Mustard</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">184</td>
+        <td class="date">25.07.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/polythene-pam-official-2065323" target="_blank">Polythene Pam</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">185</td>
+        <td class="date">25.07.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/she-came-in-through-the-bathroom-window-official-2065795" target="_blank">She Came In Through The Bathroom Window</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">186</td>
+        <td class="date">01.08.69</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/because-official-2051909" target="_blank">Because</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code">187</td>
+        <td class="date">03.01.70</td>
+        <td class="title"><a href="https://tabs.ultimate-guitar.com/tab/the-beatles/i-me-mine-official-2484954" target="_blank">I Me Mine</a></td>
+        <td class="kind-cell"><span class="kind kind-official" style="background:#25a838">official</span></td>
+    </tr><tr class="song">
+        <td class="code"></td>
+        <td class="date"></td>
+        <td class="title">This page was published as Appendix 2 (pp. 28-32) of: Heinonen, Yrj&amp;ouml;, and Tuomas Eerola (1998), &quot; Songwriting, recording, and style change . Problems in the chronology and periodization of the musical style of the Beatles.&quot; In: Yrj&amp;ouml; Heinonen, Tuomas Eerola, Jouni Koskim&amp;auml;ki, Terhi Nurmesj&amp;auml;rvi and John Richardson (Eds.),  Beatlesstudies 1. Songwriting, recording, and style change . Jyv&amp;auml;skyl&amp;auml;: University of Jyv&amp;auml;skyl&amp;auml; (Department of Music, Research Reports 19), 1998, 3-32.</td>
+        <td class="kind-cell"></td>
+    </tr></tbody>
+        </table>
+    </div>
+  </main>
+</div>
+</body></html>

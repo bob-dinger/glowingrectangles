@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Getting Better — Progression Voicings</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    min-height: 100%;
+}
+body { padding: 30px 40px 60px; }
+.wrap { max-width: 1200px; margin: 0 auto; }
+h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+.sub { color: #6a6a8a; font-size: 13px; margin-bottom: 20px; }
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+    padding: 12px 16px;
+    background: #16162a;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+}
+.controls label { font-size: 13px; color: #b0b0cc; }
+.controls select {
+    background: #1e1e3a;
+    color: #e0e0e0;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.capo-hint { font-size: 12px; color: #6a6a8a; margin-left: auto; }
+
+.row {
+    margin-bottom: 28px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #2a2a4a;
+}
+.row:last-child { border-bottom: none; }
+.row-title {
+    font-size: 13px;
+    color: #b0b0cc;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+}
+.row-desc {
+    font-size: 12px;
+    color: #6a6a8a;
+    margin-bottom: 14px;
+}
+.chord-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.chord-card {
+    background: #16162a;
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    padding: 12px 12px 10px;
+    text-align: center;
+}
+.chord-name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.chord-name.deg-1 { color: #ffa0a0; }
+.chord-name.deg-2 { color: #ffc888; }
+.chord-name.deg-4 { color: #88e8a0; }
+.chord-name.deg-5 { color: #90b8f8; }
+
+.chord-card svg { display: block; margin: 0 auto; }
+.frets-label { font-size: 11px; color: #6a6a8a; margin-top: 6px; font-family: monospace; letter-spacing: 2px; }
+.note { font-size: 11px; color: #6a6a8a; margin-top: 4px; }
+.unplayable { opacity: 0.35; }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <h1>Beatles — Getting Better <span style="color:#6a6a8a;font-weight:400;font-size:15px;">· progression voicings</span></h1>
+    <div class="sub">IV → I → ii⁷ → V — the same shapes transposed to any key</div>
+
+    <div class="controls">
+        <label for="keySel">Key:</label>
+        <select id="keySel"></select>
+        <span class="capo-hint" id="capoHint"></span>
+    </div>
+
+    <div id="grid"></div>
+</div>
+
+<script>
+const NOTES = ['C','C♯','D','E♭','E','F','F♯','G','A♭','A','B♭','B'];
+const KEYS  = ['C','D','E♭','E','F','G','A','B♭','B'];
+
+const PROG = [
+    { degree: 'IV', suffix: 'add9', deg: 'deg-4' },
+    { degree: 'I',  suffix: '',     deg: 'deg-1' },
+    { degree: 'ii', suffix: 'm7',   deg: 'deg-2' },
+    { degree: 'V',  suffix: '',     deg: 'deg-5' },
+];
+const DEG_OFFSET = { I: 0, ii: 2, IV: 5, V: 7 };
+
+// Voicings expressed in C major (Fadd9, C, Dm7, G).
+// Each row = one approach across the 4 chords.
+const ROWS = [
+    {
+        title: 'Open shapes (use capo for other keys)',
+        descC: 'The easy open chords. For non-C keys, capo up — the shapes stay the same.',
+        capoBased: true,
+        chordsC: [
+            [-1,-1,3,2,1,3],
+            [-1,3,2,0,1,0],
+            [-1,-1,0,2,1,1],
+            [3,2,0,0,0,3],
+        ]
+    },
+    {
+        title: 'Mid-neck barre — no capo',
+        descC: 'Movable barre shapes. Slide them up by N frets to transpose.',
+        capoBased: false,
+        chordsC: [
+            [1,3,3,2,1,3],
+            [-1,3,5,5,5,3],
+            [-1,5,7,5,6,5],
+            [3,5,5,4,3,3],
+        ]
+    },
+    {
+        title: 'High position — no capo',
+        descC: 'Up the neck. Brighter, thinner sound.',
+        capoBased: false,
+        chordsC: [
+            [-1,12,10,10,8,8],
+            [8,10,10,9,8,8],
+            [-1,-1,10,10,10,10],
+            [-1,10,12,12,12,10],
+        ]
+    },
+    {
+        title: 'Voice-led top-4 (use capo for other keys)',
+        descC: 'Top-4-string voicings where fingers barely move between changes. Capo for non-C keys.',
+        capoBased: true,
+        chordsC: [
+            [-1,-1,3,2,1,3],
+            [-1,-1,2,0,1,0],
+            [-1,-1,0,2,1,1],
+            [-1,-1,0,0,0,3],
+        ]
+    },
+];
+
+function transposeFrets(frets, shift) {
+    return frets.map(f => f === -1 ? -1 : f + shift);
+}
+
+function pickBaseFret(frets) {
+    const fretted = frets.filter(f => f > 0);
+    if (fretted.length === 0) return 0;
+    const lowest = Math.min(...fretted);
+    if (lowest <= 2) return 0;             // show nut
+    return lowest - 1;                      // first row = lowest fret
+}
+
+function diagram(name, deg, frets, baseFret, note) {
+    const W = 130, H = 150;
+    const left = 18, right = W - 18, top = 26, bottom = H - 12;
+    const sp = (right - left) / 5;
+    const fretH = (bottom - top) / 5;
+    const isOpen = baseFret === 0;
+
+    // unplayable check (fret > baseFret + 5)
+    const unplayable = frets.some(f => f > 0 && (f - baseFret) > 5);
+
+    let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+
+    if (!isOpen) {
+        svg += `<text x="2" y="14" text-anchor="start" font-size="11" font-weight="600" fill="#b0b0cc">${baseFret + 1}fr</text>`;
+    }
+
+    for (let s = 0; s < 6; s++) {
+        const x = left + s * sp;
+        const f = frets[s];
+        if (f === -1) {
+            svg += `<text x="${x}" y="${top - 8}" text-anchor="middle" font-size="11" fill="#6a6a8a">×</text>`;
+        } else if (f === 0) {
+            svg += `<circle cx="${x}" cy="${top - 10}" r="4" fill="none" stroke="#8a8aa8" stroke-width="1.2"/>`;
+        }
+    }
+
+    svg += `<line x1="${left}" y1="${top}" x2="${right}" y2="${top}" stroke="#e0e0e0" stroke-width="${isOpen ? 4 : 1.5}"/>`;
+    for (let f = 1; f <= 5; f++) {
+        const y = top + f * fretH;
+        svg += `<line x1="${left}" y1="${y}" x2="${right}" y2="${y}" stroke="#3a3a5a" stroke-width="1"/>`;
+    }
+    for (let s = 0; s < 6; s++) {
+        const x = left + s * sp;
+        svg += `<line x1="${x}" y1="${top}" x2="${x}" y2="${bottom}" stroke="#5a5a7a" stroke-width="${s === 0 || s === 5 ? 1.5 : 1}"/>`;
+    }
+
+    const fretted = frets.map((f, i) => ({ f, i })).filter(x => x.f > 0);
+    let barreFret = null, barreFromString = null;
+    if (fretted.length >= 4) {
+        const minF = Math.min(...fretted.map(x => x.f));
+        const onMin = fretted.filter(x => x.f === minF).map(x => x.i);
+        if (onMin.length >= 3) {
+            barreFret = minF;
+            barreFromString = Math.min(...onMin);
+        }
+    }
+    if (barreFret !== null) {
+        const fretInDiagram = barreFret - baseFret;
+        if (fretInDiagram >= 1 && fretInDiagram <= 5) {
+            const y = top + (fretInDiagram - 0.5) * fretH;
+            const x1 = left + barreFromString * sp;
+            const x2 = left + 5 * sp;
+            svg += `<rect x="${x1 - 7}" y="${y - 7}" width="${x2 - x1 + 14}" height="14" rx="7" fill="#5a8acc" opacity="0.9"/>`;
+        }
+    }
+
+    for (let s = 0; s < 6; s++) {
+        const f = frets[s];
+        if (f <= 0) continue;
+        const fretInDiagram = f - baseFret;
+        if (fretInDiagram < 1 || fretInDiagram > 5) continue;
+        const x = left + s * sp;
+        const y = top + (fretInDiagram - 0.5) * fretH;
+        const isBarre = (barreFret !== null && f === barreFret && s >= barreFromString);
+        if (!isBarre) {
+            svg += `<circle cx="${x}" cy="${y}" r="6" fill="#5a8acc"/>`;
+        }
+    }
+
+    svg += `</svg>`;
+
+    const fretsStr = frets.map(f => f === -1 ? 'x' : f).join(' ');
+
+    return `<div class="chord-card${unplayable ? ' unplayable' : ''}">
+        <div class="chord-name ${deg}">${name}</div>
+        ${svg}
+        <div class="frets-label">${fretsStr}</div>
+        ${note ? `<div class="note">${note}</div>` : ''}
+        ${unplayable ? `<div class="note" style="color:#cc7777">too high — try lower row</div>` : ''}
+    </div>`;
+}
+
+function render(key) {
+    const shift = NOTES.indexOf(key);
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+
+    for (const r of ROWS) {
+        const useCapoMode = r.capoBased && shift !== 0;
+        const cards = r.chordsC.map((chordsInC, i) => {
+            const p = PROG[i];
+            const rootIdx = (DEG_OFFSET[p.degree] + shift) % 12;
+            const name = NOTES[rootIdx] + p.suffix;
+
+            let frets, note;
+            if (useCapoMode) {
+                frets = chordsInC;  // keep C shapes
+                note = `C shape, capo ${shift}`;
+            } else {
+                frets = transposeFrets(chordsInC, shift);
+                note = '';
+            }
+            const baseFret = pickBaseFret(frets);
+            return diagram(name, p.deg, frets, baseFret, note);
+        }).join('');
+
+        const desc = useCapoMode
+            ? `<span style="color:#88e8a0">▸ Capo on fret ${shift} — these are the same C shapes</span>`
+            : r.descC;
+
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.innerHTML = `
+            <div class="row-title">${r.title}</div>
+            <div class="row-desc">${desc}</div>
+            <div class="chord-strip">${cards}</div>`;
+        grid.appendChild(row);
+    }
+
+    // capo hint
+    const hint = document.getElementById('capoHint');
+    if (key === 'C') {
+        hint.textContent = '';
+    } else {
+        hint.textContent = `Tip: capo at fret ${shift} and play C shapes`;
+    }
+}
+
+const sel = document.getElementById('keySel');
+KEYS.forEach(k => {
+    const o = document.createElement('option');
+    o.value = k; o.textContent = k;
+    sel.appendChild(o);
+});
+sel.value = 'C';
+sel.addEventListener('change', () => render(sel.value));
+render('C');
+</script>
+</body>
+</html>

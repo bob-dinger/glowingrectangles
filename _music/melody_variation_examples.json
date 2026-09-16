@@ -1,0 +1,114 @@
+{
+  "_doc": "Labeled corpus of melodic-variation transforms. A phrase A' is derived from phrase A by one or more named ops. Note format = [scale_degree, octave, duration_in_beats]. Phrases segmented by inter-onset gap (user's melody model). FOCUS on songs WITH LYRICS: carry the lyric line aligned 1-token-per-note (per the melisma format in melisma_examples.json / melisma_align.py) so rhyme-beats and which-syllable-gets-the-melisma line up with the notes. CANONICAL HOME is now Supabase parcels.melodies (columns phrases/palette/cadence/transforms added 2026-06-30, keyed by slug+section). This JSON is the STAGING/scratch format + definitions; named examples get migrated to the table. The 112 example stays here only (no slug).",
+  "rules": {
+    "trim": "drop final note(s) off the phrase tail on the repeat",
+    "clip": "drop leading note(s) / pickup off the phrase head (front version of trim)",
+    "tag": "add a note onto the end",
+    "merge": "fuse two adjacent same-pitch notes into one held note, same total duration (inverse of fill)",
+    "fill": "add internal note(s), subdividing the rhythm, same contour",
+    "lift": "raise only the final note (open ending)",
+    "drop": "lower only the final note (closed ending)",
+    "step": "transpose the whole phrase up/down a step (sequence)",
+    "echo": "exact repeat, no change",
+    "augment": "stretch the rhythm, same pitches",
+    "compress": "compress the rhythm, same pitches",
+    "cross-graft": "rhythm donor phrase + pitch donor phrase; when counts mismatch, repeat a pitch"
+  },
+  "axes": {
+    "_doc": "Ops are the HOW (pitch/length transforms). These axes are the WHERE — metric + harmonic position — independently variable.",
+    "rhythm": "onset beats + durations of each note; the rhythmic profile of the phrase",
+    "breaks": "rests/gaps between phrases (isRest notes + inter-onset gaps) = the phrase boundaries",
+    "rhyme-beats": "which metric positions recur across phrases (e.g. both phrases start on the & of 2)",
+    "chord-alignment": "which notes land on a chord change and whether they sing the new chord's tone"
+  },
+  "phrase_architecture": {
+    "112": "musical sentence: idea (1) + repeat-of-idea (1) + continuation twice as long (2). The 1->1 leg is where variation ops usually live.",
+    "8-112-112": "two 8-bar sentences, each built 1-1-2"
+  },
+  "cadence": {
+    "_def": "The cadence of a phrase = its FINAL NOTE (single note). Locked 2026-06-30.",
+    "open_closed": "melodic classification by scale degree of the final note: closed = stable (1, sometimes 3); open = unstable (2,4,5,6,7 or any note below tonic like the low 6).",
+    "vs_chord": "ALSO track the final note's role against the chord sounding under it: root/3rd/5th = chord tone (harmonically closed); anything else = non-chord tone (harmonically open). Melodic and harmonic verdicts often disagree — record both.",
+    "cadence_tag": "SEPARATE concept: a recurring rhythmic ending figure (e.g. 0.5,1.25) shared across phrases, independent of pitch. Rhythm-axis, not a cadence pitch."
+  },
+  "palette": {
+    "_def": "Pitch inventory = which scale degrees the melody uses. Most melodies run on a tiny CORE (2-3 notes); this is a strong fingerprint and a mixing constraint (shared core -> clean graft).",
+    "core": "the 2-4 degrees carrying most of the melody, weighted by TIME on each degree (>= ~15% of note-duration)",
+    "reach": "occasional degrees it steps out to (low dip / high peak)",
+    "stretch": "lowest->highest span (range) in diatonic steps",
+    "_octave_note": "normalize octave per song (subtract the song's modal octave) before comparing stretch across songs; raw Hookpad octave anchors differ (some songs main-octave = 1, some = 0)."
+  },
+  "meta_patterns": {
+    "front-anchored": "answer keeps the OPENING constant and varies the final note (open vs closed). Classic question/answer; yearning. e.g. Wouldn't It Be Nice (front 4 notes identical, final 1->↓6).",
+    "cadence-anchored": "answer keeps the FINAL NOTE constant and varies the front. Judge by the final note (pitch), NOT the ending rhythm.",
+    "_axis": "anchor = which end is held constant between a phrase and its answer, judged by the FINAL NOTE. Likely predicts feel; label on every example.",
+    "_quietriot_correction": "Quiet Riot is NOT cadence-anchored: A ends ↓6, A' ends 1 (trim removed the ↓6) — final pitch CHANGES. What's constant there is the cadence-tag RHYTHM (0.5,1.25), a rhythm-axis pattern, not a pitch anchor."
+  },
+  "examples": [
+    {
+      "song": "Quiet Riot - Come On Feel The Noise",
+      "section": "chorus",
+      "form": "AABB",
+      "key_relative": true,
+      "phrases": {
+        "A":  [[3,1,0.5],[3,1,1.5],[2,1,1],[3,1,0.5],[1,1,1],[6,0,1.25]],
+        "A'": [[3,1,2],[2,1,1],[3,1,0.5],[1,1,1.25]],
+        "B":  [[3,1,0.5],[3,1,1],[4,1,2],[3,1,1],[2,1,0.5],[2,1,1.25]],
+        "B'": [[4,1,2],[3,1,1],[2,1,0.5],[2,1,1.25]]
+      },
+      "transforms": {
+        "A->A'": ["merge:head(3+3->3)", "trim:tail(drop ↓6)"],
+        "B->B'": ["clip:head(drop 3 3 pickup)"]
+      },
+      "palette": {"degrees": [1,2,3,4,6], "core": [2,3,4], "reach": [1,6], "stretch": "6 steps"},
+      "final_notes": {"A": "↓6 (open)", "A'": "1 (closed)", "B": "2 (open)", "B'": "2 (open)"},
+      "cadence_vs_chord": "A ↓6 over vi = root (harmonically closed) though melodically open; A' 1 over V = non-chord tone (harmonically open) though melodically closed; B/B' 2 over I = non-chord tone (open both ways).",
+      "notes": "Both answers collapse 6 notes -> 4. Held constant is the cadence-TAG rhythm (0.5,1.25) on A' and B/B', NOT the final pitch (A ↓6 -> A' 1). So this is a cadence-tag/rhythm anchor, not a cadence-pitch anchor."
+    },
+    {
+      "song": "The Beach Boys - Wouldn't It Be Nice",
+      "section": "verse",
+      "lyric": "wouldn't it be nice if we were older / then we wouldn't have to wait so long",
+      "form": "question-answer (antecedent-consequent)",
+      "anchor": "front",
+      "key_relative": true,
+      "phrases": {
+        "A":  [[3,1,1],[2,1,0.5],[1,1,0.5],[2,1,0.5],[5,0,1],[1,1,1],[1,1,1],[5,0,0.5],[2,1,1],[1,1,1]],
+        "A'": [[3,1,1],[2,1,0.5],[1,1,0.5],[2,1,0.5],[6,0,1],[2,1,0.5],[2,1,1],[2,1,1],[6,0,0.75]]
+      },
+      "subphrases": {
+        "front p1==p3": "[3,2,1,2] rhythm (1,.5,.5,.5) identical",
+        "answer p2": "[↓5,1,1,↓5,2,1] ends on 1 (resolved/closed)",
+        "answer p4": "[↓6,2,2,2,↓6] ends on ↓6 (open/yearning)"
+      },
+      "transforms": {
+        "A->A'": ["echo:front(first 4 notes identical)", "trim:tail(answer half, ~1-2 notes)", "drop:final(1 -> ↓6, closed->open ending)"]
+      },
+      "palette": {"degrees": [1,2,3,5,6], "core": [1,2], "reach": [3,5,6], "stretch": "6 steps"},
+      "final_notes": {"A": "1 (closed)", "A'": "↓6 (open)"},
+      "cadence_vs_chord": "no chord data in this paste; melodic only. Final 1 (closed) -> ↓6 (open) is the yearning.",
+      "notes": "FRONT-anchored: front 4 notes held identical, final note varies 1->↓6 (closed->open). Answer-half internal pitches also shift 1->2 (mild step). TODO confirm trim count: my segmentation shows net -1 note in the answer half vs user's 'last two'."
+    },
+    {
+      "song": "(unnamed - fp 8eb64f)",
+      "section": "unknown",
+      "form": "112 (musical sentence); full melody = 8-112-112 (two 8-bar sentences)",
+      "anchor": "cadence (both phrases share the 5 7 1 7 body + eighth-run rhythm; front + tail vary)",
+      "key_relative": true,
+      "phrases": {
+        "P1": [[2,-1,0.5],[3,-1,0.5],[5,-1,0.5],[7,-1,0.5],[1,0,0.5],[7,-1,1]],
+        "P2": [[3,-1,0.5],[3,-1,0.5],[5,-1,0.5],[7,-1,0.5],[1,0,0.5],[7,-1,0.5],[6,-1,0.5]]
+      },
+      "onsets": {"P1": [2.5,3,3.5,4,4.5,5], "P2": [6.5,7,7.5,8,8.5,9,9.5]},
+      "chords": "I (b1-9), vi (b9-15), V (b15-17)",
+      "transforms": {
+        "P1->P2": ["lift:head(first note 2->3)", "tag:tail(+6; shortens prior 7 from 1.0 to 0.5)"]
+      },
+      "palette": {"degrees": [1,2,3,5,6,7], "core": [7,3], "reach": [5,1,2,6], "stretch": "7 steps (octave) — a 'stretch' melody"},
+      "final_notes": {"P1": "7 over I (open melodically, non-chord tone harmonically)", "P2": "6 over vi (open melodically, but ROOT of vi = harmonically closed)"},
+      "cadence_vs_chord": "The headline disagreement: P2 ends on scale-degree 6 (open on paper) yet it's the root of the vi chord under it = a real harmonic arrival. Tracking both is what catches this.",
+      "chord_alignment": "P1 sits entirely under I. P2's tag note 6 lands ON the I->vi change (b9.5) and sings the vi root. Tag is harmonically placed, not decorative.",
+      "notes": "Confirms lift/drop is position-noted, not cadence-only (here lift is on the FIRST note). Steady eighth-note runner rhythm; both phrases enter on an off-beat pickup (rhyme-beat)."
+    }
+  ]
+}

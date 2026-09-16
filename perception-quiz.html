@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Does the World Look Like in Your Head?</title>
+<script src="perception-quiz-data.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:#0d0d10;color:#e9e7e4;height:100vh;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;gap:44px;padding:30px;
+  }
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  /* ---------- grid ---------- */
+  #board{flex:0 0 auto}
+  .grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;width:440px}
+  .cell{
+    aspect-ratio:1;border-radius:4px;background:#20202a;cursor:pointer;
+    transition:background .09s, transform .09s;
+  }
+  .cell:hover{transform:scale(1.12)}
+  .cell.guess{background:#5eead4}
+  .cell.reality{background:#fbbf24}
+  .cell.both{background:#fbbf24;box-shadow:inset 0 0 0 3px #5eead4}
+  .cell.avg{box-shadow:inset 0 0 0 3px #f472b6}
+  .cell.avg.guess{background:#5eead4;box-shadow:inset 0 0 0 3px #f472b6}
+  .cell.avg.reality{background:#fbbf24;box-shadow:inset 0 0 0 3px #f472b6}
+  .grid.locked .cell{cursor:default}
+  .grid.locked .cell:hover{transform:none}
+
+  .hint{text-align:center;font-size:12px;color:#5f5e6b;margin-top:14px}
+
+  /* ---------- panel ---------- */
+  aside{width:400px;display:flex;flex-direction:column;gap:16px}
+  .prog{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5f5e6b}
+  h1{font-size:22px;font-weight:600;line-height:1.3;letter-spacing:-.01em}
+
+  .rows{display:flex;flex-direction:column;gap:9px}
+  .row{display:flex;align-items:baseline;gap:10px;font-size:14px;opacity:0;
+       transition:opacity .35s}
+  .row.on{opacity:1}
+  .row .sw{width:11px;height:11px;border-radius:3px;flex:0 0 auto;position:relative;top:1px}
+  .row .lbl{color:#8b8996;flex:1}
+  .row .val{font-weight:700;font-size:17px}
+  .sw.you{background:#5eead4} .val.you{color:#5eead4}
+  .sw.avg{background:transparent;box-shadow:inset 0 0 0 3px #f472b6} .val.avg{color:#f472b6}
+  .sw.real{background:#fbbf24} .val.real{color:#fbbf24}
+
+  .verdict{font-size:14px;line-height:1.5;color:#c9c7d1;min-height:42px}
+  .verdict b{color:#fff}
+
+  .src{font-size:11.5px;color:#55555f;line-height:1.5}
+  .src a{color:#6b6a75}
+
+  .btns{display:flex;gap:8px;margin-top:auto}
+  button{
+    background:#5eead4;border:0;color:#062e29;font:inherit;font-size:13px;
+    font-weight:600;padding:10px 18px;border-radius:6px;cursor:pointer;
+  }
+  button.ghost{background:#1a1a21;border:1px solid #2c2c37;color:#c9c7d1;font-weight:500}
+  button:disabled{opacity:.35;cursor:default}
+
+  #done{display:none;text-align:center}
+  #done.on{display:block}
+  #done .big{font-size:44px;font-weight:700;color:#5eead4;line-height:1.1}
+  #done p{font-size:14px;color:#8b8996;margin-top:10px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div id="board">
+  <div class="grid" id="grid"></div>
+  <p class="hint" id="hint">click a square — that many out of every 100</p>
+</div>
+
+<aside id="panel">
+  <div>
+    <div class="prog" id="prog">Question 1 of 10</div>
+    <h1 id="q">…</h1>
+  </div>
+
+  <div class="rows">
+    <div class="row" id="r-you"><span class="sw you"></span>
+      <span class="lbl">your guess</span><span class="val you" id="v-you">—</span></div>
+    <div class="row" id="r-avg"><span class="sw avg"></span>
+      <span class="lbl" id="l-avg">what people guessed</span><span class="val avg" id="v-avg">—</span></div>
+    <div class="row" id="r-real"><span class="sw real"></span>
+      <span class="lbl">reality</span><span class="val real" id="v-real">—</span></div>
+  </div>
+
+  <p class="verdict" id="verdict"></p>
+  <p class="src" id="src"></p>
+
+  <div class="btns">
+    <button id="next" disabled>Next</button>
+    <button class="ghost" id="restart">Start over</button>
+  </div>
+</aside>
+
+<div id="done">
+  <div class="big" id="score">—</div>
+  <p id="summary"></p>
+  <div class="btns" style="justify-content:center;margin-top:22px">
+    <button id="again">Go again</button>
+  </div>
+</div>
+
+<script>
+const ROUND = 10;
+const $ = id => document.getElementById(id);
+const grid = $('grid');
+
+let deck = [], idx = 0, cur = null, locked = false, results = [];
+
+/* build the 100 cells once */
+const cells = [];
+for (let i = 0; i < 100; i++) {
+  const c = document.createElement('div');
+  c.className = 'cell';
+  c.onclick = () => { if (!locked) paint(i + 1, true); };
+  grid.appendChild(c);
+  cells.push(c);
+}
+
+const clamp = n => Math.max(0, Math.min(100, n));
+const round1 = n => Math.round(n * 10) / 10;
+
+function paint(n, isGuess) {
+  cur.guess = clamp(n);
+  cells.forEach((c, i) => {
+    c.className = 'cell' + (i < cur.guess ? ' guess' : '');
+  });
+  $('v-you').textContent = cur.guess + '%';
+  $('r-you').classList.add('on');
+  $('next').disabled = false;
+  $('next').textContent = 'Reveal';
+}
+
+function start() {
+  deck = [...window.PERCEPTION].sort(() => Math.random() - 0.5).slice(0, ROUND);
+  idx = 0; results = [];
+  $('done').classList.remove('on');
+  $('panel').style.display = ''; $('board').style.display = '';
+  show();
+}
+
+function show() {
+  cur = { ...deck[idx], guess: null };
+  locked = false;
+  grid.classList.remove('locked');
+  cells.forEach(c => c.className = 'cell');
+  $('prog').textContent = `Question ${idx + 1} of ${deck.length}`;
+  $('q').textContent = cur.ask;
+  ['r-you','r-avg','r-real'].forEach(i => $(i).classList.remove('on'));
+  $('v-you').textContent = $('v-avg').textContent = $('v-real').textContent = '—';
+  $('l-avg').textContent = cur.estimator ? `what ${cur.estimator} guessed`
+                                         : 'what people guessed';
+  $('verdict').innerHTML = '';
+  $('src').innerHTML = '';
+  $('hint').textContent = 'click a square — that many out of every 100';
+  $('next').disabled = true;
+  $('next').textContent = 'Reveal';
+}
+
+function reveal() {
+  locked = true;
+  grid.classList.add('locked');
+  const real = Math.round(cur.actual), avg = Math.round(cur.perceived);
+
+  cells.forEach((c, i) => {
+    let cls = 'cell';
+    if (i < real) cls += ' reality';
+    if (i < cur.guess) cls += (i < real ? ' both' : ' guess');
+    if (i === avg - 1 && avg > 0) cls += ' avg';
+    c.className = cls;
+  });
+
+  $('v-avg').textContent = round1(cur.perceived) + '%';
+  $('v-real').textContent = round1(cur.actual) + '%';
+  $('r-avg').classList.add('on'); $('r-real').classList.add('on');
+
+  const youErr = Math.abs(cur.guess - cur.actual);
+  const avgErr = Math.abs(cur.perceived - cur.actual);
+  const beat = youErr < avgErr;
+  results.push({ beat, youErr, avgErr, ask: cur.ask });
+
+  const dir = cur.guess > cur.actual ? 'over' : cur.guess < cur.actual ? 'under' : 'exactly';
+  $('verdict').innerHTML = dir === 'exactly'
+    ? '<b>Exactly right.</b>'
+    : `You were <b>${round1(youErr)} points ${dir}</b>. ` +
+      (beat ? 'Closer than the average person.'
+            : `The average person was off by ${round1(avgErr)}.`);
+
+  $('src').innerHTML =
+    `${cur.cite}${cur.year ? ', ' + cur.year : ''}` +
+    (cur.url ? ` · <a href="${cur.url}" target="_blank">source</a>` : '');
+  $('hint').textContent = 'amber = reality · teal = your guess · pink outline = the average guess';
+  $('next').textContent = idx + 1 < deck.length ? 'Next question' : 'See how you did';
+}
+
+$('next').onclick = () => {
+  if (!locked) { reveal(); return; }
+  idx++;
+  if (idx < deck.length) show(); else finish();
+};
+$('restart').onclick = start;
+$('again').onclick = start;
+
+function finish() {
+  const won = results.filter(r => r.beat).length;
+  const myAvg = round1(results.reduce((s, r) => s + r.youErr, 0) / results.length);
+  const theirAvg = round1(results.reduce((s, r) => s + r.avgErr, 0) / results.length);
+  $('panel').style.display = 'none';
+  $('board').style.display = 'none';
+  $('done').classList.add('on');
+  $('score').textContent = `${won} / ${results.length}`;
+  $('summary').innerHTML =
+    `You beat the average person on <b>${won}</b> of ${results.length} questions.<br>` +
+    `Your average error was <b>${myAvg} points</b>. Theirs was <b>${theirAvg}</b>.<br><br>` +
+    `<span style="color:#5f5e6b">Being closer than average is not the same as being right.</span>`;
+}
+
+start();
+</script>
+</body>
+</html>

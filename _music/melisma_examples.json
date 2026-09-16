@@ -1,0 +1,163 @@
+{
+  "_doc": "Verified melisma alignment examples. Each entry is a (notes, lyrics, encoding) triple confirmed by user. Used as test corpus for melisma_align.py — re-run after each script update to make sure existing examples still align correctly.",
+  "_format": "encoding uses repetition convention: 1 token = 1 note; multi-syllable words stay as one token unless melisma falls inside (then split into syllables); melisma extension uses the held vowel (e.g., 'sky y' for 'sky' held over 2 notes)",
+
+  "examples": [
+    {
+      "id": 1,
+      "song": "Beatles - All I've Got To Do (verse)",
+      "lyrics": "Whenever I want you around, yeah\nAll I gotta do is call you on the phone\nAnd you'll come running home\nyeah that's all I gotta do",
+      "encoding": "Whenever I I I I I I I wa nt you around, yeah\nAll I gotta do o o o o o o o is call you on the phone\nAnd you'll come running home\nyeah that's all I I I I I gotta do",
+      "total_notes": 51,
+      "total_syllables": 33,
+      "melisma_count": 18,
+      "patterns": [
+        "concentrated emotional melisma on single syllables (I held 7, do held 8, I held 5)",
+        "stylistic split of single syllable across notes ('want' as 'wa nt')"
+      ],
+      "notes": [{"sd":"1","octave":0,"beat":2,"duration":1},{"sd":"3","octave":0,"beat":3,"duration":0.5},{"sd":"5","octave":0,"beat":3.5,"duration":1},{"sd":"6","octave":0,"beat":4.5,"duration":1.5},{"sd":"5","octave":0,"beat":6,"duration":1},{"sd":"3","octave":0,"beat":7,"duration":0.5},{"sd":"2","octave":0,"beat":7.5,"duration":1.5},{"sd":"3","octave":0,"beat":9,"duration":0.25},{"sd":"2","octave":0,"beat":9.25,"duration":0.25},{"sd":"1","octave":0,"beat":9.5,"duration":1.5},{"sd":"3","octave":0,"beat":11,"duration":0.5},{"sd":"2","octave":0,"beat":11.5,"duration":0.5},{"sd":"1","octave":0,"beat":12,"duration":0.5},{"sd":"2","octave":0,"beat":12.5,"duration":0.5},{"sd":"3","octave":0,"beat":13,"duration":1},{"sd":"3","octave":0,"beat":14,"duration":1},{"sd":"3","octave":1,"beat":19,"duration":0.5},{"sd":"2","octave":1,"beat":19.5,"duration":0.5},{"sd":"1","octave":1,"beat":20,"duration":0.5},{"sd":"2","octave":1,"beat":20.5,"duration":0.5},{"sd":"2","octave":1,"beat":21,"duration":1},{"sd":"1","octave":1,"beat":22,"duration":1},{"sd":"6","octave":0,"beat":23,"duration":0.5},{"sd":"5","octave":0,"beat":23.5,"duration":1},{"sd":"1","octave":0,"beat":24.5,"duration":0.5},{"sd":"5","octave":0,"beat":25,"duration":0.25},{"sd":"3","octave":0,"beat":25.25,"duration":0.25},{"sd":"1","octave":0,"beat":25.5,"duration":2},{"sd":"3","octave":0,"beat":27.5,"duration":1.5},{"sd":"3","octave":0,"beat":29,"duration":0.5},{"sd":"2","octave":0,"beat":29.5,"duration":0.5},{"sd":"2","octave":0,"beat":30,"duration":0.5},{"sd":"1","octave":0,"beat":30.5,"duration":0.5},{"sd":"3","octave":0,"beat":31,"duration":1.5},{"sd":"2","octave":0,"beat":32.5,"duration":0.5},{"sd":"3","octave":0,"beat":33,"duration":0.5},{"sd":"2","octave":0,"beat":33.5,"duration":0.5},{"sd":"2","octave":0,"beat":34,"duration":0.5},{"sd":"1","octave":0,"beat":34.5,"duration":0.5},{"sd":"2","octave":0,"beat":35,"duration":1.5},{"sd":"2","octave":0,"beat":36.5,"duration":1},{"sd":"2","octave":0,"beat":37.5,"duration":1},{"sd":"2","octave":0,"beat":38.5,"duration":1},{"sd":"2","octave":0,"beat":39.5,"duration":1},{"sd":"3","octave":0,"beat":40.5,"duration":0.25},{"sd":"2","octave":0,"beat":40.75,"duration":0.25},{"sd":"1","octave":0,"beat":41,"duration":0.5},{"sd":"2","octave":0,"beat":41.5,"duration":1},{"sd":"2","octave":0,"beat":42.5,"duration":0.5},{"sd":"1","octave":0,"beat":43,"duration":0.5},{"sd":"1","octave":0,"beat":43.5,"duration":1.5}]
+    },
+    {
+      "id": 2,
+      "song": "Beatles - Can't Buy Me Love (intro)",
+      "lyrics": "Can't buy me love. love. can't buy me love",
+      "encoding": "Can't buy me love love. love love. can't buy me love love",
+      "total_notes": 12,
+      "total_syllables": 9,
+      "melisma_count": 3,
+      "patterns": [
+        "long held syllable + short tail = 1 melisma extension on each held 'love'"
+      ],
+      "notes": [{"sd":"5","octave":-1,"beat":2,"duration":1},{"sd":"7","octave":-1,"beat":3,"duration":0.5},{"sd":"2","octave":0,"beat":3.5,"duration":1},{"sd":"2","octave":0,"beat":4.5,"duration":3.25},{"sd":"7","octave":-1,"beat":8.5,"duration":1.25},{"sd":"2","octave":0,"beat":12.5,"duration":3.75},{"sd":"7","octave":-1,"beat":16.5,"duration":1.5},{"sd":"5","octave":-1,"beat":18,"duration":1},{"sd":"7","octave":-1,"beat":19,"duration":0.5},{"sd":"2","octave":0,"beat":19.5,"duration":1},{"sd":"2","octave":0,"beat":20.5,"duration":3.75},{"sd":"7","octave":-1,"beat":24.5,"duration":1.25}]
+    },
+    {
+      "id": 3,
+      "song": "Beatles - She Said She Said (verse)",
+      "lyrics": "She said, I know what it's like to be dead.\nI know what it is to be sad.\nAnd she's making me feel like I've never been born",
+      "encoding": "She said said I know what it's like to be dead\nI know what it is to be sad\nAnd she's making me feel like I've never been born",
+      "total_notes": 31,
+      "total_syllables": 30,
+      "melisma_count": 1,
+      "patterns": [
+        "long held syllable continues into a descending tail = 1 melisma on 'said'",
+        "three repeated same-pitch notes at half-beats = three separate syllables ('to be dead'), NOT melisma"
+      ],
+      "notes": [{"sd":"1","octave":0,"beat":13,"duration":1},{"sd":"5","octave":0,"beat":14,"duration":3},{"sd":"4","octave":0,"beat":17,"duration":1},{"sd":"1","octave":0,"beat":19,"duration":0.5},{"sd":"2","octave":0,"beat":19.5,"duration":0.5},{"sd":"3","octave":0,"beat":20,"duration":0.5},{"sd":"4","octave":0,"beat":20.5,"duration":0.5},{"sd":"3","octave":0,"beat":21,"duration":1},{"sd":"1","octave":0,"beat":22,"duration":0.5},{"sd":"1","octave":0,"beat":22.5,"duration":0.5},{"sd":"1","octave":0,"beat":23,"duration":0.5},{"sd":"1","octave":0,"beat":27,"duration":0.5},{"sd":"2","octave":0,"beat":27.5,"duration":0.5},{"sd":"3","octave":0,"beat":28,"duration":0.5},{"sd":"4","octave":0,"beat":28.5,"duration":0.5},{"sd":"3","octave":0,"beat":29,"duration":1},{"sd":"4","octave":0,"beat":30,"duration":0.5},{"sd":"5","octave":0,"beat":30.5,"duration":0.5},{"sd":"1","octave":0,"beat":31,"duration":1},{"sd":"1","octave":0,"beat":36,"duration":0.5},{"sd":"2","octave":0,"beat":36.5,"duration":0.5},{"sd":"3","octave":0,"beat":37,"duration":0.5},{"sd":"2","octave":0,"beat":37.5,"duration":0.5},{"sd":"1","octave":0,"beat":38,"duration":0.5},{"sd":"2","octave":0,"beat":38.5,"duration":1},{"sd":"6","octave":-1,"beat":39.5,"duration":1},{"sd":"6","octave":-1,"beat":40.5,"duration":0.5},{"sd":"1","octave":0,"beat":41,"duration":0.5},{"sd":"6","octave":-1,"beat":41.5,"duration":0.5},{"sd":"5","octave":-1,"beat":42,"duration":0.5},{"sd":"1","octave":0,"beat":42.5,"duration":1}]
+    },
+    {
+      "id": 4,
+      "song": "Beatles - You Won't See Me (verse, partial)",
+      "lyrics": "When I call you up\nYour line's engaged\nI have had enough\nSo act your age\nWe have lost the time\nThat was so hard to find\nAnd I will lose my mind\nIf you won't see me",
+      "encoding": "(verified: 1 melisma total, on 'hard' — encoded as 'hard hard' in 'That was so hard hard to find')",
+      "total_notes": 42,
+      "total_syllables": 41,
+      "melisma_count": 1,
+      "patterns": [
+        "very short ornamental notes (0.25 dur) flanked by longer notes = melisma extension on the syllable before them"
+      ],
+      "notes": [{"sd":"1","octave":0,"beat":31.5,"duration":0.5},{"sd":"2","octave":0,"beat":32,"duration":0.5},{"sd":"3","octave":0,"beat":32.5,"duration":2.5},{"sd":"5","octave":0,"beat":36,"duration":0.5},{"sd":"2","octave":0,"beat":36.5,"duration":0.5},{"sd":"1","octave":0,"beat":40,"duration":0.5},{"sd":"6","octave":0,"beat":40.5,"duration":3},{"sd":"5","octave":0,"beat":44,"duration":0.5},{"sd":"5","octave":0,"beat":44.5,"duration":0.5},{"sd":"1","octave":0,"beat":47.5,"duration":0.5},{"sd":"2","octave":0,"beat":48,"duration":0.5},{"sd":"3","octave":0,"beat":48.5,"duration":0.5},{"sd":"5","octave":0,"beat":52,"duration":0.5},{"sd":"2","octave":0,"beat":52.5,"duration":0.5},{"sd":"1","octave":0,"beat":56,"duration":0.5},{"sd":"6","octave":0,"beat":56.5,"duration":3},{"sd":"5","octave":0,"beat":60,"duration":0.5},{"sd":"5","octave":0,"beat":60.5,"duration":0.5},{"sd":"1","octave":0,"beat":63.5,"duration":0.5},{"sd":"3","octave":0,"beat":64,"duration":0.5},{"sd":"5","octave":0,"beat":64.5,"duration":1.5},{"sd":"5","octave":0,"beat":68,"duration":0.5},{"sd":"4","octave":0,"beat":68.5,"duration":1.5},{"sd":"#2","octave":0,"beat":72.5,"duration":0.5},{"sd":"4","octave":0,"beat":73,"duration":0.5},{"sd":"4","octave":0,"beat":73.5,"duration":1.5},{"sd":"5","octave":0,"beat":75,"duration":0.25},{"sd":"4","octave":0,"beat":75.25,"duration":0.25},{"sd":"#2","octave":0,"beat":75.5,"duration":0.5},{"sd":"4","octave":0,"beat":76,"duration":0.5},{"sd":"3","octave":0,"beat":76.5,"duration":2.5},{"sd":"1","octave":0,"beat":79.5,"duration":0.25},{"sd":"1","octave":0,"beat":79.75,"duration":0.25},{"sd":"2","octave":0,"beat":80.5,"duration":0.5},{"sd":"3","octave":0,"beat":81,"duration":2},{"sd":"5","octave":0,"beat":84,"duration":0.5},{"sd":"2","octave":0,"beat":84.5,"duration":2.5},{"sd":"1","octave":0,"beat":88.5,"duration":0.5},{"sd":"4","octave":0,"beat":89,"duration":1.5},{"sd":"3","octave":0,"beat":90.5,"duration":1},{"sd":"5","octave":0,"beat":91.5,"duration":0.5},{"sd":"3","octave":0,"beat":92,"duration":5}]
+    },
+    {
+      "id": 5,
+      "song": "Beatles - Lucy in the Sky with Diamonds (chorus, 1 repetition)",
+      "lyrics": "Lucy in the sky with diamonds",
+      "encoding": "lucy in the sky y with di a a monds",
+      "total_notes": 11,
+      "total_syllables": 9,
+      "melisma_count": 2,
+      "patterns": [
+        "descending step right after a same-pitch run = melisma (note 6 sd 7 after 5 sd 1's = melisma extension of 'sky')",
+        "melisma falls inside a polysyllabic word = split the word into syllables ('di a a monds' for diamonds with 1 melisma on the 'a' syllable)"
+      ],
+      "notes": [{"sd":"1","octave":1,"beat":110,"duration":0.5},{"sd":"1","octave":1,"beat":110.5,"duration":0.5},{"sd":"1","octave":1,"beat":111,"duration":0.5},{"sd":"1","octave":1,"beat":111.5,"duration":0.5},{"sd":"1","octave":1,"beat":112,"duration":0.5},{"sd":"7","octave":0,"beat":112.5,"duration":1},{"sd":"6","octave":0,"beat":113.5,"duration":0.5},{"sd":"5","octave":0,"beat":114,"duration":0.5},{"sd":"4","octave":0,"beat":114.5,"duration":0.25},{"sd":"3","octave":0,"beat":114.75,"duration":0.25},{"sd":"2","octave":0,"beat":115,"duration":3}]
+    },
+    {
+      "id": 6,
+      "song": "Beatles - Girl (verse + ending refrain)",
+      "lyrics": "Is there anybody going to listen to my story\nAll about the girl who came to stay\nShe's the kind of girl you want so much it makes you sorry\nStill you don't regret a single day\nAh girl girl",
+      "encoding": "(verses: no melisma, 44 notes for ~44 syllables — note that some words may sing as fewer syllables than dictionary count)\n... ah gi i i irl, gi i i irl",
+      "total_notes": 53,
+      "total_syllables": 47,
+      "melisma_count": 6,
+      "patterns": [
+        "BIG NEW PATTERN: LONG-short-short-LONG cluster = single syllable held melismatically over all 4 notes (the iconic Beatles 'GIRL' breath: held high → quick ornamental flutter → resolves to held low)",
+        "concentrated melisma on emotional final word — entire 'girl' syllable spans 4 notes (1 anchor + 3 melisma extensions) twice"
+      ],
+      "notes_summary": "Last 9 notes (beats 36-47.5) cover 'Ah girl girl' = 1 + 4 + 4 notes for 3 syllables. Each 'girl' is held LONG (sd 7, 2 beats) → short (sd 1, 0.25) → short (sd 7, 0.25) → held LONG (sd 5, 1.25)",
+      "notes": [{"sd":"3","octave":0,"beat":5,"duration":0.25},{"sd":"3","octave":0,"beat":5.25,"duration":0.25},{"sd":"3","octave":0,"beat":5.5,"duration":1},{"sd":"3","octave":0,"beat":6.5,"duration":0.25},{"sd":"4","octave":0,"beat":6.75,"duration":0.5},{"sd":"3","octave":0,"beat":7.25,"duration":0.75},{"sd":"2","octave":0,"beat":8,"duration":0.25},{"sd":"1","octave":0,"beat":8.25,"duration":0.5},{"sd":"1","octave":0,"beat":8.75,"duration":1.25},{"sd":"5","octave":-1,"beat":10,"duration":1},{"sd":"1","octave":0,"beat":11,"duration":0.5},{"sd":"7","octave":-1,"beat":11.5,"duration":1.25},{"sd":"6","octave":-1,"beat":13,"duration":0.75},{"sd":"1","octave":0,"beat":13.75,"duration":0.25},{"sd":"#7","octave":-1,"beat":14,"duration":0.75},{"sd":"1","octave":0,"beat":14.75,"duration":0.25},{"sd":"2","octave":0,"beat":15,"duration":0.75},{"sd":"1","octave":0,"beat":15.75,"duration":0.25},{"sd":"#7","octave":-1,"beat":16,"duration":0.75},{"sd":"6","octave":-1,"beat":16.75,"duration":0.25},{"sd":"5","octave":-1,"beat":17,"duration":3},{"sd":"1","octave":0,"beat":20,"duration":0.75},{"sd":"2","octave":0,"beat":20.75,"duration":0.25},{"sd":"3","octave":0,"beat":21,"duration":0.75},{"sd":"3","octave":0,"beat":21.75,"duration":0.25},{"sd":"3","octave":0,"beat":22,"duration":0.75},{"sd":"3","octave":0,"beat":22.75,"duration":0.25},{"sd":"4","octave":0,"beat":23,"duration":0.75},{"sd":"3","octave":0,"beat":23.75,"duration":0.25},{"sd":"2","octave":0,"beat":24,"duration":0.5},{"sd":"1","octave":0,"beat":24.5,"duration":0.5},{"sd":"1","octave":0,"beat":25,"duration":1},{"sd":"5","octave":-1,"beat":26,"duration":0.5},{"sd":"1","octave":0,"beat":26.5,"duration":1},{"sd":"7","octave":-1,"beat":27.5,"duration":1.5},{"sd":"6","octave":-1,"beat":29,"duration":0.75},{"sd":"1","octave":0,"beat":29.75,"duration":0.25},{"sd":"7","octave":-1,"beat":30,"duration":0.75},{"sd":"1","octave":0,"beat":30.75,"duration":0.25},{"sd":"2","octave":0,"beat":31,"duration":0.75},{"sd":"1","octave":0,"beat":31.75,"duration":0.25},{"sd":"7","octave":-1,"beat":32,"duration":0.75},{"sd":"6","octave":-1,"beat":32.75,"duration":0.25},{"sd":"5","octave":-1,"beat":33,"duration":2.25},{"sd":"1","octave":0,"beat":36,"duration":1},{"sd":"7","octave":-1,"beat":37,"duration":2},{"sd":"1","octave":0,"beat":39,"duration":0.25},{"sd":"7","octave":-1,"beat":39.25,"duration":0.25},{"sd":"5","octave":-1,"beat":39.5,"duration":1.25},{"sd":"7","octave":-1,"beat":45,"duration":2},{"sd":"1","octave":0,"beat":47,"duration":0.25},{"sd":"7","octave":-1,"beat":47.25,"duration":0.25},{"sd":"5","octave":-1,"beat":47.5,"duration":1.25}]
+    },
+    {
+      "id": 8,
+      "song": "Beatles - In My Life (verse)",
+      "lyrics": "There are places I'll remember\nAll my life though some have changed\nSome forever not for better\nSome have gone and some remain",
+      "encoding": "There are places I'll remember\nAll my life i i i though some have changed\nSome forever not for better\nSome have gone o and some remain",
+      "total_notes": 34,
+      "total_syllables": 30,
+      "melisma_count": 4,
+      "patterns": [
+        "Lines 1 & 3 (8 notes for 8 syllables each) have NO melisma",
+        "Line 2: 3 melismas all concentrated on 'life' — held over 4 notes (short anchor + held descent through 3 more notes). Vowel 'i' (long-i sound) extended.",
+        "Line 4: 1 melisma on 'gone' — held over 2 notes (short anchor + held descent). Vowel 'o' extended.",
+        "AMBIGUITY EXAMPLE for short-short-LONG: in Lucy that pattern was syllable+melisma+new-syllable (because LONG was end of phrase). Here in line 4, short-short-LONG is two-syllables+melisma-extension (because LONG is mid-phrase, song continues)."
+      ],
+      "notes": [{"sd":"2","octave":0,"beat":17,"duration":1},{"sd":"1","octave":0,"beat":18,"duration":1},{"sd":"2","octave":0,"beat":19,"duration":1},{"sd":"3","octave":0,"beat":20,"duration":1},{"sd":"5","octave":0,"beat":21,"duration":0.5},{"sd":"3","octave":0,"beat":21.5,"duration":1},{"sd":"2","octave":0,"beat":24,"duration":0.5},{"sd":"3","octave":0,"beat":24.5,"duration":0.5},{"sd":"2","octave":0,"beat":25,"duration":1.5},{"sd":"3","octave":0,"beat":26.5,"duration":0.25},{"sd":"2","octave":0,"beat":26.75,"duration":0.25},{"sd":"1","octave":0,"beat":27,"duration":1.25},{"sd":"6","octave":-1,"beat":28.5,"duration":0.5},{"sd":"5","octave":-1,"beat":29,"duration":1},{"sd":"3","octave":0,"beat":30,"duration":0.5},{"sd":"3","octave":0,"beat":30.5,"duration":1.5},{"sd":"5","octave":-1,"beat":32,"duration":0.5},{"sd":"6","octave":-1,"beat":32.5,"duration":0.5},{"sd":"2","octave":0,"beat":33,"duration":1},{"sd":"1","octave":0,"beat":34,"duration":1},{"sd":"2","octave":0,"beat":35,"duration":1},{"sd":"3","octave":0,"beat":36,"duration":1},{"sd":"5","octave":0,"beat":37,"duration":0.5},{"sd":"3","octave":0,"beat":37.5,"duration":1},{"sd":"2","octave":0,"beat":40,"duration":0.5},{"sd":"3","octave":0,"beat":40.5,"duration":0.5},{"sd":"2","octave":0,"beat":41,"duration":1.25},{"sd":"3","octave":0,"beat":42.5,"duration":0.25},{"sd":"2","octave":0,"beat":42.75,"duration":0.25},{"sd":"1","octave":0,"beat":43,"duration":1.25},{"sd":"6","octave":-1,"beat":44.5,"duration":0.5},{"sd":"5","octave":-1,"beat":45,"duration":0.75},{"sd":"3","octave":0,"beat":46,"duration":0.5},{"sd":"3","octave":0,"beat":46.5,"duration":1.5}]
+    },
+    {
+      "id": 9,
+      "song": "Daniel Bedingfield(?) / Unknown - 'Superposition' chorus",
+      "lyrics": "I don't believe in fate\nNo psychic vision\nBut when things fall into place\nSuperposition",
+      "encoding": "I don't believe in fate\nNo psychic vision n\nBut when things fall into place\nSuperposition n",
+      "total_notes": 25,
+      "total_syllables": 23,
+      "melisma_count": 2,
+      "patterns": [
+        "Chant-style same-pitch runs = each note is a syllable (line 1: 6 sd-4's = 'I don't believe in fate'; lines 2-4 similar). NOT melisma.",
+        "Both melismas are at the end of -sion/-tion words (vision, Superposition) — short + held same-pitch where the held is the melisma extension.",
+        "Confirms Rule 11: at PHRASE END, short+held same-pitch = syllable + melisma extension."
+      ],
+      "notes": [{"sd":"4","octave":0,"beat":33.5,"duration":0.5},{"sd":"4","octave":0,"beat":34,"duration":0.5},{"sd":"4","octave":0,"beat":34.5,"duration":0.5},{"sd":"4","octave":0,"beat":35,"duration":0.5},{"sd":"4","octave":0,"beat":35.5,"duration":0.5},{"sd":"4","octave":0,"beat":36,"duration":1},{"sd":"3","octave":0,"beat":37.5,"duration":0.5},{"sd":"3","octave":0,"beat":38,"duration":0.5},{"sd":"3","octave":0,"beat":38.5,"duration":0.5},{"sd":"3","octave":0,"beat":39,"duration":0.5},{"sd":"2","octave":0,"beat":39.5,"duration":0.5},{"sd":"2","octave":0,"beat":40,"duration":1},{"sd":"2","octave":-1,"beat":49.5,"duration":0.5},{"sd":"4","octave":0,"beat":50,"duration":0.5},{"sd":"4","octave":0,"beat":50.5,"duration":0.5},{"sd":"4","octave":0,"beat":51,"duration":0.5},{"sd":"3","octave":0,"beat":51.5,"duration":0.5},{"sd":"4","octave":0,"beat":52,"duration":0.5},{"sd":"5","octave":0,"beat":52.5,"duration":0.5},{"sd":"3","octave":0,"beat":53.5,"duration":0.5},{"sd":"3","octave":0,"beat":54,"duration":0.5},{"sd":"3","octave":0,"beat":54.5,"duration":0.5},{"sd":"3","octave":0,"beat":55,"duration":0.5},{"sd":"2","octave":0,"beat":55.5,"duration":0.5},{"sd":"2","octave":0,"beat":56,"duration":1}]
+    },
+    {
+      "id": 11,
+      "song": "John Conlee - Friday Night Blues (v1 — 40-note rhythm variant)",
+      "lyrics": "Friday night blues they get in your shoes and they work to get you down\nAw and there ain't a lady that I ever knew who didn't need her a night on the town",
+      "encoding": "Friday night blues they get in your shoes and they work to get you down\nAw and there ain't a lady that I ever knew who didn't need her a night on the town own own",
+      "total_notes": 40,
+      "total_syllables": 38,
+      "melisma_count": 2,
+      "patterns": [
+        "Same lyrics as v2 but rhythm has 1 extra note in line 2 → both melismas pile up at the held end on 'town' (Rule 11 phrase-end pattern: short + short + held same-pitch)",
+        "Demonstrates the meta-rule: melisma follows where the EXTRA notes are. v1 has extras in line 2 → 'town' gets 2 melisma. v2 has extra in line 1 → 'work' gets 1 melisma."
+      ],
+      "notes": [{"sd":"3","octave":0,"beat":1,"duration":0.5},{"sd":"3","octave":0,"beat":1.5,"duration":0.5},{"sd":"3","octave":0,"beat":2,"duration":0.5},{"sd":"3","octave":0,"beat":2.5,"duration":1.5},{"sd":"2","octave":0,"beat":4,"duration":0.5},{"sd":"2","octave":0,"beat":4.5,"duration":1},{"sd":"1","octave":0,"beat":5.5,"duration":0.5},{"sd":"1","octave":0,"beat":6,"duration":0.5},{"sd":"1","octave":0,"beat":6.5,"duration":1},{"sd":"7","octave":-1,"beat":7.5,"duration":0.5},{"sd":"7","octave":-1,"beat":8,"duration":0.5},{"sd":"7","octave":-1,"beat":8.5,"duration":0.5},{"sd":"6","octave":-1,"beat":9,"duration":1},{"sd":"6","octave":-1,"beat":10.5,"duration":0.5},{"sd":"6","octave":-1,"beat":11,"duration":0.5},{"sd":"5","octave":-1,"beat":11.5,"duration":1},{"sd":"6","octave":-1,"beat":12.5,"duration":3},{"sd":"7","octave":-1,"beat":15.5,"duration":0.5},{"sd":"1","octave":0,"beat":16,"duration":0.5},{"sd":"2","octave":0,"beat":16.5,"duration":0.5},{"sd":"2","octave":0,"beat":17,"duration":0.5},{"sd":"2","octave":0,"beat":17.5,"duration":0.5},{"sd":"2","octave":0,"beat":18,"duration":0.5},{"sd":"2","octave":0,"beat":18.5,"duration":1},{"sd":"1","octave":0,"beat":19.5,"duration":0.5},{"sd":"1","octave":0,"beat":20,"duration":0.5},{"sd":"1","octave":0,"beat":20.5,"duration":1},{"sd":"7","octave":-1,"beat":21.5,"duration":0.5},{"sd":"7","octave":-1,"beat":22,"duration":0.5},{"sd":"7","octave":-1,"beat":22.5,"duration":1},{"sd":"5","octave":-1,"beat":23.5,"duration":0.5},{"sd":"6","octave":-1,"beat":24,"duration":0.5},{"sd":"5","octave":-1,"beat":24.5,"duration":0.5},{"sd":"6","octave":-1,"beat":25,"duration":1},{"sd":"6","octave":-1,"beat":26,"duration":1},{"sd":"6","octave":-1,"beat":27,"duration":0.5},{"sd":"5","octave":-1,"beat":27.5,"duration":0.5},{"sd":"5","octave":-1,"beat":28,"duration":0.5},{"sd":"5","octave":-1,"beat":28.5,"duration":0.5},{"sd":"5","octave":-1,"beat":29,"duration":1.25}]
+    },
+    {
+      "id": 10,
+      "song": "John Conlee - Friday Night Blues (v2 — 39-note rhythm variant)",
+      "lyrics": "Friday night blues they get in your shoes and they work to get you down\nAw and there ain't a lady that I ever knew who didn't need her a night on the town",
+      "encoding": "Friday night blues they get in your shoes and they work work to get you down\nAw and there ain't a lady that I ever knew who didn't need her a night on the town",
+      "total_notes": 39,
+      "total_syllables": 38,
+      "melisma_count": 1,
+      "patterns": [
+        "Same chord+lyric structure as v1, but rhythm shifted: melisma follows where the extras are. v1 had extras at end → 'town' melisma; v2 has extra at note 13 (descending step from sd 7 run to sd 6 held) → 'work' melisma.",
+        "Confirms refined Rule 5: descending step after same-pitch run is melisma ONLY when the descending note is HELD (dur >= run note dur). If same duration, it's just a normal syllabic move."
+      ],
+      "notes": [{"sd":"3","octave":0,"beat":1,"duration":0.5},{"sd":"3","octave":0,"beat":1.5,"duration":0.5},{"sd":"3","octave":0,"beat":2,"duration":0.5},{"sd":"3","octave":0,"beat":2.5,"duration":1.5},{"sd":"2","octave":0,"beat":4,"duration":0.5},{"sd":"2","octave":0,"beat":4.5,"duration":1},{"sd":"1","octave":0,"beat":5.5,"duration":0.5},{"sd":"1","octave":0,"beat":6,"duration":0.5},{"sd":"1","octave":0,"beat":6.5,"duration":1},{"sd":"7","octave":-1,"beat":7.5,"duration":0.5},{"sd":"7","octave":-1,"beat":8,"duration":0.5},{"sd":"7","octave":-1,"beat":8.5,"duration":0.5},{"sd":"6","octave":-1,"beat":9,"duration":1},{"sd":"6","octave":-1,"beat":10.5,"duration":0.5},{"sd":"6","octave":-1,"beat":11,"duration":0.5},{"sd":"5","octave":-1,"beat":11.5,"duration":1},{"sd":"6","octave":-1,"beat":12.5,"duration":3},{"sd":"7","octave":-1,"beat":15.5,"duration":0.5},{"sd":"1","octave":0,"beat":16,"duration":0.5},{"sd":"2","octave":0,"beat":16.5,"duration":1},{"sd":"2","octave":0,"beat":17.5,"duration":0.5},{"sd":"2","octave":0,"beat":18,"duration":0.5},{"sd":"2","octave":0,"beat":18.5,"duration":1},{"sd":"1","octave":0,"beat":19.5,"duration":0.5},{"sd":"1","octave":0,"beat":20,"duration":0.5},{"sd":"1","octave":0,"beat":20.5,"duration":1},{"sd":"7","octave":-1,"beat":21.5,"duration":0.5},{"sd":"7","octave":-1,"beat":22,"duration":0.5},{"sd":"7","octave":-1,"beat":22.5,"duration":1},{"sd":"5","octave":-1,"beat":23.5,"duration":0.5},{"sd":"6","octave":-1,"beat":24,"duration":0.5},{"sd":"5","octave":-1,"beat":24.5,"duration":0.5},{"sd":"6","octave":-1,"beat":25,"duration":1},{"sd":"6","octave":-1,"beat":26,"duration":1},{"sd":"6","octave":-1,"beat":27,"duration":0.5},{"sd":"5","octave":-1,"beat":27.5,"duration":0.5},{"sd":"5","octave":-1,"beat":28,"duration":0.5},{"sd":"5","octave":-1,"beat":28.5,"duration":0.5},{"sd":"5","octave":-1,"beat":29,"duration":1.25}]
+    },
+    {
+      "id": 7,
+      "song": "Unknown - 'I woke up and called this morning' (3-line phrase, possibly Burt Bacharach style)",
+      "lyrics": "I woke up and called this morning\nThe tone of your voice was a warning\nThat you don't care for me anymore",
+      "encoding": "(verified: 2 melismas total, both on the final 'more' of 'anymore'. 'anymore' spans 5 notes: an + y + more + 2 melisma extensions. Format TBD: 'anymore o o' or 'an y more o o')",
+      "total_notes": 28,
+      "total_syllables": 26,
+      "melisma_count": 2,
+      "patterns": [
+        "two same-pitch notes in a held + held pattern (#6 + #6 with durs 0.5 and 1.0) are TWO SEPARATE syllables, NOT melisma (here 'for' and 'me')",
+        "the held final syllable of a polysyllabic word can carry multiple melisma extensions ('more' of 'anymore' held over 3 notes total)"
+      ],
+      "notes": [{"sd":"1","octave":0,"beat":2.5,"duration":0.5},{"sd":"3","octave":0,"beat":3,"duration":0.5},{"sd":"4","octave":0,"beat":3.5,"duration":0.5},{"sd":"5","octave":0,"beat":4,"duration":0.5},{"sd":"6","octave":0,"beat":4.5,"duration":1},{"sd":"4","octave":0,"beat":5.5,"duration":1},{"sd":"2","octave":0,"beat":6.5,"duration":1},{"sd":"4","octave":0,"beat":7.5,"duration":1},{"sd":"1","octave":0,"beat":10.5,"duration":0.5},{"sd":"#6","octave":0,"beat":11,"duration":0.5},{"sd":"6","octave":0,"beat":11.5,"duration":0.5},{"sd":"5","octave":0,"beat":12,"duration":0.5},{"sd":"6","octave":0,"beat":12.5,"duration":0.5},{"sd":"5","octave":0,"beat":13.5,"duration":0.5},{"sd":"4","octave":0,"beat":14,"duration":0.5},{"sd":"5","octave":0,"beat":14.5,"duration":1},{"sd":"2","octave":0,"beat":15.5,"duration":1},{"sd":"2","octave":0,"beat":18.5,"duration":0.5},{"sd":"5","octave":0,"beat":19,"duration":0.5},{"sd":"4","octave":0,"beat":19.5,"duration":1},{"sd":"4","octave":0,"beat":20.5,"duration":1.5},{"sd":"#6","octave":-1,"beat":22,"duration":0.5},{"sd":"#6","octave":-1,"beat":22.5,"duration":1},{"sd":"1","octave":0,"beat":23.5,"duration":0.5},{"sd":"2","octave":0,"beat":24,"duration":0.5},{"sd":"5","octave":0,"beat":24.5,"duration":1},{"sd":"4","octave":0,"beat":25.5,"duration":0.25},{"sd":"2","octave":0,"beat":25.75,"duration":2.75}]
+    }
+  ]
+}

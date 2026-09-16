@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venn — two spheres</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:#0d0d10;color:#e9e7e4;height:100vh;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;
+  }
+  header{padding:26px 0 0;text-align:center}
+  header h1{font-size:21px;font-weight:600;letter-spacing:-.01em}
+  header p{font-size:13px;color:#75737f;margin-top:3px}
+
+  #stage{flex:1;width:100%;position:relative}
+  #gl{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
+  #gl:active{cursor:grabbing}
+
+  .readout{text-align:center;font-size:13px;color:#8b8996;height:22px}
+  .readout b{color:#5eead4;font-weight:600}
+
+  .bar{display:flex;gap:8px;align-items:center;padding:16px 0 28px;flex-wrap:wrap;justify-content:center}
+  .bar button{
+    background:#17171d;border:1px solid #2c2c37;color:#c9c7d1;
+    font:inherit;font-size:12px;padding:8px 15px;border-radius:6px;cursor:pointer;
+  }
+  .bar button:hover{border-color:#5eead4;color:#fff}
+  .bar button.on{background:#5eead4;border-color:#5eead4;color:#062e29;font-weight:600}
+  .bar label{display:flex;align-items:center;gap:8px;font-size:12px;color:#75737f;margin-left:8px}
+  .bar input{accent-color:#5eead4;width:120px}
+  .bar .v{color:#5eead4;min-width:36px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Two spheres</h1>
+  <p>Same timeline, one dimension up — drag to orbit</p>
+</header>
+
+<div id="stage"><canvas id="gl"></canvas></div>
+
+<div class="readout" id="out">&nbsp;</div>
+
+<div class="bar">
+  <button id="play" class="on">Pause</button>
+  <button id="apart">Apart</button>
+  <button id="over">Overlap</button>
+  <button id="full">Contained</button>
+  <button id="wire">Wireframe</button>
+  <label>speed <input type="range" id="sp" min="0.25" max="3" step="0.05" value="1">
+    <span class="v" id="spv">1.00×</span></label>
+</div>
+
+<script>
+const R = 1.05;
+const APART = 2.55, OVER = 1.15, FULL = 0.18;
+
+/* ---------- scene ---------- */
+const canvas = document.getElementById('gl');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+// raised and pushed slightly off-axis — you look down onto the lens
+// instead of edge-on to it, so the intersection reads as a volume
+camera.position.set(1.5, 3.1, 5.3);
+camera.lookAt(0, -0.1, 0);
+
+const world = new THREE.Group();
+scene.add(world);
+
+// Additive blending is what makes this read as a Venn: where the two
+// volumes overlap, the light sums and the lens glows. depthWrite:false
+// stops the near sphere from punching a hole in the far one.
+function makeSphere(color){
+  const g = new THREE.Group();
+
+  const fill = new THREE.Mesh(
+    new THREE.SphereGeometry(R, 64, 48),
+    new THREE.MeshBasicMaterial({
+      color, transparent:true, opacity:0.30,
+      blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide
+    })
+  );
+
+  const wire = new THREE.Mesh(
+    new THREE.SphereGeometry(R*1.001, 24, 16),
+    new THREE.MeshBasicMaterial({
+      color, wireframe:true, transparent:true, opacity:0.16,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    })
+  );
+
+  g.add(fill, wire);
+  g.userData = {fill, wire};
+  return g;
+}
+
+const A = makeSphere(0x38bdf8);
+const B = makeSphere(0xf472b6);
+world.add(A, B);
+
+/* ---------- the maths ---------- */
+// Intersection volume of two equal spheres, centres d apart:
+//   V = (π/12)(4R + d)(2R − d)²
+const SPHERE_V = (4/3)*Math.PI*R**3;
+function lensVolume(d){
+  if (d >= 2*R) return 0;
+  if (d <= 0)   return SPHERE_V;
+  return (Math.PI/12) * (4*R + d) * (2*R - d)**2;
+}
+
+/* ---------- GSAP drives one number ---------- */
+const s = {d: APART};
+const out = document.getElementById('out');
+
+function apply(){
+  A.position.x = -s.d/2;
+  B.position.x =  s.d/2;
+  const pct = lensVolume(s.d)/SPHERE_V*100;
+  out.innerHTML = 'centres <b>'+s.d.toFixed(2)+'</b> apart · shared volume = <b>'
+                + pct.toFixed(1)+'%</b> of one sphere';
+}
+
+const tl = gsap.timeline({repeat:-1, yoyo:true, defaults:{ease:'power2.inOut'}});
+tl.to(s, {d: OVER, duration: 1.6})
+  .to(s, {d: FULL, duration: 1.2}, '+=0.35')
+  .to(s, {d: OVER, duration: 1.2}, '+=0.35');
+
+/* ---------- drag to orbit ---------- */
+// camera supplies the tilt now, so the object starts unrotated
+let rotX = 0, rotY = 0, drag = null, auto = 0.0018;
+canvas.addEventListener('pointerdown', e => { drag = {x:e.clientX, y:e.clientY}; auto = 0; });
+addEventListener('pointerup', () => drag = null);
+addEventListener('pointermove', e => {
+  if (!drag) return;
+  rotY += (e.clientX - drag.x) * 0.006;
+  rotX += (e.clientY - drag.y) * 0.006;
+  rotX = Math.max(-1.2, Math.min(1.2, rotX));
+  drag = {x:e.clientX, y:e.clientY};
+});
+
+/* ---------- loop ---------- */
+function resize(){
+  const {width:w, height:h} = document.getElementById('stage').getBoundingClientRect();
+  renderer.setSize(w, h, false);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+
+function frame(){
+  requestAnimationFrame(frame);
+  apply();
+  rotY += auto;
+  world.rotation.y = rotY;
+  world.rotation.x = rotX;
+  renderer.render(scene, camera);
+}
+frame();
+
+/* ---------- controls ---------- */
+const playBtn = document.getElementById('play');
+playBtn.onclick = () => {
+  if (tl.paused()){ tl.play();  playBtn.textContent='Pause'; playBtn.classList.add('on'); }
+  else            { tl.pause(); playBtn.textContent='Play';  playBtn.classList.remove('on'); }
+};
+function goto(d){
+  tl.pause(); playBtn.textContent='Play'; playBtn.classList.remove('on');
+  gsap.to(s, {d, duration:0.9, ease:'power3.out', overwrite:true});
+}
+document.getElementById('apart').onclick = () => goto(APART);
+document.getElementById('over').onclick  = () => goto(OVER);
+document.getElementById('full').onclick  = () => goto(FULL);
+
+let wireOnly = false;
+document.getElementById('wire').onclick = function(){
+  wireOnly = !wireOnly;
+  this.classList.toggle('on', wireOnly);
+  [A,B].forEach(g => {
+    g.userData.fill.visible = !wireOnly;
+    g.userData.wire.material.opacity = wireOnly ? 0.42 : 0.16;
+  });
+};
+
+const sp = document.getElementById('sp'), spv = document.getElementById('spv');
+sp.oninput = () => { tl.timeScale(+sp.value); spv.textContent = (+sp.value).toFixed(2)+'×'; };
+</script>
+</body>
+</html>

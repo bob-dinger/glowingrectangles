@@ -1,7 +1,7 @@
 /**
  * Fetch Freepik icon URLs for all Spanish nouns
  *
- * Usage: node fetch-noun-icons.js
+ * Usage: FREEPIK_API_KEY=... node fetch-noun-icons.js
  *
  * This script:
  * 1. Reads all nouns from posts/spanish-nouns.html
@@ -12,7 +12,13 @@
 const fs = require('fs');
 const https = require('https');
 
-const API_KEY = 'FPSX98b5430c546d73ef259e47ed0df6eabd';
+// Never hardcode this -- the repo is public.
+//   FREEPIK_API_KEY=... node fetch-noun-icons.js
+const API_KEY = process.env.FREEPIK_API_KEY;
+if (!API_KEY) {
+    console.error('set FREEPIK_API_KEY in the environment first');
+    process.exit(1);
+}
 const BATCH_SIZE = 5;
 const DELAY_BETWEEN_BATCHES = 500; // ms
 

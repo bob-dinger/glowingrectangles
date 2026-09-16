@@ -1,0 +1,222 @@
+<title>Floor Plans — text in, building out</title>
+<style>
+  /* Drafting-table identity: blue-grey ground, ink, a red pencil accent.
+     Deliberately single-theme — this page is a working surface, not a doc. */
+  :root {
+    --ground: #151922;
+    --panel:  #1d232e;
+    --up:     #27303d;
+    --line:   #38414f;
+    --ink:    #e6ebf2;
+    --dim:    #8b97a8;
+    --dimmer: #5d6878;
+    --pencil: #e2624a;
+    --blue:   #6fa8d4;
+    --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); overflow: hidden; }
+  #stage { position: fixed; inset: 0; cursor: grab; }
+  #stage:active { cursor: grabbing; }
+  #stage canvas { display: block; }
+
+  #map { position: fixed; inset: 0; pointer-events: none; z-index: 4; }
+  .pin {
+    position: absolute; transform: translate(-50%, -50%);
+    pointer-events: auto; cursor: pointer;
+    width: 27px; height: 27px; padding: 0;
+    display: grid; place-items: center; border-radius: 50%;
+    border: 1.5px solid var(--ink); background: var(--ground); color: var(--ink);
+    font-family: var(--mono); font-size: 11px; font-variant-numeric: tabular-nums;
+    transition: transform .12s;
+  }
+  .pin:hover { transform: translate(-50%, -50%) scale(1.3); }
+  .pin.here { background: var(--pencil); border-color: var(--pencil); color: #fff; }
+  .pin.corridor { width: 18px; height: 18px; border-style: dashed; color: var(--dimmer); border-color: var(--dimmer); }
+  .pin:focus-visible { outline: 2px solid var(--pencil); outline-offset: 2px; }
+
+  /* --- top bar --------------------------------------------------------- */
+  #bar {
+    position: fixed; left: 0; right: 0; top: 0; z-index: 6;
+    display: flex; align-items: center; gap: 14px;
+    padding: 11px 16px;
+    background: color-mix(in srgb, var(--panel) 93%, transparent);
+    border-bottom: 1px solid var(--line);
+    backdrop-filter: blur(8px);
+  }
+  #bar h1 {
+    font-size: 11px; letter-spacing: .19em; text-transform: uppercase;
+    margin: 0; font-weight: 500; color: var(--dim); white-space: nowrap;
+  }
+  .tabs { display: flex; gap: 5px; }
+  button {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
+    text-transform: uppercase; cursor: pointer;
+    background: var(--up); color: var(--ink);
+    border: 1px solid var(--line); padding: 7px 11px;
+  }
+  button:hover { border-color: var(--pencil); color: var(--pencil); }
+  button:focus-visible { outline: 2px solid var(--pencil); outline-offset: 2px; }
+  .tab.on { background: var(--pencil); border-color: var(--pencil); color: #fff; }
+  .spacer { flex: 1; }
+  .stats { display: flex; gap: 16px; font-family: var(--mono); font-size: 10px; color: var(--dimmer); }
+  .stats b { color: var(--dim); font-weight: 400; font-variant-numeric: tabular-nums; }
+
+  /* --- room card -------------------------------------------------------- */
+  #hud {
+    position: fixed; left: 16px; bottom: 16px; z-index: 5;
+    width: min(330px, calc(100vw - 32px));
+    background: color-mix(in srgb, var(--panel) 94%, transparent);
+    border: 1px solid var(--line); border-left: 3px solid var(--pencil);
+    padding: 13px 17px 14px 62px;
+    backdrop-filter: blur(6px);
+    transition: opacity .25s, transform .25s;
+  }
+  #hud.up { opacity: 0; transform: translateY(10px); pointer-events: none; }
+  #r-n {
+    position: absolute; left: 15px; top: 11px;
+    font-family: var(--mono); font-size: 30px; line-height: 1;
+    color: var(--pencil); font-variant-numeric: tabular-nums;
+  }
+  #r-name { font-size: 17px; }
+  #r-of {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--dimmer); margin-top: 3px;
+  }
+
+  /* --- the editor ------------------------------------------------------- */
+  #editor {
+    position: fixed; right: 16px; top: 62px; z-index: 6;
+    width: min(430px, calc(100vw - 32px));
+    background: color-mix(in srgb, var(--panel) 96%, transparent);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(8px);
+    display: flex; flex-direction: column;
+  }
+  #editor .head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+  #p-name { font-size: 13px; }
+  #editor .body { display: none; padding: 0 12px 12px; }
+  #editor.open .body { display: block; }
+  #p-note { font-size: 11.5px; line-height: 1.5; color: var(--dim); margin: 0 0 10px; }
+  #src {
+    width: 100%; height: 250px; resize: vertical;
+    font-family: var(--mono); font-size: 11px; line-height: 1.28;
+    background: var(--ground); color: var(--blue);
+    border: 1px solid var(--line); padding: 9px;
+    white-space: pre; overflow-wrap: normal; overflow-x: auto;
+    tab-size: 1;
+  }
+  #src:focus { outline: none; border-color: var(--pencil); }
+  .legend {
+    display: flex; gap: 13px; flex-wrap: wrap; margin-top: 9px;
+    font-family: var(--mono); font-size: 10px; color: var(--dimmer);
+  }
+  .legend b { color: var(--blue); font-weight: 400; }
+  #err { color: var(--pencil); font-family: var(--mono); font-size: 10px; margin-top: 6px; }
+
+  #ctl { position: fixed; right: 16px; bottom: 16px; z-index: 5; display: flex; gap: 6px; }
+  #keys {
+    position: fixed; right: 16px; bottom: 54px; z-index: 5;
+    font-family: var(--mono); font-size: 10px; color: var(--dimmer);
+    text-align: right; line-height: 1.7;
+  }
+  #keys b { color: var(--dim); font-weight: 400; }
+
+  /* --- intro ------------------------------------------------------------ */
+  #intro {
+    position: fixed; inset: 0; z-index: 20;
+    background: color-mix(in srgb, #0b0e14 85%, transparent);
+    display: grid; place-items: center; padding: 28px;
+  }
+  .panel {
+    width: min(640px, 100%);
+    background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--pencil);
+    padding: 34px 38px 28px;
+  }
+  .eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--pencil); margin-bottom: 12px;
+  }
+  .panel h2 { font-weight: 400; font-size: clamp(26px, 4vw, 36px); line-height: 1.1; margin: 0 0 15px; }
+  .panel p { margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: var(--dim); max-width: 60ch; }
+  .panel p em { color: var(--ink); font-style: normal; }
+  pre.sample {
+    font-family: var(--mono); font-size: 11px; line-height: 1.3;
+    background: var(--ground); border: 1px solid var(--line);
+    padding: 11px 13px; color: var(--blue); margin: 0 0 14px; overflow-x: auto;
+  }
+</style>
+
+<div id="stage"></div>
+<div id="map"></div>
+
+<div id="bar">
+  <h1>Floor Plans</h1>
+  <div class="tabs">
+    <button class="tab" data-plan="museum">Museum</button>
+    <button class="tab" data-plan="house">House</button>
+    <button class="tab" data-plan="cottage">Cottage</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="stats">
+    <span>rooms <b id="stat-rooms">—</b></span>
+    <span>footprint <b id="stat-size">—</b></span>
+    <span>floor <b id="stat-area">—</b></span>
+  </div>
+</div>
+
+<div id="editor">
+  <div class="head">
+    <span id="p-name">—</span>
+    <span class="spacer"></span>
+    <button id="toggle-src">Edit plan text</button>
+  </div>
+  <div class="body">
+    <p id="p-note"></p>
+    <textarea id="src" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+    <div class="legend">
+      <span><b>#</b> wall</span><span><b>+</b> doorway</span>
+      <span><b>a–z</b> room floor</span><span>1 char = 0.75 m</span>
+    </div>
+    <div id="err"></div>
+  </div>
+</div>
+
+<div id="hud">
+  <div id="r-n">1</div>
+  <div id="r-name">—</div>
+  <div id="r-of">—</div>
+</div>
+
+<div id="keys">
+  walk <b>W A S D</b> · look <b>drag</b> / <b>← →</b><br>
+  rise to the plan <b>scroll</b> or <b>M</b>
+</div>
+<div id="ctl">
+  <button id="to-floor">Floor</button>
+  <button id="to-plan">Plan</button>
+</div>
+
+<div id="intro">
+  <div class="panel">
+    <div class="eyebrow">Text in · building out</div>
+    <h2>A floor plan is the one drawing we can both edit</h2>
+    <p>This building is generated from plain text. Hashes are walls, plus signs
+      are doorways, letters are room floors — one character per 0.75 metres.</p>
+    <pre class="sample">###########
+#aaaa#bbbb#
+#aaaa+bbbb#
+###+#######</pre>
+    <p>Open <em>Edit plan text</em>, change a character, and the building
+      rebuilds as you type. That's the whole point: you can redraw a room in a
+      text box, and so can a program — no modelling tool in between.</p>
+    <p>Compare the <em>Museum</em> and the <em>House</em>. Same ten rooms, same
+      footprint. The museum is a chain, so reaching room 7 <em>requires</em>
+      passing through 6 — the building enforces the order. The house hangs
+      every room off a corridor, which is nicer to live in and worse to
+      remember.</p>
+    <button id="enter">Walk in</button>
+  </div>
+</div>

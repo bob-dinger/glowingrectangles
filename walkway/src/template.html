@@ -1,0 +1,204 @@
+<title>The Walkway — one region, ten stations</title>
+<style>
+  /* Daylit valley, so this page commits to a LIGHT world — the opposite of the
+     palace's dark interior. Chrome is warm paper and ink over the green. */
+  :root {
+    --paper:  #f4efe4;
+    --paper2: #e8e0cf;
+    --ink:    #24211c;
+    --ink2:   #6b6353;
+    --rule:   #cec4ad;
+    --accent: #8a5a2a;
+    --flag:   #a8462f;
+    --serif: 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: #8fa8bd; color: var(--ink); font-family: var(--sans); overflow: hidden; }
+  #stage { position: fixed; inset: 0; cursor: grab; }
+  body.grabbing #stage { cursor: grabbing; }
+  #stage canvas { display: block; }
+
+  #map { position: fixed; inset: 0; pointer-events: none; z-index: 4; }
+  .pin {
+    position: absolute; transform: translate(-50%, -50%);
+    pointer-events: auto; cursor: pointer;
+    width: 26px; height: 26px; padding: 0;
+    display: grid; place-items: center;
+    border-radius: 50%; border: 1.5px solid var(--ink);
+    background: var(--paper); color: var(--ink);
+    font-family: var(--serif); font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 2px 7px rgba(30,25,15,.35);
+    transition: transform .13s;
+  }
+  .pin:hover { transform: translate(-50%, -50%) scale(1.28); }
+  .pin.here { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+  .pin:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* --- minimap ---------------------------------------------------------- */
+  #mmwrap {
+    position: fixed; left: 22px; top: 22px; z-index: 5;
+    margin: 0; padding: 7px 7px 0;
+    background: color-mix(in srgb, var(--paper) 93%, transparent);
+    border: 1px solid var(--rule);
+    box-shadow: 0 5px 20px rgba(30,25,15,.3);
+    backdrop-filter: blur(5px);
+    pointer-events: none;
+    transition: opacity .2s linear;
+  }
+  #minimap { display: block; width: 188px; height: 188px; }
+  #mmwrap figcaption {
+    font-family: var(--mono); font-size: 9px; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--ink2);
+    text-align: center; padding: 6px 0 5px;
+  }
+
+  /* --- station card ----------------------------------------------------- */
+  #hud {
+    position: fixed; left: 22px; bottom: 22px; width: min(392px, calc(100vw - 44px));
+    background: color-mix(in srgb, var(--paper) 94%, transparent);
+    border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    padding: 16px 20px 17px 74px;
+    box-shadow: 0 6px 26px rgba(30,25,15,.28);
+    backdrop-filter: blur(5px);
+    z-index: 5;
+    transition: opacity .3s, transform .3s;
+  }
+  #hud.up { opacity: 0; transform: translateY(14px); pointer-events: none; }
+  #st-n {
+    position: absolute; left: 18px; top: 12px;
+    font-family: var(--serif); font-size: 42px; line-height: 1;
+    color: var(--accent); font-variant-numeric: tabular-nums;
+  }
+  #st-name { font-family: var(--serif); font-size: 21px; }
+  #st-blurb { font-size: 12px; line-height: 1.5; color: var(--ink2); margin-top: 3px; }
+  #pr {
+    margin-top: 13px; padding-top: 12px; border-top: 1px solid var(--rule);
+  }
+  #pr-name { font-family: var(--serif); font-size: 17px; }
+  #pr-peg {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .04em;
+    color: var(--accent); margin-top: 2px;
+  }
+  #pr-why { font-size: 12px; line-height: 1.5; color: var(--ink2); margin-top: 6px; }
+
+  #quizflag {
+    position: fixed; right: 22px; top: 20px; z-index: 5;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--flag);
+    border: 1px solid var(--flag); padding: 5px 9px;
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+  }
+
+  #ctl {
+    position: fixed; right: 22px; bottom: 22px; z-index: 5;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  }
+  .keys {
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink);
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+    border: 1px solid var(--rule); padding: 8px 11px; line-height: 1.75;
+    text-align: right;
+  }
+  .keys b { font-weight: 600; }
+  .btns { display: flex; gap: 7px; }
+  button {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; cursor: pointer;
+    background: var(--paper); color: var(--ink);
+    border: 1px solid var(--rule); padding: 9px 13px;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* --- intro ------------------------------------------------------------ */
+  #intro {
+    position: fixed; inset: 0; z-index: 20;
+    background: color-mix(in srgb, #2a2b26 78%, transparent);
+    display: grid; place-items: center; padding: 32px;
+  }
+  .panel {
+    width: min(660px, 100%);
+    background: var(--paper); border: 1px solid var(--rule);
+    border-top: 3px solid var(--accent);
+    padding: 36px 40px 30px;
+    box-shadow: 0 18px 60px rgba(20,18,12,.45);
+  }
+  .eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 13px;
+  }
+  .panel h1 {
+    font-family: var(--serif); font-weight: 400; font-size: clamp(28px, 4.4vw, 40px);
+    line-height: 1.08; margin: 0 0 16px; text-wrap: balance;
+  }
+  .panel p { margin: 0 0 12px; font-size: 14px; line-height: 1.62; color: var(--ink2); max-width: 62ch; }
+  .panel p em { color: var(--ink); font-style: normal; font-weight: 500; }
+  ol.stations {
+    margin: 16px 0 20px; padding: 0; list-style: none;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 3px 14px;
+    font-size: 12.5px; color: var(--ink2);
+  }
+  ol.stations b { font-family: var(--serif); color: var(--accent); font-weight: 400; margin-right: 5px; }
+</style>
+
+<div id="stage"></div>
+<div id="map"></div>
+
+<figure id="mmwrap">
+  <canvas id="minimap"></canvas>
+  <figcaption>The Walkway · north up</figcaption>
+</figure>
+
+<div id="hud">
+  <div id="st-n">1</div>
+  <div id="st-name">The Gate</div>
+  <div id="st-blurb"></div>
+  <div id="pr">
+    <div id="pr-name">George Washington</div>
+    <div id="pr-peg">Washing machine</div>
+    <div id="pr-why"></div>
+  </div>
+</div>
+
+<div id="quizflag" style="display:none">Quiz — space to reveal</div>
+
+<div id="ctl">
+  <div class="keys">
+    walk <b>W A S D</b> · look <b>drag</b> / <b>← →</b><br>
+    rise and settle <b>scroll</b> · snap <b>M</b> · quiz <b>Q</b>
+  </div>
+  <div class="btns">
+    <button id="to-ground">Ground</button>
+    <button id="to-map">Map</button>
+  </div>
+</div>
+
+<div id="intro">
+  <div class="panel">
+    <div class="eyebrow">One region · ten stations · the template</div>
+    <h1>The Walkway</h1>
+    <p>This is the exemplar the other four regions copy. Ten stations on a
+      single path, in a fixed order, each one a different <em>kind</em> of
+      place. Learn this shape once and you can re-walk it in a desert, a
+      tundra, or a city — same ten beats, different dressing.</p>
+    <ol class="stations">
+      <li><b>1</b>The Gate</li><li><b>2</b>The Great Tree</li>
+      <li><b>3</b>The Well</li><li><b>4</b>The Bridge</li>
+      <li><b>5</b>The Mill</li><li><b>6</b>The Cabin</li>
+      <li><b>7</b>The Loft</li><li><b>8</b>The Barn</li>
+      <li><b>9</b>The Shrine</li><li><b>10</b>The Overlook</li>
+    </ol>
+    <p>Every peg is <em>hand-sized, at chest height, on a surface you walk up
+      to</em> — the well's rim, the cabin table, the cairn. Nothing to circle,
+      nothing towering over you. Presidents 1–10 are standing in for real
+      content so the scale can be judged honestly.</p>
+    <p>The map is not a separate screen. <em>Scroll</em> and you rise out of
+      the valley until you can see all ten; scroll back and you settle where
+      you were standing. Click any number to walk to it.</p>
+    <button id="enter">Walk in</button>
+  </div>
+</div>

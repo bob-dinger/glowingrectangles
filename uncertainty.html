@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uncertainty</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#08080c}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#e9e7e4}
+  #gl{position:fixed;inset:0;cursor:grab}
+  #gl:active{cursor:grabbing}
+
+  .head{position:fixed;top:30px;left:36px;pointer-events:none;max-width:400px}
+  .head h1{font-size:23px;font-weight:600;letter-spacing:-.01em}
+  .head p{font-size:13px;color:#7b7986;margin-top:5px;line-height:1.5}
+
+  .stat{position:fixed;top:30px;right:36px;text-align:right;pointer-events:none;
+        font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .stat .n{font-size:30px;font-weight:700;letter-spacing:-.02em}
+  .stat .l{font-size:11px;color:#6b6a75;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;
+       justify-content:center;align-items:center;padding:22px;flex-wrap:wrap}
+  .bar button{
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);
+    color:#cfcdd6;font:inherit;font-size:12px;padding:8px 15px;border-radius:6px;
+    cursor:pointer;backdrop-filter:blur(6px);transition:.18s;
+  }
+  .bar button:hover{border-color:#5eead4;color:#fff}
+  .bar button.on{background:#5eead4;border-color:#5eead4;color:#062e29;font-weight:600}
+  .bar .sep{width:1px;height:24px;background:rgba(255,255,255,.12);margin:0 6px}
+
+  .caption{position:fixed;left:36px;bottom:78px;font-size:12.5px;color:#5f5e6b;
+           max-width:380px;line-height:1.55;pointer-events:none}
+</style>
+</head>
+<body>
+
+<canvas id="gl"></canvas>
+
+<div class="head">
+  <h1>Uncertainty</h1>
+  <p>Every dot is an outcome that could happen. The answer is one point.
+     Reality is the cloud.</p>
+</div>
+
+<div class="stat">
+  <div class="n" id="stat">±1.00</div>
+  <div class="l" id="statl">spread</div>
+</div>
+
+<p class="caption" id="cap">A normal distribution — most outcomes near the middle, a few far out.</p>
+
+<div class="bar">
+  <button data-d="normal" class="on">Normal</button>
+  <button data-d="uniform">Uniform</button>
+  <button data-d="skewed">Skewed</button>
+  <button data-d="bimodal">Bimodal</button>
+  <span class="sep"></span>
+  <button id="collapse">Demand an answer</button>
+  <button id="loop">▶ Loop</button>
+</div>
+
+<script>
+const N = 9000;
+
+/* ==================================================================
+   D3 makes the numbers. Three.js only draws them.
+   Each point is one possible outcome, drawn in three dimensions.
+   ================================================================== */
+const DISTS = {
+  normal:  {fn: () => d3.randomNormal(0, 1),
+            cap: 'A normal distribution — most outcomes near the middle, a few far out.'},
+  uniform: {fn: () => d3.randomUniform(-1.9, 1.9),
+            cap: 'Uniform — every outcome equally likely. No middle to retreat to.'},
+  skewed:  {fn: () => { const e = d3.randomExponential(1.1);
+                        return () => e() - 0.9; },
+            cap: 'Skewed — a long tail on one side. The average sits where almost nothing lands.'},
+  bimodal: {fn: () => { const a = d3.randomNormal(-1.25, .38),
+                              b = d3.randomNormal( 1.25, .38);
+                        return () => Math.random() < .5 ? a() : b(); },
+            cap: 'Bimodal — two clusters. The mean falls in the gap, describing an outcome that never occurs.'},
+};
+
+let target = new Float32Array(N*3);      // where the points want to be
+let cloudCol = new Float32Array(N*3);
+const cur = new Float32Array(N*3);
+
+const SCALE = 22;
+const heat = d3.scaleSequential(d3.interpolateTurbo).domain([0, 2.4]);
+
+function build(kind){
+  const draw = DISTS[kind].fn();
+  for(let i=0;i<N;i++){
+    const x = draw()*SCALE, y = draw()*SCALE, z = draw()*SCALE;
+    target[i*3]=x; target[i*3+1]=y; target[i*3+2]=z;
+    // colour by how far this outcome is from the expected one
+    const c = d3.color(heat(Math.hypot(x,y,z)/SCALE/1.6));
+    cloudCol[i*3]=c.r/255; cloudCol[i*3+1]=c.g/255; cloudCol[i*3+2]=c.b/255;
+  }
+  document.getElementById('cap').textContent = DISTS[kind].cap;
+}
+build('normal');
+cur.set(target);
+
+/* ================= three.js ================= */
+const canvas = document.getElementById('gl');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
+camera.position.set(0, 18, 118);
+camera.lookAt(0,0,0);
+
+const world = new THREE.Group();
+scene.add(world);
+
+const geom = new THREE.BufferGeometry();
+geom.setAttribute('position', new THREE.BufferAttribute(cur, 3));
+geom.setAttribute('color',    new THREE.BufferAttribute(cloudCol.slice(), 3));
+world.add(new THREE.Points(geom, new THREE.PointsMaterial({
+  size:0.62, vertexColors:true, transparent:true, opacity:.92,
+  sizeAttenuation:true, depthWrite:false, blending:THREE.AdditiveBlending
+})));
+
+/* "the answer" — one point, always there, easy to miss inside the cloud */
+const answer = new THREE.Mesh(
+  new THREE.SphereGeometry(1.5, 24, 18),
+  new THREE.MeshBasicMaterial({color:0xffffff})
+);
+world.add(answer);
+const halo = new THREE.Mesh(
+  new THREE.SphereGeometry(3.2, 24, 18),
+  new THREE.MeshBasicMaterial({color:0x5eead4, transparent:true, opacity:.16,
+                               blending:THREE.AdditiveBlending, depthWrite:false})
+);
+world.add(halo);
+
+/* ================= GSAP drives one number ================= */
+const state = {spread: 1};
+const colAttr = geom.attributes.color;
+
+function apply(){
+  const k = state.spread;
+  for(let i=0;i<N*3;i++) cur[i] = target[i]*k;
+  geom.attributes.position.needsUpdate = true;
+
+  // as certainty is demanded, the colour drains out of the possibilities
+  for(let i=0;i<N*3;i++) colAttr.array[i] = cloudCol[i]*k + 0.9*(1-k);
+  colAttr.needsUpdate = true;
+
+  halo.scale.setScalar(1 + k*2.2);
+  const sd = (k).toFixed(2);
+  document.getElementById('stat').textContent = k < 0.02 ? 'one' : '±'+sd;
+  document.getElementById('statl').textContent = k < 0.02 ? 'answer' : 'spread';
+}
+
+function collapse(){ gsap.to(state, {spread:0, duration:1.5, ease:'power3.inOut',
+                                     onUpdate:apply}); }
+function expand(){   gsap.to(state, {spread:1, duration:1.9, ease:'elastic.out(1,0.55)',
+                                     onUpdate:apply}); }
+
+document.getElementById('collapse').onclick = () =>
+  state.spread > 0.5 ? collapse() : expand();
+
+let loopTl = null;
+document.getElementById('loop').onclick = function(){
+  if (loopTl){ loopTl.kill(); loopTl = null; this.classList.remove('on'); return; }
+  this.classList.add('on');
+  loopTl = gsap.timeline({repeat:-1})
+    .to(state, {spread:0, duration:1.6, ease:'power3.inOut', onUpdate:apply})
+    .to({}, {duration:.9})
+    .to(state, {spread:1, duration:1.9, ease:'elastic.out(1,0.55)', onUpdate:apply})
+    .to({}, {duration:1.1});
+};
+
+document.querySelectorAll('[data-d]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('[data-d]').forEach(x => x.classList.toggle('on', x===b));
+  build(b.dataset.d);
+  gsap.fromTo(state, {spread:0.15}, {spread:1, duration:1.3,
+                                     ease:'power2.out', onUpdate:apply});
+});
+
+/* ================= drag to orbit ================= */
+let rotX = 0, rotY = 0, drag = null, auto = 0.0014;
+canvas.addEventListener('pointerdown', e => { drag={x:e.clientX,y:e.clientY}; auto=0; });
+addEventListener('pointerup', () => drag=null);
+addEventListener('pointermove', e => {
+  if(!drag) return;
+  rotY += (e.clientX-drag.x)*0.005;
+  rotX = Math.max(-1.2, Math.min(1.2, rotX + (e.clientY-drag.y)*0.005));
+  drag = {x:e.clientX, y:e.clientY};
+});
+
+function resize(){
+  renderer.setSize(innerWidth, innerHeight, false);
+  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+
+(function frame(){
+  requestAnimationFrame(frame);
+  rotY += auto;
+  world.rotation.y = rotY; world.rotation.x = rotX;
+  renderer.render(scene, camera);
+})();
+
+apply();
+</script>
+</body>
+</html>

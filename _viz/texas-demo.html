@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Texas Counties — geoPath + GSAP timeline</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background:#fbfaf7; color:#1a1a1a;
+    height:100vh; overflow:hidden;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+
+  /* #stage is what gets captured — keep all chrome outside it */
+  #stage {
+    position:relative;
+    width:1000px; height:660px;
+    background:#fbfaf7;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .title { position:absolute; top:26px; left:34px; }
+  .title h1 { font-size:23px; font-weight:650; letter-spacing:-0.01em; }
+  .title p  { font-size:13px; color:#8a8378; margin-top:3px; }
+
+  .county { stroke:#fbfaf7; stroke-width:0.4; }
+  .outline { fill:none; stroke:#1a1a1a; stroke-width:1.6; }
+
+  .lbl { font-size:11px; font-weight:600; fill:#1a1a1a; text-anchor:middle; paint-order:stroke; stroke:#fbfaf7; stroke-width:3px; }
+
+  .legend text { font-size:10px; fill:#8a8378; }
+
+  /* controls live OUTSIDE #stage so they never appear in the export */
+  .steps { display:flex; gap:6px; margin-top:16px; }
+  .steps button {
+    font:inherit; font-size:12px; padding:7px 13px; cursor:pointer;
+    background:#fff; border:1px solid #ddd8cf; border-radius:5px; color:#5a544a;
+  }
+  .steps button:hover { border-color:#1a1a1a; color:#1a1a1a; }
+  .steps button.on { background:#1a1a1a; border-color:#1a1a1a; color:#fff; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div class="title">
+    <h1>The 254</h1>
+    <p>Texas counties by land area</p>
+  </div>
+  <svg id="map" width="1000" height="660"></svg>
+</div>
+
+<div class="steps">
+  <button data-step="outline">1 · Outline</button>
+  <button data-step="counties">2 · Counties</button>
+  <button data-step="color">3 · Area</button>
+  <button data-step="biggest">4 · Largest</button>
+  <button id="replay">↻ Replay</button>
+</div>
+
+<script>
+const W = 1000, H = 660;
+const svg = d3.select('#map');
+
+// One earth radius, so geoArea (steradians) becomes square miles.
+const R2 = 3958.8 ** 2;
+
+d3.json('data/texas-counties.geojson').then(geo => {
+
+  // ---- real values, derived from the geometry itself (no invented data) ----
+  geo.features.forEach(f => { f.area = d3.geoArea(f) * R2; });
+
+  const projection = d3.geoAlbers()
+      .rotate([99, 0]).center([0, 31.2]).parallels([27, 35])
+      .fitExtent([[70, 90], [W - 70, H - 60]], geo);
+  const path = d3.geoPath(projection);
+
+  const areas = geo.features.map(d => d.area);
+  const color = d3.scaleSequential(d3.interpolateYlGnBu)
+      .domain([0, d3.quantile(areas.slice().sort(d3.ascending), 0.97)]);
+
+  // west → east, so the stagger sweeps across the state
+  const ordered = geo.features.slice()
+      .sort((a, b) => d3.geoCentroid(a)[0] - d3.geoCentroid(b)[0]);
+
+  const gCounties = svg.append('g');
+  const gOutline  = svg.append('g');
+  const gLabels   = svg.append('g');
+
+  const counties = gCounties.selectAll('path').data(ordered).join('path')
+      .attr('class', 'county')
+      .attr('d', path)
+      .attr('fill', '#e6e2d8')
+      .attr('opacity', 0);
+
+  // merged state silhouette, drawn by animating stroke-dashoffset
+  const outlinePath = gOutline.append('path')
+      .attr('class', 'outline')
+      .attr('d', path({type:'FeatureCollection', features: geo.features}));
+  const len = outlinePath.node().getTotalLength();
+  outlinePath.attr('stroke-dasharray', len).attr('stroke-dashoffset', len);
+
+  const top5 = geo.features.slice().sort((a,b) => b.area - a.area).slice(0, 5);
+  const labels = gLabels.selectAll('text').data(top5).join('text')
+      .attr('class', 'lbl')
+      .attr('transform', d => `translate(${path.centroid(d)})`)
+      .attr('opacity', 0)
+      .text(d => `${d.properties.name} · ${d3.format(',.0f')(d.area)} mi²`);
+
+  // ================== THE TIMELINE ==================
+  // Paused and labeled. Labels are what make it steppable AND seekable —
+  // the same property that lets render.py grab exact frames.
+  const tl = gsap.timeline({ paused: true, defaults: { ease: 'power2.out' } });
+
+  tl.addLabel('outline')
+    .to(outlinePath.node(), { strokeDashoffset: 0, duration: 1.6, ease: 'none' })
+
+    .addLabel('counties')
+    .to(counties.nodes(), {
+        opacity: 1, duration: 0.5,
+        stagger: { each: 0.006 }           // sweeps west→east via `ordered`
+      })
+    .to(outlinePath.node(), { strokeWidth: 1, duration: 0.4 }, '<')
+
+    .addLabel('color')
+    .to(counties.nodes(), {
+        fill: i => color(ordered[i].area),
+        duration: 0.8,
+        stagger: { each: 0.004 }
+      })
+
+    .addLabel('biggest')
+    .to(counties.nodes(), {
+        opacity: i => top5.includes(ordered[i]) ? 1 : 0.28,
+        duration: 0.6
+      })
+    .to(labels.nodes(), { opacity: 1, duration: 0.5, stagger: 0.08 }, '-=0.3')
+    .addLabel('end');
+
+  // ---- expose for render.py ----
+  window.TL = tl;
+  window.RENDER_READY = true;
+
+  // ---- stepper (no scrolling, per the house rule) ----
+  const order = ['outline','counties','color','biggest'];
+  const btns = document.querySelectorAll('[data-step]');
+
+  function mark() {
+    const t = tl.time();
+    let active = 0;
+    order.forEach((l, i) => { if (t >= tl.labels[l] - 0.01) active = i; });
+    btns.forEach((b, i) => b.classList.toggle('on', i === active));
+  }
+  tl.eventCallback('onUpdate', mark);
+
+  btns.forEach(b => b.onclick = () => tl.tweenTo(b.dataset.step, { duration: 0.45 }));
+  document.getElementById('replay').onclick = () => { tl.pause(0); tl.play(); };
+
+  tl.play();
+});
+</script>
+</body>
+</html>

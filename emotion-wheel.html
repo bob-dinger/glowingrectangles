@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emotion Wheel</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:#0d0d10;color:#e9e7e4;height:100vh;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  }
+  h1{font-size:18px;font-weight:600;letter-spacing:-.01em}
+  .sub{font-size:12.5px;color:#75737f;margin-top:-10px}
+
+  #wrap{flex:0 0 auto;cursor:grab}
+  #wrap:active{cursor:grabbing}
+  svg{display:block;user-select:none}
+
+  .slice{stroke:#0d0d10;stroke-width:2;transition:opacity .15s}
+  .slice:hover{opacity:.85}
+  .lbl{font-size:13px;font-weight:600;fill:#0d0d10;text-anchor:middle;
+       dominant-baseline:middle;pointer-events:none}
+
+  .readout{display:flex;align-items:baseline;gap:10px}
+  .readout #hubName{font-size:21px;font-weight:700}
+  .readout #hubOpp{font-size:12px;color:#6b6a75}
+
+  .marker{fill:#e9e7e4}
+
+  .bar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:560px}
+  .bar button{
+    background:#17171d;border:1px solid #2c2c37;color:#c9c7d1;font:inherit;
+    font-size:11.5px;padding:6px 11px;border-radius:5px;cursor:pointer;
+  }
+  .bar button:hover{border-color:#5eead4;color:#fff}
+  .bar button.spin{background:#5eead4;border-color:#5eead4;color:#062e29;font-weight:600}
+  .bar button.spin:hover{background:#7df0dd;color:#062e29}
+  .hint{font-size:11.5px;color:#55555f}
+</style>
+</head>
+<body>
+
+<h1>Emotion Wheel</h1>
+<p class="sub">Plutchik's eight — opposites sit across the circle</p>
+
+<div id="wrap">
+  <svg id="svg" width="460" height="460" viewBox="0 0 460 460">
+    <g id="wheel"></g>
+    <polygon class="marker" points="230,14 221,32 239,32"/>
+  </svg>
+</div>
+
+<p class="readout">
+  <span id="hubName">Joy</span><span id="hubOpp">opposite: sadness</span>
+</p>
+
+<div class="bar" id="bar"></div>
+<p class="hint">drag the wheel, or click any emotion</p>
+
+<script>
+/* ------------------------------------------------------------------
+   The wheel. Order matters: each emotion sits opposite its opposite,
+   so a 180 degree turn always lands on the pair.
+   ------------------------------------------------------------------ */
+const EMOTIONS = [
+  {name:'Joy',          color:'#f2c31d'},   // yellow
+  {name:'Trust',        color:'#4a9e4a'},   // green
+  {name:'Fear',         color:'#c8342b'},   // red
+  {name:'Surprise',     color:'#8b5cc7'},   // purple
+  {name:'Sadness',      color:'#2f6fb5'},   // blue
+  {name:'Disgust',      color:'#7a4a26'},   // brown
+  {name:'Anger',        color:'#e2761f'},   // orange
+  {name:'Anticipation', color:'#1f9e9e'},   // teal
+];
+const N = EMOTIONS.length, STEP = 360/N;
+const CX = 230, CY = 230, R = 208, LABEL_R = 150;
+
+const svg   = document.getElementById('svg');
+const wheel = document.getElementById('wheel');
+const NS    = 'http://www.w3.org/2000/svg';
+
+const pol = (cx, cy, r, deg) => {
+  const a = (deg - 90) * Math.PI/180;
+  return [cx + r*Math.cos(a), cy + r*Math.sin(a)];
+};
+
+function slicePath(i){
+  // slice i is centred on i*STEP, so index maths stays trivial
+  const a0 = i*STEP - STEP/2, a1 = i*STEP + STEP/2;
+  const [x0,y0] = pol(CX,CY,R,a0), [x1,y1] = pol(CX,CY,R,a1);
+  return `M${CX},${CY} L${x0},${y0} A${R},${R} 0 0 1 ${x1},${y1} Z`;
+}
+
+EMOTIONS.forEach((e, i) => {
+  const p = document.createElementNS(NS,'path');
+  p.setAttribute('class','slice');
+  p.setAttribute('d', slicePath(i));
+  p.setAttribute('fill', e.color);
+  p.style.cursor = 'pointer';
+  p.addEventListener('click', ev => { ev.stopPropagation(); select(i); });
+  wheel.appendChild(p);
+
+  const [lx, ly] = pol(CX, CY, LABEL_R, i*STEP);
+  const t = document.createElementNS(NS,'text');
+  t.setAttribute('class','lbl');
+  t.setAttribute('x', lx); t.setAttribute('y', ly);
+  // keep each label upright relative to its own slice
+  t.setAttribute('transform', `rotate(${i*STEP},${lx},${ly})`);
+  t.textContent = e.name;
+  wheel.appendChild(t);
+});
+
+/* ---------------- rotation ---------------- */
+let angle = 0;                                   // degrees, wheel-space
+
+function render(){
+  wheel.setAttribute('transform', `rotate(${angle},${CX},${CY})`);
+  const i = ((Math.round(-angle/STEP) % N) + N) % N;
+  const el = document.getElementById('hubName');
+  el.textContent = EMOTIONS[i].name;
+  el.style.color = EMOTIONS[i].color;
+  document.getElementById('hubOpp').textContent =
+    'opposite: ' + EMOTIONS[(i+N/2)%N].name.toLowerCase();
+}
+
+function select(i){                              // bring slice i to the marker
+  const target = -i*STEP;
+  // travel the short way round, however many turns we've accumulated
+  let d = ((target - angle) % 360 + 540) % 360 - 180;
+  animateTo(angle + d);
+}
+
+let raf = null;
+function animateTo(to, dur = 420, power = 3){
+  cancelAnimationFrame(raf);
+  const from = angle, t0 = performance.now();
+  (function step(now){
+    const k = Math.min(1, (now-t0)/dur);
+    const e = 1 - Math.pow(1-k, power);          // easeOut
+    angle = from + (to-from)*e;
+    render();
+    if (k < 1) raf = requestAnimationFrame(step);
+  })(t0);
+}
+
+function spin(){
+  const i = Math.floor(Math.random()*N);
+  const turns = 4 + Math.floor(Math.random()*3);
+  // walk the target back past several whole turns so it unwinds a long way
+  // before settling, and always lands square on a slice
+  let to = -i*STEP;
+  while (to > angle - turns*360) to -= 360;
+  animateTo(to, 2600, 4);                        // easeOutQuart = long coast
+}
+
+/* drag */
+const wrap = document.getElementById('wrap');
+let drag = null;
+const angleAt = ev => {
+  const r = svg.getBoundingClientRect();
+  const x = ev.clientX - (r.left + r.width/2);
+  const y = ev.clientY - (r.top + r.height/2);
+  return Math.atan2(y, x) * 180/Math.PI;
+};
+wrap.addEventListener('pointerdown', ev => {
+  cancelAnimationFrame(raf);
+  drag = {a: angleAt(ev), start: angle};
+  wrap.setPointerCapture(ev.pointerId);
+});
+wrap.addEventListener('pointermove', ev => {
+  if (!drag) return;
+  angle = drag.start + (angleAt(ev) - drag.a);
+  render();
+});
+wrap.addEventListener('pointerup', () => {
+  if (!drag) return;
+  drag = null;
+  animateTo(Math.round(angle/STEP)*STEP);        // snap to the nearest slice
+});
+
+/* buttons */
+const bar = document.getElementById('bar');
+EMOTIONS.forEach((e, i) => {
+  const b = document.createElement('button');
+  b.textContent = e.name;
+  b.style.borderLeft = `3px solid ${e.color}`;
+  b.onclick = () => select(i);
+  bar.appendChild(b);
+});
+
+const spinBtn = document.createElement('button');
+spinBtn.textContent = '↻ Spin';
+spinBtn.className = 'spin';
+spinBtn.onclick = spin;
+bar.appendChild(spinBtn);
+
+render();
+
+/* reuse: EmotionWheel.to('anger'), .colors, .list */
+window.EmotionWheel = {
+  list: EMOTIONS,
+  colors: Object.fromEntries(EMOTIONS.map(e => [e.name.toLowerCase(), e.color])),
+  to(name){
+    const i = EMOTIONS.findIndex(e => e.name.toLowerCase() === String(name).toLowerCase());
+    if (i >= 0) select(i);
+  },
+  spin,
+  get current(){ return EMOTIONS[((Math.round(-angle/STEP)%N)+N)%N].name; }
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>chord viz</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  background: #0e0e1a; color: #e0e0e0; margin: 0; padding: 24px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12px;
+  min-height: 100vh;
+  display: flex; align-items: flex-start; justify-content: center;
+}
+.card {
+  background: #16162a;
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+  padding: 18px 20px;
+  max-width: 540px;
+  width: 100%;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+.header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 12px; gap: 12px;
+  padding-bottom: 10px; border-bottom: 1px solid #2a2a4a;
+}
+.song-title { font-size: 15px; font-weight: 600; color: #f0f0f0; letter-spacing: 0.01em; }
+.song-meta { color: #7a7a98; font-size: 11px; white-space: nowrap; }
+.controls { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+.controls input {
+  background: #1a1a2e; color: #e0e0e0; border: 1px solid #2a2a4a;
+  padding: 5px 10px; border-radius: 6px; font-size: 12px; outline: none;
+  font-family: inherit; transition: border-color 0.15s;
+}
+.controls input:focus { border-color: #5060a0; }
+.controls input.prog { flex: 1; min-width: 100px; }
+.controls input.key { width: 56px; text-align: center; }
+.controls label { color: #7a7a98; font-size: 11px; }
+.section-block {
+  background: #1a1a2e;
+  border: 1px solid #22223e;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+.section-block:last-child { margin-bottom: 0; }
+.section-label {
+  color: #c0c0d8; font-size: 11px; font-weight: 600;
+  margin-bottom: 6px;
+  display: flex; gap: 10px; align-items: baseline;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.section-label .prog-text {
+  color: #7a7a98; font-weight: 400; font-size: 11px;
+  text-transform: none; letter-spacing: 0; font-family: 'SF Mono', Menlo, monospace;
+}
+svg { display: block; width: 100%; height: auto; }
+.recent {
+  margin-top: 14px; color: #7a7a98; font-size: 10px;
+  display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
+}
+.recent .chip {
+  background: #1a1a2e; padding: 3px 8px; border-radius: 10px;
+  color: #a0a0c0; cursor: pointer; user-select: none;
+  border: 1px solid #22223e; transition: all 0.12s;
+}
+.recent .chip:hover { background: #22223e; border-color: #2a2a4a; color: #e0e0e0; }
+.hint { color: #4a4a6a; font-size: 10px; margin-top: 10px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <div class="song-title" id="songTitle">chord viz</div>
+    <div class="song-meta" id="songMeta"></div>
+  </div>
+
+  <div class="controls" id="manualControls">
+    <input class="prog" id="prog" placeholder="I-Imaj7-vi7-I" value="I-Imaj7-vi7-I">
+    <label>key</label>
+    <input class="key" id="key" value="C">
+  </div>
+
+  <div id="output"></div>
+
+  <div class="recent" id="examplesRow">
+    Examples:
+    <span class="chip">I-V-vi-IV</span>
+    <span class="chip">I-V/V-IV-I</span>
+    <span class="chip">I-Imaj7-vi7-I</span>
+    <span class="chip">I-bVII-IV-I</span>
+    <span class="chip">I-I7-vi7-bVI7#5</span>
+    <span class="chip">vi-IV-I-V</span>
+  </div>
+
+  <div class="hint">Notation: I/IV/V · V/V (sec dom) · bVII (flat) · Imaj7 · IVsus2 · IVadd9 · bVI7#5</div>
+</div>
+
+<script>
+const DEG_RGB = {1:'#e84545',2:'#f0a040',3:'#e8c828',4:'#50c878',5:'#5090f0',6:'#7040b0',7:'#e070b0'};
+const blend = (a,b,t=0.5) => {
+  const p = h => [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+  const A=p(a),B=p(b); const c=A.map((v,i)=>Math.round(v+(B[i]-v)*t));
+  return '#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');
+};
+const PC_COLOR = {
+  0:DEG_RGB[1], 1:blend(DEG_RGB[1],DEG_RGB[2]), 2:DEG_RGB[2],
+  3:blend(DEG_RGB[2],DEG_RGB[3]), 4:DEG_RGB[3], 5:DEG_RGB[4],
+  6:blend(DEG_RGB[4],DEG_RGB[5]), 7:DEG_RGB[5], 8:blend(DEG_RGB[5],DEG_RGB[6]),
+  9:DEG_RGB[6], 10:blend(DEG_RGB[6],DEG_RGB[7]), 11:DEG_RGB[7],
+};
+const PC_LABEL = ['1','b2','2','b3','3','4','b5','5','b6','6','b7','7'];
+const PC_NAME  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+const ROMAN_VAL = {I:1,II:2,III:3,IV:4,V:5,VI:6,VII:7};
+const MAJ_INT = [0,2,4,5,7,9,11];
+
+function parseChord(token) {
+  const m = token.trim().match(/^([b#])?(III|II|IV|VII|VI|V|I|iii|ii|iv|vii|vi|v|i)(.*)$/);
+  if (!m) return null;
+  const [, accidental, roman, restRaw] = m;
+  const deg = ROMAN_VAL[roman.toUpperCase()];
+  let rootSemi = MAJ_INT[deg-1];
+  if (accidental==='b') rootSemi -= 1;
+  else if (accidental==='#') rootSemi += 1;
+  rootSemi = ((rootSemi % 12) + 12) % 12;
+  const isMinor = roman === roman.toLowerCase();
+  let rest = restRaw;
+  if (rest.startsWith('/')) rest = '';
+  const hasMaj7 = rest.includes('maj7'); rest = rest.replace('maj7','');
+  const has13 = /(?<!\d)13(?!\d)/.test(rest);
+  const has11 = /(?<!\d)11(?!\d)/.test(rest);
+  const has9  = /(?<!\d)9(?!\d)/.test(rest);
+  const has7  = /(?<!\d)7(?!\d)/.test(rest);
+  rest = rest.replace(/(?<!\d)(13|11|9|7)(?!\d)/,'');
+  const susM = rest.match(/sus([24])/);
+  const susN = susM ? parseInt(susM[1]) : null;
+  rest = rest.replace(/sus[24]/,'');
+  const adds = [...rest.matchAll(/add(\d+)/g)].map(m=>parseInt(m[1]));
+  rest = rest.replace(/add\d+/g,'');
+  const alts = [...rest.matchAll(/[#b]\d+/g)].map(m=>m[0]);
+  const tones = new Set([0]);
+  if (susN===2) tones.add(2);
+  else if (susN===4) tones.add(5);
+  else tones.add(isMinor ? 3 : 4);
+  let fifth = 7;
+  if (alts.includes('#5')) fifth = 8;
+  else if (alts.includes('b5')) fifth = 6;
+  tones.add(fifth);
+  if (hasMaj7) tones.add(11);
+  else if (has7||has13||has11||has9) tones.add(10);
+  if (has9||has13||has11) tones.add(2);
+  if (has11||has13) tones.add(5);
+  if (has13) tones.add(9);
+  for (const a of adds) {
+    if (a===9) tones.add(2); else if (a===11) tones.add(5);
+    else if (a===13||a===6) tones.add(9); else if (a===4) tones.add(5); else if (a===2) tones.add(2);
+  }
+  if (alts.includes('#9')) tones.add(3);
+  if (alts.includes('b9')) tones.add(1);
+  const pcs = [...tones].map(iv => ((rootSemi+iv)%12+12)%12).sort((a,b)=>a-b);
+  return { token, pcs };
+}
+
+function renderProgressionSVG(progStr) {
+  const chords = progStr.split('-').map(t => parseChord(t)).filter(Boolean);
+  if (chords.length === 0) return '<svg></svg>';
+  const labelW = 36;
+  const chordW = Math.max(46, Math.floor((600 - labelW - 12) / chords.length));
+  const rowH = 18;
+  const headerH = 22;
+  const w = labelW + chordW * chords.length + 8;
+  const h = headerH + 12 * rowH + 8;
+  const diatonic = new Set(MAJ_INT);
+  let svg = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">`;
+  // Chord labels at top
+  for (let i = 0; i < chords.length; i++) {
+    const x = labelW + i * chordW;
+    svg += `<text x="${x + chordW/2}" y="${headerH-6}" fill="#c0c0d8" font-size="11" font-weight="600" text-anchor="middle">${chords[i].token}</text>`;
+  }
+  // Rows
+  for (let r = 0; r < 12; r++) {
+    const pc = 11 - r;
+    const y = headerH + r * rowH;
+    const col = PC_COLOR[pc];
+    const bold = diatonic.has(pc) ? 700 : 400;
+    svg += `<text x="4" y="${y + rowH/2 + 3}" fill="${col}" font-size="10" font-weight="${bold}">${PC_NAME[pc].padEnd(2)} ${PC_LABEL[pc]}</text>`;
+    svg += `<rect x="${labelW}" y="${y}" width="${chordW*chords.length}" height="${rowH}" fill="${diatonic.has(pc)?'#1f1f38':'#181830'}"/>`;
+    for (let i = 0; i < chords.length; i++) {
+      if (chords[i].pcs.includes(pc)) {
+        const x = labelW + i * chordW + 2;
+        svg += `<rect x="${x}" y="${y+2}" width="${chordW-4}" height="${rowH-4}" rx="2" ry="2" fill="${col}"/>`;
+        svg += `<text x="${x + (chordW-4)/2}" y="${y + rowH/2 + 3}" fill="#000" font-size="9" font-weight="700" text-anchor="middle">${PC_LABEL[pc]}</text>`;
+      }
+    }
+  }
+  return svg + '</svg>';
+}
+
+function renderSections(sections) {
+  // sections = [{label, progression}]
+  const out = document.getElementById('output');
+  out.innerHTML = sections.map(s =>
+    `<div class="section-block">
+       <div class="section-label">
+         <span>${s.label}</span>
+         <span class="prog-text">${s.progression}</span>
+       </div>
+       ${renderProgressionSVG(s.progression)}
+     </div>`
+  ).join('');
+}
+
+// URL params
+const params = new URLSearchParams(window.location.search);
+const songTitle = params.get('title');
+const songMeta  = params.get('meta');
+const keyHint   = params.get('key');
+const progParam = params.get('prog');     // pipe-separated: "I-V-vi-IV|vi-IV-I-V"
+const labelParam = params.get('labels');  // pipe-separated: "verse|chorus"
+
+if (songTitle) document.getElementById('songTitle').textContent = songTitle;
+if (songMeta)  document.getElementById('songMeta').textContent  = songMeta;
+if (keyHint)   document.getElementById('key').value = keyHint;
+
+if (progParam) {
+  const progs  = progParam.split('|').map(s => s.trim()).filter(Boolean);
+  const labels = (labelParam || '').split('|');
+  const sections = progs.map((p, i) => ({ label: labels[i] || `section ${i+1}`, progression: p }));
+  renderSections(sections);
+  // Hide the manual controls (we have a real song) — but show examples too
+  document.getElementById('manualControls').style.display = 'none';
+  document.getElementById('examplesRow').style.display = 'none';
+} else {
+  // Manual mode
+  const renderManual = () => {
+    const p = document.getElementById('prog').value;
+    renderSections([{ label: 'progression', progression: p }]);
+  };
+  document.getElementById('prog').addEventListener('input', renderManual);
+  document.getElementById('key').addEventListener('input', renderManual);
+  document.querySelectorAll('.recent .chip').forEach(el => {
+    el.addEventListener('click', () => {
+      document.getElementById('prog').value = el.textContent;
+      renderManual();
+    });
+  });
+  renderManual();
+}
+</script>
+
+</body>
+</html>

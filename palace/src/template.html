@@ -1,0 +1,358 @@
+<title>The Presidential Memory Palace</title>
+<style>
+  /* Single committed visual world: a dark civic interior. Every colour is
+     painted explicitly so the page holds on any host ground. The chrome is
+     sober engraved-plaque; the absurdity lives in the 3D behind it. */
+  :root {
+    --void:      #07090d;
+    --plaque:    #10141c;
+    --plaque-up: #171d28;
+    --brass:     #e8c98a;
+    --brass-dim: #9a8355;
+    --ink:       #e6e9ef;
+    --muted:     #8794a6;
+    --flag:      #c4483a;
+    --rule:      #2a3240;
+    --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--sans);
+    overflow: hidden;
+  }
+  #stage { position: fixed; inset: 0; }
+  #stage canvas { display: block; }
+
+  /* --- crosshair ------------------------------------------------------- */
+  #cross {
+    position: fixed; left: 50%; top: 50%;
+    width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px;
+    border-radius: 50%;
+    background: var(--brass);
+    opacity: 0; transition: opacity .25s;
+    pointer-events: none;
+  }
+  body.walking #cross { opacity: .55; }
+  body.walking #stage { cursor: grab; }
+  body.grabbing #stage { cursor: grabbing; }
+
+  /* --- the exhibit plaque ---------------------------------------------- */
+  #hud {
+    position: fixed; left: 26px; bottom: 40px;
+    width: min(430px, calc(100vw - 52px));
+    background: color-mix(in srgb, var(--plaque) 88%, transparent);
+    border: 1px solid var(--rule);
+    border-top: 2px solid var(--brass-dim);
+    padding: 20px 24px 20px 96px;
+    pointer-events: none;
+    backdrop-filter: blur(7px);
+  }
+  /* The ordinal is chiselled, not labelled — it hangs off the plaque edge. */
+  #ord {
+    position: absolute; left: 14px; top: 6px;
+    font-family: var(--serif);
+    font-size: 68px; line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--brass);
+    letter-spacing: -.03em;
+  }
+  #name {
+    font-family: var(--serif);
+    font-size: 25px; line-height: 1.15;
+    text-wrap: balance;
+    margin-bottom: 3px;
+  }
+  #years {
+    font-family: var(--mono);
+    font-size: 11.5px; letter-spacing: .09em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  #pegline {
+    display: flex; align-items: baseline; gap: 9px;
+    margin-top: 14px; padding-top: 13px;
+    border-top: 1px solid var(--rule);
+  }
+  #pegline .lbl {
+    font-family: var(--mono);
+    font-size: 9.5px; letter-spacing: .16em;
+    color: var(--brass-dim);
+    text-transform: uppercase;
+    flex: none;
+  }
+  #peg { font-family: var(--serif); font-size: 17px; color: var(--brass); }
+  #why {
+    margin-top: 9px;
+    font-size: 13.5px; line-height: 1.5;
+    color: var(--muted);
+    max-width: 58ch;
+  }
+  #twice {
+    display: inline-block; margin-top: 11px;
+    font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: .13em; text-transform: uppercase;
+    color: var(--flag);
+    border: 1px solid color-mix(in srgb, var(--flag) 45%, transparent);
+    padding: 3px 7px;
+  }
+  #hud.hidden-answer #name { color: var(--brass-dim); letter-spacing: .18em; }
+
+  /* --- progress rail ---------------------------------------------------- */
+  #rail {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    height: 3px; background: var(--rule);
+  }
+  #bar { height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+  #progress {
+    position: fixed; right: 26px; bottom: 16px;
+    font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: .1em; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  #quizflag {
+    position: fixed; right: 26px; top: 22px;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: .16em; text-transform: uppercase;
+    color: var(--flag);
+    border: 1px solid color-mix(in srgb, var(--flag) 45%, transparent);
+    padding: 5px 9px;
+  }
+
+  /* --- key legend ------------------------------------------------------- */
+  #legend {
+    position: fixed; right: 26px; bottom: 40px;
+    display: grid; gap: 6px; justify-items: end;
+    font-family: var(--mono); font-size: 10.5px;
+    color: var(--muted); pointer-events: none;
+  }
+  #legend b {
+    display: inline-block; min-width: 17px; text-align: center;
+    border: 1px solid var(--rule); border-bottom-width: 2px;
+    background: var(--plaque-up);
+    color: var(--ink); font-weight: 400;
+    padding: 1px 5px; margin-left: 5px;
+  }
+
+  /* --- overhead view ---------------------------------------------------- */
+  #map { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  .pin {
+    position: absolute; transform: translate(-50%, -50%);
+    pointer-events: auto; cursor: pointer;
+    min-width: 27px; height: 27px; padding: 0 5px;
+    display: grid; place-items: center;
+    border: 1px solid var(--brass-dim);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--void) 82%, transparent);
+    color: var(--brass);
+    font-family: var(--serif); font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0; text-transform: none;
+    transition: transform .12s, background .12s;
+  }
+  .pin:hover, .pin:focus-visible {
+    transform: translate(-50%, -50%) scale(1.32);
+    background: var(--brass); color: var(--void);
+    border-color: var(--brass); outline: none;
+    z-index: 2;
+  }
+  .pin.done { background: color-mix(in srgb, var(--brass) 26%, var(--void)); color: var(--ink); }
+  .pin.twice { border-color: var(--flag); color: var(--flag); }
+  .pin.twice:hover { background: var(--flag); color: var(--void); }
+
+  #overhud {
+    position: fixed; left: 26px; top: 24px;
+    width: min(340px, calc(100vw - 52px));
+    z-index: 6; pointer-events: none;
+  }
+  #overhud h2 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: 27px; line-height: 1.1; margin: 0 0 6px;
+  }
+  #overhud .sub {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: .16em; text-transform: uppercase;
+    color: var(--brass-dim);
+  }
+  #hover {
+    margin-top: 22px; padding: 15px 17px;
+    border: 1px solid var(--rule); border-left: 2px solid var(--brass-dim);
+    background: color-mix(in srgb, var(--plaque) 85%, transparent);
+    backdrop-filter: blur(6px);
+    min-height: 96px;
+  }
+  #hovname { font-family: var(--serif); font-size: 18px; }
+  #hovpeg { font-family: var(--mono); font-size: 11px; color: var(--brass); margin-top: 3px; }
+  #hovwhy { font-size: 12.5px; line-height: 1.5; color: var(--muted); margin-top: 8px; }
+  #startwalk { pointer-events: auto; margin-top: 18px; }
+
+  /* --- overlays --------------------------------------------------------- */
+  .scrim {
+    position: fixed; inset: 0;
+    background: color-mix(in srgb, var(--void) 93%, transparent);
+    backdrop-filter: blur(4px);
+    display: grid; place-items: center;
+    padding: 40px 24px;
+    z-index: 20;
+  }
+  .panel {
+    width: min(760px, 100%);
+    max-height: 100%;
+    display: flex; flex-direction: column;
+    border: 1px solid var(--rule);
+    border-top: 2px solid var(--brass);
+    background: var(--plaque);
+    padding: 38px 42px 32px;
+  }
+  .eyebrow {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: .22em; text-transform: uppercase;
+    color: var(--brass-dim); margin-bottom: 16px;
+  }
+  .panel h1 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(30px, 4.6vw, 46px); line-height: 1.05;
+    margin: 0 0 18px; text-wrap: balance;
+  }
+  .panel p {
+    margin: 0 0 13px; font-size: 14.5px; line-height: 1.62;
+    color: var(--muted); max-width: 64ch;
+  }
+  .panel p em { color: var(--ink); font-style: normal; }
+  .panel .rule { height: 1px; background: var(--rule); margin: 22px 0; }
+  button {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: .16em; text-transform: uppercase;
+    background: var(--brass); color: var(--void);
+    border: 0; padding: 13px 26px; cursor: pointer;
+  }
+  button:hover { background: #f3daa4; }
+  button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  /* --- the index -------------------------------------------------------- */
+  #menu { display: none; }
+  #menu .panel { width: min(1080px, 100%); }
+  #list {
+    display: grid; gap: 1px;
+    grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+    overflow-y: auto; margin-top: 4px; padding-right: 4px;
+  }
+  .row {
+    display: grid; grid-template-columns: 30px 1fr; row-gap: 1px;
+    align-items: baseline; text-align: left;
+    background: none; border: 0; border-bottom: 1px solid var(--rule);
+    padding: 7px 6px; cursor: pointer;
+    text-transform: none; letter-spacing: normal;
+    font-family: var(--sans);
+  }
+  .row:hover { background: var(--plaque-up); }
+  .row .n {
+    grid-row: 1 / 3;
+    font-family: var(--serif); font-size: 17px;
+    color: var(--brass-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .row .nm { font-family: var(--serif); font-size: 14.5px; color: var(--ink); }
+  .row .pg { font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+  .row.twice .n { color: var(--flag); }
+  .menu-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #bar, #cross { transition: none; }
+  }
+</style>
+
+<div id="stage"></div>
+<div id="cross"></div>
+<div id="map"></div>
+
+<div id="overhud">
+  <div class="sub">45 rooms · 47 stops</div>
+  <h2>The route</h2>
+  <div class="sub" style="color:var(--muted);letter-spacing:.04em;text-transform:none;font-size:11.5px">
+    Every stop, in order. Click any room to drop into it.
+  </div>
+  <div id="hover">
+    <div id="hovname">Grover Cleveland</div>
+    <div id="hovpeg">A meat cleaver</div>
+    <div id="hovwhy">Hover a room to read its peg. The two red numbers are the
+      presidents who served non-consecutive terms — one room, entered twice.</div>
+  </div>
+  <button id="startwalk">Walk it from the start</button>
+</div>
+
+<div id="hud">
+  <div id="ord">1</div>
+  <div id="name">George Washington</div>
+  <div id="years">1789–1797</div>
+  <div id="pegline"><span class="lbl">Peg</span><span id="peg">Washing machine</span></div>
+  <div id="why"></div>
+  <div id="twice">You pass through this room twice</div>
+</div>
+
+<div id="quizflag" style="display:none">Quiz — press space to reveal</div>
+<div id="progress">0 / 47 visited</div>
+<div id="rail"><div id="bar"></div></div>
+
+<div id="legend">
+  <span>move <b>W</b><b>A</b><b>S</b><b>D</b></span>
+  <span>look <b>drag</b></span>
+  <span>turn <b>←</b><b>→</b></span>
+  <span>run <b>⇧</b></span>
+  <span>index <b>M</b></span>
+  <span>quiz mode <b>Q</b></span>
+  <span>overhead <b>O</b></span>
+  <span>free cursor <b>esc</b></span>
+</div>
+
+<div id="intro" class="scrim">
+  <div class="panel">
+    <div class="eyebrow">A walkable mnemonic · 45 rooms · 47 stops</div>
+    <h1>The Presidential Memory Palace</h1>
+    <p>Every president is one absurd object in one room, and the rooms run in a
+      single unbranching line. Walk it start to finish and the order comes with
+      you — that's the whole trick. A palace works because your memory for
+      <em>places you have been</em> is far better than your memory for lists.</p>
+    <p>Two pegging systems are mixed. Some are sound-alikes — Buchanan is a
+      <em>cannon</em>, Coolidge a <em>cool fridge</em>, Biden a <em>bidet</em>.
+      Others are the image the man already owns: Lincoln's <em>top hat</em>,
+      Nixon's <em>tape recorder</em>. Related presidents share an escalating
+      image, so the pair is stored as a pair — Adams is an <em>atom</em> and his
+      son is an <em>atom bomb</em>; Bush is a <em>shrub</em> and his son is a
+      <em>burning</em> one.</p>
+    <p>Grover Cleveland and Donald Trump each served two non-consecutive terms,
+      so each has <em>one room you enter twice</em>. The president who
+      interrupted them waits in a dead-end alcove off that same room. You go in,
+      get interrupted, and come back out — the building teaches the fact.</p>
+    <div class="rule"></div>
+    <p>Every room is papered differently too — a second cue for where you are,
+      independent of the object on the plinth.</p>
+    <p>You start above it, looking down at the whole route. Click any room to
+      drop into it, or walk from the beginning. Once inside: <em>W A S D</em> to
+      move, <em>drag</em> or the <em>arrow keys</em> to look around,
+      <em>shift</em> to run. <em>O</em> returns you to the overhead view,
+      <em>M</em> opens the index, and <em>Q</em> is quiz mode, which hides the
+      names and leaves you alone with the room.</p>
+    <button id="begin">See the palace</button>
+  </div>
+</div>
+
+<div id="menu" class="scrim">
+  <div class="panel">
+    <div class="menu-head">
+      <div>
+        <div class="eyebrow">The index</div>
+        <h1 style="font-size:30px;margin-bottom:6px">47 stops, in order</h1>
+      </div>
+      <button id="closemenu">Back to the palace</button>
+    </div>
+    <div class="rule" style="margin:18px 0 0"></div>
+    <div id="list"></div>
+  </div>
+</div>

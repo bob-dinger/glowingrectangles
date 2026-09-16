@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Age Gradient Inverted</title>
+<style>
+  html,body{margin:0;height:100%;background:#0a0a0a;font-family:Georgia,serif;
+            color:#e8e8e8;overflow:hidden}
+  .wrap{display:flex;height:100vh;box-sizing:border-box;padding:26px 30px 18px}
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  h1{margin:0 0 4px;font-size:26px;font-weight:normal;color:#fff;letter-spacing:-.01em}
+  .sub{margin:0 0 6px;color:#8a8a8a;font-size:14px;line-height:1.5;max-width:720px}
+  #vis{flex:1;min-height:0}
+  aside{width:266px;flex:0 0 266px;margin-left:30px;border-left:1px solid #1e1e1e;
+        padding-left:22px;display:flex;flex-direction:column;gap:15px;
+        font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+  .lab{font-size:9.5px;text-transform:uppercase;letter-spacing:.13em;color:#5c5c5c;
+       margin-bottom:5px}
+  .big{font-size:31px;color:#fff;line-height:1;font-family:Georgia,serif}
+  .big em{font-style:normal;font-size:14px;color:#8a8a8a;margin-left:5px}
+  .up{color:#e0564a} .down{color:#4fa8d8}
+  aside p{margin:0;font-size:12px;line-height:1.62;color:#9a9a9a}
+  .note{margin-top:auto;font-size:10.5px;line-height:1.6;color:#565656;
+        border-top:1px solid #1e1e1e;padding-top:11px}
+  .note b{color:#7d7d7d;font-weight:600}
+  .axis text{fill:#6b6b6b;font-size:11px;font-family:-apple-system,sans-serif}
+  .axis path,.axis line{stroke:#242424}
+  .gl{stroke:#161616}
+  .key{font-family:-apple-system,sans-serif;font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="main">
+    <h1>The age gradient inverted</h1>
+    <p class="sub">US suicide rate by age, 1932 against 2023. In the Depression,
+      suicide climbed steeply with age &mdash; the old killed themselves seven times
+      as often as the young. Today the line is nearly flat.</p>
+    <div id="vis"></div>
+  </div>
+  <aside>
+    <div>
+      <div class="lab">Ages 15&ndash;24</div>
+      <div class="big up">+86%<em>7.3 &rarr; 13.5</em></div>
+    </div>
+    <div>
+      <div class="lab">Ages 65&ndash;74</div>
+      <div class="big down">&minus;69%<em>51.3 &rarr; 15.8</em></div>
+    </div>
+    <div>
+      <div class="lab">Ages 45&ndash;64</div>
+      <div class="big down">&minus;57%<em>~44 &rarr; 18.8</em></div>
+    </div>
+    <p>Every age over 45 improved enormously. The young got worse. The two
+      curves cross at about age 40.</p>
+    <div>
+      <div class="lab">Male &divide; female, all ages</div>
+      <div class="big">3.86&times; <em>1932</em></div>
+      <div class="big">3.85&times; <em>2023</em></div>
+    </div>
+    <p>Ninety-one years, a rebuilt economy, and the sex ratio did not move at all.</p>
+    <div class="note">
+      <b>Both series are crude rates</b>, so they are directly comparable.
+      The headline number you may have seen &mdash; 17.4 in 1932 against 14.2
+      today &mdash; is <b>not</b> a valid comparison: the modern all-ages series
+      is age-adjusted and the 1932 one is not.<br><br>
+      1932 rates are published by age. 2023 rates are published by sex within
+      age; the both-sexes figure here is deaths &divide; implied population,
+      from CDC counts. Bins differ between eras, so each series is drawn as
+      steps across the ages it actually covers.<br><br>
+      Source: CDC/NCHS vital statistics.
+    </div>
+  </aside>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+// [lo, hi) age span, crude rate per 100,000, both sexes
+const D1932 = [[15,25,7.3],[25,35,15.5],[35,45,22.8],[45,55,36.4],
+               [55,65,49.1],[65,75,51.3],[75,85,45.5],[85,95,27.5]];
+const D2023 = [[10,15,2.3],[15,25,13.5],[25,45,18.8],[45,65,18.8],
+               [65,75,15.8],[75,95,20.2]];
+
+const el = document.getElementById('vis');
+const W = el.clientWidth, H = el.clientHeight;
+const M = {t:14, r:16, b:34, l:46};
+const svg = d3.select('#vis').append('svg').attr('width',W).attr('height',H);
+const x = d3.scaleLinear().domain([10,95]).range([M.l, W-M.r]);
+const y = d3.scaleLinear().domain([0,55]).nice().range([H-M.b, M.t]);
+
+svg.append('g').attr('class','axis').attr('transform',`translate(0,${H-M.b})`)
+   .call(d3.axisBottom(x).tickValues([15,25,35,45,55,65,75,85])
+           .tickFormat(d=>d).tickSize(5));
+svg.append('g').attr('class','axis').attr('transform',`translate(${M.l},0)`)
+   .call(d3.axisLeft(y).ticks(5).tickSize(5));
+svg.append('g').selectAll('line').data(y.ticks(5)).join('line')
+   .attr('class','gl').attr('x1',M.l).attr('x2',W-M.r)
+   .attr('y1',d=>y(d)).attr('y2',d=>y(d));
+
+// steps across each bin's real span — the eras bucket ages differently and
+// joining their midpoints with a smooth line would invent precision
+function stepPath(rows){
+  let p = '';
+  rows.forEach((r,i)=>{
+    p += (i?'L':'M') + x(r[0]) + ',' + y(r[2]) + 'L' + x(r[1]) + ',' + y(r[2]);
+  });
+  return p;
+}
+function areaPath(rows){
+  return stepPath(rows) + `L${x(rows[rows.length-1][1])},${y(0)}L${x(rows[0][0])},${y(0)}Z`;
+}
+
+svg.append('path').attr('d',areaPath(D1932)).attr('fill','#e0564a').attr('opacity',.10);
+svg.append('path').attr('d',areaPath(D2023)).attr('fill','#4fa8d8').attr('opacity',.10);
+svg.append('path').attr('d',stepPath(D1932)).attr('fill','none')
+   .attr('stroke','#e0564a').attr('stroke-width',2.4);
+svg.append('path').attr('d',stepPath(D2023)).attr('fill','none')
+   .attr('stroke','#4fa8d8').attr('stroke-width',2.4);
+
+const L = svg.append('g').attr('class','key');
+L.append('text').attr('x',x(78)).attr('y',y(48)).attr('fill','#e0564a').text('1932');
+L.append('text').attr('x',x(78)).attr('y',y(48)+15).attr('fill','#8a8a8a')
+ .attr('font-size',11).text('the Depression');
+L.append('text').attr('x',x(26)).attr('y',y(23.4)).attr('fill','#4fa8d8').text('2023');
+
+svg.append('text').attr('x',x(15)+6).attr('y',y(7.3)-9).attr('fill','#7a7a7a')
+   .attr('font-size',11).attr('font-family','-apple-system,sans-serif')
+   .text('the young were the safest group alive');
+svg.append('text').attr('x',W-M.r).attr('y',H-6).attr('text-anchor','end')
+   .attr('fill','#4a4a4a').attr('font-size',10.5)
+   .attr('font-family','-apple-system,sans-serif')
+   .text('deaths per 100,000 · age');
+</script>
+</body>
+</html>
