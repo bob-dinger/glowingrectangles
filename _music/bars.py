@@ -24,8 +24,13 @@ def beats_per_bar(d):
     return float(num or 4)
 
 
-def bars_for(path):
-    """-> (tonic, scale, bpb, [(section_name, [bar, bar, ...]), ...])
+def bars_for(path, with_beats=False, with_quality=False):
+    """-> (tonic, scale, bpb, [(section_name, [bar, ...]), ...])
+
+    with_beats=True yields (name, bars, start_beat) instead. Callers that need
+    the key in effect at a section must have the beat: matching sections by
+    NAME is wrong whenever a name repeats, and it silently gave both of
+    Heaven's pre-choruses the first one's key.
     each bar is a tuple of chord labels sounding in it, in order."""
     d = json.load(open(path))
     k = (d.get('keys') or [{}])[0]
@@ -45,6 +50,9 @@ def bars_for(path):
         bars = {}
         for c in inside:
             lbl = pp.to_nine(pp.chord_label(c, scale), scale) or '?'
+            if with_quality:
+                q = pp.quality(c, scale)
+                if q: lbl = f'{lbl}~{q}'      # chord_key.actual splits on ~
             b = int((c.get('beat', 1) - lo) // bpb) + 1     # bar within section
             bars.setdefault(b, [])
             if not bars[b] or bars[b][-1] != lbl:           # same chord held = once
@@ -56,7 +64,9 @@ def bars_for(path):
         # phase of every phrase after it.
         while bl and bl[0] == ('·',): bl.pop(0)
         while bl and bl[-1] == ('·',): bl.pop()
-        if bl: out.append((s.get('name', '?'), bl))
+        if bl: out.append((s.get('name', '?'), bl, s.get('beat', 1)))
+    if not with_beats:
+        out = [(nm, bl) for nm, bl, _ in out]
     return k.get('tonic', '?'), scale, bpb, out
 
 

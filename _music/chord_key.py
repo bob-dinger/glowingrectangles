@@ -34,6 +34,15 @@ def _pc(name):
 def actual(tonic, scale, norm):
     """normalised card name -> the chord as played in this song's key."""
     if norm in ('·', '?', ''): return norm
+    if isinstance(norm, str) and '~' in norm:
+        base, _, suf = norm.partition('~')
+        return actual(tonic, scale, base) + suf
+    if isinstance(norm, str) and norm.startswith('@'):
+        # an applied dominant, carried as semitones above the tonic and always
+        # major — V/iii in A major is G#, which no white-note name can hold
+        semis = int(norm[1:])
+        names = FLAT if (tonic in FLATKEYS or 'b' in tonic) else SHARP
+        return names[(_pc(tonic) + semis) % 12]
     if norm not in DEG: return norm
     deg, qual = DEG[norm]
     root = _pc(tonic)
@@ -43,6 +52,37 @@ def actual(tonic, scale, norm):
     names = FLAT if (tonic in FLATKEYS or 'b' in tonic) else SHARP
     out = names[(root + semis) % 12]
     return out + ('m' if qual == 'm' else '')
+
+
+def key_at(keys, beat):
+    """The key in effect at a given beat -> (tonic, scale).
+
+    Reading keys[0] and transposing the whole song with it is wrong for 22
+    songs in the pools: Heaven Is a Place on Earth moves to D for exactly the
+    pre-chorus, and twenty Beatles songs change at least once (Lucy in the Sky
+    five times). The chord roots are degrees of the CURRENT key, so a root-1
+    chord means a different letter before and after the change.
+    """
+    cur = ('C', 'major')
+    for k in sorted(keys or [], key=lambda x: x.get('beat', 1)):
+        if k.get('beat', 1) <= beat:
+            cur = (k.get('tonic', 'C'), k.get('scale', 'major'))
+        else:
+            break
+    return cur
+
+
+def changes_within(keys, lo, hi):
+    """key changes strictly inside [lo, hi) — a section that modulates part-way
+    through cannot be transposed with one key, so it needs flagging"""
+    out = []
+    prev = key_at(keys, lo)
+    for k in sorted(keys or [], key=lambda x: x.get('beat', 1)):
+        b = k.get('beat', 1)
+        if lo < b < hi:
+            nxt = (k.get('tonic', 'C'), k.get('scale', 'major'))
+            if nxt != prev: out.append((b, nxt)); prev = nxt
+    return out
 
 
 def bar(tonic, scale, bar_tuple):

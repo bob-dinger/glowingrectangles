@@ -11,7 +11,7 @@ the same picture works whether the song is in E or A flat.
 
 Writes an HTML sheet grouped by song, and prints coverage stats.
 """
-import argparse, collections, glob, html, json, os, re, sys
+import argparse, collections, difflib, glob, html, json, os, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 EXPORT = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
@@ -48,7 +48,14 @@ def chord_label(c, scale='major'):
     lbl = acc + r
     if c.get('type') in (7, '7'): lbl += '7'
     if q == 'd': lbl += '°'
-    if c.get('applied'): lbl += f'/{ROMAN_UP[c["applied"] - 1]}'
+    if c.get('applied'):
+        # Hookpad writes an applied dominant as <applied>/<root>: `applied` is
+        # the NUMERAL and `root` is the TARGET. So root 6 + applied 5 is V/vi,
+        # which in C major sounds as E. This was emitting VI/V — backwards —
+        # and to_nine then resolved it to the wrong pitch.
+        tgt = (ROMAN_UP if QUAL.get(scale, QUAL['major'])[deg-1] in ('M','a')
+               else ROMAN_LO)[deg - 1]
+        return f'{ROMAN_UP[c["applied"] - 1]}/{tgt}'
     return lbl
 
 
@@ -69,6 +76,34 @@ PAO = {
   'E':  ('Robot',     'rowing',    'a rocket',  'a roof'),
 }
 
+def quality(c, scale='major'):
+    """What to print after the letter: 7, maj7, sus4, add9 and so on.
+
+    8.8% of chords in the pools carry something past a plain triad — 324
+    sevenths and 308 suspensions — and the sheet was throwing all of it away,
+    so a Dsus4 read as D. Hookpad's `type: 7` means a diatonic seventh, whose
+    quality follows the degree: I and IV take a major 7th, V a dominant, the
+    minor degrees a minor 7th (already implied by the m in the name).
+    """
+    bits = []
+    root = str(c.get('root', ''))
+    rs = root.lstrip('b#')
+    deg = int(rs) if rs.isdigit() else 0
+    if c.get('type') in (7, '7'):
+        if c.get('applied'): bits.append('7')          # applied = dominant
+        elif deg in (1, 4): bits.append('maj7')
+        elif deg == 7: bits.append('7')                # bVII7
+        else: bits.append('7')                         # m7 via the name's m
+    elif c.get('type') in (11, '11'): bits.append('11')
+    sus = tuple(c.get('suspensions') or ())
+    if sus == (2,): bits.append('sus2')
+    elif sus == (4,): bits.append('sus4')
+    elif sus: bits.append('sus' + ''.join(str(x) for x in sus))
+    for x in (c.get('adds') or []): bits.append(f'add{x}')
+    for x in (c.get('alterations') or []): bits.append(str(x))
+    return ''.join(bits)
+
+
 def is_rest(c):
     """Hookpad stores a rest as root 0 with isRest true. Nothing here checked
     it, so silence was being labelled vii-dim and then rendered '?' — and a
@@ -84,13 +119,21 @@ MINOR_NINE = {'i': 'Am', 'III': 'C', 'iv': 'Dm', 'v': 'Em', 'VI': 'F',
 
 # roman label -> one of the nine.  Sevenths and inversions collapse to the
 # plain chord: the mnemonic carries the progression, not the voicing.
+# an applied dominant is a fifth above its target and always major. Some of
+# those land outside the nine white-note chords (V/iii is B major), so they
+# carry their own tokens which chord_key.actual() resolves against the key.
+APPLIED = {'V/I':'@7', 'V/ii':'@9', 'V/II':'@9', 'V/iii':'@11', 'V/III':'@11',
+           'V/IV':'@0', 'V/V':'@2', 'V/vi':'@4', 'V/VI':'@4', 'V/vii':'@6',
+           'V/bVII':'@5'}
+
+
 def to_nine(lbl, scale='major'):
     L = re.sub(r'7|°|sus\d*|add\d*', '', lbl)
+    if L in APPLIED: return APPLIED[L]
     if scale == 'minor' and '/' not in L and L in MINOR_NINE:
         return MINOR_NINE[L]
-    if '/' in L:                      # applied dominant
-        tgt = L.split('/')[1]
-        return {'V':'D', 'VI':'E', 'IV':'C', 'II':'A#'}.get(tgt)
+    if '/' in L:                      # an applied form we have no token for
+        return None
     return {'I':'C', 'ii':'Dm', 'iii':'Em', 'IV':'F', 'V':'G', 'vi':'Am',
             'bVII':'A#', 'VII':'A#', 'vii':'G',
             'II':'D', 'III':'E',
@@ -108,6 +151,23 @@ def collapse_loop(seq):
     return seq
 
 
+# An applied dominant normalises to `@<semitone above tonic>`, which is not
+# one of the nine images. It is always a MAJOR chord, so read it by pitch
+# class: @7 is the V chord, @2 is V/V and lands on D. The five semitones with
+# no white-note chord have no image and stay unknown.
+APPLIED_NINE = {0: 'C', 2: 'D', 4: 'E', 5: 'F', 7: 'G', 9: 'Am', 10: 'A#'}
+
+
+def nine_of(tok):
+    """Any chord token -> one of the nine PAO keys, or None."""
+    t = (tok or '').split('~')[0]
+    if t in PAO: return t
+    if t.startswith('@'):
+        try: return APPLIED_NINE.get(int(t[1:]) % 12)
+        except ValueError: return None
+    return None
+
+
 def scene(chords):
     """4 chords -> one sentence. More than 4 -> consecutive scenes."""
     out = []
@@ -117,15 +177,32 @@ def scene(chords):
         for slot, ch in enumerate(grp):
             if ch is None:
                 parts.append('???'); continue
-            p, a, o, pl = PAO[ch]
+            k = nine_of(ch)
+            if not k:
+                parts.append('???'); continue
+            p, a, o, pl = PAO[k]
             parts.append([f'A {p.lower()}', a, o, f'in {pl}'][slot])
         out.append(' '.join(parts))
     return ' … then '.join(out)
 
 
 # ------------------------------------------------------------------ matching
-TAGS = ('_o', '_c', '_ly', '_j', '_')
+TAGS = ('_o', '_c', '_ly', '_j', '_z', '_')
+
+# A `-tag` suffix marks a VARIANT that lives beside the song, not a newer copy
+# of it: `-hooktab` is somebody else's chords, `-simple` a reduction, `-150` a
+# tempo re-frame, `-C` a transposition. They are their own songs, so a variant
+# must never be returned for a bare slug -- preferring the newest file outright
+# handed the G50 sheet 100+ hooktab imports in place of the user's own charts.
+VARIANT = re.compile(
+    r'-(?:hooktab|hooktabs|hookpad|theorytab|ug|simple\d*|simplified|right|wrong'
+    r'|double|half|mixolydian|dorian|lydian|phrygian|aeolian|alt\d*|v\d+'
+    r'|\d{2,3}|[A-Ga-g][b#]?)$')
+
+
 def norm(s): return re.sub(r'[^a-z0-9]', '', (s or '').lower())
+
+
 def strip_tags(stem):
     s, ch = stem.strip('_'), True
     while ch:
@@ -137,18 +214,78 @@ def strip_tags(stem):
     return s
 
 
+def split_variant(stem):
+    """('bob dylan_tangled up in blue', 'hooktab') -- base name + variant tag."""
+    s = strip_tags(stem)
+    m = VARIANT.search(s)
+    return (s[:m.start()], s[m.start() + 1:]) if m else (s, '')
+
+
 def build_index():
+    """base key -> [(path, variant_tag), ...]"""
     idx = {}
     for p in glob.glob(os.path.join(EXPORT, '*.json')):
-        idx.setdefault(norm(strip_tags(os.path.splitext(os.path.basename(p))[0])), []).append(p)
+        base, tag = split_variant(os.path.splitext(os.path.basename(p))[0])
+        idx.setdefault(norm(base), []).append((p, tag))
     return idx
 
 
+def _tokens(s):
+    # Apostrophes have to go BEFORE splitting, or "won't" tokenises as
+    # {won, t}. A pool slug spells the same apostrophe as a hyphen -- `won-t`
+    # -- which survives that, so one-letter tokens are dropped as contraction
+    # debris. "I" and "A" go too, which is what we want: the retitle from
+    # "Won't Back Down" to "I Won't Back Down" should still match.
+    s = strip_tags(s).lower().replace("'", '').replace('\u2019', '')
+    return set(t for t in re.split(r'[^a-z0-9]+', s) if len(t) > 1)
+
+
 def find(slug, idx):
-    k = norm(strip_tags(slug))
-    if k in idx: return idx[k][0]
-    hits = [p for kk, ps in idx.items() if k and (k in kk or kk in k) for p in ps]
-    return hits[0] if hits else None
+    """Resolve a pool slug to a file.
+
+    Three traps, all of which silently served the wrong chords:
+
+    1. The export accumulates duplicates -- a rename in Hookpad writes a new
+       file beside the old one -- so among equals the newest wins.
+    2. `-hooktab` and friends are variants, not updates (see VARIANT); a bare
+       slug must resolve to the base song even when a variant is newer.
+    3. A retitle can add or drop a word ("Won't Back Down" -> "I Won't Back
+       Down"), which no substring test catches. Fall back to token overlap.
+    """
+    want_base, want_tag = split_variant(strip_tags(slug))
+    k = norm(want_base)
+    cands = list(idx.get(k) or [])
+
+    if not cands:                                   # substring, then tokens
+        cands = [c for kk, cs in idx.items()
+                 if k and (k in kk or kk in k) for c in cs]
+    if not cands:
+        # Token overlap alone says "Won't Back Down" and "I Won't Back Down"
+        # are 0.8 alike -- but so are plenty of genuinely different titles, so
+        # the squashed strings have to be close too.
+        wt, ws = _tokens(slug), norm(strip_tags(slug).replace("'", ''))
+        best, score = [], 0.0
+        for kk, cs in idx.items():
+            for p, tag in cs:
+                st = os.path.splitext(os.path.basename(p))[0]
+                ft, fs = _tokens(st), norm(strip_tags(st).replace("'", ''))
+                if not wt or not ft: continue
+                ov = len(wt & ft) / max(len(wt), len(ft))
+                sim = difflib.SequenceMatcher(None, ws, fs).ratio()
+                # A perfect token match with a poor string ratio means the
+                # slug has artist and title the other way round
+                # ('celebrity-skin_hole'), which is still the same song.
+                if ov < 1.0 and (ov < 0.7 or sim < 0.85): continue
+                s = ov * sim
+                if s > score: best, score = [(p, tag)], s
+                elif s == score and score: best.append((p, tag))
+        cands = best
+    if not cands: return None
+
+    exact = [c for c in cands if c[1] == want_tag]
+    base  = [c for c in cands if not c[1]]
+    pick  = exact or base or cands
+    return max(pick, key=lambda c: os.path.getmtime(c[0]))[0]
 
 
 def sections_of(path):
