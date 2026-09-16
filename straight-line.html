@@ -5,52 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>There Are No Straight Lines</title>
 <style>
-  :root{--bg:#0b0d12;--ink:#e8e9ee;--mute:#868da0;--dim:#5c6376;--rule:#1e2230;
-        --line:#5b8ce8;--ball:#f0b429}
+  :root{--bg:#0b0d12;--ink:#e8e9ee;--mute:#868da0;--dim:#5c6376;--rule:#1e2230;--ball:#f0b429}
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--ink);
-       font:16px/1.65 ui-serif,Georgia,'Times New Roman',serif;
-       -webkit-font-smoothing:antialiased}
+       font:16px/1.65 ui-serif,Georgia,'Times New Roman',serif;-webkit-font-smoothing:antialiased}
   .sans{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-  .wrap{max-width:760px;margin:0 auto;padding:76px 26px 120px}
+  .wrap{max-width:780px;margin:0 auto;padding:76px 26px 120px}
   h1{font-size:40px;line-height:1.1;letter-spacing:-.02em;font-weight:600;margin-bottom:20px}
   .standfirst{font-size:19px;color:#b9becd;line-height:1.6;margin-bottom:14px}
   .standfirst b{color:var(--ink);font-weight:600}
   .byline{font-family:-apple-system,sans-serif;font-size:12px;color:var(--dim);
           letter-spacing:.04em;text-transform:uppercase;margin-bottom:54px;
           border-bottom:1px solid var(--rule);padding-bottom:20px}
-  section{margin:0 0 76px}
+  section{margin:0 0 84px}
   h2{font-size:26px;letter-spacing:-.015em;font-weight:600;margin-bottom:8px}
   .chip{display:inline-block;font-family:-apple-system,sans-serif;font-size:9.5px;
         letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:99px;
         border:1px solid currentColor;margin-bottom:14px}
-  p{color:#b9becd;margin-bottom:20px}
-  .axes{font-family:-apple-system,sans-serif;font-size:11.5px;color:var(--dim);
-        margin-bottom:9px;letter-spacing:.03em}
+  p{color:#b9becd;margin-bottom:22px}
 
-  /* the two rows: same numbers, two ways of holding them */
-  .row{position:relative;border:1px solid var(--rule);border-radius:9px;
-       background:#0e111884;margin-bottom:10px;overflow:hidden}
-  .row .tag{position:absolute;top:9px;left:12px;font-family:-apple-system,sans-serif;
-            font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);
-            z-index:2}
-  .row.flat{height:150px}
-  .row.ball{height:200px}
-  .row canvas{display:block;width:100%;height:100%}
-  .readout{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--mute);
-           display:flex;justify-content:space-between;margin-bottom:26px}
-  .readout b{color:var(--ball);font-weight:600}
+  /* ROW ONE: the figure as a book would print it. Paper, not screen. */
+  .fig{background:#f4f1e8;border-radius:4px;padding:16px 18px 12px;margin-bottom:6px;
+       box-shadow:0 1px 0 #ffffff18}
+  .fig canvas{display:block;width:100%;height:158px}
+  .figcap{font-family:-apple-system,sans-serif;font-size:11px;color:#6d6656;
+          margin-top:6px;letter-spacing:.01em}
+  .figcap b{color:#2a2620;font-weight:600}
+  .rowlabel{font-family:-apple-system,sans-serif;font-size:10px;letter-spacing:.08em;
+            text-transform:uppercase;color:var(--dim);margin:0 0 7px}
+
+  /* ROW TWO: standing inside it */
+  .inside{position:relative;height:290px;border-radius:9px;overflow:hidden;
+          border:1px solid var(--rule);margin-bottom:8px}
+  .inside .hud{position:absolute;left:14px;bottom:12px;right:14px;display:flex;
+               justify-content:space-between;align-items:flex-end;
+               font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#cfd4e0;
+               text-shadow:0 1px 3px #000;z-index:2;pointer-events:none}
+  .inside .big{font-size:26px;font-weight:600;color:var(--ball);line-height:1}
+  .scrub{width:100%;accent-color:var(--ball);margin-bottom:8px}
   .src{font-family:-apple-system,sans-serif;font-size:11.5px;color:var(--dim);
        line-height:1.55;border-left:2px solid var(--rule);padding-left:13px}
-  .controls{position:fixed;bottom:22px;right:22px;
-            display:flex;align-items:center;gap:14px;background:#141824ee;
-            border:1px solid var(--rule);border-radius:99px;padding:9px 18px;
-            font-family:-apple-system,sans-serif;font-size:12.5px;color:var(--mute);
-            backdrop-filter:blur(8px);z-index:20}
-  .controls button{background:none;border:none;color:var(--ink);cursor:pointer;
-                   font-size:13px;padding:0}
-  .controls input{width:190px;accent-color:var(--ball)}
-  #gl{position:fixed;inset:0;pointer-events:none;z-index:1}
+  #gl{position:fixed;inset:0;pointer-events:none;z-index:0}
+  .wrap{position:relative;z-index:1}
 </style>
 </head>
 <body>
@@ -58,23 +54,17 @@
 <div class="wrap">
   <h1>There Are No Straight Lines</h1>
   <div class="standfirst">
-    You were taught to put a quantity on an x-y graph and extend it with a ruler.
-    A line drawn that way has no end &mdash; it cannot have one, because a line is
-    the one shape with nothing to run out of.
+    A textbook prints a quantity as a line and hands you the whole of it at once,
+    seen from outside, already finished. Nobody has ever experienced a quantity
+    that way.
   </div>
   <div class="standfirst">
-    <b>A sphere is always at some size.</b> Big or small, it is somewhere, and it can
-    stop, and it can come back. Here is the same set of numbers held both ways:
-    once as the line you were taught to draw, and once as a thing with a size.
+    <b>You live inside the thing while it is changing.</b> So each figure here is
+    printed twice: once the way a book would set it, and once from the inside of a
+    world that grows and shrinks year by year around whoever is standing in it.
   </div>
   <div class="byline sans">after Hans Rosling, <i>Factfulness</i> &mdash; the straight line instinct</div>
   <div id="sections"></div>
-</div>
-
-<div class="controls">
-  <button id="play">&#10073;&#10073;</button>
-  <input type="range" id="scrub" min="0" max="1000" value="0">
-  <span id="pos" class="sans" style="min-width:74px;text-align:right"></span>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -161,11 +151,6 @@ const STATUS = {
   interpreted: ['shape fitted on later', '#c2564f'],
 };
 
-/* One global playhead. Every section runs on the same 0..1, so the page reads
-   downward as one motion rather than six unrelated loops. */
-let t = 0, playing = true, last = performance.now();
-
-/* value at playhead position, linearly between the given points */
 function valueAt(d, u){
   const xs = d.pts.map(p=>p[0]), x0 = xs[0], x1 = xs[xs.length-1];
   const x = x0 + (x1-x0)*u;
@@ -179,61 +164,86 @@ function valueAt(d, u){
   return [x, d.pts[d.pts.length-1][1]];
 }
 
-/* ---------------- row one: the line you were taught ---------------- */
-function drawFlat(cv, d, u){
+/* ---------- ROW ONE: the printed figure ----------
+   Static on purpose. This is the artefact being argued with -- the whole
+   quantity, finished, seen from outside, the way it appears on a page. No
+   playhead, because a book has no playhead. */
+function drawFigure(cv, d){
+  const S = Math.min(devicePixelRatio, 2);
+  const b = cv.getBoundingClientRect();
+  cv.width = b.width*S; cv.height = b.height*S;
   const g = cv.getContext('2d');
-  const W = cv.width, H = cv.height, pad = 26, padT = 34;
-  g.clearRect(0,0,W,H);
+  g.scale(S,S);
+  const W = b.width, H = b.height, L = 44, R = 12, T = 12, B = 26;
+  g.fillStyle = '#f4f1e8'; g.fillRect(0,0,W,H);
+
   const xs = d.pts.map(p=>p[0]), vs = d.pts.map(p=>p[1]);
-  const x0=Math.min(...xs), x1=Math.max(...xs), vMax=Math.max(...vs)*1.14;
-  const px = x => pad + (W-2*pad)*(x-x0)/(x1-x0);
-  const py = v => H-pad - (H-pad-padT)*(v/vMax);
+  const x0=Math.min(...xs), x1=Math.max(...xs), vMax=Math.max(...vs)*1.1;
+  const px = x => L + (W-L-R)*(x-x0)/(x1-x0);
+  const py = v => H-B - (H-B-T)*(v/vMax);
 
-  g.strokeStyle='#1e2230'; g.lineWidth=1;
-  g.beginPath(); g.moveTo(pad,H-pad); g.lineTo(W-pad,H-pad); g.stroke();
+  g.strokeStyle='#c9c2b2'; g.lineWidth=1;
+  for (let i=0;i<=4;i++){ const y=T+(H-B-T)*i/4;
+    g.beginPath(); g.moveTo(L,y); g.lineTo(W-R,y); g.stroke(); }
+  g.strokeStyle='#4a4438'; g.lineWidth=1.2;
+  g.beginPath(); g.moveTo(L,T); g.lineTo(L,H-B); g.lineTo(W-R,H-B); g.stroke();
 
-  g.strokeStyle='#5b8ce8'; g.lineWidth=2; g.beginPath();
+  g.fillStyle='#6d6656'; g.font='10px -apple-system,sans-serif';
+  g.textAlign='right';
+  for (let i=0;i<=4;i++){ const v=vMax*i/4;
+    g.fillText(v>=100?Math.round(v):v.toFixed(1), L-6, py(v)+3); }
+  g.textAlign='center';
+  [x0, x0+(x1-x0)/2, x1].forEach(x =>
+    g.fillText(Math.abs(x)>=100?Math.round(x):(x%1?x.toFixed(2):x), px(x), H-B+14));
+
+  g.strokeStyle='#23201a'; g.lineWidth=1.9; g.beginPath();
   d.pts.forEach(([x,v],i)=> i?g.lineTo(px(x),py(v)):g.moveTo(px(x),py(v)));
   g.stroke();
-
-  const [x,v] = valueAt(d,u);
-  g.strokeStyle='#2b3245'; g.setLineDash([2,3]); g.beginPath();
-  g.moveTo(px(x),H-pad); g.lineTo(px(x),py(v)); g.stroke(); g.setLineDash([]);
-  g.fillStyle='#fff'; g.beginPath(); g.arc(px(x),py(v),4,0,7); g.fill();
+  g.fillStyle='#23201a';
+  d.pts.forEach(([x,v])=>{ g.beginPath(); g.arc(px(x),py(v),1.9,0,7); g.fill(); });
 }
 
-/* ---------------- row two: the same number, as a size ----------------
-   Radius goes as the square root of the value, so the AREA is proportional
-   to it. Scaling radius directly would be a lie told in the reader's
-   favour -- it would make every change look bigger than it is.          */
+/* ---------- ROW TWO: standing inside it ----------
+   The catch worth knowing: from the centre of a featureless sphere, making the
+   sphere bigger changes NOTHING you can see. Every direction subtends the same
+   angle it did before. Size is invisible from the inside unless the surface is
+   marked in units that do not scale with it.
+
+   So the interior is tiled in squares of a FIXED size. A bigger world is more
+   of them, each one smaller in your view; a shrinking world is fewer, larger
+   squares closing in. Tiles across go as the square root of the value, so the
+   surface AREA is what tracks the quantity. Which is the honest version of
+   growth from inside: you never see the whole thing, you see how finely the
+   wall is divided. */
+function gridTexture(){
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = '#0e1219'; g.fillRect(0,0,128,128);
+  g.strokeStyle = '#f0b429'; g.lineWidth = 6; g.globalAlpha = .5;
+  g.strokeRect(0,0,128,128);
+  g.globalAlpha = .13; g.fillStyle = '#f0b429'; g.fillRect(6,6,116,116);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
+
 const renderer = new THREE.WebGLRenderer({canvas:document.getElementById('gl'),
                                           antialias:true, alpha:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setScissorTest(true);
 
+const tex = gridTexture();
 const scene = new THREE.Scene();
-const ball = new THREE.Mesh(
-  new THREE.SphereGeometry(1, 48, 32),
-  new THREE.MeshStandardMaterial({color:0xf0b429, roughness:.52, metalness:.08}));
-const halo = new THREE.LineSegments(
-  new THREE.WireframeGeometry(new THREE.SphereGeometry(1, 22, 14)),
-  new THREE.LineBasicMaterial({color:0xffd070, transparent:true, opacity:.14}));
-scene.add(ball); scene.add(halo);
-scene.add(new THREE.AmbientLight(0xffffff, .42));
-const key = new THREE.DirectionalLight(0xffffff, 1.05); key.position.set(-2,2.4,3);
-scene.add(key);
-const rim = new THREE.DirectionalLight(0x5b8ce8, .5); rim.position.set(3,-1.5,-2);
-scene.add(rim);
-const cam = new THREE.PerspectiveCamera(38, 1, .1, 100);
-cam.position.set(0,0,9);
+const shell = new THREE.Mesh(
+  new THREE.SphereGeometry(10, 64, 48),
+  new THREE.MeshBasicMaterial({map:tex, side:THREE.BackSide}));
+scene.add(shell);
+const cam = new THREE.PerspectiveCamera(74, 1, .1, 60);
+cam.position.set(0,0,0);                    // you are at the centre
 
-/* the ghost of every size it has already been, so the shape of the run is
-   still legible when the ball is small */
-const trail = new THREE.Group(); scene.add(trail);
-
-function renderBall(el, d, u, spin){
+function renderInside(el, d, u, look){
   const r = el.getBoundingClientRect();
-  if (r.bottom < 0 || r.top > innerHeight) return;          // offscreen, skip
+  if (r.bottom < -40 || r.top > innerHeight + 40) return;
   const y = innerHeight - r.bottom;
   renderer.setViewport(r.left, y, r.width, r.height);
   renderer.setScissor(r.left, y, r.width, r.height);
@@ -241,86 +251,69 @@ function renderBall(el, d, u, spin){
 
   const vs = d.pts.map(p=>p[1]), vMax = Math.max(...vs);
   const [, v] = valueAt(d, u);
-  const rad = 2.35 * Math.sqrt(Math.max(v,0)/vMax);
-  ball.scale.setScalar(Math.max(rad, 0.001));
-  halo.scale.setScalar(Math.max(rad, 0.001)*1.015);
-  ball.rotation.y = halo.rotation.y = spin;
-  ball.rotation.x = halo.rotation.x = .32;
+  const across = 3 + 26 * Math.sqrt(Math.max(v,0)/vMax);
+  tex.repeat.set(Math.round(across*2), Math.round(across));
 
-  trail.clear();
-  for (let i=0;i<=26;i++){
-    const uu = i/26; if (uu > u) break;
-    const [, vv] = valueAt(d, uu);
-    const rr = 2.35*Math.sqrt(Math.max(vv,0)/vMax);
-    const ring = new THREE.LineLoop(
-      new THREE.BufferGeometry().setFromPoints(
-        Array.from({length:60},(_,k)=>{ const a=k/60*Math.PI*2;
-          return new THREE.Vector3(Math.cos(a)*rr, Math.sin(a)*rr, 0); })),
-      new THREE.LineBasicMaterial({color:0xf0b429, transparent:true,
-                                   opacity:.055 + .05*(uu/Math.max(u,.001))}));
-    trail.add(ring);
-  }
+  cam.rotation.set(0, look, 0);
   renderer.render(scene, cam);
 }
 
-/* ---------------- build the page ---------------- */
+/* ---------- page ---------- */
 const host = document.getElementById('sections');
 const rows = [];
-Object.entries(DATA).forEach(([k,d])=>{
+const fmt = n => Math.abs(n) >= 100 ? String(Math.round(n))
+              : Math.abs(n) >= 10 ? n.toFixed(1) : n.toFixed(2);
+
+Object.entries(DATA).forEach(([k,d],idx)=>{
   const [stext, scol] = STATUS[d.status];
   const sec = document.createElement('section');
   sec.innerHTML = `
     <h2>${d.label}</h2>
     <div class="chip sans" style="color:${scol}">${stext}</div>
     <p>${d.note}</p>
-    <div class="axes sans">${d.x} &nbsp;&rarr;&nbsp; ${d.y}</div>
-    <div class="row flat"><div class="tag">as a line</div><canvas></canvas></div>
-    <div class="row ball"><div class="tag">as a size</div></div>
-    <div class="readout"><span>${d.x}: <b class="rx"></b></span>
-                         <span>${d.y}: <b class="rv"></b></span></div>
+
+    <div class="rowlabel">as a textbook prints it</div>
+    <div class="fig"><canvas></canvas>
+      <div class="figcap"><b>Fig. ${idx+1}.</b> ${d.y} against ${d.x}.</div>
+    </div>
+
+    <div class="rowlabel" style="margin-top:26px">as it is from inside</div>
+    <div class="inside">
+      <div class="hud">
+        <span>${d.x}<br><span class="big rx"></span></span>
+        <span style="text-align:right">${d.y}<br><span class="big rv"></span></span>
+      </div>
+    </div>
+    <input type="range" class="scrub" min="0" max="1000" value="0">
     <div class="src sans">${d.source}</div>`;
   host.appendChild(sec);
-  rows.push({d, flat: sec.querySelector('.row.flat canvas'),
-             ball: sec.querySelector('.row.ball'),
-             rx: sec.querySelector('.rx'), rv: sec.querySelector('.rv')});
+  const row = {d, fig: sec.querySelector('.fig canvas'),
+               inside: sec.querySelector('.inside'),
+               scrub: sec.querySelector('.scrub'),
+               rx: sec.querySelector('.rx'), rv: sec.querySelector('.rv'),
+               u: 0, auto: true};
+  row.scrub.addEventListener('input', e => { row.u = +e.target.value/1000; row.auto = false; });
+  rows.push(row);
 });
 
-function sizeCanvases(){
+function layout(){
   renderer.setSize(innerWidth, innerHeight, false);
-  rows.forEach(r=>{
-    const b = r.flat.parentElement.getBoundingClientRect();
-    r.flat.width = b.width * Math.min(devicePixelRatio,2);
-    r.flat.height = b.height * Math.min(devicePixelRatio,2);
-  });
+  rows.forEach(r => drawFigure(r.fig, r.d));
 }
-addEventListener('resize', sizeCanvases);
+addEventListener('resize', layout);
 
-const fmt = n => Math.abs(n) >= 100 ? Math.round(n)
-              : Math.abs(n) >= 10  ? n.toFixed(1) : n.toFixed(2);
-
+let last = performance.now();
 function frame(now){
   const dt = Math.min(now-last, 60); last = now;
-  if (playing){ t = (t + dt/11000) % 1; document.getElementById('scrub').value = t*1000; }
   rows.forEach(r=>{
-    drawFlat(r.flat, r.d, t);
-    renderBall(r.ball, r.d, t, now/2600);
-    const [x,v] = valueAt(r.d, t);
+    if (r.auto){ r.u = (r.u + dt/16000) % 1; r.scrub.value = r.u*1000; }
+    const [x,v] = valueAt(r.d, r.u);
     r.rx.textContent = fmt(x); r.rv.textContent = fmt(v);
+    renderInside(r.inside, r.d, r.u, now/9000);
   });
-  document.getElementById('pos').textContent = Math.round(t*100)+'% through';
   requestAnimationFrame(frame);
 }
-
-document.getElementById('play').onclick = e => {
-  playing = !playing;
-  e.target.innerHTML = playing ? '&#10073;&#10073;' : '&#9654;';
-};
-document.getElementById('scrub').addEventListener('input', e => {
-  t = +e.target.value/1000; playing = false;
-  document.getElementById('play').innerHTML = '&#9654;';
-});
-
-sizeCanvases(); requestAnimationFrame(frame);
+layout(); requestAnimationFrame(frame);
 </script>
 </body>
 </html>
