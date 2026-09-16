@@ -40,6 +40,9 @@
   .gap{font-size:13.5px;color:var(--mute);margin-bottom:9px;text-shadow:0 1px 6px #000}
   .gap b{color:var(--ink);font-weight:650}
   input[type=range]{width:100%;accent-color:var(--demand)}
+  .mode{background:#1a1e29cc;border:1px solid var(--rule);color:#b9bfcf;padding:6px 12px;
+        border-radius:6px;font-size:12px;cursor:pointer}
+  .mode.on{background:#222b3dee;border-color:#3d4a66;color:var(--ink);font-weight:550}
 </style>
 </head>
 <body>
@@ -47,21 +50,20 @@
 <aside>
   <h1>Ten Thousand A Week</h1>
   <div class="lede">
-    You are standing inside the Segway. Not the machine &mdash; the number of them.
-    <b>Every panel on the wall is a thousand units.</b> The near wall is what people
-    actually bought. The fine mesh behind it is the world that was promised.
+    Two worlds, drawn at the same scale. <b>Every panel on the surface is a thousand
+    Segways</b> &mdash; so a bigger world is not a bigger drawing, it is more panels,
+    and you can count them.
   </div>
   <div class="lede">
-    From in here you cannot see the size of anything directly &mdash; a bigger world
-    subtends exactly the same angle. You can only see <b>how finely the wall is
-    divided.</b> Which is the position everybody was actually in.
+    Because the panels are a fixed size, the surface area <i>is</i> the count. Radius
+    follows as the square root of it &mdash; nothing here is scaled for effect.
   </div>
 
   <div class="key">
     <div><span class="sw" style="background:#f0b429"></span>
-      <span>what was bought &mdash; the near wall, coarse panels</span></div>
+      <span>what was bought</span></div>
     <div><span class="sw" style="background:#5b8ce8"></span>
-      <span>what was promised &mdash; the far mesh, ten thousand a week</span></div>
+      <span>what was promised &mdash; ten thousand a week</span></div>
   </div>
 
   <div class="money">
@@ -90,14 +92,18 @@
   <canvas id="gl"></canvas>
   <div class="hud">
     <div class="counts">
-      <div class="ct"><div class="t" style="color:var(--demand)">bought</div>
+      <div class="ct"><div class="t" style="color:var(--demand)" id="lD">bought</div>
         <div class="n" id="nD" style="color:var(--demand)">0</div>
         <div class="p" id="pD">0 panels</div></div>
-      <div class="ct"><div class="t" style="color:var(--belief)">promised</div>
+      <div class="ct"><div class="t" style="color:var(--belief)" id="lB">promised</div>
         <div class="n" id="nB" style="color:var(--belief)">0</div>
         <div class="p" id="pB">0 panels</div></div>
     </div>
     <div class="bottom">
+      <div style="margin-bottom:10px;display:flex;gap:6px">
+        <button class="mode on" data-m="cum">all of it so far</button>
+        <button class="mode" data-m="yr">that year alone</button>
+      </div>
       <div class="year"><span class="y" id="yr">2001</span><span class="ev" id="ev"></span></div>
       <div class="gap" id="gap"></div>
       <input type="range" id="scrub" min="2001" max="2020" step="1" value="2001">
@@ -109,126 +115,132 @@
 <script>
 const SOLD = [[2001,0],[2002,1000],[2003,6000],[2006,23500],[2007,30000],
               [2009,50000],[2020,140000]];
-const PROMISE_PER_YEAR = 520000;          // ten thousand a week
-const PER_PANEL = 1000;                   // one panel on the wall = a thousand machines
+const PROMISE_PER_YEAR = 520000;
+const PER_PANEL = 1000;
 
 const EVENTS = {
   2001:'December: unveiled after a year of rumours. Nothing sold yet.',
   2002:'First deliveries, about $5,000 each.',
   2003:'6,000 sold. Six panels.',
   2006:'September: every unit ever sold is recalled for a software fault.',
-  2007:'30,000. The promise for that one year was 520,000.',
+  2007:'30,000 in total. The promise for that one year alone was 520,000.',
   2009:'Past 50,000 shipped, eight years in.',
   2015:'Ninebot, a Chinese competitor, buys Segway.',
   2020:'15 July: production ends. About 140,000, across nineteen years.',
 };
 
 const lerp=(a,b,k)=>a+(b-a)*k;
-function sold(y){
+function cum(y){
   for (let i=0;i<SOLD.length-1;i++){
     const [ax,av]=SOLD[i],[bx,bv]=SOLD[i+1];
     if (y>=ax && y<=bx) return lerp(av,bv,(y-ax)/(bx-ax));
   }
   return SOLD[SOLD.length-1][1];
 }
-const promised = y => Math.max(0,(y-2001)) * PROMISE_PER_YEAR;
+/* Only the milestones are known, so a single year's figure is the average
+   across whichever stretch it falls in. Said plainly rather than smoothed. */
+const perYear = y => y<=2001 ? 0 : cum(y)-cum(y-1);
 
-/* A wall divided into panels of a FIXED size. That is the only way size shows
-   from the inside: scaling a featureless sphere around its own centre changes
-   nothing you can see, because every direction still subtends the same angle.
-   So the count has to live in the tiling, not the radius. */
-/* A wall divided into panels of a FIXED size. That is the only way size shows
-   from the inside: scaling a featureless sphere around its own centre changes
-   nothing you can see, because every direction still subtends the same angle.
-   So the count lives in the tiling, not the radius.
+let mode='cum', year=2001;
+const bought   = () => mode==='cum' ? cum(year) : perYear(year);
+const promised = () => mode==='cum' ? Math.max(0,(year-2001))*PROMISE_PER_YEAR
+                                    : (year>=2002 ? PROMISE_PER_YEAR : 0);
 
-   Drawn as real meridians and parallels rather than a wrapped texture. A
-   repeating texture cannot do this job: the border is a fixed fraction of a
-   cell, so at six panels the line became a band wider than a door, and
-   mipmapping smeared it further. Geometry stays one pixel wide at any density,
-   and it is only rebuilt when the year changes. */
 const cv=document.getElementById('gl');
 const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 const scene=new THREE.Scene();
+scene.add(new THREE.AmbientLight(0xffffff,.46));
+const k1=new THREE.DirectionalLight(0xffffff,1.0); k1.position.set(-3,3,4); scene.add(k1);
+const k2=new THREE.DirectionalLight(0x4a6fa5,.5);  k2.position.set(4,-2,-2); scene.add(k2);
+const cam=new THREE.PerspectiveCamera(38,1,.1,3000);
 
-function wall(radius, cols, rows, colour, opacity){
-  const g = new THREE.Group();
-  const mat = new THREE.LineBasicMaterial({color:colour, transparent:true,
-                                           opacity:opacity, depthWrite:false});
-  const RES = 72;
-  for (let i=0;i<cols;i++){                      // meridians
-    const lon = i/cols * Math.PI*2, pts=[];
-    for (let k=0;k<=RES;k++){
-      const lat = -Math.PI/2 + Math.PI*k/RES;
-      pts.push(new THREE.Vector3(radius*Math.cos(lat)*Math.cos(lon),
-                                 radius*Math.sin(lat),
-                                 radius*Math.cos(lat)*Math.sin(lon)));
-    }
-    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
+/* panels of a fixed size mean the surface AREA is the count, and the radius
+   falls out of that as its square root. Nothing is scaled for effect. */
+function gridOf(panels){
+  const cols=Math.max(2,Math.round(Math.sqrt(2*Math.max(panels,1))));
+  const rows=Math.max(1,Math.round(Math.max(panels,1)/cols));
+  return [cols,rows];
+}
+const RMAX = Math.sqrt(PROMISE_PER_YEAR*19/PER_PANEL);   // the biggest thing on the board
+function radiusFor(units){ return 15.5 * Math.sqrt(Math.max(units,0)/PER_PANEL) / RMAX; }
+
+function makeWorld(colour, lineColour){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.SphereGeometry(1,64,44),
+    new THREE.MeshStandardMaterial({color:colour, roughness:.62, metalness:.05}));
+  g.add(body); g.userData.body=body;
+  g.userData.lineColour=lineColour; g.userData.lines=null;
+  scene.add(g); return g;
+}
+function setPanels(g, panels, radius){
+  if (g.userData.lines){ g.remove(g.userData.lines);
+    g.userData.lines.traverse(o=>o.geometry&&o.geometry.dispose()); }
+  const [cols,rows]=gridOf(panels);
+  const grp=new THREE.Group();
+  const mat=new THREE.LineBasicMaterial({color:g.userData.lineColour,
+                                         transparent:true, opacity:.5});
+  const R=1.004, RES=64;
+  for(let i=0;i<cols;i++){
+    const lon=i/cols*Math.PI*2, pts=[];
+    for(let k=0;k<=RES;k++){ const lat=-Math.PI/2+Math.PI*k/RES;
+      pts.push(new THREE.Vector3(R*Math.cos(lat)*Math.cos(lon),R*Math.sin(lat),
+                                 R*Math.cos(lat)*Math.sin(lon))); }
+    grp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),mat));
   }
-  for (let j=1;j<rows;j++){                      // parallels
-    const lat = -Math.PI/2 + Math.PI*j/rows, pts=[];
-    const r = radius*Math.cos(lat), y = radius*Math.sin(lat);
-    for (let k=0;k<=RES*2;k++){
-      const lon = k/(RES*2)*Math.PI*2;
-      pts.push(new THREE.Vector3(r*Math.cos(lon), y, r*Math.sin(lon)));
-    }
-    g.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), mat));
+  for(let j=1;j<rows;j++){
+    const lat=-Math.PI/2+Math.PI*j/rows, pts=[];
+    const rr=R*Math.cos(lat), yy=R*Math.sin(lat);
+    for(let k=0;k<=RES*2;k++){ const lon=k/(RES*2)*Math.PI*2;
+      pts.push(new THREE.Vector3(rr*Math.cos(lon),yy,rr*Math.sin(lon))); }
+    grp.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),mat));
   }
-  return g;
+  g.add(grp); g.userData.lines=grp;
+  g.scale.setScalar(Math.max(radius,0.0001));
+  g.visible = panels > 0;
 }
+const worldD=makeWorld(0xd99b1f,0xffe6a8);
+const worldB=makeWorld(0x3f6bb5,0xbcd4ff);
 
-let wallD=null, wallB=null;
-function rebuildWalls(dCols,dRows,bCols,bRows){
-  [wallD,wallB].forEach(w=>{ if(w){ scene.remove(w);
-    w.traverse(o=>o.geometry&&o.geometry.dispose()); } });
-  wallB = wall(30, bCols, bRows, 0x5b8ce8, .42);
-  wallD = wall(14, dCols, dRows, 0xf0b429, .95);
-  scene.add(wallB); scene.add(wallD);
-}
-
-const cam=new THREE.PerspectiveCamera(76,1,.1,120);
-
-function resize(){
-  const w=cv.clientWidth,h=cv.clientHeight;
-  renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix();
-}
+function resize(){ const w=cv.clientWidth,h=cv.clientHeight;
+  renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix(); }
 new ResizeObserver(resize).observe(cv);
 
-/* panels -> a grid that wraps the sphere twice as wide as it is tall */
-function repeatFor(units){
-  const panels = Math.max(units/PER_PANEL, 0);
-  const a = Math.sqrt(Math.max(panels,1)/2);
-  return [Math.max(1,Math.round(a*2)), Math.max(1,Math.round(a))];
-}
-
-let year=2001;
 const fmt=n=>Math.round(n).toLocaleString();
 function update(){
-  const d=sold(year), b=promised(year);
-  const [dw,dh]=repeatFor(d), [bw,bh]=repeatFor(b);
-  rebuildWalls(dw,dh,bw,bh);
-  wallD.visible = d > 0;
+  const d=bought(), b=promised();
+  const rD=radiusFor(d), rB=radiusFor(b);
+  setPanels(worldD, d/PER_PANEL, rD);
+  setPanels(worldB, b/PER_PANEL, rB);
+  worldD.position.set(-(rB + rD + 2.2)*0 - 9.5, 0, 0);
+  worldB.position.set(9.5, 0, 0);
 
   document.getElementById('nD').textContent=fmt(d);
   document.getElementById('nB').textContent=fmt(b);
   document.getElementById('pD').textContent=`${fmt(d/PER_PANEL)} panels`;
   document.getElementById('pB').textContent=`${fmt(b/PER_PANEL)} panels`;
+  document.getElementById('lD').textContent = mode==='cum' ? 'bought, all of it' : 'bought that year';
+  document.getElementById('lB').textContent = mode==='cum' ? 'promised, all of it' : 'promised that year';
   document.getElementById('yr').textContent=year;
   let ev=''; for(const y of Object.keys(EVENTS).map(Number).sort((a,b)=>a-b)) if(y<=year) ev=EVENTS[y];
   document.getElementById('ev').textContent=ev;
   document.getElementById('gap').innerHTML = d>0
-    ? `The far wall is divided <b>${(b/d).toFixed(b/d>=10?0:1)}&times;</b> more finely than the near one.`
-    : `Nothing has been sold. The promised world is already ${fmt(b/PER_PANEL)} panels wide.`;
+    ? `The promised world has <b>${(b/d).toFixed(b/d>=10?0:1)}&times;</b> the surface of the real one.`
+    : `Nothing sold yet. The promised world is already ${fmt(b/PER_PANEL)} panels.`;
 }
 
 function frame(now){
-  cam.rotation.set(Math.sin(now/13000)*.10, now/17000, 0);
+  [worldD,worldB].forEach(g=>{ g.rotation.y=now/9000; g.rotation.x=.34; });
+  cam.position.set(0,0,46); cam.lookAt(0,0,0);
   renderer.render(scene,cam);
   requestAnimationFrame(frame);
 }
 document.getElementById('scrub').addEventListener('input',e=>{year=+e.target.value;update();});
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{
+  mode=b.dataset.m;
+  document.querySelectorAll('.mode').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); update();
+});
 resize(); update(); requestAnimationFrame(frame);
 </script>
 </body>
