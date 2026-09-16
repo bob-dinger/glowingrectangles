@@ -1,441 +1,302 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Straight Line Instinct</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #0a0a0f;
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-        }
-        .container {
-            display: flex;
-            min-height: 100vh;
-        }
-        .main {
-            flex: 1;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .sidebar {
-            width: 350px;
-            background: #111118;
-            border-left: 1px solid #222;
-            padding: 40px 30px;
-            overflow-y: auto;
-        }
-
-        h1 { font-size: 28px; margin-bottom: 8px; }
-        .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; text-align: center; max-width: 500px; }
-
-        .chart-container {
-            position: relative;
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .chart-title {
-            font-size: 14px;
-            color: #888;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        svg {
-            display: block;
-        }
-        .axis text { fill: #666; font-size: 11px; }
-        .axis line, .axis path { stroke: #333; }
-        .grid line { stroke: #222; }
-
-        .line-actual {
-            fill: none;
-            stroke: #3B82F6;
-            stroke-width: 3;
-        }
-        .line-straight {
-            fill: none;
-            stroke: #EF4444;
-            stroke-width: 2;
-            stroke-dasharray: 8, 4;
-            opacity: 0;
-        }
-        .line-straight.visible {
-            opacity: 1;
-        }
-
-        .area-actual {
-            fill: url(#blueGradient);
-            opacity: 0.3;
-        }
-
-        .annotation {
-            font-size: 12px;
-            fill: #888;
-        }
-
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: #fff;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-        button:hover {
-            background: #252525;
-            border-color: #3B82F6;
-        }
-        button.active {
-            background: #3B82F6;
-            border-color: #3B82F6;
-        }
-
-        .sidebar h2 {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #666;
-            margin-bottom: 20px;
-        }
-
-        .insight {
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-        }
-        .insight-title {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .insight-text {
-            font-size: 13px;
-            color: #888;
-            line-height: 1.6;
-        }
-        .insight-stat {
-            font-size: 28px;
-            color: #3B82F6;
-            margin-top: 10px;
-        }
-
-        .quote {
-            border-left: 3px solid #3B82F6;
-            padding-left: 15px;
-            margin: 20px 0;
-            font-style: italic;
-            color: #888;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        .quote-author {
-            color: #555;
-            font-style: normal;
-            margin-top: 8px;
-            font-size: 12px;
-        }
-
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin-top: 15px;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: #888;
-        }
-        .legend-line {
-            width: 24px;
-            height: 3px;
-            border-radius: 2px;
-        }
-        .legend-line.actual { background: #3B82F6; }
-        .legend-line.straight { background: #EF4444; height: 2px; border-style: dashed; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>There Are No Straight Lines</title>
+<style>
+  :root{--bg:#0b0d12;--panel:#12151d;--ink:#e8e9ee;--mute:#868da0;--rule:#222734;
+        --curve:#f0b429;--tan:#5b8ce8}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;display:flex;
+       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  aside{flex:0 0 310px;background:var(--panel);border-right:1px solid var(--rule);
+        padding:26px 22px;display:flex;flex-direction:column;gap:18px;overflow-y:auto}
+  h1{font-size:20px;font-weight:650;letter-spacing:-.015em;line-height:1.2}
+  .lede{font-size:13px;color:var(--mute);line-height:1.55}
+  .lede b{color:var(--ink);font-weight:600}
+  .sec{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute)}
+  .btns{display:flex;flex-direction:column;gap:5px}
+  .btn{background:#1a1e29;border:1px solid var(--rule);color:#b9bfcf;padding:7px 11px;
+       border-radius:6px;font-size:12.5px;cursor:pointer;text-align:left}
+  .btn:hover{color:var(--ink)}
+  .btn.on{background:#222b3d;border-color:#3d4a66;color:var(--ink);font-weight:550}
+  input[type=range]{width:100%;accent-color:var(--curve)}
+  .radline{font-size:12.5px;color:var(--mute);line-height:1.5;min-height:52px}
+  .radline b{color:var(--curve);font-weight:600}
+  .legend{font-size:12px;color:var(--mute);display:flex;flex-direction:column;gap:6px}
+  .legend i{display:inline-block;width:15px;height:2px;vertical-align:middle;margin-right:7px}
+  main{flex:1;position:relative}
+  canvas{display:block;width:100%;height:100%}
+  .hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+        font-size:11.5px;color:#4e5568}
+  .cite{position:absolute;bottom:14px;right:18px;font-size:10.5px;color:#4e5568;text-align:right;line-height:1.5}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="main">
-            <h1>The Straight Line Instinct</h1>
-            <p class="subtitle">We assume trends will continue in a straight line. But most things in life follow curves.</p>
 
-            <div class="controls">
-                <button class="active" data-chart="population">World Population</button>
-                <button data-chart="birthrate">Birth Rate</button>
-                <button data-chart="children">Children in World</button>
-            </div>
+<aside>
+  <h1>There Are No Straight Lines</h1>
+  <div class="lede">
+    A plane is a sphere of <b>infinite radius</b>. The graph you were taught to draw
+    is not a different kind of thing from a world &mdash; it is a world so large
+    you only ever see one flat patch of it.
+  </div>
 
-            <div class="chart-container">
-                <div class="chart-title" id="chartTitle">World Population (billions)</div>
-                <svg id="chart" width="600" height="400"></svg>
-                <div class="legend">
-                    <div class="legend-item">
-                        <div class="legend-line actual"></div>
-                        <span>Reality</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-line straight" style="background: repeating-linear-gradient(90deg, #EF4444 0, #EF4444 8px, transparent 8px, transparent 12px);"></div>
-                        <span>Straight-line thinking</span>
-                    </div>
-                </div>
-            </div>
+  <div>
+    <div class="sec">Radius of the world</div>
+    <input type="range" id="rad" min="0" max="1000" value="1000">
+    <div class="radline" id="radline"></div>
+  </div>
 
-            <button id="showStraight">Show what people expect →</button>
-        </div>
+  <div>
+    <div class="sec">Data</div>
+    <div class="btns" id="btns"></div>
+  </div>
 
-        <div class="sidebar">
-            <h2>The Insight</h2>
+  <div class="legend">
+    <div><i style="background:#f0b429"></i>what actually happens</div>
+    <div><i style="background:#5b8ce8"></i>the straight line you'd draw today</div>
+  </div>
 
-            <div class="quote">
-                "There's no room for facts when our minds are occupied by fear."
-                <div class="quote-author">— Hans Rosling, Factfulness</div>
-            </div>
+  <div class="lede" id="note" style="margin-top:auto"></div>
+</aside>
 
-            <div class="insight">
-                <div class="insight-title">🧠 The Instinct</div>
-                <div class="insight-text">
-                    When we see a line going up, we assume it will keep going up at the same rate. Our brains project straight lines into the future.
-                </div>
-            </div>
+<main>
+  <canvas id="c"></canvas>
+  <div class="hint">drag to turn it</div>
+  <div class="cite">
+    UN World Population Prospects (via Gapminder)<br>
+    after Hans Rosling, <i>Factfulness</i> &mdash; the straight line instinct
+  </div>
+</main>
 
-            <div class="insight">
-                <div class="insight-title">📉 The Reality</div>
-                <div class="insight-text">
-                    Most trends follow S-curves, not straight lines. Things speed up, then slow down. Birth rates are falling everywhere in the world.
-                </div>
-            </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ===================================================================
+   One control: the radius.
 
-            <div class="insight">
-                <div class="insight-title">👶 Children</div>
-                <div class="insight-text">
-                    The number of children (0-14) in the world stopped growing around 2000. It's been flat at ~2 billion for 20+ years.
-                </div>
-                <div class="insight-stat">~2 billion</div>
-            </div>
+   Every point of the flat graph is mapped onto a sphere that is tangent
+   to it at the origin. Let d be the distance from that tangent point;
+   then the angle subtended is d/R, and
 
-            <div class="insight">
-                <div class="insight-title">🌍 Population Peak</div>
-                <div class="insight-text">
-                    Population will likely peak around 10-11 billion by 2100, then potentially decline. Not because of disaster - because of development.
-                </div>
-                <div class="insight-stat">~10-11 billion</div>
-            </div>
+       p = ( x/d * R sin(d/R),  y/d * R sin(d/R),  R cos(d/R) - R )
 
-            <div class="insight">
-                <div class="insight-title">📊 Why It Matters</div>
-                <div class="insight-text">
-                    Understanding curves vs lines changes everything: retirement planning, climate policy, resource allocation. The future isn't a straight line from today.
-                </div>
-            </div>
-        </div>
-    </div>
+   As R grows, d/R goes to zero, sin(d/R) -> d/R and cos -> 1, so p
+   goes to (x, y, 0). The plane is not an approximation of the sphere --
+   the plane IS the sphere, at R = infinity. Sliding the radius does not
+   morph between two different pictures; it moves along one family, and
+   the x-y graph is the degenerate end of it.
+   =================================================================== */
 
-    <script>
-        const width = 600;
-        const height = 400;
-        const margin = { top: 30, right: 30, bottom: 50, left: 60 };
-        const innerWidth = width - margin.left - margin.right;
-        const innerHeight = height - margin.top - margin.bottom;
+const DATA = {
+  population: {
+    label: 'World population', unit: 'billions',
+    note: 'The line from 1950 looks like it goes up forever. It does not: the ' +
+          'projection turns over around 2090. The curve was always bending -- ' +
+          'from inside the 20th century you could not see the far side.',
+    pts: [[1950,2.5],[1960,3.0],[1970,3.7],[1980,4.4],[1990,5.3],[2000,6.1],
+          [2010,6.9],[2020,7.8],[2030,8.5],[2040,9.2],[2050,9.7],[2060,10.1],
+          [2070,10.4],[2080,10.5],[2090,10.6],[2100,10.4]],
+    from: 1950, today: 2020,
+  },
+  birthrate: {
+    label: 'Births per woman', unit: 'children',
+    note: 'Nobody draws this one as a rising line, because it falls. But the ' +
+          'instinct is the same in reverse -- it does not fall to zero. It ' +
+          'flattens, because it is an arc and not a ray.',
+    pts: [[1950,5.0],[1960,5.0],[1970,4.7],[1980,3.7],[1990,3.2],[2000,2.7],
+          [2010,2.5],[2020,2.3],[2030,2.1],[2040,2.0],[2050,1.9],[2060,1.8],
+          [2070,1.8],[2080,1.8],[2090,1.8],[2100,1.8]],
+    from: 1950, today: 2020,
+  },
+  children: {
+    label: 'Children under 15', unit: 'billions',
+    note: 'The one that breaks people. The number of children in the world ' +
+          'stopped growing around 2000 and has been flat ever since. Peak ' +
+          'child already happened, and almost nobody noticed it.',
+    pts: [[1950,0.87],[1960,1.1],[1970,1.35],[1980,1.57],[1990,1.75],[2000,1.94],
+          [2010,1.95],[2020,2.0],[2030,2.05],[2040,2.03],[2050,2.0],[2060,1.97],
+          [2070,1.93],[2080,1.9],[2090,1.88],[2100,1.85]],
+    from: 1950, today: 2020,
+  },
+};
 
-        const svg = d3.select('#chart');
-        const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+const W = 46, H = 26;                 // the extent of the flat graph, in world units
+let R = Infinity, key = 'population', drag = null, yaw = -0.34, pitch = 0.30;
 
-        // Gradients
-        const defs = svg.append('defs');
-        const gradient = defs.append('linearGradient')
-            .attr('id', 'blueGradient')
-            .attr('x1', '0%').attr('y1', '0%')
-            .attr('x2', '0%').attr('y2', '100%');
-        gradient.append('stop').attr('offset', '0%').attr('stop-color', '#3B82F6');
-        gradient.append('stop').attr('offset', '100%').attr('stop-color', '#3B82F6').attr('stop-opacity', 0);
+const cv = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas:cv, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 4000);
+const root = new THREE.Group();
+scene.add(root);
 
-        // Data
-        const data = {
-            population: {
-                title: 'World Population (billions)',
-                actual: [
-                    {year: 1950, value: 2.5}, {year: 1960, value: 3.0}, {year: 1970, value: 3.7},
-                    {year: 1980, value: 4.4}, {year: 1990, value: 5.3}, {year: 2000, value: 6.1},
-                    {year: 2010, value: 6.9}, {year: 2020, value: 7.8}, {year: 2030, value: 8.5},
-                    {year: 2040, value: 9.2}, {year: 2050, value: 9.7}, {year: 2060, value: 10.1},
-                    {year: 2070, value: 10.4}, {year: 2080, value: 10.5}, {year: 2090, value: 10.6},
-                    {year: 2100, value: 10.4}
-                ],
-                straight: [
-                    {year: 1950, value: 2.5}, {year: 2100, value: 16}
-                ],
-                yMax: 17
-            },
-            birthrate: {
-                title: 'Global Birth Rate (births per woman)',
-                actual: [
-                    {year: 1950, value: 5.0}, {year: 1960, value: 5.0}, {year: 1970, value: 4.7},
-                    {year: 1980, value: 3.7}, {year: 1990, value: 3.2}, {year: 2000, value: 2.7},
-                    {year: 2010, value: 2.5}, {year: 2020, value: 2.3}, {year: 2030, value: 2.1},
-                    {year: 2040, value: 2.0}, {year: 2050, value: 1.9}, {year: 2060, value: 1.8},
-                    {year: 2070, value: 1.8}, {year: 2080, value: 1.8}, {year: 2090, value: 1.8},
-                    {year: 2100, value: 1.8}
-                ],
-                straight: [
-                    {year: 1950, value: 5.0}, {year: 2100, value: 5.0}
-                ],
-                yMax: 6
-            },
-            children: {
-                title: 'Children in the World, 0-14 years (billions)',
-                actual: [
-                    {year: 1950, value: 0.9}, {year: 1960, value: 1.1}, {year: 1970, value: 1.4},
-                    {year: 1980, value: 1.6}, {year: 1990, value: 1.8}, {year: 2000, value: 1.9},
-                    {year: 2010, value: 1.96}, {year: 2020, value: 1.98}, {year: 2030, value: 2.0},
-                    {year: 2040, value: 2.0}, {year: 2050, value: 1.99}, {year: 2060, value: 1.95},
-                    {year: 2070, value: 1.9}, {year: 2080, value: 1.85}, {year: 2090, value: 1.8},
-                    {year: 2100, value: 1.75}
-                ],
-                straight: [
-                    {year: 1950, value: 0.9}, {year: 2100, value: 4.5}
-                ],
-                yMax: 5
-            }
-        };
+/* the map described above -- the whole idea, in six lines */
+function project(x, y, R){
+  if (!isFinite(R)) return new THREE.Vector3(x, y, 0);
+  const d = Math.hypot(x, y);
+  if (d < 1e-6) return new THREE.Vector3(0, 0, 0);
+  const th = d / R, s = R * Math.sin(th);
+  return new THREE.Vector3(x/d*s, y/d*s, R*Math.cos(th) - R);
+}
 
-        let currentChart = 'population';
-        let showingStraight = false;
+function lineFrom(points, color, width, opacity){
+  const g = new THREE.BufferGeometry().setFromPoints(points);
+  return new THREE.Line(g, new THREE.LineBasicMaterial(
+    {color, transparent:true, opacity:opacity===undefined?1:opacity, linewidth:width||1}));
+}
 
-        function drawChart(chartKey) {
-            const chartData = data[chartKey];
-            document.getElementById('chartTitle').textContent = chartData.title;
+/* ---- the graph paper, which is the part that has to curl ---- */
+function buildGrid(R){
+  const g = new THREE.Group();
+  const STEP = 2, SUB = 6;
+  for (let x = -W/2; x <= W/2+1e-9; x += STEP){
+    const pts = [];
+    for (let i = 0; i <= SUB*13; i++) pts.push(project(x, -H/2 + (H*i)/(SUB*13), R));
+    g.add(lineFrom(pts, 0x2a3040, 1, .9));
+  }
+  for (let y = -H/2; y <= H/2+1e-9; y += STEP){
+    const pts = [];
+    for (let i = 0; i <= SUB*23; i++) pts.push(project(-W/2 + (W*i)/(SUB*23), y, R));
+    g.add(lineFrom(pts, 0x2a3040, 1, .9));
+  }
+  return g;
+}
 
-            g.selectAll('*').remove();
+function buildSeries(R){
+  const d = DATA[key];
+  const g = new THREE.Group();
+  const xs = d.pts.map(p => p[0]), vs = d.pts.map(p => p[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), vMax = Math.max(...vs)*1.12;
+  const px = yr => -W/2 + W*(yr-x0)/(x1-x0);
+  const py = v  => -H/2 + H*(v/vMax);
 
-            const x = d3.scaleLinear()
-                .domain([1950, 2100])
-                .range([0, innerWidth]);
+  // what actually happens
+  const curve = [];
+  for (let i = 0; i < d.pts.length-1; i++){
+    for (let s = 0; s < 12; s++){
+      const t = s/12;
+      const yr = d.pts[i][0]*(1-t) + d.pts[i+1][0]*t;
+      const v  = d.pts[i][1]*(1-t) + d.pts[i+1][1]*t;
+      curve.push(project(px(yr), py(v), R));
+    }
+  }
+  curve.push(project(px(d.pts.at(-1)[0]), py(d.pts.at(-1)[1]), R));
+  g.add(lineFrom(curve, 0xf0b429, 2));
 
-            const y = d3.scaleLinear()
-                .domain([0, chartData.yMax])
-                .range([innerHeight, 0]);
+  // the straight line you'd draw from today: a true tangent, so it leaves the
+  // surface the moment the surface has any curvature at all
+  const iNow = d.pts.findIndex(p => p[0] >= d.today);
+  const a = d.pts[iNow-1], b = d.pts[iNow];
+  const slope = (b[1]-a[1]) / (b[0]-a[0]);
+  const flatA = new THREE.Vector2(px(a[0]), py(a[1]));
+  const flatB = new THREE.Vector2(px(b[0]), py(b[1]));
+  const dir = flatB.clone().sub(flatA).normalize();
+  const base = project(flatB.x, flatB.y, R);
+  // tangent direction on the surface, by finite difference along the map
+  const nudge = project(flatB.x + dir.x*0.01, flatB.y + dir.y*0.01, R).sub(base).normalize();
+  const len = W * (x1 - d.today) / (x1 - x0) * 1.15;
+  g.add(lineFrom([base, base.clone().addScaledVector(nudge, len)], 0x5b8ce8, 2, .95));
 
-            // Grid
-            g.append('g')
-                .attr('class', 'grid')
-                .selectAll('line')
-                .data(y.ticks(5))
-                .enter().append('line')
-                .attr('x1', 0).attr('x2', innerWidth)
-                .attr('y1', d => y(d)).attr('y2', d => y(d));
+  // where "today" sits
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(.42, 12, 12),
+                             new THREE.MeshBasicMaterial({color:0xffffff}));
+  dot.position.copy(base);
+  g.add(dot);
+  return g;
+}
 
-            // Axes
-            g.append('g')
-                .attr('class', 'axis')
-                .attr('transform', `translate(0,${innerHeight})`)
-                .call(d3.axisBottom(x).tickFormat(d3.format('d')).ticks(8));
+function buildWorld(R){
+  if (!isFinite(R) || R > 1400) return null;   // too big to mean anything on screen
+  const geo = new THREE.SphereGeometry(R, 40, 28);
+  const wire = new THREE.LineSegments(
+    new THREE.WireframeGeometry(geo),
+    new THREE.LineBasicMaterial({color:0x3a4560, transparent:true, opacity:.10}));
+  wire.position.set(0, 0, -R);
+  return wire;
+}
 
-            g.append('g')
-                .attr('class', 'axis')
-                .call(d3.axisLeft(y).ticks(5));
+let gridG = null, seriesG = null, worldG = null;
+function rebuild(){
+  [gridG, seriesG, worldG].forEach(g => g && root.remove(g));
+  worldG = buildWorld(R); gridG = buildGrid(R); seriesG = buildSeries(R);
+  if (worldG) root.add(worldG);
+  root.add(gridG); root.add(seriesG);
+}
 
-            // Area
-            const area = d3.area()
-                .x(d => x(d.year))
-                .y0(innerHeight)
-                .y1(d => y(d.value))
-                .curve(d3.curveMonotoneX);
+function radiusFromSlider(v){
+  // v: 0 (small world) .. 1000 (flat). Log, because radius spans orders.
+  if (v >= 1000) return Infinity;
+  const t = v/1000;
+  return 14 * Math.pow(900/14, t);
+}
 
-            g.append('path')
-                .datum(chartData.actual)
-                .attr('class', 'area-actual')
-                .attr('d', area);
+function setRadius(v){
+  R = radiusFromSlider(v);
+  const el = document.getElementById('radline');
+  if (!isFinite(R)){
+    el.innerHTML = '<b>R = &infin;</b><br>The x-y graph. Every line you were ever ' +
+                   'asked to extend is drawn here.';
+  } else if (R > 260){
+    el.innerHTML = `<b>R = ${Math.round(R)}</b><br>Still looks flat from where you ` +
+                   `stand. The curve and the straight line have not visibly parted yet.`;
+  } else if (R > 70){
+    el.innerHTML = `<b>R = ${Math.round(R)}</b><br>Now they part. The straight line ` +
+                   `leaves the world; the data stays on it.`;
+  } else {
+    el.innerHTML = `<b>R = ${Math.round(R)}</b><br>A world small enough to see all of. ` +
+                   `The line was an arc the whole time.`;
+  }
+  rebuild();
+}
 
-            // Actual line
-            const line = d3.line()
-                .x(d => x(d.year))
-                .y(d => y(d.value))
-                .curve(d3.curveMonotoneX);
+/* ---------- camera + interaction ---------- */
+function resize(){
+  // measure the container, never the canvas: the canvas is sized BY this
+  const w = cv.parentElement.clientWidth, h = cv.parentElement.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(cv.parentElement);
 
-            g.append('path')
-                .datum(chartData.actual)
-                .attr('class', 'line-actual')
-                .attr('d', line);
+cv.addEventListener('pointerdown', e => { drag = {x:e.clientX, y:e.clientY}; });
+addEventListener('pointerup',   () => { drag = null; });
+addEventListener('pointermove', e => {
+  if (!drag) return;
+  yaw   += (e.clientX - drag.x) * 0.006;
+  pitch += (e.clientY - drag.y) * 0.006;
+  pitch = Math.max(-1.2, Math.min(1.2, pitch));
+  drag = {x:e.clientX, y:e.clientY};
+});
 
-            // Straight line (hidden initially)
-            const straightLine = d3.line()
-                .x(d => x(d.year))
-                .y(d => y(d.value));
+function frame(){
+  root.rotation.set(pitch, yaw, 0);
+  camera.position.set(0, 0, 62);
+  camera.lookAt(0, 0, 0);
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
 
-            g.append('path')
-                .datum(chartData.straight)
-                .attr('class', 'line-straight')
-                .classed('visible', showingStraight)
-                .attr('d', straightLine);
-
-            // Today marker
-            g.append('line')
-                .attr('x1', x(2024)).attr('x2', x(2024))
-                .attr('y1', 0).attr('y2', innerHeight)
-                .attr('stroke', '#444')
-                .attr('stroke-dasharray', '4,4');
-
-            g.append('text')
-                .attr('class', 'annotation')
-                .attr('x', x(2024) + 5)
-                .attr('y', 15)
-                .text('Today');
-
-            g.append('text')
-                .attr('class', 'annotation')
-                .attr('x', x(2060))
-                .attr('y', 15)
-                .text('Projected →');
-        }
-
-        function toggleStraight() {
-            showingStraight = !showingStraight;
-            d3.select('.line-straight').classed('visible', showingStraight);
-            document.getElementById('showStraight').textContent =
-                showingStraight ? '← Hide straight line' : 'Show what people expect →';
-        }
-
-        // Event listeners
-        document.querySelectorAll('.controls button').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentChart = btn.dataset.chart;
-                showingStraight = false;
-                document.getElementById('showStraight').textContent = 'Show what people expect →';
-                drawChart(currentChart);
-            });
-        });
-
-        document.getElementById('showStraight').addEventListener('click', toggleStraight);
-
-        // Initial draw
-        drawChart('population');
-    </script>
+/* ---------- wiring ---------- */
+const btns = document.getElementById('btns');
+Object.entries(DATA).forEach(([k, d]) => {
+  const b = document.createElement('button');
+  b.className = 'btn' + (k===key ? ' on' : '');
+  b.textContent = d.label;
+  b.onclick = () => {
+    key = k;
+    [...btns.children].forEach(c => c.classList.remove('on'));
+    b.classList.add('on');
+    document.getElementById('note').textContent = d.note;
+    rebuild();
+  };
+  btns.appendChild(b);
+});
+document.getElementById('rad').addEventListener('input', e => setRadius(+e.target.value));
+document.getElementById('note').textContent = DATA[key].note;
+resize(); setRadius(1000); frame();
+</script>
 </body>
 </html>
