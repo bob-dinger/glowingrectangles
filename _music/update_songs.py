@@ -19,6 +19,7 @@ import os, re, sys, json, time, argparse, glob
 import requests
 from hashids import Hashids
 from dotenv import load_dotenv
+import hookpad_token
 load_dotenv('/Users/robert/Desktop/themap/themap_claude/.env')
 
 API = 'https://api.hooktheory.com/v1'
@@ -181,7 +182,9 @@ def patch_supabase(fetched):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('--token', required=True)
+    p.add_argument('--token', default=None,
+                   help='bearer token; defaults to $HOOKPAD_TOKEN or ~/.hookpad_token '
+                        '(refresh with hookpad_token.py)')
     p.add_argument('--names', nargs='*', default=[])
     p.add_argument('--project')
     p.add_argument('--artist', help='refresh every catalog song whose name starts with this (e.g. beatles)')
@@ -192,6 +195,13 @@ def main():
     p.add_argument('--refresh-list', action='store_true')
     p.add_argument('--throttle', type=float, default=6.0)
     a = p.parse_args()
+
+    # A pasted token was the manual step at the front of every sync.
+    # hookpad_token.py lifts a live one off the authenticated browser.
+    if not a.token:
+        a.token = hookpad_token.read_saved()
+    if not a.token:
+        sys.exit("no token: run hookpad_token.py, or pass --token")
 
     # --hooktab needs a fresh list (a stale cache would miss just-added songs) and always writes to Supabase
     catalog = load_list(a.token, refresh=a.refresh_list or a.hooktab)

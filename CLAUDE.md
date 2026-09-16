@@ -30,6 +30,7 @@ Use `/Users/robert/Desktop/themap/themap_claude/.venv/bin/python` — has `supab
 
 ## Scripts in `_music/`
 
+- `hookpad_token.py` — grabs a live bearer token so no session starts with DevTools. `--show` prints it without writing the file.
 - `sync_hookpad.py` — bulk/incremental sync from Hookpad API. Use `--throttle 20` for safety, `--throttle 6` minimum. Auto-backs-off on 429.
 - `download_one.py` — single song by `--slug`, `--id`, or `--name`. Zero list calls when using `--id`.
 - `load_songs_to_supabase.py` — rebuilds `parcels.songs` from CSV + Hookpad JSONs. Run with `--wipe` for clean reload.
@@ -39,7 +40,7 @@ Use `/Users/robert/Desktop/themap/themap_claude/.venv/bin/python` — has `supab
 
 ## Hookpad API quirks
 
-- Auth: Bearer token from any open Hookpad tab (DevTools Network → copy as cURL).
+- Auth: run `hookpad_token.py`. It loads Hookpad in the Playwright context that already has saved auth (`~/.hookpad_auth.json`), watches the requests the app makes, and lifts the bearer off the first API call — writing it to `~/.hookpad_token` (mode 600, outside the repo). `sync_hookpad.py`, `download_one.py`, `update_songs.py` and `pull_by_pattern.py` all read it, so **`--token` is optional now**; precedence is `--token` > `$HOOKPAD_TOKEN` > `~/.hookpad_token`. If the saved auth has expired, `setup_hookpad_auth.py` logs in once more. Manual fallback, no longer needed day to day: any open Hookpad tab, DevTools Network → copy as cURL.
 - List endpoint: `GET /v1/songs/h?per-page=100&page=N` returns `[{ID, dateModified, song}, ...]`. Only those 3 fields, no slug.
 - Single-song: `GET /v1/songs/{slug}?fields=ID,xmlData,song,jsonData,isPrivate`. Slug = `Hashids(salt='XI0Y4UFrK6EPLnarrI4y', min_length=11, alphabet='A-Za-z-_').encode(numeric_id)`. The salt/alphabet are extracted from the Hookpad JS bundle.
 - **Rate limiting**: 6 sec/song works most of the time. 20 sec/song never hits 429. Bulk list (15 paginated calls) at 0.1s between pages will trigger 429 — use ≥3s between pages.
