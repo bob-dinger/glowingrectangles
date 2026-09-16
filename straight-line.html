@@ -46,6 +46,13 @@
   .src{font-family:-apple-system,sans-serif;font-size:11.5px;color:var(--dim);
        line-height:1.55;border-left:2px solid var(--rule);padding-left:13px}
   #gl{position:fixed;inset:0;pointer-events:none;z-index:0}
+  .winbar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:30;
+          display:flex;align-items:center;gap:15px;background:#141824f2;
+          border:1px solid var(--rule);border-radius:99px;padding:10px 20px;
+          font-family:-apple-system,sans-serif;font-size:12.5px;color:var(--mute);
+          backdrop-filter:blur(8px)}
+  .winbar input{width:220px;accent-color:var(--ball)}
+  .winbar b{color:var(--ink);font-weight:600;font-family:ui-monospace,Menlo,monospace}
   .wrap{position:relative;z-index:1}
 </style>
 </head>
@@ -59,12 +66,23 @@
     that way.
   </div>
   <div class="standfirst">
-    <b>You live inside the thing while it is changing.</b> So each figure here is
-    printed twice: once the way a book would set it, and once from the inside of a
-    world that grows and shrinks year by year around whoever is standing in it.
+    And over a short enough stretch <b>the line is right.</b> Population growth is a
+    ruler for five years. Over a hundred it is not. Shrink the window below and watch
+    a straight line become the correct answer &mdash; that is not a failure of
+    reasoning, it is the reasoning working on the evidence available.
+  </div>
+  <div class="standfirst">
+    <b>You live inside the thing while it is changing.</b> So each figure is printed
+    twice: once the way a book would set it, and once from the inside of a world that
+    grows and shrinks year by year around whoever is standing in it.
   </div>
   <div class="byline sans">after Hans Rosling, <i>Factfulness</i> &mdash; the straight line instinct</div>
   <div id="sections"></div>
+</div>
+<div class="winbar">
+  <span>how much you get to see</span>
+  <input type="range" id="win" min="4" max="100" value="100">
+  <span><b id="winpct">100</b>% of the run</span>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -168,7 +186,26 @@ function valueAt(d, u){
    Static on purpose. This is the artefact being argued with -- the whole
    quantity, finished, seen from outside, the way it appears on a page. No
    playhead, because a book has no playhead. */
-function drawFigure(cv, d){
+function lineFit(d, frac, n){
+  const xs0 = d.pts[0][0], xs1 = d.pts[d.pts.length-1][0];
+  const xe = xs0 + (xs1-xs0)*frac;
+  const X=[], Y=[];
+  for (let i=0;i<n;i++){ const x = xs0 + (xe-xs0)*i/(n-1);
+    X.push(x); Y.push(valueAt(d, (x-xs0)/(xs1-xs0))[1]); }
+  const mx = X.reduce((a,b)=>a+b)/n, my = Y.reduce((a,b)=>a+b)/n;
+  let sxy=0, sxx=0; for(let i=0;i<n;i++){ sxy+=(X[i]-mx)*(Y[i]-my); sxx+=(X[i]-mx)**2; }
+  const m = sxx===0 ? 0 : sxy/sxx, c = my - m*mx;
+  let res=0, tot=0;
+  for(let i=0;i<n;i++){ res += (Y[i]-(m*X[i]+c))**2; tot += (Y[i]-my)**2; }
+  return {m, c, r2: tot===0 ? 1 : 1-res/tot, xe};
+}
+
+/* ---------- ROW ONE: the printed figure, over as much as you have ----------
+   Static on purpose -- a book has no playhead. But a book only prints the
+   history its author had, which is the whole point: shrink the window and the
+   straight line becomes CORRECT. The dashed line is a least-squares fit to
+   whatever is on show, and R-squared says how well it does. */
+function drawFigure(cv, d, frac){
   const S = Math.min(devicePixelRatio, 2);
   const b = cv.getBoundingClientRect();
   cv.width = b.width*S; cv.height = b.height*S;
@@ -177,10 +214,21 @@ function drawFigure(cv, d){
   const W = b.width, H = b.height, L = 44, R = 12, T = 12, B = 26;
   g.fillStyle = '#f4f1e8'; g.fillRect(0,0,W,H);
 
-  const xs = d.pts.map(p=>p[0]), vs = d.pts.map(p=>p[1]);
-  const x0=Math.min(...xs), x1=Math.max(...xs), vMax=Math.max(...vs)*1.1;
-  const px = x => L + (W-L-R)*(x-x0)/(x1-x0);
-  const py = v => H-B - (H-B-T)*(v/vMax);
+  const xAll = d.pts.map(p=>p[0]);
+  const x0 = Math.min(...xAll), xFull = Math.max(...xAll);
+  const fit = lineFit(d, frac, 60);
+  const x1 = fit.xe;
+
+  const N = 90, seen = [];
+  for (let i=0;i<N;i++){ const x = x0 + (x1-x0)*i/(N-1);
+    seen.push([x, valueAt(d, (x-x0)/(xFull-x0))[1]]); }
+  const vs = seen.map(p=>p[1]);
+  const vLo = Math.min(...vs), vHi = Math.max(...vs);
+  const pad = (vHi-vLo)*0.16 || Math.abs(vHi)*0.16 || 1;
+  // don't invent negative revenue or negative people just to pad an axis
+  const lo = (vLo >= 0 ? Math.max(0, vLo-pad) : vLo-pad), hi = vHi+pad;
+  const px = x => L + (W-L-R)*(x-x0)/((x1-x0)||1);
+  const py = v => H-B - (H-B-T)*((v-lo)/((hi-lo)||1));
 
   g.strokeStyle='#c9c2b2'; g.lineWidth=1;
   for (let i=0;i<=4;i++){ const y=T+(H-B-T)*i/4;
@@ -188,19 +236,26 @@ function drawFigure(cv, d){
   g.strokeStyle='#4a4438'; g.lineWidth=1.2;
   g.beginPath(); g.moveTo(L,T); g.lineTo(L,H-B); g.lineTo(W-R,H-B); g.stroke();
 
-  g.fillStyle='#6d6656'; g.font='10px -apple-system,sans-serif';
-  g.textAlign='right';
-  for (let i=0;i<=4;i++){ const v=vMax*i/4;
-    g.fillText(v>=100?Math.round(v):v.toFixed(1), L-6, py(v)+3); }
+  g.fillStyle='#6d6656'; g.font='10px -apple-system,sans-serif'; g.textAlign='right';
+  for (let i=0;i<=4;i++){ const v = lo + (hi-lo)*i/4;
+    g.fillText(Math.abs(v)>=100?Math.round(v):v.toFixed(1), L-6, py(v)+3); }
   g.textAlign='center';
   [x0, x0+(x1-x0)/2, x1].forEach(x =>
-    g.fillText(Math.abs(x)>=100?Math.round(x):(x%1?x.toFixed(2):x), px(x), H-B+14));
+    g.fillText(Math.abs(x)>=100?Math.round(x):(x%1?x.toFixed(2):Math.round(x)), px(x), H-B+14));
+
+  // the ruler somebody would lay on this window
+  g.strokeStyle='#b4543f'; g.lineWidth=1.4; g.setLineDash([5,4]);
+  g.beginPath(); g.moveTo(px(x0), py(fit.m*x0+fit.c));
+  g.lineTo(px(x1), py(fit.m*x1+fit.c)); g.stroke(); g.setLineDash([]);
 
   g.strokeStyle='#23201a'; g.lineWidth=1.9; g.beginPath();
-  d.pts.forEach(([x,v],i)=> i?g.lineTo(px(x),py(v)):g.moveTo(px(x),py(v)));
+  seen.forEach(([x,v],i)=> i?g.lineTo(px(x),py(v)):g.moveTo(px(x),py(v)));
   g.stroke();
   g.fillStyle='#23201a';
-  d.pts.forEach(([x,v])=>{ g.beginPath(); g.arc(px(x),py(v),1.9,0,7); g.fill(); });
+  d.pts.filter(([x])=>x<=x1).forEach(([x,v])=>{
+    g.beginPath(); g.arc(px(x),py(v),1.9,0,7); g.fill(); });
+
+  return fit.r2;
 }
 
 /* ---------- ROW TWO: standing inside it ----------
@@ -274,7 +329,8 @@ Object.entries(DATA).forEach(([k,d],idx)=>{
 
     <div class="rowlabel">as a textbook prints it</div>
     <div class="fig"><canvas></canvas>
-      <div class="figcap"><b>Fig. ${idx+1}.</b> ${d.y} against ${d.x}.</div>
+      <div class="figcap"><b>Fig. ${idx+1}.</b> ${d.y} against ${d.x}.
+        <span class="r2"></span></div>
     </div>
 
     <div class="rowlabel" style="margin-top:26px">as it is from inside</div>
@@ -293,13 +349,26 @@ Object.entries(DATA).forEach(([k,d],idx)=>{
                rx: sec.querySelector('.rx'), rv: sec.querySelector('.rv'),
                u: 0, auto: true};
   row.scrub.addEventListener('input', e => { row.u = +e.target.value/1000; row.auto = false; });
+  row.r2 = sec.querySelector('.r2');
   rows.push(row);
 });
 
+let win = 1;
 function layout(){
   renderer.setSize(innerWidth, innerHeight, false);
-  rows.forEach(r => drawFigure(r.fig, r.d));
+  rows.forEach(r => {
+    const r2 = drawFigure(r.fig, r.d, win);
+    const straight = r2 >= 0.995;
+    r.r2.innerHTML = ` A straight line through this window explains ` +
+      `<b style="color:${straight?'#9a3b26':'#6d6656'}">${(r2*100).toFixed(1)}%</b>` +
+      ` of it.`;
+  });
 }
+document.getElementById('win').addEventListener('input', e => {
+  win = +e.target.value/100;
+  document.getElementById('winpct').textContent = e.target.value;
+  layout();
+});
 addEventListener('resize', layout);
 
 let last = performance.now();
