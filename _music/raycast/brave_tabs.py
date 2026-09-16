@@ -73,6 +73,15 @@ def window_with_most(url_substr):
     return max(counts, key=counts.get) if counts else None
 
 
+def raise_window(w):
+    """Bring a window forward without changing which tab is active."""
+    osa(f'''
+tell application "Brave Browser"
+  set index of window {w} to 1
+  activate
+end tell''')
+
+
 def focus(w, t):
     osa(f'''
 tell application "Brave Browser"
@@ -141,11 +150,140 @@ def profile_for(url_substr):
     return best[0] if best else None
 
 
-def open_in_profile(profile, url):
-    """A new window in a named profile. Brave forwards the command line to the
-    instance already running, so this does not start a second browser."""
-    subprocess.run(['/usr/bin/open', '-na', 'Brave Browser', '--args',
-                    f'--profile-directory={profile}', url])
+def profile_names():
+    """-> {directory: display name}. The two differ, and confusingly: the
+    directory `hookpad` is displayed as "Personal", while `Profile 9` is the
+    one displayed as "hookpad"."""
+    try:
+        state = json.load(open(os.path.join(BRAVE, 'Local State')))
+        return {k: v.get('name', k)
+                for k, v in state['profile']['info_cache'].items()}
+    except Exception:
+        return {}
+
+
+def resolve_profile(name):
+    """A profile directory from whatever the user typed — "robert", "adam",
+    "glowing gardens", or the directory name itself."""
+    q = norm(name)
+    if not q:
+        return None
+    names = profile_names()
+    for want in (lambda d, n: norm(d) == q or norm(n) == q,
+                 lambda d, n: norm(n).startswith(q) or norm(d).startswith(q),
+                 lambda d, n: q in norm(n) or q in norm(d)):
+        for d, n in names.items():
+            if want(d, n):
+                return d
+    return None
+
+
+def running_profiles():
+    """Which profiles have a browser window right now.
+
+    Brave keeps an open file handle on a running profile's `Sessions`
+    directory, so lsof on the main browser process answers this directly —
+    nothing else does. Profiles that merely exist on disk do not show up.
+    """
+    try:
+        pids = subprocess.run(['/usr/bin/pgrep', '-x', 'Brave Browser'],
+                              capture_output=True, text=True).stdout.split()
+        if not pids:
+            return set()
+        out = subprocess.run(['/usr/sbin/lsof', '-p', ','.join(pids[:4])],
+                             capture_output=True, text=True).stdout
+    except Exception:
+        return set()
+    return set(re.findall(r'Brave-Browser/([^/]+)/Sessions', out))
+
+
+def window_profile_map():
+    """-> {window index: profile directory}.
+
+    AppleScript cannot report which profile a window belongs to, so the tabs
+    answer it instead: a window's URLs are in its own profile's history and
+    generally in no other. Only running profiles are candidates, which keeps
+    this to a couple of queries and stops a stale history from winning.
+    """
+    running = running_profiles()
+    if not running:
+        return {}
+    out, _ = osa('''
+tell application "Brave Browser"
+  set o to ""
+  repeat with w from 1 to (count windows)
+    repeat with t from 1 to (count tabs of window w)
+      try
+        set o to o & w & "\t" & (URL of tab t of window w) & "\n"
+      end try
+    end repeat
+  end repeat
+  return o
+end tell''')
+    wins = {}
+    for line in out.split('\n'):
+        parts = line.split('\t')
+        if len(parts) == 2 and parts[1].startswith('http'):
+            wins.setdefault(int(parts[0]), []).append(parts[1])
+
+    mapping = {}
+    for w, urls in wins.items():
+        sample = urls[:8]
+        best, best_n = None, 0
+        for prof in running:
+            path = os.path.join(BRAVE, prof, 'History')
+            if not os.path.exists(path):
+                continue
+            try:
+                con = sqlite3.connect(
+                    'file:' + urllib.parse.quote(path) + '?immutable=1',
+                    uri=True)
+                n = sum(bool(con.execute('select 1 from urls where url=? limit 1',
+                                         (u,)).fetchone()) for u in sample)
+                con.close()
+            except Exception:
+                continue
+            if n > best_n:
+                best, best_n = prof, n
+        if best:
+            mapping[w] = best
+    return mapping
+
+
+def window_for_profile(profile):
+    """The window belonging to a profile, or None if it has none open."""
+    for w, prof in window_profile_map().items():
+        if prof == profile:
+            return w
+    return None
+
+
+def open_in_profile(profile, url=None):
+    """Start a named profile — the window Brave has not got open yet.
+
+    Brave forwards the command line to the instance already running, so this
+    does not start a second browser, and the profile comes back with its whole
+    restored session."""
+    args = ['/usr/bin/open', '-na', 'Brave Browser', '--args',
+            f'--profile-directory={profile}']
+    subprocess.run(args + ([url] if url else []))
+
+
+def open_profile(name, url=None):
+    """Put a profile in front of the user, opening it if it is not running.
+
+    -> (profile directory, 'focused'|'opened'), or None if the name matches no
+    profile. Focusing matters: launching a profile that already has a window
+    gives you a second one rather than the one you meant."""
+    profile = resolve_profile(name)
+    if profile is None:
+        return None
+    w = window_for_profile(profile)
+    if w is not None:
+        new_tab(w, url) if url else raise_window(w)
+        return profile, 'focused'
+    open_in_profile(profile, url)
+    return profile, 'opened' 
 
 
 def open_url(url_substr, url):
@@ -163,7 +301,9 @@ def open_url(url_substr, url):
     profile = profile_for(url_substr)
     if profile is None:
         return None
-    open_in_profile(profile, url)
+    # the profile may be running with the site simply not open in it, in which
+    # case the tab belongs in the window it already has
+    open_profile(profile, url)
     return profile
 
 
