@@ -221,8 +221,15 @@ def main():
 <title>{esc(a.pools)} — every part</title><style>
   @page{{margin:.35in;size:letter landscape}}
   *{{margin:0;padding:0;box-sizing:border-box}}
+  /* Pin the content to the PRINTED width. The fit pass below measures each
+     row against the width it is laid out at, so on a wide window it sized the
+     type too large -- then printing re-laid it out narrower, those rows
+     wrapped, and the extra height pushed Wonderwall onto a third sheet. A
+     letter landscape page at half-inch margins is 10in of content, so that is
+     the width to measure at, on screen and on paper alike. */
   body{{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:#111;
-    background:#fff;padding:.1in .2in;font-size:8pt}}
+    background:#fff;padding:.1in .2in;font-size:8pt;
+    max-width:10in;margin:0 auto}}
   header{{display:flex;align-items:baseline;gap:14px;border-bottom:1.2px solid #111;
     padding-bottom:3px;margin-bottom:4px}}
   h1{{font-size:13pt;font-weight:700}}
@@ -322,9 +329,15 @@ def main():
         : (fit ? ' ' + fit : ''));
     }});
   }}
-  shrink('c', TIERS, '.c');
-  shrink('s', ['', 'f1', 'f2', 'f3', 'f4'], '.s');
-  shrink('p', ['', 'f1', 'f2', 'f3', 'f4'], '.p');
+  function fit() {{
+    shrink('c', TIERS, '.c');
+    shrink('s', ['', 'f1', 'f2', 'f3', 'f4'], '.s');
+    shrink('p', ['', 'f1', 'f2', 'f3', 'f4'], '.p');
+  }}
+  fit();
+  // and again at the real page width, in case the print margins differ from
+  // the 10in the layout assumes
+  window.addEventListener('beforeprint', fit);
 }})();
 </script>
 </body></html>"""
