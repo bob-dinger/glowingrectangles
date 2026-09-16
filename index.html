@@ -1,560 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glowing Rectangles</title>
-    <link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Carlito', sans-serif;
-            background-color: #fafafa;
-            color: #333;
-        }
-
-        /* App Bar */
-        .app-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 64px;
-            background: white;
-            border-bottom: 1px solid #10b981;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            gap: 12px;
-        }
-
-        .app-bar .title {
-            background: #111827;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 16px;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5), 0 0 30px rgba(16, 185, 129, 0.2);
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from {
-                box-shadow: 0 0 10px rgba(16, 185, 129, 0.4), 0 0 20px rgba(16, 185, 129, 0.15);
-            }
-            to {
-                box-shadow: 0 0 15px rgba(16, 185, 129, 0.6), 0 0 35px rgba(16, 185, 129, 0.25);
-            }
-        }
-
-        /* Main Container */
-        .main-container {
-            margin-top: 80px;
-            padding: 16px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Grid */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-        }
-
-        @media (max-width: 1024px) {
-            .grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 500px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Post Card */
-        .post-card {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            background: white;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-
-        .post-card:hover {
-            background: #f5f5f5;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-
-        .post-card img {
-            width: 100px;
-            height: 100px;
-            flex-shrink: 0;
-            border-radius: 4px;
-        }
-
-        .post-card .content {
-            margin-left: 12px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .post-card .post-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: teal;
-            margin-bottom: 4px;
-        }
-
-        .post-card .post-subtitle {
-            font-size: 14px;
-            color: #888;
-        }
-
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glowing Rectangles</title>
+<meta name="description" content="Glowing Rectangles — a Substack by Bob Dinger.">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg:   #fbfaf7;
+    --ink:  #14110c;
+    --mute: #6b655a;
+    --rule: #e2ded4;
+    --link: #14110c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#100f0d; --ink:#f2efe8; --mute:#918b7e; --rule:#2b2823; --link:#f2efe8; }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.6 ui-serif, Georgia, "Times New Roman", serif;
+    display: grid;
+    place-items: center;
+    padding: 2rem;
+  }
+  main { width: 100%; max-width: 30rem; }
+  h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.75rem;
+  }
+  p { margin: 0 0 2rem; color: var(--mute); }
+  .go {
+    display: inline-block;
+    color: var(--link);
+    text-decoration: none;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 2px;
+    font-weight: 600;
+  }
+  .go:hover { opacity: 0.6; }
+  footer {
+    margin-top: 3.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.875rem;
+    color: var(--mute);
+  }
+  footer a { color: var(--mute); text-decoration: none; border-bottom: 1px solid var(--rule); }
+  footer a:hover { color: var(--ink); }
+</style>
 </head>
 <body>
-    <div class="app-bar">
-        <span class="title">glowing rectangles</span>
-    </div>
-
-    <div class="main-container">
-        <div class="grid">
-            <a href="about.html" class="post-card">
-                <img src="https://theonion.com/wp-content/uploads/2024/07/site-logo.svg" alt="" style="object-fit: contain; background: #00ab00; padding: 10px;">
-                <div class="content">
-                    <div class="post-title">Why the site is named this...</div>
-                    <div class="post-subtitle" style="color: #00ab00;">The Onion</div>
-                </div>
-            </a>
-            <a href="gapminder.html" class="post-card">
-                <img src="images/gapminder.svg" alt="" style="object-fit: cover; background: #0a0a0a;">
-                <div class="content">
-                    <div class="post-title">A Tribute to Hans Rosling</div>
-                    <div class="post-subtitle">Wealth & Health</div>
-                </div>
-            </a>
-            <a href="life-expectancy.html" class="post-card">
-                <img src="images/life-expectancy.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Most Misleading Statistic of All Time</div>
-                    <div class="post-subtitle">you better click!</div>
-                </div>
-            </a>
-            <a href="flatland.html" class="post-card">
-                <img src="images/flatland.svg" alt="" style="object-fit: cover; background: #0a0a0a;">
-                <div class="content">
-                    <div class="post-title">Flatland</div>
-                    <div class="post-subtitle">a romance of many dimensions</div>
-                </div>
-            </a>
-            <a href="learning-stone.html" class="post-card">
-                <img src="images/learning-stone.svg" alt="" style="object-fit: cover; background: #0a0a0a;">
-                <div class="content">
-                    <div class="post-title">How Learning Works</div>
-                    <div class="post-subtitle">the neuroscience of repetition</div>
-                </div>
-            </a>
-            <a href="genetic-code.html" class="post-card">
-                <img src="images/genetic-code.svg" alt="" style="object-fit: cover; background: #0a0a0a;">
-                <div class="content">
-                    <div class="post-title">Amino Acids → Proteins</div>
-                    <div class="post-subtitle">the genetic code</div>
-                </div>
-            </a>
-            <a href="exaptation.html" class="post-card">
-                <img src="images/exapation.png" alt="">
-                <div class="content">
-                    <div class="post-title">Exaptation</div>
-                    <div class="post-subtitle">evolution's creative recycling</div>
-                </div>
-            </a>
-            <a href="distributions.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/power_k7ysbh.png" alt="">
-                <div class="content">
-                    <div class="post-title">Distributions</div>
-                    <div class="post-subtitle">how things are spread out</div>
-                </div>
-            </a>
-            <a href="curves.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/s-curve_r2dyjf.png" alt="">
-                <div class="content">
-                    <div class="post-title">Curves</div>
-                    <div class="post-subtitle">patterns of change over time</div>
-                </div>
-            </a>
-            <a href="posts/moral_tribes/index.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/moral_square_qicvjt.png" alt="">
-                <div class="content">
-                    <div class="post-title">Moral Tribes</div>
-                    <div class="post-subtitle">why do our values differ?</div>
-                </div>
-            </a>
-            <a href="posts/moral_foundations/index.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/values_square_toh54b.png" alt="">
-                <div class="content">
-                    <div class="post-title">Moral Foundations</div>
-                    <div class="post-subtitle">why Americans don't get along</div>
-                </div>
-            </a>
-            <a href="protectors-explorers.html" class="post-card">
-                <img src="images/protectors-vs-explorers.png" alt="">
-                <div class="content">
-                    <div class="post-title">Protectors vs Explorers</div>
-                    <div class="post-subtitle">the tribe needs both</div>
-                </div>
-            </a>
-            <a href="circle-boundary.html" class="post-card">
-                <img src="images/loudest.png" alt="" style="object-fit: cover;">
-                <div class="content">
-                    <div class="post-title">The Loudest 10%</div>
-                    <div class="post-subtitle">how a minority dominates social media</div>
-                </div>
-            </a>
-            <a href="posts/elephant_rider/index.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/elephant6_ybznaw.png" alt="">
-                <div class="content">
-                    <div class="post-title">Elephant & Rider</div>
-                    <div class="post-subtitle">the divided mind</div>
-                </div>
-            </a>
-            <a href="d3-antifragile.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/cracked2_eu5rmc.png" alt="">
-                <div class="content">
-                    <div class="post-title">Antifragility</div>
-                    <div class="post-subtitle">what doesn't kill you...</div>
-                </div>
-            </a>
-            <a href="fractals.html" class="post-card">
-                <img src="images/fractals.png" alt="" style="object-fit: cover;">
-                <div class="content">
-                    <div class="post-title">Fractals</div>
-                    <div class="post-subtitle">self-similarity at every scale</div>
-                </div>
-            </a>
-            <a href="posts/cognitive_reflection/index.html" class="post-card">
-                <img src="images/crt.png" alt="" style="object-fit: cover;">
-                <div class="content">
-                    <div class="post-title">Cognitive Reflection</div>
-                    <div class="post-subtitle">test your intuition</div>
-                </div>
-            </a>
-            <a href="524-years.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/500years_ehubh9.png" alt="">
-                <div class="content">
-                    <div class="post-title">524 Years</div>
-                    <div class="post-subtitle">history visualized</div>
-                </div>
-            </a>
-            <a href="bliss.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/bliss4_slfsbb.png" alt="">
-                <div class="content">
-                    <div class="post-title">Bliss Symbolics</div>
-                    <div class="post-subtitle">a visual language</div>
-                </div>
-            </a>
-            <a href="perception-gap.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/perceptiongap_zknpy9.png" alt="">
-                <div class="content">
-                    <div class="post-title">Perception Gap</div>
-                    <div class="post-subtitle">how we misunderstand each other</div>
-                </div>
-            </a>
-            <a href="smoking-tide.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/waves2_xr3xbs.png" alt="">
-                <div class="content">
-                    <div class="post-title">The Wave of Adoption vs. Rejection</div>
-                    <div class="post-subtitle">smoking in America</div>
-                </div>
-            </a>
-            <a href="nfl/football.html" class="post-card">
-                <img src="images/football.png" alt="" style="object-fit: cover;">
-                <div class="content">
-                    <div class="post-title">Football</div>
-                    <div class="post-subtitle">NFL & college visualizations</div>
-                </div>
-            </a>
-            <a href="voronoi.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/voroni_eby3hf.png" alt="">
-                <div class="content">
-                    <div class="post-title">Voronoi</div>
-                    <div class="post-subtitle">a visual algorithm</div>
-                </div>
-            </a>
-            <a href="posts/hormones/index.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/hormones_400_lgnxkq.png" alt="">
-                <div class="content">
-                    <div class="post-title">Hormones</div>
-                    <div class="post-subtitle">what do they do?</div>
-                </div>
-            </a>
-            <a href="cooking/tools.html" class="post-card">
-                <div style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; font-size: 48px; background: #1a1a1a; border-radius: 4px; flex-shrink: 0;">🍳</div>
-                <div class="content">
-                    <div class="post-title">Cooking</div>
-                    <div class="post-subtitle">visualizations & guides</div>
-                </div>
-            </a>
-            <a href="cooking/nutrition.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/nutrition1_pdm44p.png" alt="">
-                <div class="content">
-                    <div class="post-title">Nutrition</div>
-                    <div class="post-subtitle">what's in food?</div>
-                </div>
-            </a>
-            <a href="posts/box_breathing/index.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/box_breathing_pgmyce.png" alt="">
-                <div class="content">
-                    <div class="post-title">Box Breathing</div>
-                    <div class="post-subtitle">calm your mind</div>
-                </div>
-            </a>
-            <a href="posts/meditation_wheel/index.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/meditation_wheel_biiywn.png" alt="">
-                <div class="content">
-                    <div class="post-title">Meditation Wheel</div>
-                    <div class="post-subtitle">the scattered mind</div>
-                </div>
-            </a>
-            <a href="spanish/tools.html" class="post-card">
-                <img src="https://res.cloudinary.com/danztjgjk/image/upload/w_100,h_100,c_fill/glowing-gardens/spanish_vzeh57.jpg" alt="">
-                <div class="content">
-                    <div class="post-title">Spanish</div>
-                    <div class="post-subtitle">learning tools</div>
-                </div>
-            </a>
-            <a href="french/tools.html" class="post-card">
-                <div style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; font-size: 48px; background: #1a1a1a; border-radius: 4px; flex-shrink: 0;">🇫🇷</div>
-                <div class="content">
-                    <div class="post-title">French</div>
-                    <div class="post-subtitle">learning tools</div>
-                </div>
-            </a>
-            <a href="posts/baltimore-stockbroker-combined.html" class="post-card">
-                <img src="images/stockbroker.png" alt="" style="object-fit: cover; background: #111;">
-                <div class="content">
-                    <div class="post-title">Baltimore Stockbroker</div>
-                    <div class="post-subtitle">survivorship bias revealed</div>
-                </div>
-            </a>
-            <a href="posts/survivorship-bias-planes.html" class="post-card">
-                <img src="images/planes.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Survivorship Bias</div>
-                    <div class="post-subtitle">the planes that came back</div>
-                </div>
-            </a>
-            <a href="d3-information-diet.html" class="post-card">
-                <img src="images/opinions.svg" alt="" style="object-fit: cover; background: #0a0a0a;">
-                <div class="content">
-                    <div class="post-title">Too Many Opinions</div>
-                    <div class="post-subtitle">how many opinions you hear per day</div>
-                </div>
-            </a>
-            <a href="posts/base-rates.html" class="post-card">
-                <img src="images/baserates.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Base Rates</div>
-                    <div class="post-subtitle">start with what's typical</div>
-                </div>
-            </a>
-            <a href="posts/polarization.html" class="post-card">
-                <img src="images/polarization.svg" alt="" style="object-fit: cover; background: #111;">
-                <div class="content">
-                    <div class="post-title">Polarization</div>
-                    <div class="post-subtitle">caught in the crossfire</div>
-                </div>
-            </a>
-            <a href="posts/myers-briggs.html" class="post-card">
-                <img src="images/mbti.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Myers-Briggs</div>
-                    <div class="post-subtitle">16 personality types</div>
-                </div>
-            </a>
-            <a href="posts/enneagram.html" class="post-card">
-                <img src="images/enneagram.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Enneagram</div>
-                    <div class="post-subtitle">9 personality types</div>
-                </div>
-            </a>
-            <a href="posts/mosquitoes/random-walk-grid.html" class="post-card">
-                <img src="images/mosquitos.png" alt="" style="object-fit: cover;">
-                <div class="content">
-                    <div class="post-title">Random Walk</div>
-                    <div class="post-subtitle">spatial probability</div>
-                </div>
-            </a>
-            <a href="posts/dna.html" class="post-card">
-                <img src="images/dna.png" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">DNA</div>
-                    <div class="post-subtitle">genotype to phenotype</div>
-                </div>
-            </a>
-            <a href="posts/concentrated-benefits.html" class="post-card">
-                <img src="images/mohair.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Concentrated Benefits</div>
-                    <div class="post-subtitle">why bad policies persist</div>
-                </div>
-            </a>
-            <a href="posts/van-gogh.html" class="post-card">
-                <img src="https://themapstorage.blob.core.windows.net/images/vangogh/VincentVanGogh/Arles/Still%20Life%20Vase%20with%20Fifteen%20Sunflowers.jpg" alt="" style="object-fit: cover;">
-                <div class="content">
-                    <div class="post-title">Van Gogh</div>
-                    <div class="post-subtitle">681 paintings chronologically</div>
-                </div>
-            </a>
-            <a href="posts/golden-spiral.html" class="post-card">
-                <img src="images/golden-spiral.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Golden Spiral</div>
-                    <div class="post-subtitle">how flowers build themselves</div>
-                </div>
-            </a>
-            <a href="posts/svg-explained.html" class="post-card">
-                <img src="images/svg.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">SVG</div>
-                    <div class="post-subtitle">scalable vector graphics explained</div>
-                </div>
-            </a>
-            <a href="posts/ant-trails.html" class="post-card">
-                <img src="images/ants.svg" alt="" style="object-fit: cover; background: #1a1a1a;">
-                <div class="content">
-                    <div class="post-title">Ant Trails</div>
-                    <div class="post-subtitle">emergence from simple rules</div>
-                </div>
-            </a>
-            <a href="posts/hotelling.html" class="post-card">
-                <img src="images/hotelling.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Hotelling's Law</div>
-                    <div class="post-subtitle">why competitors cluster together</div>
-                </div>
-            </a>
-            <a href="posts/inductive-reasoning.html" class="post-card">
-                <img src="images/inductive.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Inductive Reasoning</div>
-                    <div class="post-subtitle">one example is all you need</div>
-                </div>
-            </a>
-            <a href="posts/air-density.html" class="post-card">
-                <img src="images/air-density.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Air Density</div>
-                    <div class="post-subtitle">why balls fly further in Denver</div>
-                </div>
-            </a>
-            <a href="posts/taxonomy-apes.html" class="post-card">
-                <img src="images/taxonomy.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Where Humans Fit</div>
-                    <div class="post-subtitle">the five great apes</div>
-                </div>
-            </a>
-            <a href="posts/ranked-choice.html" class="post-card">
-                <img src="images/ranked-choice.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Ranked Choice Voting</div>
-                    <div class="post-subtitle">how your backup choices matter</div>
-                </div>
-            </a>
-            <a href="posts/sampling.html" class="post-card">
-                <img src="images/sampling.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Sampling</div>
-                    <div class="post-subtitle">how sound becomes numbers</div>
-                </div>
-            </a>
-            <a href="posts/cards.html" class="post-card">
-                <img src="images/cards.svg" alt="" style="object-fit: cover; background: #1a1a1a;">
-                <div class="content">
-                    <div class="post-title">Deck of Cards</div>
-                    <div class="post-subtitle">52 cards, 4 suits</div>
-                </div>
-            </a>
-            <a href="posts/theory-of-mind.html" class="post-card">
-                <img src="images/theory-of-mind.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Theory of Mind</div>
-                    <div class="post-subtitle">the Sally-Anne test</div>
-                </div>
-            </a>
-            <a href="posts/baby-morality.html" class="post-card">
-                <img src="images/baby-morality.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Baby Morality</div>
-                    <div class="post-subtitle">helping vs hindering</div>
-                </div>
-            </a>
-            <a href="women-workforce.html" class="post-card">
-                <img src="images/women-workforce.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">Women & Work</div>
-                    <div class="post-subtitle">what men feared vs reality</div>
-                </div>
-            </a>
-            <a href="hashing.html" class="post-card">
-                <img src="images/hashing.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">How Hashing Works</div>
-                    <div class="post-subtitle">foundation of modern computing</div>
-                </div>
-            </a>
-            <a href="comfort.html" class="post-card">
-                <img src="images/comfort.svg" alt="" style="object-fit: cover; background: #0a0a0f;">
-                <div class="content">
-                    <div class="post-title">The Problem With Comfort</div>
-                    <div class="post-subtitle">what coddles you makes you fragile</div>
-                </div>
-            </a>
-            <a href="entropy.html" class="post-card">
-                <img src="images/entropy.svg" alt="" style="object-fit: cover; background: #0a0a0a;">
-                <div class="content">
-                    <div class="post-title">Entropy</div>
-                    <div class="post-subtitle">why order becomes disorder</div>
-                </div>
-            </a>
-            <a href="sp500-bubbles.html" class="post-card">
-                <img src="images/sp500.png" alt="" style="object-fit: cover;">
-                <div class="content">
-                    <div class="post-title">S&P 500 Bubbles</div>
-                    <div class="post-subtitle">market cap concentration</div>
-                </div>
-            </a>
-            <a href="math/multiplication-methods.html" class="post-card">
-                <div style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; font-size: 48px; background: #1a1a1a; border-radius: 4px; flex-shrink: 0;">×</div>
-                <div class="content">
-                    <div class="post-title">Multiplication Methods</div>
-                    <div class="post-subtitle">7 ways to multiply</div>
-                </div>
-            </a>
-        </div>
-    </div>
+<main>
+  <h1>Glowing Rectangles</h1>
+  <p>Ideas, drawn. Curves, distributions, and the shapes behind how people see things.</p>
+  <a class="go" href="https://glowingrectangles.substack.com/">Read it on Substack&nbsp;→</a>
+  <footer>
+    Bob Dinger · <a href="https://twitter.com/bobdinger">@bobdinger</a>
+  </footer>
+</main>
 </body>
 </html>
