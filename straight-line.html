@@ -5,98 +5,80 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>There Are No Straight Lines</title>
 <style>
-  :root{--bg:#0b0d12;--panel:#12151d;--ink:#e8e9ee;--mute:#868da0;--rule:#222734;
-        --curve:#f0b429;--tan:#5b8ce8}
+  :root{--bg:#0b0d12;--ink:#e8e9ee;--mute:#868da0;--dim:#5c6376;--rule:#1e2230;
+        --line:#5b8ce8;--ball:#f0b429}
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;display:flex;
-       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-  aside{flex:0 0 310px;background:var(--panel);border-right:1px solid var(--rule);
-        padding:26px 22px;display:flex;flex-direction:column;gap:18px;overflow-y:auto}
-  h1{font-size:20px;font-weight:650;letter-spacing:-.015em;line-height:1.2}
-  .lede{font-size:13px;color:var(--mute);line-height:1.55}
-  .lede b{color:var(--ink);font-weight:600}
-  .sec{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute)}
-  .btns{display:flex;flex-direction:column;gap:5px}
-  .btn{background:#1a1e29;border:1px solid var(--rule);color:#b9bfcf;padding:7px 11px;
-       border-radius:6px;font-size:12.5px;cursor:pointer;text-align:left}
-  .btn:hover{color:var(--ink)}
-  .btn.on{background:#222b3d;border-color:#3d4a66;color:var(--ink);font-weight:550}
-  input[type=range]{width:100%;accent-color:var(--curve)}
-  .radline{font-size:12.5px;color:var(--mute);line-height:1.5;min-height:52px}
-  .radline b{color:var(--curve);font-weight:600}
-  .legend{font-size:12px;color:var(--mute);display:flex;flex-direction:column;gap:6px}
-  .legend i{display:inline-block;width:15px;height:2px;vertical-align:middle;margin-right:7px}
-  .chip{display:inline-block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
-        padding:3px 8px;border-radius:99px;border:1px solid currentColor;opacity:.95}
-  .src{font-size:11px;color:#6a7185;line-height:1.5;margin-top:9px;
-       border-top:1px solid var(--rule);padding-top:9px}
-  main{flex:1;position:relative}
-  canvas{display:block;width:100%;height:100%}
-  .hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
-        font-size:11.5px;color:#4e5568}
-  .cite{position:absolute;bottom:14px;right:18px;font-size:10.5px;color:#4e5568;text-align:right;line-height:1.5}
+  body{background:var(--bg);color:var(--ink);
+       font:16px/1.65 ui-serif,Georgia,'Times New Roman',serif;
+       -webkit-font-smoothing:antialiased}
+  .sans{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:76px 26px 120px}
+  h1{font-size:40px;line-height:1.1;letter-spacing:-.02em;font-weight:600;margin-bottom:20px}
+  .standfirst{font-size:19px;color:#b9becd;line-height:1.6;margin-bottom:14px}
+  .standfirst b{color:var(--ink);font-weight:600}
+  .byline{font-family:-apple-system,sans-serif;font-size:12px;color:var(--dim);
+          letter-spacing:.04em;text-transform:uppercase;margin-bottom:54px;
+          border-bottom:1px solid var(--rule);padding-bottom:20px}
+  section{margin:0 0 76px}
+  h2{font-size:26px;letter-spacing:-.015em;font-weight:600;margin-bottom:8px}
+  .chip{display:inline-block;font-family:-apple-system,sans-serif;font-size:9.5px;
+        letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:99px;
+        border:1px solid currentColor;margin-bottom:14px}
+  p{color:#b9becd;margin-bottom:20px}
+  .axes{font-family:-apple-system,sans-serif;font-size:11.5px;color:var(--dim);
+        margin-bottom:9px;letter-spacing:.03em}
+
+  /* the two rows: same numbers, two ways of holding them */
+  .row{position:relative;border:1px solid var(--rule);border-radius:9px;
+       background:#0e111884;margin-bottom:10px;overflow:hidden}
+  .row .tag{position:absolute;top:9px;left:12px;font-family:-apple-system,sans-serif;
+            font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);
+            z-index:2}
+  .row.flat{height:150px}
+  .row.ball{height:200px}
+  .row canvas{display:block;width:100%;height:100%}
+  .readout{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--mute);
+           display:flex;justify-content:space-between;margin-bottom:26px}
+  .readout b{color:var(--ball);font-weight:600}
+  .src{font-family:-apple-system,sans-serif;font-size:11.5px;color:var(--dim);
+       line-height:1.55;border-left:2px solid var(--rule);padding-left:13px}
+  .controls{position:fixed;bottom:22px;right:22px;
+            display:flex;align-items:center;gap:14px;background:#141824ee;
+            border:1px solid var(--rule);border-radius:99px;padding:9px 18px;
+            font-family:-apple-system,sans-serif;font-size:12.5px;color:var(--mute);
+            backdrop-filter:blur(8px);z-index:20}
+  .controls button{background:none;border:none;color:var(--ink);cursor:pointer;
+                   font-size:13px;padding:0}
+  .controls input{width:190px;accent-color:var(--ball)}
+  #gl{position:fixed;inset:0;pointer-events:none;z-index:1}
 </style>
 </head>
 <body>
-
-<aside>
+<canvas id="gl"></canvas>
+<div class="wrap">
   <h1>There Are No Straight Lines</h1>
-  <div class="lede">
-    A plane is a sphere of <b>infinite radius</b>. The graph you were taught to draw
-    is not a different kind of thing from a world &mdash; it is a world so large
-    you only ever see one flat patch of it.
+  <div class="standfirst">
+    You were taught to put a quantity on an x-y graph and extend it with a ruler.
+    A line drawn that way has no end &mdash; it cannot have one, because a line is
+    the one shape with nothing to run out of.
   </div>
+  <div class="standfirst">
+    <b>A sphere is always at some size.</b> Big or small, it is somewhere, and it can
+    stop, and it can come back. Here is the same set of numbers held both ways:
+    once as the line you were taught to draw, and once as a thing with a size.
+  </div>
+  <div class="byline sans">after Hans Rosling, <i>Factfulness</i> &mdash; the straight line instinct</div>
+  <div id="sections"></div>
+</div>
 
-  <div>
-    <div class="sec">Radius of the world</div>
-    <input type="range" id="rad" min="0" max="1000" value="1000">
-    <div class="radline" id="radline"></div>
-  </div>
-
-  <div>
-    <div class="sec">Data</div>
-    <div class="btns" id="btns"></div>
-  </div>
-
-  <div class="legend">
-    <div><i style="background:#f0b429"></i>what actually happens</div>
-    <div><i style="background:#5b8ce8"></i>the straight line you'd draw today</div>
-  </div>
-
-  <div style="margin-top:auto">
-    <span class="chip" id="chip"></span>
-    <div class="lede" id="note" style="margin-top:9px"></div>
-    <div class="src" id="src"></div>
-  </div>
-</aside>
-
-<main>
-  <canvas id="c"></canvas>
-  <div class="hint">drag to turn it</div>
-  <div class="cite">
-    after Hans Rosling, <i>Factfulness</i> &mdash; the straight line instinct<br>
-    each curve's own source is in the panel
-  </div>
-</main>
+<div class="controls">
+  <button id="play">&#10073;&#10073;</button>
+  <input type="range" id="scrub" min="0" max="1000" value="0">
+  <span id="pos" class="sans" style="min-width:74px;text-align:right"></span>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-/* ===================================================================
-   One control: the radius.
-
-   Every point of the flat graph is mapped onto a sphere that is tangent
-   to it at the origin. Let d be the distance from that tangent point;
-   then the angle subtended is d/R, and
-
-       p = ( x/d * R sin(d/R),  y/d * R sin(d/R),  R cos(d/R) - R )
-
-   As R grows, d/R goes to zero, sin(d/R) -> d/R and cos -> 1, so p
-   goes to (x, y, 0). The plane is not an approximation of the sphere --
-   the plane IS the sphere, at R = infinity. Sliding the radius does not
-   morph between two different pictures; it moves along one family, and
-   the x-y graph is the degenerate end of it.
-   =================================================================== */
-
 const DATA = {
   laffer: {
     label: 'Laffer curve', x: 'tax rate, 0\u2013100%', y: 'revenue collected',
@@ -173,200 +155,172 @@ const DATA = {
   },
 };
 
-/* Not every curve here is the same kind of claim, and flattening that
-   distinction would be the same sin as drawing everything straight. */
 const STATUS = {
   measured:    ['measured', '#4ea36b'],
   contested:   ['ends certain, peak contested', '#d9982f'],
   interpreted: ['shape fitted on later', '#c2564f'],
 };
 
-const W = 46, H = 26;                 // the extent of the flat graph, in world units
-let R = Infinity, key = 'laffer', drag = null, yaw = -0.34, pitch = 0.30;
+/* One global playhead. Every section runs on the same 0..1, so the page reads
+   downward as one motion rather than six unrelated loops. */
+let t = 0, playing = true, last = performance.now();
 
-const cv = document.getElementById('c');
-const renderer = new THREE.WebGLRenderer({canvas:cv, antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 4000);
-const root = new THREE.Group();
-scene.add(root);
-
-/* the map described above -- the whole idea, in six lines */
-function project(x, y, R){
-  if (!isFinite(R)) return new THREE.Vector3(x, y, 0);
-  const d = Math.hypot(x, y);
-  if (d < 1e-6) return new THREE.Vector3(0, 0, 0);
-  const th = d / R, s = R * Math.sin(th);
-  return new THREE.Vector3(x/d*s, y/d*s, R*Math.cos(th) - R);
-}
-
-function lineFrom(points, color, width, opacity){
-  const g = new THREE.BufferGeometry().setFromPoints(points);
-  return new THREE.Line(g, new THREE.LineBasicMaterial(
-    {color, transparent:true, opacity:opacity===undefined?1:opacity, linewidth:width||1}));
-}
-
-/* ---- the graph paper, which is the part that has to curl ---- */
-function buildGrid(R){
-  const g = new THREE.Group();
-  const STEP = 2, SUB = 6;
-  for (let x = -W/2; x <= W/2+1e-9; x += STEP){
-    const pts = [];
-    for (let i = 0; i <= SUB*13; i++) pts.push(project(x, -H/2 + (H*i)/(SUB*13), R));
-    g.add(lineFrom(pts, 0x2a3040, 1, .9));
-  }
-  for (let y = -H/2; y <= H/2+1e-9; y += STEP){
-    const pts = [];
-    for (let i = 0; i <= SUB*23; i++) pts.push(project(-W/2 + (W*i)/(SUB*23), y, R));
-    g.add(lineFrom(pts, 0x2a3040, 1, .9));
-  }
-  return g;
-}
-
-function buildSeries(R){
-  const d = DATA[key];
-  const g = new THREE.Group();
-  const xs = d.pts.map(p => p[0]), vs = d.pts.map(p => p[1]);
-  const x0 = Math.min(...xs), x1 = Math.max(...xs), vMax = Math.max(...vs)*1.12;
-  const px = yr => -W/2 + W*(yr-x0)/(x1-x0);
-  const py = v  => -H/2 + H*(v/vMax);
-
-  // what actually happens
-  const curve = [];
-  for (let i = 0; i < d.pts.length-1; i++){
-    for (let s = 0; s < 12; s++){
-      const t = s/12;
-      const yr = d.pts[i][0]*(1-t) + d.pts[i+1][0]*t;
-      const v  = d.pts[i][1]*(1-t) + d.pts[i+1][1]*t;
-      curve.push(project(px(yr), py(v), R));
+/* value at playhead position, linearly between the given points */
+function valueAt(d, u){
+  const xs = d.pts.map(p=>p[0]), x0 = xs[0], x1 = xs[xs.length-1];
+  const x = x0 + (x1-x0)*u;
+  for (let i=0;i<d.pts.length-1;i++){
+    const [ax,ay]=d.pts[i], [bx,by]=d.pts[i+1];
+    if (x >= ax && x <= bx){
+      const k = bx===ax ? 0 : (x-ax)/(bx-ax);
+      return [x, ay + (by-ay)*k];
     }
   }
-  curve.push(project(px(d.pts.at(-1)[0]), py(d.pts.at(-1)[1]), R));
-  g.add(lineFrom(curve, 0xf0b429, 2));
-
-  // the straight line you'd draw from today: a true tangent, so it leaves the
-  // surface the moment the surface has any curvature at all
-  const iNow = Math.max(1, d.pts.findIndex(p => p[0] >= d.anchor));
-  const a = d.pts[iNow-1], b = d.pts[iNow];
-  const slope = (b[1]-a[1]) / (b[0]-a[0]);
-  const flatA = new THREE.Vector2(px(a[0]), py(a[1]));
-  const flatB = new THREE.Vector2(px(b[0]), py(b[1]));
-  const dir = flatB.clone().sub(flatA).normalize();
-  const base = project(flatB.x, flatB.y, R);
-  // tangent direction on the surface, by finite difference along the map
-  const nudge = project(flatB.x + dir.x*0.01, flatB.y + dir.y*0.01, R).sub(base).normalize();
-  const len = W * (x1 - d.anchor) / (x1 - x0) * 1.15;
-  g.add(lineFrom([base, base.clone().addScaledVector(nudge, len)], 0x5b8ce8, 2, .95));
-
-  // where "today" sits
-  const dot = new THREE.Mesh(new THREE.SphereGeometry(.42, 12, 12),
-                             new THREE.MeshBasicMaterial({color:0xffffff}));
-  dot.position.copy(base);
-  g.add(dot);
-  return g;
+  return [x, d.pts[d.pts.length-1][1]];
 }
 
-function buildWorld(R){
-  if (!isFinite(R) || R > 1400) return null;   // too big to mean anything on screen
-  const geo = new THREE.SphereGeometry(R, 40, 28);
-  const wire = new THREE.LineSegments(
-    new THREE.WireframeGeometry(geo),
-    new THREE.LineBasicMaterial({color:0x3a4560, transparent:true, opacity:.10}));
-  wire.position.set(0, 0, -R);
-  return wire;
+/* ---------------- row one: the line you were taught ---------------- */
+function drawFlat(cv, d, u){
+  const g = cv.getContext('2d');
+  const W = cv.width, H = cv.height, pad = 26, padT = 34;
+  g.clearRect(0,0,W,H);
+  const xs = d.pts.map(p=>p[0]), vs = d.pts.map(p=>p[1]);
+  const x0=Math.min(...xs), x1=Math.max(...xs), vMax=Math.max(...vs)*1.14;
+  const px = x => pad + (W-2*pad)*(x-x0)/(x1-x0);
+  const py = v => H-pad - (H-pad-padT)*(v/vMax);
+
+  g.strokeStyle='#1e2230'; g.lineWidth=1;
+  g.beginPath(); g.moveTo(pad,H-pad); g.lineTo(W-pad,H-pad); g.stroke();
+
+  g.strokeStyle='#5b8ce8'; g.lineWidth=2; g.beginPath();
+  d.pts.forEach(([x,v],i)=> i?g.lineTo(px(x),py(v)):g.moveTo(px(x),py(v)));
+  g.stroke();
+
+  const [x,v] = valueAt(d,u);
+  g.strokeStyle='#2b3245'; g.setLineDash([2,3]); g.beginPath();
+  g.moveTo(px(x),H-pad); g.lineTo(px(x),py(v)); g.stroke(); g.setLineDash([]);
+  g.fillStyle='#fff'; g.beginPath(); g.arc(px(x),py(v),4,0,7); g.fill();
 }
 
-let gridG = null, seriesG = null, worldG = null;
-function rebuild(){
-  [gridG, seriesG, worldG].forEach(g => g && root.remove(g));
-  worldG = buildWorld(R); gridG = buildGrid(R); seriesG = buildSeries(R);
-  if (worldG) root.add(worldG);
-  root.add(gridG); root.add(seriesG);
-}
+/* ---------------- row two: the same number, as a size ----------------
+   Radius goes as the square root of the value, so the AREA is proportional
+   to it. Scaling radius directly would be a lie told in the reader's
+   favour -- it would make every change look bigger than it is.          */
+const renderer = new THREE.WebGLRenderer({canvas:document.getElementById('gl'),
+                                          antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setScissorTest(true);
 
-function radiusFromSlider(v){
-  // v: 0 (small world) .. 1000 (flat). Log, because radius spans orders.
-  if (v >= 1000) return Infinity;
-  const t = v/1000;
-  return 14 * Math.pow(900/14, t);
-}
+const scene = new THREE.Scene();
+const ball = new THREE.Mesh(
+  new THREE.SphereGeometry(1, 48, 32),
+  new THREE.MeshStandardMaterial({color:0xf0b429, roughness:.52, metalness:.08}));
+const halo = new THREE.LineSegments(
+  new THREE.WireframeGeometry(new THREE.SphereGeometry(1, 22, 14)),
+  new THREE.LineBasicMaterial({color:0xffd070, transparent:true, opacity:.14}));
+scene.add(ball); scene.add(halo);
+scene.add(new THREE.AmbientLight(0xffffff, .42));
+const key = new THREE.DirectionalLight(0xffffff, 1.05); key.position.set(-2,2.4,3);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x5b8ce8, .5); rim.position.set(3,-1.5,-2);
+scene.add(rim);
+const cam = new THREE.PerspectiveCamera(38, 1, .1, 100);
+cam.position.set(0,0,9);
 
-function setRadius(v){
-  R = radiusFromSlider(v);
-  const el = document.getElementById('radline');
-  if (!isFinite(R)){
-    el.innerHTML = '<b>R = &infin;</b><br>The x-y graph. Every line you were ever ' +
-                   'asked to extend is drawn here.';
-  } else if (R > 260){
-    el.innerHTML = `<b>R = ${Math.round(R)}</b><br>Still looks flat from where you ` +
-                   `stand. The curve and the straight line have not visibly parted yet.`;
-  } else if (R > 95){
-    el.innerHTML = `<b>R = ${Math.round(R)}</b><br>Now they part. The straight line ` +
-                   `leaves the world; the data stays on it.`;
-  } else if (R > 42){
-    el.innerHTML = `<b>R = ${Math.round(R)}</b><br>The curve is visibly riding a surface ` +
-                   `now, and the surface is closing.`;
-  } else {
-    el.innerHTML = `<b>R = ${Math.round(R)}</b><br>A world small enough to see all of. ` +
-                   `The line was an arc the whole time.`;
+/* the ghost of every size it has already been, so the shape of the run is
+   still legible when the ball is small */
+const trail = new THREE.Group(); scene.add(trail);
+
+function renderBall(el, d, u, spin){
+  const r = el.getBoundingClientRect();
+  if (r.bottom < 0 || r.top > innerHeight) return;          // offscreen, skip
+  const y = innerHeight - r.bottom;
+  renderer.setViewport(r.left, y, r.width, r.height);
+  renderer.setScissor(r.left, y, r.width, r.height);
+  cam.aspect = r.width/r.height; cam.updateProjectionMatrix();
+
+  const vs = d.pts.map(p=>p[1]), vMax = Math.max(...vs);
+  const [, v] = valueAt(d, u);
+  const rad = 2.35 * Math.sqrt(Math.max(v,0)/vMax);
+  ball.scale.setScalar(Math.max(rad, 0.001));
+  halo.scale.setScalar(Math.max(rad, 0.001)*1.015);
+  ball.rotation.y = halo.rotation.y = spin;
+  ball.rotation.x = halo.rotation.x = .32;
+
+  trail.clear();
+  for (let i=0;i<=26;i++){
+    const uu = i/26; if (uu > u) break;
+    const [, vv] = valueAt(d, uu);
+    const rr = 2.35*Math.sqrt(Math.max(vv,0)/vMax);
+    const ring = new THREE.LineLoop(
+      new THREE.BufferGeometry().setFromPoints(
+        Array.from({length:60},(_,k)=>{ const a=k/60*Math.PI*2;
+          return new THREE.Vector3(Math.cos(a)*rr, Math.sin(a)*rr, 0); })),
+      new THREE.LineBasicMaterial({color:0xf0b429, transparent:true,
+                                   opacity:.055 + .05*(uu/Math.max(u,.001))}));
+    trail.add(ring);
   }
-  rebuild();
+  renderer.render(scene, cam);
 }
 
-/* ---------- camera + interaction ---------- */
-function resize(){
-  // measure the container, never the canvas: the canvas is sized BY this
-  const w = cv.parentElement.clientWidth, h = cv.parentElement.clientHeight;
-  renderer.setSize(w, h, false);
-  camera.aspect = w/h; camera.updateProjectionMatrix();
-}
-new ResizeObserver(resize).observe(cv.parentElement);
-
-cv.addEventListener('pointerdown', e => { drag = {x:e.clientX, y:e.clientY}; });
-addEventListener('pointerup',   () => { drag = null; });
-addEventListener('pointermove', e => {
-  if (!drag) return;
-  yaw   += (e.clientX - drag.x) * 0.006;
-  pitch += (e.clientY - drag.y) * 0.006;
-  pitch = Math.max(-1.2, Math.min(1.2, pitch));
-  drag = {x:e.clientX, y:e.clientY};
+/* ---------------- build the page ---------------- */
+const host = document.getElementById('sections');
+const rows = [];
+Object.entries(DATA).forEach(([k,d])=>{
+  const [stext, scol] = STATUS[d.status];
+  const sec = document.createElement('section');
+  sec.innerHTML = `
+    <h2>${d.label}</h2>
+    <div class="chip sans" style="color:${scol}">${stext}</div>
+    <p>${d.note}</p>
+    <div class="axes sans">${d.x} &nbsp;&rarr;&nbsp; ${d.y}</div>
+    <div class="row flat"><div class="tag">as a line</div><canvas></canvas></div>
+    <div class="row ball"><div class="tag">as a size</div></div>
+    <div class="readout"><span>${d.x}: <b class="rx"></b></span>
+                         <span>${d.y}: <b class="rv"></b></span></div>
+    <div class="src sans">${d.source}</div>`;
+  host.appendChild(sec);
+  rows.push({d, flat: sec.querySelector('.row.flat canvas'),
+             ball: sec.querySelector('.row.ball'),
+             rx: sec.querySelector('.rx'), rv: sec.querySelector('.rv')});
 });
 
-function frame(){
-  root.rotation.set(pitch, yaw, 0);
-  camera.position.set(0, 0, 62);
-  camera.lookAt(0, 0, 0);
-  renderer.render(scene, camera);
+function sizeCanvases(){
+  renderer.setSize(innerWidth, innerHeight, false);
+  rows.forEach(r=>{
+    const b = r.flat.parentElement.getBoundingClientRect();
+    r.flat.width = b.width * Math.min(devicePixelRatio,2);
+    r.flat.height = b.height * Math.min(devicePixelRatio,2);
+  });
+}
+addEventListener('resize', sizeCanvases);
+
+const fmt = n => Math.abs(n) >= 100 ? Math.round(n)
+              : Math.abs(n) >= 10  ? n.toFixed(1) : n.toFixed(2);
+
+function frame(now){
+  const dt = Math.min(now-last, 60); last = now;
+  if (playing){ t = (t + dt/11000) % 1; document.getElementById('scrub').value = t*1000; }
+  rows.forEach(r=>{
+    drawFlat(r.flat, r.d, t);
+    renderBall(r.ball, r.d, t, now/2600);
+    const [x,v] = valueAt(r.d, t);
+    r.rx.textContent = fmt(x); r.rv.textContent = fmt(v);
+  });
+  document.getElementById('pos').textContent = Math.round(t*100)+'% through';
   requestAnimationFrame(frame);
 }
 
-/* ---------- wiring ---------- */
-const btns = document.getElementById('btns');
-Object.entries(DATA).forEach(([k, d]) => {
-  const b = document.createElement('button');
-  b.className = 'btn' + (k===key ? ' on' : '');
-  b.textContent = d.label;
-  b.onclick = () => {
-    key = k;
-    [...btns.children].forEach(c => c.classList.remove('on'));
-    b.classList.add('on');
-    showMeta(d);
-    rebuild();
-  };
-  btns.appendChild(b);
+document.getElementById('play').onclick = e => {
+  playing = !playing;
+  e.target.innerHTML = playing ? '&#10073;&#10073;' : '&#9654;';
+};
+document.getElementById('scrub').addEventListener('input', e => {
+  t = +e.target.value/1000; playing = false;
+  document.getElementById('play').innerHTML = '&#9654;';
 });
-function showMeta(d){
-  const [text, colour] = STATUS[d.status];
-  const chip = document.getElementById('chip');
-  chip.textContent = text; chip.style.color = colour;
-  document.getElementById('note').textContent = d.note;
-  document.getElementById('src').innerHTML =
-    `<b style="color:#8b93a8">${d.x}</b> against <b style="color:#8b93a8">${d.y}</b><br>${d.source}`;
-}
-document.getElementById('rad').addEventListener('input', e => setRadius(+e.target.value));
-showMeta(DATA[key]);
-resize(); setRadius(1000); frame();
+
+sizeCanvases(); requestAnimationFrame(frame);
 </script>
 </body>
 </html>
