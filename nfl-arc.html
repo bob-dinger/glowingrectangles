@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Five Good Years</title>
+<style>
+  :root{--bg:#0a0c11;--panel:#12151d;--ink:#e8e9ee;--mute:#878ea1;--dim:#5b6274;
+        --rule:#1d212c;--hot:#f0b429;--cold:#3c4a63;--line:#e0605a}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;display:flex;
+       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  aside{flex:0 0 320px;background:var(--panel);border-right:1px solid var(--rule);
+        padding:26px 22px;display:flex;flex-direction:column;gap:15px;overflow-y:auto}
+  h1{font-size:21px;font-weight:650;letter-spacing:-.015em;line-height:1.2}
+  .lede{font-size:13px;color:var(--mute);line-height:1.58}
+  .lede b{color:var(--ink);font-weight:600}
+  .sec{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+  select{width:100%;background:#181c26;border:1px solid var(--rule);color:var(--ink);
+         padding:8px 10px;border-radius:6px;font-size:13px}
+  .modes{display:flex;gap:6px}
+  .mode{flex:1;background:#181c26;border:1px solid var(--rule);color:#b6bccb;padding:8px 6px;
+        border-radius:6px;font-size:12px;cursor:pointer}
+  .mode.on{background:#212a3b;border-color:#3d4a66;color:var(--ink);font-weight:600}
+  .stat{border:1px solid var(--rule);border-radius:7px;padding:12px 13px;background:#171b24}
+  .stat .v{font-size:26px;font-weight:650;font-family:ui-monospace,Menlo,monospace}
+  .stat .l{font-size:11.5px;color:var(--mute);line-height:1.5;margin-top:5px}
+  .src{font-size:11px;color:var(--dim);line-height:1.55;border-top:1px solid var(--rule);
+       padding-top:10px;margin-top:auto}
+  main{flex:1;position:relative}
+  canvas{position:absolute;inset:0;width:100%;height:100%}
+  .cap{position:absolute;left:0;right:0;bottom:26px;text-align:center;pointer-events:none}
+  .cap .big{font-size:17px;line-height:1.5;text-shadow:0 2px 10px #000}
+  .cap .big b{font-weight:650}
+</style>
+</head>
+<body>
+
+<aside>
+  <h1>Five Good Years</h1>
+  <div class="lede">
+    Every ball is one season. <b>How big it is, is how many points they scored per
+    game.</b> Nothing else.
+  </div>
+  <div class="lede">
+    Look at five years and an offence grows in a straight line. Look at the whole
+    run and those five years are the middle of something that was <b>small before
+    and small again after</b>.
+  </div>
+
+  <div>
+    <div class="sec">team</div>
+    <select id="team"></select>
+  </div>
+  <div class="modes">
+    <button class="mode on" data-m="win">the five years</button>
+    <button class="mode" data-m="all">the whole run</button>
+  </div>
+
+  <div class="stat">
+    <div class="v" id="r2v">–</div>
+    <div class="l" id="r2l"></div>
+  </div>
+
+  <div class="lede" id="note"></div>
+
+  <div class="src">
+    Points scored per game, by season, computed from nflverse play-by-play
+    1999&ndash;2024 &mdash; final score of every game, averaged over the season. The
+    five-year window shown is the straightest rising stretch in that team's record,
+    chosen by R&sup2;, not picked by hand. All 32 teams are in the list, including the
+    ones where the story does not work: most teams wobble rather than arc, and you
+    can check that yourself.
+  </div>
+</aside>
+
+<main>
+  <canvas id="c"></canvas>
+  <div class="cap"><div class="big" id="cap"></div></div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+let DATA={}, team='ARI', mode='win';
+
+const cv=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();
+scene.add(new THREE.AmbientLight(0xffffff,.5));
+const k1=new THREE.DirectionalLight(0xffffff,1.05); k1.position.set(-2,3,4); scene.add(k1);
+const k2=new THREE.DirectionalLight(0x4a6fa5,.5);  k2.position.set(3,-2,-2); scene.add(k2);
+const cam=new THREE.PerspectiveCamera(34,1,.1,500);
+const balls=new THREE.Group(); scene.add(balls);
+const GEO=new THREE.SphereGeometry(1,40,28);
+
+function resize(){ const w=cv.clientWidth,h=cv.clientHeight;
+  renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix(); build(); }
+
+/* area proportional to points per game, so a ball twice the area is twice the
+   scoring. Radius is the square root of it; nothing is stretched for effect. */
+const radiusOf = (ppg, ref) => 1.25 * Math.sqrt(Math.max(ppg,0.01)/ref);
+
+function build(){
+  balls.clear();
+  const t=DATA[team]; if(!t) return;
+  const [w0,w1]=t.win||[t.seasons[0][0],t.seasons[4][0]];
+  const shown = mode==='win' ? t.seasons.filter(([y])=>y>=w0&&y<=w1) : t.seasons;
+  const ref = Math.max(...t.seasons.map(s=>s[1]));
+  const gap = mode==='win' ? 3.4 : 1.55;
+  const x0 = -(shown.length-1)*gap/2;
+
+  shown.forEach(([yr,ppg],i)=>{
+    const inWin = yr>=w0 && yr<=w1;
+    const col = inWin ? 0xf0b429 : 0x3c4a63;
+    const m=new THREE.Mesh(GEO, new THREE.MeshStandardMaterial(
+      {color:col, roughness:.55, metalness:.06,
+       emissive: inWin?0x3a2a06:0x000000}));
+    const r=radiusOf(ppg, ref);
+    m.scale.setScalar(r);
+    m.position.set(x0 + i*gap, 0, 0);
+    m.userData={yr,ppg,r,inWin};
+    balls.add(m);
+  });
+
+  // straight line laid across the tops of the window balls
+  const win = balls.children.filter(b=>b.userData.inWin);
+  if (win.length>1){
+    const pts = win.map(b=>new THREE.Vector3(b.position.x, b.userData.r, 0));
+    const X=pts.map(p=>p.x), Y=pts.map(p=>p.y), n=X.length;
+    const mx=X.reduce((a,b)=>a+b)/n, my=Y.reduce((a,b)=>a+b)/n;
+    let sxy=0,sxx=0; for(let i=0;i<n;i++){sxy+=(X[i]-mx)*(Y[i]-my);sxx+=(X[i]-mx)**2;}
+    const m2=sxx?sxy/sxx:0, c2=my-m2*mx;
+    const a=new THREE.Vector3(X[0]-0.7, m2*(X[0]-0.7)+c2, 0);
+    const b=new THREE.Vector3(X[n-1]+0.7, m2*(X[n-1]+0.7)+c2, 0);
+    balls.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),
+      new THREE.LineDashedMaterial({color:0xe0605a, dashSize:.35, gapSize:.28}))
+      .computeLineDistances ? (()=>{ const L=new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([a,b]),
+        new THREE.LineDashedMaterial({color:0xe0605a,dashSize:.35,gapSize:.28}));
+        L.computeLineDistances(); return L; })() : null);
+  }
+
+  // fit the row horizontally: the limiting angle is the HORIZONTAL half-fov,
+  // which is the vertical one scaled by the aspect ratio
+  const maxR = Math.max(...balls.children.filter(b=>b.isMesh).map(b=>b.userData.r));
+  const span = (shown.length-1)*gap + 2*maxR + 2.4;
+  const vHalf = Math.tan(34*Math.PI/360);
+  const hHalf = vHalf * cam.aspect;
+  cam.position.set(0, 0, Math.max((span/2)/hHalf, (maxR*2.6)/vHalf));
+  cam.lookAt(0,0,0);
+  label(shown, t, w0, w1);
+}
+
+function label(shown, t, w0, w1){
+  const inWin = t.seasons.filter(([y])=>y>=w0&&y<=w1);
+  const before = t.seasons.filter(([y])=>y<w0).map(s=>s[1]);
+  const after  = t.seasons.filter(([y])=>y>w1).map(s=>s[1]);
+  const avg = a => a.length ? a.reduce((x,y)=>x+y)/a.length : null;
+  document.getElementById('r2v').textContent = (t.r2*100).toFixed(0)+'%';
+  document.getElementById('r2l').textContent =
+    `of those five years is explained by a straight line (${w0}–${w1}).`;
+  const b=avg(before), a=avg(after);
+  document.getElementById('note').innerHTML = (b!==null&&a!==null)
+    ? `Before it they averaged <b>${b.toFixed(1)}</b> a game. Across the five they went
+       <b>${inWin[0][1].toFixed(1)}</b> to <b>${inWin[inWin.length-1][1].toFixed(1)}</b>.
+       After it, <b>${a.toFixed(1)}</b>.`
+    : '';
+  document.getElementById('cap').innerHTML = mode==='win'
+    ? `${t.name}, ${w0}&ndash;${w1}. <b>Five balls, each bigger than the last.</b>`
+    : `${t.name}, ${t.seasons[0][0]}&ndash;${t.seasons[t.seasons.length-1][0]}. ` +
+      `<b>The same five years, with the rest of the team around them.</b>`;
+}
+
+function frame(now){
+  balls.children.forEach(o=>{ if(o.isMesh){ o.rotation.y=now/7000; o.rotation.x=.3; } });
+  renderer.render(scene,cam); requestAnimationFrame(frame);
+}
+
+fetch('nfl-offense-arcs.json').then(r=>r.json()).then(d=>{
+  DATA=d;
+  const sel=document.getElementById('team');
+  Object.entries(d).sort((a,b)=>b[1].r2-a[1].r2).forEach(([k,v])=>{
+    const o=document.createElement('option');
+    o.value=k; o.textContent=`${v.name} — ${(v.r2*100).toFixed(0)}%`;
+    sel.appendChild(o);
+  });
+  sel.value=team; sel.onchange=e=>{team=e.target.value; build();};
+  document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{
+    mode=b.dataset.m;
+    document.querySelectorAll('.mode').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); build();
+  });
+  new ResizeObserver(resize).observe(cv);
+  resize(); requestAnimationFrame(frame);
+});
+</script>
+</body>
+</html>
