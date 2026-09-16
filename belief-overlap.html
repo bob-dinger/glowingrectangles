@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Closer Than You Think</title>
+<style>
+  :root {
+    --bg:#0d0d10; --panel:#15151b; --ink:#e9e7e4; --mute:#8a8794; --rule:#26262f;
+    --dem:#4c7fe8; --rep:#e05455; --gapc:#f0b429;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:var(--bg); color:var(--ink); height:100vh; overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    display:flex;
+  }
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  /* ---------- sidebar: the question list stays put, the stage changes ---------- */
+  aside{
+    flex:0 0 300px; background:var(--panel); border-right:1px solid var(--rule);
+    padding:26px 0 18px; display:flex; flex-direction:column; overflow:hidden;
+  }
+  aside h1{font-size:19px;font-weight:650;letter-spacing:-.01em;padding:0 22px}
+  aside .sub{font-size:12.5px;color:var(--mute);padding:6px 22px 16px;line-height:1.5}
+  .grouplabel{
+    font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute);
+    padding:14px 22px 7px;
+  }
+  .qlist{overflow-y:auto;flex:1}
+  .q{
+    padding:7px 22px; font-size:13px; cursor:pointer; border-left:2px solid transparent;
+    color:#bdbac6; line-height:1.35;
+  }
+  .q:hover{background:#1c1c24;color:var(--ink)}
+  .q.on{border-left-color:var(--accent,#fff); background:#1c1c24; color:var(--ink); font-weight:550}
+  .q .n{font-size:11px;color:var(--mute);margin-left:6px}
+
+  /* ---------- stage ---------- */
+  main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 40px;gap:20px}
+  .ask{font-size:17px;max-width:620px;text-align:center;line-height:1.45;color:#d6d3de}
+  .ask b{color:var(--ink);font-weight:600}
+
+  .stage{display:flex;align-items:flex-start;gap:52px}
+  .col{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .cap{font-size:11.5px;color:var(--mute);max-width:270px;text-align:center;line-height:1.45}
+  .cap i{font-style:normal;color:var(--gapc)}
+
+  /* the two circles: where you think they are, and where they are */
+  svg{overflow:visible}
+  .ghost{fill:none;stroke-dasharray:5 4;stroke-width:1.5;opacity:.75}
+  .lens{opacity:.5}
+
+  /* 100 dots = 100 of them */
+  .grid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;width:250px}
+  .cell{
+    aspect-ratio:1;border-radius:50%;background:#23232c;
+    transition:background .45s ease, transform .45s ease;
+  }
+  .cell.imagined{background:#4b5563}
+  .cell.gap{background:var(--gapc)}
+
+  .readout{display:flex;gap:34px;align-items:baseline;justify-content:center}
+  .num{text-align:center}
+  .num .v{font-size:34px;font-weight:600;line-height:1}
+  .num .l{font-size:11px;color:var(--mute);margin-top:6px;letter-spacing:.03em}
+  .num.imagined .v{color:#9ca3af}
+  .num.real .v{color:var(--accent,#fff)}
+  .num.gapn .v{color:var(--gapc)}
+
+  .verdict{font-size:14px;color:var(--mute);height:20px;text-align:center}
+  .verdict b{color:var(--gapc);font-weight:600}
+  .verdict.flip b{color:var(--rep)}
+
+  footer{
+    position:fixed;bottom:14px;right:22px;font-size:11px;color:#55525e;text-align:right;line-height:1.5;
+  }
+  footer a{color:#6f6c7a}
+  .replay{
+    background:none;border:1px solid var(--rule);color:var(--mute);
+    padding:6px 14px;border-radius:5px;font-size:12px;cursor:pointer;
+  }
+  .replay:hover{color:var(--ink);border-color:#3a3a46}
+</style>
+</head>
+<body>
+
+<aside>
+  <h1>Closer Than You Think</h1>
+  <div class="sub">
+    Each side was asked what the other side believes. Then the other side was asked
+    directly. Pick a question.
+  </div>
+  <div class="qlist" id="qlist"></div>
+</aside>
+
+<main>
+  <div class="ask" id="ask"></div>
+
+  <div class="stage">
+    <div class="col">
+      <svg id="venn" width="330" height="230" viewBox="0 0 330 230"></svg>
+      <div class="cap" id="capVenn"></div>
+    </div>
+    <div class="col">
+      <div class="grid" id="grid"></div>
+      <div class="cap" id="capGrid"></div>
+    </div>
+  </div>
+
+  <div class="readout">
+    <div class="num imagined"><div class="v" id="vImag">–</div><div class="l">they imagine</div></div>
+    <div class="num real"><div class="v" id="vReal">–</div><div class="l">actually true</div></div>
+    <div class="num gapn"><div class="v" id="vGap">–</div><div class="l">the mistake</div></div>
+  </div>
+
+  <div class="verdict" id="verdict"></div>
+  <button class="replay" id="replay">Play again</button>
+</main>
+
+<footer>
+  More in Common, &ldquo;The Perception Gap&rdquo; (Yudkin, Hawkins &amp; Dixon)<br>
+  YouGov, Nov 7&ndash;10 2018 &middot; n = 2,100 US adults &middot; MoE &plusmn;2.1%
+</footer>
+
+<script>
+/* Every row is one group estimating another, then the truth. The wording is the
+   survey's own -- "out of every 100 X" -- which is why 100 dots is the honest
+   unit here rather than a percentage bar. */
+const ITEMS = [
+  {id:'police',            by:'Republicans', of:'Democrats',   p:48, a:85, ask:'think <b>most police are not bad people</b>'},
+  {id:'immigration',       by:'Democrats',   of:'Republicans', p:52, a:85, ask:'think <b>properly controlled immigration can be good</b> for the country'},
+  {id:'proud',             by:'Republicans', of:'Democrats',   p:54, a:82, ask:'are <b>proud to be American</b>, while acknowledging the country&rsquo;s flaws'},
+  {id:'racism',            by:'Democrats',   of:'Republicans', p:51, a:79, ask:'think <b>racism still exists</b> in America'},
+  {id:'false-accusations', by:'Republicans', of:'Democrats',   p:45, a:74, ask:'think it matters that men are <b>protected from false accusations</b>'},
+  {id:'open-borders',      by:'Republicans', of:'Democrats',   p:38, a:71, ask:'think the US should <b>not</b> have completely open borders'},
+  {id:'muslims',           by:'Democrats',   of:'Republicans', p:41, a:70, ask:'think many Muslims are <b>good Americans</b>'},
+  {id:'firearms',          by:'Republicans', of:'Democrats',   p:44, a:68, ask:'think law-abiding citizens <b>should have the right</b> to own firearms'},
+  {id:'sexism',            by:'Democrats',   of:'Republicans', p:47, a:66, ask:'think <b>sexism still exists</b> in America'},
+  {id:'guns',              by:'Democrats',   of:'Republicans', p:47, a:65, ask:'think government <b>should do more</b> to keep guns from dangerous people'},
+  {id:'socialist',         by:'Republicans', of:'Democrats',   p:37, a:62, ask:'think America should <b>not</b> be a socialist country'},
+  {id:'ice',               by:'Republicans', of:'Democrats',   p:40, a:53, ask:'think the US should <b>not</b> abolish ICE'},
+  {id:'trump-flawed',      by:'Democrats',   of:'Republicans', p:47, a:48, ask:'think Donald Trump is a <b>flawed person</b>'},
+  {id:'climate',           by:'Democrats',   of:'Republicans', p:44, a:46, ask:'think people are right to be <b>concerned about climate change</b>'},
+  {id:'extreme-d',         by:'Republicans', of:'Democrats',   p:56, a:29, ask:'<b>hold views</b> most people would call extreme', flip:true},
+  {id:'extreme-r',         by:'Democrats',   of:'Republicans', p:53, a:34, ask:'<b>hold views</b> most people would call extreme', flip:true},
+];
+
+const COLOR = {Democrats:'#4c7fe8', Republicans:'#e05455'};
+
+/* ---------- circle geometry ----------
+   Two equal circles. We want the lens between them to be exactly `f` of one
+   circle's area, so the overlap you see IS the share who agree -- no artistic
+   licence. There is no closed form for d, so bisect: the lens area shrinks
+   monotonically as the centres separate. */
+function lensArea(r, d){
+  if (d >= 2*r) return 0;
+  if (d <= 0) return Math.PI*r*r;
+  return 2*r*r*Math.acos(d/(2*r)) - (d/2)*Math.sqrt(4*r*r - d*d);
+}
+function distanceFor(r, f){
+  const target = f * Math.PI*r*r;
+  let lo = 0, hi = 2*r;
+  for (let i = 0; i < 60; i++){
+    const mid = (lo+hi)/2;
+    if (lensArea(r, mid) > target) lo = mid; else hi = mid;
+  }
+  return (lo+hi)/2;
+}
+
+const grid = document.getElementById('grid');
+const cells = [];
+for (let i = 0; i < 100; i++){
+  const c = document.createElement('div');
+  c.className = 'cell';
+  grid.appendChild(c); cells.push(c);
+}
+
+const svg = document.getElementById('venn');
+const NS = 'http://www.w3.org/2000/svg';
+const R = 68, CY = 115, CX_LEFT = 118;
+
+function el(tag, attrs){
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  return n;
+}
+
+let timer = null;
+
+function render(item){
+  const mine  = COLOR[item.by];
+  const yours = COLOR[item.of];
+  document.documentElement.style.setProperty('--accent', yours);
+
+  document.getElementById('ask').innerHTML =
+    `Out of every 100 <b style="color:${yours}">${item.of}</b>, how many<br>${item.ask}?`;
+
+  /* --- the circles --- */
+  svg.innerHTML = '';
+  const dGhost = distanceFor(R, item.p/100);
+  const dReal  = distanceFor(R, item.a/100);
+
+  svg.appendChild(el('circle', {cx:CX_LEFT, cy:CY, r:R, fill:mine, 'fill-opacity':.28,
+                                stroke:mine, 'stroke-width':1.5}));
+  // where you imagine they sit
+  const ghost = el('circle', {class:'ghost', cx:CX_LEFT+dGhost, cy:CY, r:R, stroke:'#8a8794'});
+  svg.appendChild(ghost);
+  // Where they actually sit -- slides in from the ghost. Animate `transform`,
+  // not `cx`: cx is only transitionable where CSS geometry properties are
+  // supported, and a silent jump is a worse failure than it looks.
+  const real = el('circle', {cx:CX_LEFT+dReal, cy:CY, r:R, fill:yours, 'fill-opacity':.28,
+                             stroke:yours, 'stroke-width':1.5});
+  real.style.transform = `translateX(${dGhost - dReal}px)`;
+  svg.appendChild(real);
+  requestAnimationFrame(() => {
+    real.style.transition = 'transform 1.15s cubic-bezier(.4,0,.2,1)';
+    real.style.transform = 'translateX(0)';
+  });
+
+  svg.appendChild(el('text', {x:CX_LEFT-R+6, y:CY-R-12, fill:mine, 'font-size':12}))
+     .textContent = item.by;
+  const far = Math.max(dGhost, dReal);
+  const lab = el('text', {x:CX_LEFT+far+R, y:CY-R-12, fill:yours,
+                          'font-size':12, 'text-anchor':'end'});
+  lab.textContent = item.of;
+  svg.appendChild(lab);
+
+  /* --- the dots: fill to the imagined number, then let reality catch up --- */
+  document.getElementById('capVenn').innerHTML =
+    `dashed = where <b style="color:${mine}">${item.by}</b> picture them`;
+  document.getElementById('capGrid').innerHTML = '&nbsp;';
+  clearTimeout(timer);
+  const lo = Math.min(item.p, item.a), hi = Math.max(item.p, item.a);
+  cells.forEach((c,i) => { c.className = 'cell' + (i < item.p ? ' imagined' : ''); });
+
+  document.getElementById('vImag').textContent = item.p;
+  document.getElementById('vReal').textContent = '–';
+  document.getElementById('vGap').textContent  = '–';
+  document.getElementById('verdict').textContent = '';
+
+  timer = setTimeout(() => {
+    cells.forEach((c,i) => {
+      if (i >= lo && i < hi) c.className = 'cell gap';
+      else if (i < lo)       c.className = 'cell imagined';
+      else                   c.className = 'cell';
+    });
+    document.getElementById('vReal').textContent = item.a;
+    document.getElementById('vGap').textContent  = (item.a > item.p ? '+' : '−') + Math.abs(item.a-item.p);
+    const v = document.getElementById('verdict');
+    v.className = 'verdict' + (item.flip ? ' flip' : '');
+    document.getElementById('capGrid').innerHTML = item.flip
+      ? `the <i>${Math.abs(item.a-item.p)}</i> they invented`
+      : `the <i>${Math.abs(item.a-item.p)}</i> they never knew were with them`;
+    v.innerHTML = item.flip
+      ? `<b>${item.by}</b> imagine nearly twice as many extremists as there are.`
+      : `<b>${Math.abs(item.a-item.p)} in every 100</b> agree with them &mdash; and they have no idea.`;
+  }, 1150);
+}
+
+/* ---------- the list ---------- */
+const qlist = document.getElementById('qlist');
+let current = ITEMS[0];
+[['Republicans','What Republicans get wrong about Democrats'],
+ ['Democrats','What Democrats get wrong about Republicans']].forEach(([by, label]) => {
+  const h = document.createElement('div');
+  h.className = 'grouplabel'; h.textContent = label;
+  qlist.appendChild(h);
+  ITEMS.filter(i => i.by === by).forEach(item => {
+    const d = document.createElement('div');
+    d.className = 'q';
+    // drop the leading verb in the list -- sixteen rows starting "think" is noise
+    const label = item.ask.replace(/<\/?b>/g,'').replace(/^think /,'');
+    d.innerHTML = label + `<span class="n mono">${item.p}&rarr;${item.a}</span>`;
+    d.onclick = () => {
+      document.querySelectorAll('.q').forEach(q => q.classList.remove('on'));
+      d.classList.add('on'); current = item; render(item);
+    };
+    item._node = d;
+    qlist.appendChild(d);
+  });
+});
+
+document.getElementById('replay').onclick = () => render(current);
+ITEMS[0]._node.classList.add('on');
+render(ITEMS[0]);
+</script>
+</body>
+</html>
