@@ -612,11 +612,11 @@
         const closePopup = document.getElementById('closePopup');
         const loadingIndicator = document.getElementById('loadingIndicator');
 
-        // Initialize Freepik API
+        // Initialize the icon source
         try {
             icons = new IconLibrary();
         } catch (e) {
-            console.log('Freepik API not available, using placeholder images');
+            console.log('no icon source, using placeholder images');
         }
 
         // Build progress dots
