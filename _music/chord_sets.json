@@ -19,7 +19,8 @@
    "mode": "for chromatic/Bennett entries: 'major' (chords spelled in C) or 'minor' (spelled in A minor — the relative minor, same white-note frame)",
    "chords": "letter names in the reference key (C for major-mode, Am for minor-mode). For chromatic entries this + roman are the canonical identity (integer degrees can't hold altered chords)",
    "examples": "well-known songs that use the progression",
-   "source": "'bennett' = imported from David Bennett's named-progression videos"
+   "source": "'bennett' = imported from David Bennett's named-progression videos",
+   "songs_exact_palette": "songs with at least one run of consecutive diatonic chords whose distinct degrees are exactly this set (windows of 8/12/16 over the Hookpad corpus, borrowed and applied chords break the run). Comparable across all 35 sets. Distinct from 'corpus_sections', which older entries carry from an earlier pass with a different definition."
   }
  },
  "entries": [
@@ -38,7 +39,8 @@
    "chords_C": "C F G Am",
    "has_I": true,
    "n_minor": 1,
-   "family": "pillars + tonic-shadow"
+   "family": "pillars + tonic-shadow",
+   "songs_exact_palette": 374
   },
   {
    "key": "getting_better",
@@ -56,7 +58,8 @@
    "chords_C": "C Dm Em F",
    "has_I": true,
    "n_minor": 2,
-   "family": "stepwise (no V)"
+   "family": "stepwise (no V)",
+   "songs_exact_palette": 41
   },
   {
    "key": "mr_jones_set",
@@ -74,7 +77,8 @@
    "chords_C": "Dm F G Am",
    "has_I": false,
    "n_minor": 2,
-   "family": "no-tonic"
+   "family": "no-tonic",
+   "songs_exact_palette": 45
   },
   {
    "key": "maggie_may",
@@ -915,7 +919,8 @@
    "has_I": true,
    "n_minor": 0,
    "family": "pillars",
-   "corpus_sections": 113
+   "corpus_sections": 113,
+   "songs_exact_palette": 428
   },
   {
    "key": "wouldnt_it_be_nice",
@@ -934,7 +939,8 @@
    "has_I": true,
    "n_minor": 1,
    "family": "pillars + supertonic",
-   "corpus_sections": 47
+   "corpus_sections": 47,
+   "songs_exact_palette": 208
   },
   {
    "key": "day_tripper",
@@ -1006,7 +1012,8 @@
    "has_I": true,
    "n_minor": 1,
    "family": "pillars + supertonic",
-   "corpus_sections": 18
+   "corpus_sections": 18,
+   "songs_exact_palette": 87
   },
   {
    "key": "strawberry_fields",
@@ -1044,7 +1051,8 @@
    "has_I": true,
    "n_minor": 1,
    "family": "pillars + tonic-shadow",
-   "corpus_sections": 17
+   "corpus_sections": 17,
+   "songs_exact_palette": 110
   },
   {
    "key": "full_six",
@@ -1084,7 +1092,8 @@
    "has_I": true,
    "n_minor": 2,
    "family": "pillars + supertonic",
-   "corpus_sections": 14
+   "corpus_sections": 14,
+   "songs_exact_palette": 98
   },
   {
    "key": "dont_fear_the_reaper",
@@ -1102,7 +1111,8 @@
    "has_I": false,
    "n_minor": 1,
    "family": "tonic-less",
-   "corpus_sections": 13
+   "corpus_sections": 13,
+   "songs_exact_palette": 96
   },
   {
    "key": "wonderwall",
@@ -1120,7 +1130,8 @@
    "has_I": true,
    "n_minor": 1,
    "family": "pillars + tonic-shadow",
-   "corpus_sections": 11
+   "corpus_sections": 11,
+   "songs_exact_palette": 116
   },
   {
    "key": "jeremy",
@@ -1156,7 +1167,8 @@
    "has_I": true,
    "n_minor": 2,
    "family": "pillars + supertonic",
-   "corpus_sections": 10
+   "corpus_sections": 10,
+   "songs_exact_palette": 68
   },
   {
    "key": "man_in_the_mirror",
@@ -1174,7 +1186,8 @@
    "has_I": true,
    "n_minor": 1,
    "family": "pillars + supertonic",
-   "corpus_sections": 10
+   "corpus_sections": 10,
+   "songs_exact_palette": 80
   },
   {
    "key": "lean_on_me",
@@ -1213,7 +1226,8 @@
    "has_I": true,
    "n_minor": 1,
    "family": "pillars + mediant",
-   "corpus_sections": 7
+   "corpus_sections": 7,
+   "songs_exact_palette": 78
   },
   {
    "key": "my_happiness",
@@ -1232,7 +1246,8 @@
    "has_I": false,
    "n_minor": 2,
    "family": "tonic-less",
-   "corpus_sections": 6
+   "corpus_sections": 6,
+   "songs_exact_palette": 29
   },
   {
    "key": "you_really_got_me",
@@ -1272,7 +1287,8 @@
    "examples": [
     "Florence + the Machine — Ship to Wreck (verse)",
     "The Shins — Caring Is Creepy (bridge)"
-   ]
+   ],
+   "songs_exact_palette": 13
   },
   {
    "key": "trouble",
@@ -1290,14 +1306,14 @@
    "has_I": true,
    "n_minor": 2,
    "family": "stepwise cluster on the tonic",
-   "corpus_sections": 9,
    "examples": [
     "weezer — in the garage",
     "coldplay — trouble",
     "sugar ray — someday",
     "cage the elephant — shake me down",
     "beatles — ask me why"
-   ]
+   ],
+   "songs_exact_palette": 9
   },
   {
    "key": "fernando",
@@ -1315,14 +1331,14 @@
    "has_I": true,
    "n_minor": 2,
    "family": "tonic and the two soft minors",
-   "corpus_sections": 19,
    "examples": [
     "killers — smile like you mean it",
     "abba — fernando",
     "beatles — all ive gotta do",
     "beatles — all ive got to do",
     "radiohead — bones"
-   ]
+   ],
+   "songs_exact_palette": 19
   },
   {
    "key": "girl_from_the_north_country",
@@ -1340,14 +1356,14 @@
    "has_I": true,
    "n_minor": 1,
    "family": "pillars with iii for V",
-   "corpus_sections": 25,
    "examples": [
     "bob dylan — girl from the north country",
     "grouplove — tongue tied",
     "modest mouse — float on",
     "switchfoot — meant to live",
     "miley cyrus — malibu"
-   ]
+   ],
+   "songs_exact_palette": 42
   },
   {
    "key": "when_you_were_young",
@@ -1365,14 +1381,14 @@
    "has_I": true,
    "n_minor": 1,
    "family": "the tonic triad, harmonised",
-   "corpus_sections": 22,
    "examples": [
     "journey — lovin touchin squeezin",
     "vanessa carlton — a thousand miles",
     "killers — when you were young",
     "cage the elephant — shake me down",
     "modest mouse — ocean breathes salty"
-   ]
+   ],
+   "songs_exact_palette": 22
   },
   {
    "key": "habits",
@@ -1390,14 +1406,14 @@
    "has_I": true,
    "n_minor": 2,
    "family": "tonic and its two relatives",
-   "corpus_sections": 25,
    "examples": [
     "tove lo — habits",
     "311 — amber",
     "311 — Amber",
     "modest mouse — float on",
     "paramore — aint it fun"
-   ]
+   ],
+   "songs_exact_palette": 39
   },
   {
    "key": "someday",
@@ -1415,14 +1431,14 @@
    "has_I": false,
    "n_minor": 2,
    "family": "stepwise, no tonic",
-   "corpus_sections": 10,
    "examples": [
     "weezer — the world has turned",
     "sugar ray — someday",
     "old 97s — nineteen",
     "metallica — sad but true",
     "avril lavigne — my happy ending"
-   ]
+   ],
+   "songs_exact_palette": 10
   },
   {
    "key": "come_as_you_are",
@@ -1440,14 +1456,14 @@
    "has_I": false,
    "n_minor": 2,
    "family": "no tonic, no IV",
-   "corpus_sections": 11,
    "examples": [
     "nirvana — come as you are",
     "keane — somewhere only we know",
     "radiohead — no surprises",
     "beatles — she came in through the bathroom window",
     "6-30-26-mine"
-   ]
+   ],
+   "songs_exact_palette": 11
   },
   {
    "key": "while_my_guitar",
@@ -1465,13 +1481,13 @@
    "has_I": false,
    "n_minor": 3,
    "family": "the three minors",
-   "corpus_sections": 6,
    "examples": [
     "rem — losing my religion",
     "beatles — While My Guitar Gently Weeps",
     "beatles — happiness is a warm gun",
     "paula cole — where have all the cowboys gone"
-   ]
+   ],
+   "songs_exact_palette": 6
   },
   {
    "key": "on_a_plain",
@@ -1489,14 +1505,14 @@
    "has_I": false,
    "n_minor": 1,
    "family": "pillars with ii for I",
-   "corpus_sections": 25,
    "examples": [
     "nirvana — on a plain",
     "nirvana — blew",
     "incubus — dig",
     "sheryl crow — if it makes you happy",
     "sheryl crow — if it makes you happy"
-   ]
+   ],
+   "songs_exact_palette": 27
   },
   {
    "key": "the_unforgiven",
@@ -1514,14 +1530,14 @@
    "has_I": false,
    "n_minor": 2,
    "family": "two-five plus the tonic-shadow",
-   "corpus_sections": 11,
    "examples": [
     "metallica — the unforgiven",
     "abba — fernando",
     "beatles — and i love her",
     "avril lavigne — my happy ending",
     "whitesnake — here i go again"
-   ]
+   ],
+   "songs_exact_palette": 11
   },
   {
    "key": "a_thousand_miles",
@@ -1539,14 +1555,14 @@
    "has_I": false,
    "n_minor": 1,
    "family": "pillars with iii for I",
-   "corpus_sections": 20,
    "examples": [
     "vanessa carlton — a thousand miles",
     "garth brooks — the dance",
     "pixies — gigantic",
     "shawn colvin — sunny came home",
     "beatles — getting better"
-   ]
+   ],
+   "songs_exact_palette": 20
   },
   {
    "key": "africa",
@@ -1564,14 +1580,14 @@
    "has_I": false,
    "n_minor": 2,
    "family": "no tonic, no IV",
-   "corpus_sections": 11,
    "examples": [
     "rem — losing my religion",
     "red hot chili peppers — soul to squeeze",
     "pixies — gigantic",
     "toto — africa",
     "led zeppelin — hey hey what can i do"
-   ]
+   ],
+   "songs_exact_palette": 11
   },
   {
    "key": "do_you_want_to_know_a_secret",
@@ -1590,14 +1606,14 @@
    "has_I": true,
    "n_minor": 2,
    "family": "stepwise cluster plus V",
-   "corpus_sections": 25,
    "examples": [
     "weezer — in the garage",
     "blur — the universal",
     "beatles — do you want to know a secret",
     "beatles — im happy just to dance with you",
     "bill withers — lean on me"
-   ]
+   ],
+   "songs_exact_palette": 29
   },
   {
    "key": "shake_me_down",
@@ -1616,14 +1632,14 @@
    "has_I": true,
    "n_minor": 3,
    "family": "the tonic plus all three minors",
-   "corpus_sections": 17,
    "examples": [
     "cage the elephant — shake me down",
     "sombr — back to friends",
     "beatles — While My Guitar Gently Weeps",
     "311 — Amber",
     "aerosmith — jaded"
-   ]
+   ],
+   "songs_exact_palette": 17
   },
   {
    "key": "comfortably_numb",
@@ -1642,14 +1658,14 @@
    "has_I": true,
    "n_minor": 2,
    "family": "the axis with iii for V",
-   "corpus_sections": 25,
    "examples": [
     "incubus — drive",
     "pink floyd — comfortably numb",
     "metallica — sad but true",
     "lady antebellum — need you now",
     "beatles — for no one"
-   ]
+   ],
+   "songs_exact_palette": 43
   },
   {
    "key": "party_in_the_usa",
@@ -1668,14 +1684,14 @@
    "has_I": true,
    "n_minor": 2,
    "family": "the axis with iii for IV",
-   "corpus_sections": 25,
    "examples": [
     "miley cyrus — party in the usa",
     "coldplay — in my place",
     "vertical horizon — everything you want",
     "flo rida — wild ones",
     "pixies — gigantic"
-   ]
+   ],
+   "songs_exact_palette": 48
   },
   {
    "key": "somewhere_only_we_know",
@@ -1694,14 +1710,14 @@
    "has_I": false,
    "n_minor": 2,
    "family": "no tonic: stepwise pair plus IV and V",
-   "corpus_sections": 25,
    "examples": [
     "fastball — fire escape",
     "avril lavigne — my happy ending",
     "old 97s — nineteen",
     "keane — somewhere only we know",
     "go gos — vacation"
-   ]
+   ],
+   "songs_exact_palette": 26
   },
   {
    "key": "september",
@@ -1720,14 +1736,14 @@
    "has_I": false,
    "n_minor": 3,
    "family": "the three minors plus IV",
-   "corpus_sections": 12,
    "examples": [
     "weezer — the world has turned",
     "earth wind and fire — september",
     "beatles — im only sleeping",
     "america — sister golden hair",
     "beatles — dont bother me-160"
-   ]
+   ],
+   "songs_exact_palette": 12
   },
   {
    "key": "and_i_love_her",
@@ -1746,14 +1762,14 @@
    "has_I": false,
    "n_minor": 3,
    "family": "the three minors plus V",
-   "corpus_sections": 13,
    "examples": [
     "rem — losing my religion",
     "beatles — and i love her",
     "earth wind and fire — september",
     "1979 — try",
     "beatles — While My Guitar Gently Weeps"
-   ]
+   ],
+   "songs_exact_palette": 13
   },
   {
    "key": "enter_sandman",
@@ -1779,7 +1795,8 @@
     "metallica — enter sandman",
     "kate bush — running up that hill"
    ],
-   "note": "Named for Metallica rather than Kate Bush because 'running_up_that_hill' is already taken by the ordered Bennett loop."
+   "note": "Named for Metallica rather than Kate Bush because 'running_up_that_hill' is already taken by the ordered Bennett loop.",
+   "songs_exact_palette": 11
   }
  ]
 }
