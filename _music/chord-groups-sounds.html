@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chord Groups, In Sounds</title>
+<style>
+  :root{--bg:#0d0f14;--ink:#e9ebf0;--mute:#8990a2;--dim:#5a6173;--rule:#1f2430;
+        --d1:#E84545;--d2:#F0A040;--d3:#E8C828;--d4:#50C878;--d5:#5090F0;--d6:#7040B0}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;display:flex;
+       flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  header{padding:16px 24px 11px;border-bottom:1px solid var(--rule)}
+  h1{font-size:21px;font-weight:650;letter-spacing:-.015em}
+  .sub{font-size:12.5px;color:var(--mute);margin-top:6px;line-height:1.5;max-width:1120px}
+  .sub b{color:var(--ink);font-weight:600}
+  .sounds{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+  .sd{display:flex;align-items:center;gap:6px;border:1px solid var(--rule);border-radius:99px;
+      padding:3px 10px 3px 4px;font-size:11.5px;color:var(--mute)}
+  .sd b{display:inline-block;min-width:22px;text-align:center;border-radius:99px;padding:2px 6px;
+        font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:700}
+  main{flex:1;display:flex;gap:18px;padding:13px 24px 14px;overflow:hidden}
+  .col{flex:1;display:flex;flex-direction:column;min-width:0}
+  .ch{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);
+      padding:0 0 7px 2px;display:flex;justify-content:space-between}
+  .rows{flex:1;overflow-y:auto;padding-right:3px}
+  .r{display:grid;grid-template-columns:106px 1fr 96px 40px;gap:8px;align-items:center;
+     padding:3px 6px;border-radius:5px}
+  .r:hover{background:#181d28}
+  .strip{display:flex;gap:2px}
+  .sl{width:15px;height:17px;border-radius:3px;background:#171b24;border:1px solid #232937;
+      font-size:8px;line-height:15px;text-align:center;color:#3c4354}
+  .sl.lit{font-weight:700;border-color:transparent}
+  .wd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;font-weight:600;
+      letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chips{display:flex;gap:3px;justify-content:flex-start}
+  .cp{font-family:ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;border-radius:3px;
+      padding:2px 5px;min-width:19px;text-align:center}
+  .ct{font-size:10.5px;color:var(--mute);font-family:ui-monospace,Menlo,monospace;text-align:right}
+  .s1{background:var(--d1);color:#fff} .s2{background:var(--d2);color:#1a1205}
+  .s3{background:var(--d3);color:#1a1605} .s4{background:var(--d4);color:#06180d}
+  .s5{background:var(--d5);color:#fff} .s6{background:var(--d6);color:#fff}
+  footer{border-top:1px solid var(--rule);padding:9px 24px;font-size:11px;color:var(--dim)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Chord Groups, In Sounds</h1>
+  <div class="sub">
+    The same fifty groups, spelled the other way. Not by letter &mdash; by the
+    <b>first consonant sound</b> of each syllable, using the nine-sound mapping.
+    <b>MAGIC</b> is m&ndash;j&ndash;k, which is Em&ndash;G&ndash;C. <b>CATFISH</b> is
+    k&ndash;t&ndash;f&ndash;sh: C&ndash;Dm&ndash;F&ndash;G. The word also hands you an
+    order to play them in, which the letter spellings never did.
+  </div>
+  <div class="sounds">
+    <span class="sd"><b class="s1">k g</b>C</span>
+    <span class="sd"><b class="s2">t d</b>Dm</span>
+    <span class="sd"><b class="s3">m</b>Em</span>
+    <span class="sd"><b class="s4">f v</b>F</span>
+    <span class="sd"><b class="s5">j sh ch</b>G</span>
+    <span class="sd"><b class="s6">s z</b>Am</span>
+    <span class="sd" style="opacity:.55"><b style="background:#2a3040;color:#8990a2">p b</b>A&#9839;</span>
+    <span class="sd" style="opacity:.55"><b style="background:#2a3040;color:#8990a2">th w</b>D</span>
+    <span class="sd" style="opacity:.55"><b style="background:#2a3040;color:#8990a2">r</b>E</span>
+    <span class="sd" style="opacity:.55"><b style="background:#2a3040;color:#8990a2">n l</b>free</span>
+  </div>
+</header>
+<main>
+  <div class="col"><div class="ch"><span>fifteen pairs</span><span>songs</span></div><div class="rows" id="c2"></div></div>
+  <div class="col"><div class="ch"><span>twenty threes</span><span>songs</span></div><div class="rows" id="c3"></div></div>
+  <div class="col"><div class="ch"><span>fifteen fours</span><span>songs</span></div><div class="rows" id="c4"></div></div>
+</main>
+<footer>
+  Words carrying r, p, b, th or w are excluded &mdash; those sounds are E, A&#9839; and D, so they
+  would smuggle in a chord that is not in the group. n and l are free: no chord uses them.
+</footer>
+<script>
+const ROWS=[{"n":2,"d":[1,4],"roman":"I IV","chords":"C F","word":"CUFF","name":"Day Tripper","artist":"The Beatles","c":277,"sword":"CAVE","chips":[{"s":"k","d":1},{"s":"v","d":4}]},{"n":2,"d":[1,5],"roman":"I V","chords":"C G","word":"COG","name":"Chattahoochee","artist":"Alan Jackson","c":189,"sword":"CASH","chips":[{"s":"k","d":1},{"s":"sh","d":5}]},{"n":2,"d":[1,6],"roman":"I vi","chords":"C Am","word":"CAT","name":"Walk This Way","artist":"Aerosmith","c":97,"sword":"ASK","chips":[{"s":"s","d":6},{"s":"k","d":1}]},{"n":2,"d":[4,5],"roman":"IV V","chords":"F G","word":"FOG","name":"Jeremy","artist":"Pearl Jam","c":83,"sword":"FISH","chips":[{"s":"f","d":4},{"s":"sh","d":5}]},{"n":2,"d":[1,2],"roman":"I ii","chords":"C Dm","word":"COD","name":"You Really Got Me","artist":"The Kinks","c":53,"sword":"CAT","chips":[{"s":"k","d":1},{"s":"t","d":2}]},{"n":2,"d":[1,3],"roman":"I iii","chords":"C Em","word":"ICE","name":"Set Fire to the Rain","artist":"Adele","c":51,"sword":"GUM","chips":[{"s":"g","d":1},{"s":"m","d":3}]},{"n":2,"d":[3,6],"roman":"vi iii","chords":"Am Em","word":"EAR","name":"Losing My Religion","artist":"R.E.M.","c":33,"sword":"SUM","chips":[{"s":"s","d":6},{"s":"m","d":3}]},{"n":2,"d":[5,6],"roman":"V vi","chords":"G Am","word":"GAS","name":"Rolling in the Deep","artist":"Adele","c":33,"sword":"SAGE","chips":[{"s":"s","d":6},{"s":"j","d":5}]},{"n":2,"d":[4,6],"roman":"IV vi","chords":"F Am","word":"FAR","name":"A Day in the Life","artist":"The Beatles","c":32,"sword":"FIZZ","chips":[{"s":"f","d":4},{"s":"z","d":6}]},{"n":2,"d":[2,4],"roman":"ii IV","chords":"Dm F","word":"DOFF","name":"Hey Bulldog","artist":"The Beatles","c":15,"sword":"VAT","chips":[{"s":"v","d":4},{"s":"t","d":2}]},{"n":2,"d":[2,5],"roman":"ii V","chords":"Dm G","word":"DOG","name":"Maggie May","artist":"Rod Stewart","c":15,"sword":"JET","chips":[{"s":"j","d":5},{"s":"t","d":2}]},{"n":2,"d":[2,6],"roman":"ii vi","chords":"Dm Am","word":"DAD","name":"Dream On","artist":"Aerosmith","c":15,"sword":"SAD","chips":[{"s":"s","d":6},{"s":"d","d":2}]},{"n":2,"d":[3,4],"roman":"iii IV","chords":"Em F","word":"FEE","name":"Nowhere Man","artist":"The Beatles","c":14,"sword":"FOAM","chips":[{"s":"f","d":4},{"s":"m","d":3}]},{"n":2,"d":[3,5],"roman":"iii V","chords":"Em G","word":"EGG","name":"All You Need Is Love","artist":"The Beatles","c":7,"sword":"JAM","chips":[{"s":"j","d":5},{"s":"m","d":3}]},{"n":2,"d":[2,3],"roman":"ii iii","chords":"Dm Em","word":"DEED","name":"Are You Gonna Go My Way","artist":"Lenny Kravitz","c":5,"sword":"MUD","chips":[{"s":"m","d":3},{"s":"d","d":2}]},{"n":3,"d":[1,4,5],"roman":"I IV V","chords":"C F G","word":"FLOCKING","name":"Pillars (I IV V)","artist":"AC/DC — You Shook Me All Night Long","c":451,"sword":"FICTION","chips":[{"s":"f","d":4},{"s":"k","d":1},{"s":"sh","d":5}]},{"n":3,"d":[1,5,6],"roman":"I V vi","chords":"C G Am","word":"CRAG","name":"Ob-La-Di, Ob-La-Da","artist":"The Beatles","c":132,"sword":"SCOTCH","chips":[{"s":"s","d":6},{"s":"k","d":1},{"s":"ch","d":5}]},{"n":3,"d":[1,4,6],"roman":"I IV vi","chords":"C F Am","word":"FACT","name":"Wonderwall","artist":"Oasis","c":128,"sword":"FOX","chips":[{"s":"f","d":4},{"s":"k","d":1},{"s":"s","d":6}]},{"n":3,"d":[4,5,6],"roman":"IV V vi","chords":"F G Am","word":"FLAG","name":"(Don't Fear) The Reaper","artist":"Blue Öyster Cult","c":105,"sword":"SELFISH","chips":[{"s":"s","d":6},{"s":"f","d":4},{"s":"sh","d":5}]},{"n":3,"d":[1,2,5],"roman":"I ii V","chords":"C Dm G","word":"CODING","name":"Ticket to Ride","artist":"The Beatles","c":93,"sword":"GADGET","chips":[{"s":"g","d":1},{"s":"j","d":5},{"s":"t","d":2}]},{"n":3,"d":[1,2,4],"roman":"I ii IV","chords":"C Dm F","word":"CODFISH","name":"Man in the Mirror","artist":"Michael Jackson","c":89,"sword":"GIFT","chips":[{"s":"g","d":1},{"s":"f","d":4},{"s":"t","d":2}]},{"n":3,"d":[1,3,6],"roman":"I iii vi","chords":"C Em Am","word":"ACE","name":"Habits (Stay High)","artist":"Tove Lo","c":63,"sword":"MASK","chips":[{"s":"m","d":3},{"s":"s","d":6},{"s":"k","d":1}]},{"n":3,"d":[1,3,4],"roman":"I iii IV","chords":"C Em F","word":"CLEF","name":"Girl from the North Country","artist":"Bob Dylan","c":54,"sword":"COMFY","chips":[{"s":"k","d":1},{"s":"m","d":3},{"s":"f","d":4}]},{"n":3,"d":[1,3,5],"roman":"I iii V","chords":"C Em G","word":"GECKO","name":"When You Were Young","artist":"The Killers","c":31,"sword":"MAGIC","chips":[{"s":"m","d":3},{"s":"j","d":5},{"s":"k","d":1}]},{"n":3,"d":[1,2,6],"roman":"I ii vi","chords":"C Dm Am","word":"ACID","name":"Fernando","artist":"ABBA","c":28,"sword":"DESK","chips":[{"s":"d","d":2},{"s":"s","d":6},{"s":"k","d":1}]},{"n":3,"d":[2,4,5],"roman":"ii IV V","chords":"Dm F G","word":"DOGFIGHT","name":"On a Plain","artist":"Nirvana","c":28,"sword":"SHIFT","chips":[{"s":"sh","d":5},{"s":"f","d":4},{"s":"t","d":2}]},{"n":3,"d":[3,4,5],"roman":"iii IV V","chords":"Em F G","word":"FUGUE","name":"A Thousand Miles","artist":"Vanessa Carlton","c":22,"sword":"SHAMEFUL","chips":[{"s":"sh","d":5},{"s":"m","d":3},{"s":"f","d":4}]},{"n":3,"d":[1,2,3],"roman":"I ii iii","chords":"C Dm Em","word":"CODE","name":"Trouble","artist":"Coldplay","c":16,"sword":"COMET","chips":[{"s":"k","d":1},{"s":"m","d":3},{"s":"t","d":2}]},{"n":3,"d":[3,4,6],"roman":"iii IV vi","chords":"Em F Am","word":"FAME","name":"Enter Sandman","artist":"Metallica","c":16,"sword":"MYSELF","chips":[{"s":"m","d":3},{"s":"s","d":6},{"s":"f","d":4}]},{"n":3,"d":[3,5,6],"roman":"iii V vi","chords":"Em G Am","word":"AGE","name":"Africa","artist":"Toto","c":16,"sword":"SMASH","chips":[{"s":"s","d":6},{"s":"m","d":3},{"s":"sh","d":5}]},{"n":3,"d":[2,4,6],"roman":"ii IV vi","chords":"Dm F Am","word":"DAFT","name":"Ship to Wreck","artist":"Florence + the Machine","c":13,"sword":"SOFT","chips":[{"s":"s","d":6},{"s":"f","d":4},{"s":"t","d":2}]},{"n":3,"d":[2,5,6],"roman":"ii V vi","chords":"Dm G Am","word":"DRAG","name":"The Unforgiven","artist":"Metallica","c":12,"sword":"JUST","chips":[{"s":"j","d":5},{"s":"s","d":6},{"s":"t","d":2}]},{"n":3,"d":[2,3,4],"roman":"ii iii IV","chords":"Dm Em F","word":"FEED","name":"Someday","artist":"Sugar Ray","c":11,"sword":"MOTIF","chips":[{"s":"m","d":3},{"s":"t","d":2},{"s":"f","d":4}]},{"n":3,"d":[2,3,5],"roman":"ii iii V","chords":"Dm Em G","word":"EDGE","name":"Come as You Are","artist":"Nirvana","c":11,"sword":"DAMAGE","chips":[{"s":"d","d":2},{"s":"m","d":3},{"s":"j","d":5}]},{"n":3,"d":[2,3,6],"roman":"ii iii vi","chords":"Dm Em Am","word":"DEAD","name":"While My Guitar Gently Weeps","artist":"The Beatles","c":6,"sword":"MIST","chips":[{"s":"m","d":3},{"s":"s","d":6},{"s":"t","d":2}]},{"n":4,"d":[1,4,5,6],"roman":"I IV V vi","chords":"C F G Am","word":"FACING","name":"Axis (of Awesome)","artist":"","c":374,"sword":"SCAVENGE","chips":[{"s":"s","d":6},{"s":"k","d":1},{"s":"v","d":4},{"s":"j","d":5}]},{"n":4,"d":[1,2,4,5],"roman":"I ii IV V","chords":"C Dm F G","word":"GOLDFINCH","name":"Wouldn't It Be Nice","artist":"Beach Boys","c":208,"sword":"CATFISH","chips":[{"s":"k","d":1},{"s":"t","d":2},{"s":"f","d":4},{"s":"sh","d":5}]},{"n":4,"d":[1,2,5,6],"roman":"I ii V vi","chords":"C Dm G Am","word":"DANCING","name":"Too Little Too Late","artist":"JoJo","c":98,"sword":"CONGEST","chips":[{"s":"k","d":1},{"s":"j","d":5},{"s":"s","d":6},{"s":"t","d":2}]},{"n":4,"d":[1,3,4,5],"roman":"I iii IV V","chords":"C Em F G","word":"FENCING","name":"I Feel Fine","artist":"The Beatles","c":78,"sword":"CAMOUFLAGE","chips":[{"s":"k","d":1},{"s":"m","d":3},{"s":"f","d":4},{"s":"zh","d":5}]},{"n":4,"d":[1,2,4,6],"roman":"I ii IV vi","chords":"C Dm F Am","word":"FLACCID","name":"Roar","artist":"Katy Perry","c":68,"sword":"FIXED","chips":[{"s":"f","d":4},{"s":"k","d":1},{"s":"s","d":6},{"s":"t","d":2}]},{"n":4,"d":[1,3,5,6],"roman":"I iii V vi","chords":"C Em G Am","word":"CAGE","name":"Party in the U.S.A.","artist":"Miley Cyrus","c":48,"sword":"SKIRMISH","chips":[{"s":"s","d":6},{"s":"k","d":1},{"s":"m","d":3},{"s":"sh","d":5}]},{"n":4,"d":[2,4,5,6],"roman":"ii IV V vi","chords":"Dm F G Am","word":"GADFLY","name":"Mr. Jones","artist":"Counting Crows","c":45,"sword":"JUSTIFY","chips":[{"s":"j","d":5},{"s":"s","d":6},{"s":"t","d":2},{"s":"f","d":4}]},{"n":4,"d":[1,3,4,6],"roman":"I iii IV vi","chords":"C Em F Am","word":"FACE","name":"Comfortably Numb","artist":"Pink Floyd","c":43,"sword":"FLUMMOX","chips":[{"s":"f","d":4},{"s":"m","d":3},{"s":"k","d":1},{"s":"s","d":6}]},{"n":4,"d":[1,2,3,4],"roman":"I ii iii IV","chords":"C Dm Em F","word":"DEFECT","name":"Getting Better","artist":"The Beatles","c":41,"sword":"COMFORT","chips":[{"s":"k","d":1},{"s":"m","d":3},{"s":"f","d":4},{"s":"t","d":2}]},{"n":4,"d":[1,2,3,5],"roman":"I ii iii V","chords":"C Dm Em G","word":"CUDGEL","name":"Do You Want to Know a Secret","artist":"The Beatles","c":29,"sword":"CHECKMATE","chips":[{"s":"ch","d":5},{"s":"k","d":1},{"s":"m","d":3},{"s":"t","d":2}]},{"n":4,"d":[3,4,5,6],"roman":"iii IV V vi","chords":"Em F G Am","word":"GAFFE","name":"My Happiness","artist":"Powderfinger","c":29,"sword":"MISCHIEF","chips":[{"s":"m","d":3},{"s":"s","d":6},{"s":"ch","d":5},{"s":"f","d":4}]},{"n":4,"d":[2,3,4,5],"roman":"ii iii IV V","chords":"Dm Em F G","word":"FUDGE","name":"Somewhere Only We Know","artist":"Keane","c":26,"sword":"CHIEFDOM","chips":[{"s":"ch","d":5},{"s":"f","d":4},{"s":"d","d":2},{"s":"m","d":3}]},{"n":4,"d":[1,2,3,6],"roman":"I ii iii vi","chords":"C Dm Em Am","word":"DECADE","name":"Shake Me Down","artist":"Cage the Elephant","c":17,"sword":"MASCOT","chips":[{"s":"m","d":3},{"s":"s","d":6},{"s":"k","d":1},{"s":"t","d":2}]},{"n":4,"d":[2,3,5,6],"roman":"ii iii V vi","chords":"Dm Em G Am","word":"BADGE","name":"And I Love Her","artist":"The Beatles","c":13,"sword":"MAJESTY","chips":[{"s":"m","d":3},{"s":"j","d":5},{"s":"s","d":6},{"s":"t","d":2}]},{"n":4,"d":[2,3,4,6],"roman":"ii iii IV vi","chords":"Dm Em F Am","word":"FADE","name":"September","artist":"Earth, Wind & Fire","c":12,"sword":"MISFIT","chips":[{"s":"m","d":3},{"s":"s","d":6},{"s":"f","d":4},{"s":"t","d":2}]}];
+const SLOT=[[1,'C'],[2,'Dm'],[3,'Em'],[4,'F'],[5,'G'],[6,'Am']];
+function render(n,el){
+  el.innerHTML=ROWS.filter(r=>r.n===n).map(r=>{
+    const strip=SLOT.map(([d,lab])=>
+      `<div class="sl ${r.d.includes(d)?'lit s'+d:''}">${r.d.includes(d)?lab:''}</div>`).join('');
+    const chips=r.chips.map(c=>`<span class="cp s${c.d}">${c.s}</span>`).join('');
+    return `<div class="r" title="${r.chords} — ${r.name}${r.artist?' ('+r.artist+')':''}">
+      <div class="strip">${strip}</div>
+      <div class="wd">${r.sword}</div>
+      <div class="chips">${chips}</div>
+      <div class="ct">${r.c}</div></div>`;}).join('');
+}
+[2,3,4].forEach(n=>render(n,document.getElementById('c'+n)));
+</script>
+</body>
+</html>
