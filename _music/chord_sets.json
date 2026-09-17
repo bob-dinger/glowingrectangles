@@ -20,7 +20,8 @@
    "chords": "letter names in the reference key (C for major-mode, Am for minor-mode). For chromatic entries this + roman are the canonical identity (integer degrees can't hold altered chords)",
    "examples": "well-known songs that use the progression",
    "source": "'bennett' = imported from David Bennett's named-progression videos",
-   "songs_exact_palette": "songs with at least one run of consecutive diatonic chords whose distinct degrees are exactly this set (windows of 8/12/16 over the Hookpad corpus, borrowed and applied chords break the run). Comparable across all 35 sets. Distinct from 'corpus_sections', which older entries carry from an earlier pass with a different definition."
+   "songs_exact_palette": "songs with at least one run of consecutive diatonic chords whose distinct degrees are exactly this set (windows of 8/12/16 over the Hookpad corpus, borrowed and applied chords break the run). Comparable across all 35 sets. Distinct from 'corpus_sections', which older entries carry from an earlier pass with a different definition.",
+   "word": "mnemonic: an English word whose chord-letters (c d e f g a, reading past any other letter) are exactly this set. DOG = Dm G, FACE = C Em F Am, CAGE = C Em G Am. Sets containing neither A nor E cannot be spelled without filler letters, since those are the only vowels among the six."
   }
  },
  "entries": [
@@ -40,7 +41,8 @@
    "has_I": true,
    "n_minor": 1,
    "family": "pillars + tonic-shadow",
-   "songs_exact_palette": 374
+   "songs_exact_palette": 374,
+   "word": "facing"
   },
   {
    "key": "getting_better",
@@ -59,7 +61,8 @@
    "has_I": true,
    "n_minor": 2,
    "family": "stepwise (no V)",
-   "songs_exact_palette": 41
+   "songs_exact_palette": 41,
+   "word": "defect"
   },
   {
    "key": "mr_jones_set",
@@ -78,7 +81,8 @@
    "has_I": false,
    "n_minor": 2,
    "family": "no-tonic",
-   "songs_exact_palette": 45
+   "songs_exact_palette": 45,
+   "word": "gadfly"
   },
   {
    "key": "maggie_may",
@@ -94,7 +98,9 @@
    "chords_C": "Dm G",
    "has_I": false,
    "n_minor": 1,
-   "family": "cell"
+   "family": "cell",
+   "word": "dog",
+   "songs_exact_palette": 15
   },
   {
    "key": "nowhere_man",
@@ -110,7 +116,9 @@
    "chords_C": "Em F",
    "has_I": false,
    "n_minor": 1,
-   "family": "cell"
+   "family": "cell",
+   "word": "fee",
+   "songs_exact_palette": 14
   },
   {
    "key": "losing_my_religion",
@@ -127,7 +135,9 @@
    "has_I": false,
    "n_minor": 2,
    "family": "cell",
-   "notes": "the vi-iii vamp; song also has a Dm-G (ii-V) tag at the end"
+   "notes": "the vi-iii vamp; song also has a Dm-G (ii-V) tag at the end",
+   "word": "ear",
+   "songs_exact_palette": 33
   },
   {
    "key": "mr_jones",
@@ -920,7 +930,8 @@
    "n_minor": 0,
    "family": "pillars",
    "corpus_sections": 113,
-   "songs_exact_palette": 428
+   "songs_exact_palette": 451,
+   "word": "flocking"
   },
   {
    "key": "wouldnt_it_be_nice",
@@ -940,7 +951,8 @@
    "n_minor": 1,
    "family": "pillars + supertonic",
    "corpus_sections": 47,
-   "songs_exact_palette": 208
+   "songs_exact_palette": 208,
+   "word": "goldfinch"
   },
   {
    "key": "day_tripper",
@@ -957,7 +969,9 @@
    "has_I": true,
    "n_minor": 0,
    "family": "pillars",
-   "corpus_sections": 36
+   "corpus_sections": 36,
+   "word": "cuff",
+   "songs_exact_palette": 277
   },
   {
    "key": "yellow_submarine",
@@ -994,7 +1008,9 @@
    "has_I": true,
    "n_minor": 0,
    "family": "pillars",
-   "corpus_sections": 19
+   "corpus_sections": 19,
+   "word": "cog",
+   "songs_exact_palette": 189
   },
   {
    "key": "ticket_to_ride",
@@ -1013,7 +1029,8 @@
    "n_minor": 1,
    "family": "pillars + supertonic",
    "corpus_sections": 18,
-   "songs_exact_palette": 87
+   "songs_exact_palette": 93,
+   "word": "coding"
   },
   {
    "key": "strawberry_fields",
@@ -1052,7 +1069,8 @@
    "n_minor": 1,
    "family": "pillars + tonic-shadow",
    "corpus_sections": 17,
-   "songs_exact_palette": 110
+   "songs_exact_palette": 132,
+   "word": "crag"
   },
   {
    "key": "full_six",
@@ -1093,7 +1111,8 @@
    "n_minor": 2,
    "family": "pillars + supertonic",
    "corpus_sections": 14,
-   "songs_exact_palette": 98
+   "songs_exact_palette": 98,
+   "word": "dancing"
   },
   {
    "key": "dont_fear_the_reaper",
@@ -1112,7 +1131,8 @@
    "n_minor": 1,
    "family": "tonic-less",
    "corpus_sections": 13,
-   "songs_exact_palette": 96
+   "songs_exact_palette": 105,
+   "word": "flag"
   },
   {
    "key": "wonderwall",
@@ -1131,7 +1151,8 @@
    "n_minor": 1,
    "family": "pillars + tonic-shadow",
    "corpus_sections": 11,
-   "songs_exact_palette": 116
+   "songs_exact_palette": 128,
+   "word": "fact"
   },
   {
    "key": "jeremy",
@@ -1148,7 +1169,9 @@
    "has_I": false,
    "n_minor": 0,
    "family": "tonic-less",
-   "corpus_sections": 10
+   "corpus_sections": 10,
+   "word": "fog",
+   "songs_exact_palette": 83
   },
   {
    "key": "roar",
@@ -1168,7 +1191,8 @@
    "n_minor": 2,
    "family": "pillars + supertonic",
    "corpus_sections": 10,
-   "songs_exact_palette": 68
+   "songs_exact_palette": 68,
+   "word": "flaccid"
   },
   {
    "key": "man_in_the_mirror",
@@ -1187,7 +1211,8 @@
    "n_minor": 1,
    "family": "pillars + supertonic",
    "corpus_sections": 10,
-   "songs_exact_palette": 80
+   "songs_exact_palette": 89,
+   "word": "codfish"
   },
   {
    "key": "lean_on_me",
@@ -1227,7 +1252,8 @@
    "n_minor": 1,
    "family": "pillars + mediant",
    "corpus_sections": 7,
-   "songs_exact_palette": 78
+   "songs_exact_palette": 78,
+   "word": "fencing"
   },
   {
    "key": "my_happiness",
@@ -1247,7 +1273,8 @@
    "n_minor": 2,
    "family": "tonic-less",
    "corpus_sections": 6,
-   "songs_exact_palette": 29
+   "songs_exact_palette": 29,
+   "word": "gaffe"
   },
   {
    "key": "you_really_got_me",
@@ -1264,7 +1291,9 @@
    "has_I": true,
    "n_minor": 1,
    "family": "pillars + supertonic",
-   "corpus_sections": 6
+   "corpus_sections": 6,
+   "word": "cod",
+   "songs_exact_palette": 53
   },
   {
    "key": "ship_to_wreck",
@@ -1288,7 +1317,8 @@
     "Florence + the Machine — Ship to Wreck (verse)",
     "The Shins — Caring Is Creepy (bridge)"
    ],
-   "songs_exact_palette": 13
+   "songs_exact_palette": 13,
+   "word": "daft"
   },
   {
    "key": "trouble",
@@ -1313,7 +1343,8 @@
     "cage the elephant — shake me down",
     "beatles — ask me why"
    ],
-   "songs_exact_palette": 9
+   "songs_exact_palette": 16,
+   "word": "code"
   },
   {
    "key": "fernando",
@@ -1338,7 +1369,8 @@
     "beatles — all ive got to do",
     "radiohead — bones"
    ],
-   "songs_exact_palette": 19
+   "songs_exact_palette": 28,
+   "word": "acid"
   },
   {
    "key": "girl_from_the_north_country",
@@ -1363,7 +1395,8 @@
     "switchfoot — meant to live",
     "miley cyrus — malibu"
    ],
-   "songs_exact_palette": 42
+   "songs_exact_palette": 54,
+   "word": "clef"
   },
   {
    "key": "when_you_were_young",
@@ -1388,7 +1421,8 @@
     "cage the elephant — shake me down",
     "modest mouse — ocean breathes salty"
    ],
-   "songs_exact_palette": 22
+   "songs_exact_palette": 31,
+   "word": "gecko"
   },
   {
    "key": "habits",
@@ -1413,7 +1447,8 @@
     "modest mouse — float on",
     "paramore — aint it fun"
    ],
-   "songs_exact_palette": 39
+   "songs_exact_palette": 63,
+   "word": "ace"
   },
   {
    "key": "someday",
@@ -1438,7 +1473,8 @@
     "metallica — sad but true",
     "avril lavigne — my happy ending"
    ],
-   "songs_exact_palette": 10
+   "songs_exact_palette": 11,
+   "word": "feed"
   },
   {
    "key": "come_as_you_are",
@@ -1463,7 +1499,8 @@
     "beatles — she came in through the bathroom window",
     "6-30-26-mine"
    ],
-   "songs_exact_palette": 11
+   "songs_exact_palette": 11,
+   "word": "edge"
   },
   {
    "key": "while_my_guitar",
@@ -1487,7 +1524,8 @@
     "beatles — happiness is a warm gun",
     "paula cole — where have all the cowboys gone"
    ],
-   "songs_exact_palette": 6
+   "songs_exact_palette": 6,
+   "word": "dead"
   },
   {
    "key": "on_a_plain",
@@ -1512,7 +1550,8 @@
     "sheryl crow — if it makes you happy",
     "sheryl crow — if it makes you happy"
    ],
-   "songs_exact_palette": 27
+   "songs_exact_palette": 28,
+   "word": "dogfight"
   },
   {
    "key": "the_unforgiven",
@@ -1537,7 +1576,8 @@
     "avril lavigne — my happy ending",
     "whitesnake — here i go again"
    ],
-   "songs_exact_palette": 11
+   "songs_exact_palette": 12,
+   "word": "drag"
   },
   {
    "key": "a_thousand_miles",
@@ -1562,7 +1602,8 @@
     "shawn colvin — sunny came home",
     "beatles — getting better"
    ],
-   "songs_exact_palette": 20
+   "songs_exact_palette": 22,
+   "word": "fugue"
   },
   {
    "key": "africa",
@@ -1587,7 +1628,8 @@
     "toto — africa",
     "led zeppelin — hey hey what can i do"
    ],
-   "songs_exact_palette": 11
+   "songs_exact_palette": 16,
+   "word": "age"
   },
   {
    "key": "do_you_want_to_know_a_secret",
@@ -1613,7 +1655,8 @@
     "beatles — im happy just to dance with you",
     "bill withers — lean on me"
    ],
-   "songs_exact_palette": 29
+   "songs_exact_palette": 29,
+   "word": "cudgel"
   },
   {
    "key": "shake_me_down",
@@ -1639,7 +1682,8 @@
     "311 — Amber",
     "aerosmith — jaded"
    ],
-   "songs_exact_palette": 17
+   "songs_exact_palette": 17,
+   "word": "decade"
   },
   {
    "key": "comfortably_numb",
@@ -1665,7 +1709,8 @@
     "lady antebellum — need you now",
     "beatles — for no one"
    ],
-   "songs_exact_palette": 43
+   "songs_exact_palette": 43,
+   "word": "face"
   },
   {
    "key": "party_in_the_usa",
@@ -1691,7 +1736,8 @@
     "flo rida — wild ones",
     "pixies — gigantic"
    ],
-   "songs_exact_palette": 48
+   "songs_exact_palette": 48,
+   "word": "cage"
   },
   {
    "key": "somewhere_only_we_know",
@@ -1717,7 +1763,8 @@
     "keane — somewhere only we know",
     "go gos — vacation"
    ],
-   "songs_exact_palette": 26
+   "songs_exact_palette": 26,
+   "word": "fudge"
   },
   {
    "key": "september",
@@ -1743,7 +1790,8 @@
     "america — sister golden hair",
     "beatles — dont bother me-160"
    ],
-   "songs_exact_palette": 12
+   "songs_exact_palette": 12,
+   "word": "fade"
   },
   {
    "key": "and_i_love_her",
@@ -1769,7 +1817,8 @@
     "1979 — try",
     "beatles — While My Guitar Gently Weeps"
    ],
-   "songs_exact_palette": 13
+   "songs_exact_palette": 13,
+   "word": "badge"
   },
   {
    "key": "enter_sandman",
@@ -1796,7 +1845,152 @@
     "kate bush — running up that hill"
    ],
    "note": "Named for Metallica rather than Kate Bush because 'running_up_that_hill' is already taken by the ordered Bennett loop.",
-   "songs_exact_palette": 11
+   "songs_exact_palette": 16,
+   "word": "fame"
+  },
+  {
+   "key": "set_fire_to_the_rain",
+   "name": "Set Fire to the Rain",
+   "artist": "Adele",
+   "n": 2,
+   "ordered": false,
+   "degrees": [
+    1,
+    3
+   ],
+   "roman": "I iii",
+   "chords_C": "C Em",
+   "has_I": true,
+   "n_minor": 1,
+   "family": "cell",
+   "word": "ice",
+   "songs_exact_palette": 51
+  },
+  {
+   "key": "walk_this_way",
+   "name": "Walk This Way",
+   "artist": "Aerosmith",
+   "n": 2,
+   "ordered": false,
+   "degrees": [
+    1,
+    6
+   ],
+   "roman": "I vi",
+   "chords_C": "C Am",
+   "has_I": true,
+   "n_minor": 1,
+   "family": "cell",
+   "word": "cat",
+   "songs_exact_palette": 97
+  },
+  {
+   "key": "are_you_gonna_go_my_way",
+   "name": "Are You Gonna Go My Way",
+   "artist": "Lenny Kravitz",
+   "n": 2,
+   "ordered": false,
+   "degrees": [
+    2,
+    3
+   ],
+   "roman": "ii iii",
+   "chords_C": "Dm Em",
+   "has_I": false,
+   "n_minor": 2,
+   "family": "cell",
+   "word": "deed",
+   "songs_exact_palette": 5
+  },
+  {
+   "key": "hey_bulldog",
+   "name": "Hey Bulldog",
+   "artist": "The Beatles",
+   "n": 2,
+   "ordered": false,
+   "degrees": [
+    2,
+    4
+   ],
+   "roman": "ii IV",
+   "chords_C": "Dm F",
+   "has_I": false,
+   "n_minor": 1,
+   "family": "cell",
+   "word": "doff",
+   "songs_exact_palette": 15
+  },
+  {
+   "key": "dream_on",
+   "name": "Dream On",
+   "artist": "Aerosmith",
+   "n": 2,
+   "ordered": false,
+   "degrees": [
+    2,
+    6
+   ],
+   "roman": "ii vi",
+   "chords_C": "Dm Am",
+   "has_I": false,
+   "n_minor": 2,
+   "family": "cell",
+   "word": "dad",
+   "songs_exact_palette": 15
+  },
+  {
+   "key": "all_you_need_is_love",
+   "name": "All You Need Is Love",
+   "artist": "The Beatles",
+   "n": 2,
+   "ordered": false,
+   "degrees": [
+    3,
+    5
+   ],
+   "roman": "iii V",
+   "chords_C": "Em G",
+   "has_I": false,
+   "n_minor": 1,
+   "family": "cell",
+   "word": "egg",
+   "songs_exact_palette": 7
+  },
+  {
+   "key": "a_day_in_the_life",
+   "name": "A Day in the Life",
+   "artist": "The Beatles",
+   "n": 2,
+   "ordered": false,
+   "degrees": [
+    4,
+    6
+   ],
+   "roman": "IV vi",
+   "chords_C": "F Am",
+   "has_I": false,
+   "n_minor": 1,
+   "family": "cell",
+   "word": "far",
+   "songs_exact_palette": 32
+  },
+  {
+   "key": "rolling_in_the_deep",
+   "name": "Rolling in the Deep",
+   "artist": "Adele",
+   "n": 2,
+   "ordered": false,
+   "degrees": [
+    5,
+    6
+   ],
+   "roman": "V vi",
+   "chords_C": "G Am",
+   "has_I": false,
+   "n_minor": 1,
+   "family": "cell",
+   "word": "gas",
+   "songs_exact_palette": 33
   }
  ]
 }

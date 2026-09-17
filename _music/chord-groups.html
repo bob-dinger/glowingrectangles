@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fifty Chord Groups</title>
+<style>
+  :root{--bg:#0d0f14;--ink:#e9ebf0;--mute:#8990a2;--dim:#5a6173;--rule:#1f2430;
+        --d1:#E84545;--d2:#F0A040;--d3:#E8C828;--d4:#50C878;--d5:#5090F0;--d6:#7040B0}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;display:flex;
+       flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  header{padding:18px 26px 12px;border-bottom:1px solid var(--rule)}
+  h1{font-size:21px;font-weight:650;letter-spacing:-.015em}
+  .sub{font-size:12.5px;color:var(--mute);margin-top:6px;line-height:1.55;max-width:1080px}
+  .sub b{color:var(--ink);font-weight:600}
+  .sub .w{font-family:ui-monospace,Menlo,monospace;color:#f0d890;font-weight:600}
+  main{flex:1;display:flex;gap:20px;padding:14px 26px 16px;overflow:hidden}
+  .col{flex:1;display:flex;flex-direction:column;min-width:0}
+  .ch{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);
+      padding:0 0 7px 2px;display:flex;justify-content:space-between}
+  .rows{flex:1;overflow-y:auto;padding-right:3px}
+  .r{display:grid;grid-template-columns:112px 76px 1fr 52px;gap:8px;align-items:center;
+     padding:3px 6px;border-radius:5px}
+  .r:hover{background:#181d28}
+  .strip{display:flex;gap:2px}
+  .sl{width:16px;height:18px;border-radius:3px;background:#171b24;border:1px solid #232937;
+      font-size:8.5px;line-height:16px;text-align:center;color:#3c4354}
+  .sl.lit{font-weight:700;border-color:transparent}
+  .sl.lit.s1{background:var(--d1);color:#fff} .sl.lit.s2{background:var(--d2);color:#1a1205}
+  .sl.lit.s3{background:var(--d3);color:#1a1605} .sl.lit.s4{background:var(--d4);color:#06180d}
+  .sl.lit.s5{background:var(--d5);color:#fff} .sl.lit.s6{background:var(--d6);color:#fff}
+  .wd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;font-weight:600;
+      letter-spacing:.03em;color:#f0d890;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nm{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:12px;
+      color:#c3c9d6}
+  .nm i{font-style:normal;color:var(--dim);font-size:10.5px}
+  .ct{display:flex;align-items:center;gap:5px;justify-content:flex-end}
+  .ct .b{height:6px;border-radius:3px;background:#39445c}
+  .ct .v{font-size:10.5px;color:var(--mute);font-family:ui-monospace,Menlo,monospace;
+         min-width:24px;text-align:right}
+  footer{border-top:1px solid var(--rule);padding:10px 26px;font-size:11px;color:var(--dim);
+         display:flex;justify-content:space-between;gap:18px}
+  .legend{display:flex;gap:13px}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .dot{width:9px;height:9px;border-radius:2px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Fifty Chord Groups</h1>
+  <div class="sub">
+    Six chords live in a major key once the diminished seventh is set aside, which makes
+    <b>15 pairs, 20 threes and 15 fours</b> &mdash; fifty groups, and that is all of them.
+    Each has a song that is the clearest example of it, and a word that spells it: the six
+    chords are lettered <b>C D E F G A</b>, so <span class="w">DOG</span> is Dm&ndash;G,
+    <span class="w">FACE</span> is C&ndash;Em&ndash;F&ndash;Am and <span class="w">CAGE</span>
+    is C&ndash;Em&ndash;G&ndash;Am. Order is not part of the identity.
+  </div>
+</header>
+<main>
+  <div class="col"><div class="ch"><span>fifteen pairs</span><span>songs</span></div>
+    <div class="rows" id="c2"></div></div>
+  <div class="col"><div class="ch"><span>twenty threes</span><span>songs</span></div>
+    <div class="rows" id="c3"></div></div>
+  <div class="col"><div class="ch"><span>fifteen fours</span><span>songs</span></div>
+    <div class="rows" id="c4"></div></div>
+</main>
+<footer>
+  <div class="legend">
+    <span><i class="dot" style="background:#E84545"></i>I</span>
+    <span><i class="dot" style="background:#F0A040"></i>ii</span>
+    <span><i class="dot" style="background:#E8C828"></i>iii</span>
+    <span><i class="dot" style="background:#50C878"></i>IV</span>
+    <span><i class="dot" style="background:#5090F0"></i>V</span>
+    <span><i class="dot" style="background:#7040B0"></i>vi</span>
+  </div>
+  <div>Hookpad corpus &mdash; songs with a run of consecutive diatonic chords using exactly that group.</div>
+</footer>
+<script>
+const ROWS=[{"n":2,"d":[1,4],"roman":"I IV","chords":"C F","word":"CUFF","name":"Day Tripper","artist":"The Beatles","c":277},{"n":2,"d":[1,5],"roman":"I V","chords":"C G","word":"COG","name":"Chattahoochee","artist":"Alan Jackson","c":189},{"n":2,"d":[1,6],"roman":"I vi","chords":"C Am","word":"CAT","name":"Walk This Way","artist":"Aerosmith","c":97},{"n":2,"d":[4,5],"roman":"IV V","chords":"F G","word":"FOG","name":"Jeremy","artist":"Pearl Jam","c":83},{"n":2,"d":[1,2],"roman":"I ii","chords":"C Dm","word":"COD","name":"You Really Got Me","artist":"The Kinks","c":53},{"n":2,"d":[1,3],"roman":"I iii","chords":"C Em","word":"ICE","name":"Set Fire to the Rain","artist":"Adele","c":51},{"n":2,"d":[3,6],"roman":"vi iii","chords":"Am Em","word":"EAR","name":"Losing My Religion","artist":"R.E.M.","c":33},{"n":2,"d":[5,6],"roman":"V vi","chords":"G Am","word":"GAS","name":"Rolling in the Deep","artist":"Adele","c":33},{"n":2,"d":[4,6],"roman":"IV vi","chords":"F Am","word":"FAR","name":"A Day in the Life","artist":"The Beatles","c":32},{"n":2,"d":[2,4],"roman":"ii IV","chords":"Dm F","word":"DOFF","name":"Hey Bulldog","artist":"The Beatles","c":15},{"n":2,"d":[2,5],"roman":"ii V","chords":"Dm G","word":"DOG","name":"Maggie May","artist":"Rod Stewart","c":15},{"n":2,"d":[2,6],"roman":"ii vi","chords":"Dm Am","word":"DAD","name":"Dream On","artist":"Aerosmith","c":15},{"n":2,"d":[3,4],"roman":"iii IV","chords":"Em F","word":"FEE","name":"Nowhere Man","artist":"The Beatles","c":14},{"n":2,"d":[3,5],"roman":"iii V","chords":"Em G","word":"EGG","name":"All You Need Is Love","artist":"The Beatles","c":7},{"n":2,"d":[2,3],"roman":"ii iii","chords":"Dm Em","word":"DEED","name":"Are You Gonna Go My Way","artist":"Lenny Kravitz","c":5},{"n":3,"d":[1,4,5],"roman":"I IV V","chords":"C F G","word":"FLOCKING","name":"Pillars (I IV V)","artist":"AC/DC — You Shook Me All Night Long","c":451},{"n":3,"d":[1,5,6],"roman":"I V vi","chords":"C G Am","word":"CRAG","name":"Ob-La-Di, Ob-La-Da","artist":"The Beatles","c":132},{"n":3,"d":[1,4,6],"roman":"I IV vi","chords":"C F Am","word":"FACT","name":"Wonderwall","artist":"Oasis","c":128},{"n":3,"d":[4,5,6],"roman":"IV V vi","chords":"F G Am","word":"FLAG","name":"(Don't Fear) The Reaper","artist":"Blue Öyster Cult","c":105},{"n":3,"d":[1,2,5],"roman":"I ii V","chords":"C Dm G","word":"CODING","name":"Ticket to Ride","artist":"The Beatles","c":93},{"n":3,"d":[1,2,4],"roman":"I ii IV","chords":"C Dm F","word":"CODFISH","name":"Man in the Mirror","artist":"Michael Jackson","c":89},{"n":3,"d":[1,3,6],"roman":"I iii vi","chords":"C Em Am","word":"ACE","name":"Habits (Stay High)","artist":"Tove Lo","c":63},{"n":3,"d":[1,3,4],"roman":"I iii IV","chords":"C Em F","word":"CLEF","name":"Girl from the North Country","artist":"Bob Dylan","c":54},{"n":3,"d":[1,3,5],"roman":"I iii V","chords":"C Em G","word":"GECKO","name":"When You Were Young","artist":"The Killers","c":31},{"n":3,"d":[1,2,6],"roman":"I ii vi","chords":"C Dm Am","word":"ACID","name":"Fernando","artist":"ABBA","c":28},{"n":3,"d":[2,4,5],"roman":"ii IV V","chords":"Dm F G","word":"DOGFIGHT","name":"On a Plain","artist":"Nirvana","c":28},{"n":3,"d":[3,4,5],"roman":"iii IV V","chords":"Em F G","word":"FUGUE","name":"A Thousand Miles","artist":"Vanessa Carlton","c":22},{"n":3,"d":[1,2,3],"roman":"I ii iii","chords":"C Dm Em","word":"CODE","name":"Trouble","artist":"Coldplay","c":16},{"n":3,"d":[3,4,6],"roman":"iii IV vi","chords":"Em F Am","word":"FAME","name":"Enter Sandman","artist":"Metallica","c":16},{"n":3,"d":[3,5,6],"roman":"iii V vi","chords":"Em G Am","word":"AGE","name":"Africa","artist":"Toto","c":16},{"n":3,"d":[2,4,6],"roman":"ii IV vi","chords":"Dm F Am","word":"DAFT","name":"Ship to Wreck","artist":"Florence + the Machine","c":13},{"n":3,"d":[2,5,6],"roman":"ii V vi","chords":"Dm G Am","word":"DRAG","name":"The Unforgiven","artist":"Metallica","c":12},{"n":3,"d":[2,3,4],"roman":"ii iii IV","chords":"Dm Em F","word":"FEED","name":"Someday","artist":"Sugar Ray","c":11},{"n":3,"d":[2,3,5],"roman":"ii iii V","chords":"Dm Em G","word":"EDGE","name":"Come as You Are","artist":"Nirvana","c":11},{"n":3,"d":[2,3,6],"roman":"ii iii vi","chords":"Dm Em Am","word":"DEAD","name":"While My Guitar Gently Weeps","artist":"The Beatles","c":6},{"n":4,"d":[1,4,5,6],"roman":"I IV V vi","chords":"C F G Am","word":"FACING","name":"Axis (of Awesome)","artist":"","c":374},{"n":4,"d":[1,2,4,5],"roman":"I ii IV V","chords":"C Dm F G","word":"GOLDFINCH","name":"Wouldn't It Be Nice","artist":"Beach Boys","c":208},{"n":4,"d":[1,2,5,6],"roman":"I ii V vi","chords":"C Dm G Am","word":"DANCING","name":"Too Little Too Late","artist":"JoJo","c":98},{"n":4,"d":[1,3,4,5],"roman":"I iii IV V","chords":"C Em F G","word":"FENCING","name":"I Feel Fine","artist":"The Beatles","c":78},{"n":4,"d":[1,2,4,6],"roman":"I ii IV vi","chords":"C Dm F Am","word":"FLACCID","name":"Roar","artist":"Katy Perry","c":68},{"n":4,"d":[1,3,5,6],"roman":"I iii V vi","chords":"C Em G Am","word":"CAGE","name":"Party in the U.S.A.","artist":"Miley Cyrus","c":48},{"n":4,"d":[2,4,5,6],"roman":"ii IV V vi","chords":"Dm F G Am","word":"GADFLY","name":"Mr. Jones","artist":"Counting Crows","c":45},{"n":4,"d":[1,3,4,6],"roman":"I iii IV vi","chords":"C Em F Am","word":"FACE","name":"Comfortably Numb","artist":"Pink Floyd","c":43},{"n":4,"d":[1,2,3,4],"roman":"I ii iii IV","chords":"C Dm Em F","word":"DEFECT","name":"Getting Better","artist":"The Beatles","c":41},{"n":4,"d":[1,2,3,5],"roman":"I ii iii V","chords":"C Dm Em G","word":"CUDGEL","name":"Do You Want to Know a Secret","artist":"The Beatles","c":29},{"n":4,"d":[3,4,5,6],"roman":"iii IV V vi","chords":"Em F G Am","word":"GAFFE","name":"My Happiness","artist":"Powderfinger","c":29},{"n":4,"d":[2,3,4,5],"roman":"ii iii IV V","chords":"Dm Em F G","word":"FUDGE","name":"Somewhere Only We Know","artist":"Keane","c":26},{"n":4,"d":[1,2,3,6],"roman":"I ii iii vi","chords":"C Dm Em Am","word":"DECADE","name":"Shake Me Down","artist":"Cage the Elephant","c":17},{"n":4,"d":[2,3,5,6],"roman":"ii iii V vi","chords":"Dm Em G Am","word":"BADGE","name":"And I Love Her","artist":"The Beatles","c":13},{"n":4,"d":[2,3,4,6],"roman":"ii iii IV vi","chords":"Dm Em F Am","word":"FADE","name":"September","artist":"Earth, Wind & Fire","c":12}];
+const SLOT=[[1,'C'],[2,'Dm'],[3,'Em'],[4,'F'],[5,'G'],[6,'Am']];
+const MAX=Math.max(...ROWS.map(r=>r.c));
+function render(n,el){
+  el.innerHTML=ROWS.filter(r=>r.n===n).map(r=>{
+    const strip=SLOT.map(([d,lab])=>
+      `<div class="sl ${r.d.includes(d)?'lit s'+d:''}">${r.d.includes(d)?lab:''}</div>`).join('');
+    const w=Math.max(3,Math.round(Math.sqrt(r.c/MAX)*40));
+    return `<div class="r" title="${r.roman} — ${r.chords}">
+      <div class="strip">${strip}</div>
+      <div class="wd">${r.word}</div>
+      <div class="nm">${r.name}${r.artist?` <i>${r.artist}</i>`:''}</div>
+      <div class="ct"><div class="b" style="width:${w}px"></div><div class="v">${r.c}</div></div>
+    </div>`;}).join('');
+}
+[2,3,4].forEach(n=>render(n,document.getElementById('c'+n)));
+</script>
+</body>
+</html>
