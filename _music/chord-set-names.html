@@ -6,7 +6,9 @@
 <title>Every Chord Set</title>
 <style>
   :root{--bg:#0d0f14;--panel:#141821;--ink:#e9ebf0;--mute:#8990a2;--dim:#5a6173;
-        --rule:#1f2430;--maj:#f0b429;--min:#6f8fd8;--bar:#39445c}
+        --rule:#1f2430;--bar:#39445c;
+        /* the standard degree colours: pitch class in the home key */
+        --d1:#E84545;--d2:#F0A040;--d3:#E8C828;--d4:#50C878;--d5:#5090F0;--d6:#7040B0}
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;
        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
@@ -22,26 +24,30 @@
            padding:0 0 8px 2px;display:flex;justify-content:space-between}
   .rows{flex:1;overflow-y:auto;padding-right:4px}
   .r{display:grid;grid-template-columns:118px 1fr 74px;gap:10px;align-items:center;
-     padding:5px 8px;border-radius:6px;cursor:default}
+     padding:4px 8px;border-radius:6px;cursor:default}
   .r:hover{background:#181d28}
   .r.on{background:#1d2431}
   .strip{display:flex;gap:3px}
   .sl{width:17px;height:19px;border-radius:3px;background:#181c26;border:1px solid #232937;
       font-size:9px;line-height:17px;text-align:center;color:#3f4657}
-  .sl.lit{color:#12151d;font-weight:700;border-color:transparent}
-  .sl.lit.M{background:var(--maj)}
-  .sl.lit.m{background:var(--min)}
+  .sl.lit{font-weight:700;border-color:transparent}
+  .sl.lit.d1{background:var(--d1);color:#fff}
+  .sl.lit.d2{background:var(--d2);color:#1a1205}
+  .sl.lit.d3{background:var(--d3);color:#1a1605}
+  .sl.lit.d4{background:var(--d4);color:#06180d}
+  .sl.lit.d5{background:var(--d5);color:#fff}
+  .sl.lit.d6{background:var(--d6);color:#fff}
   .nm{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:13px}
   .nm i{font-style:normal;color:var(--dim);font-size:11.5px}
   .ct{display:flex;align-items:center;gap:6px;justify-content:flex-end}
   .ct .b{height:7px;border-radius:4px;background:#39445c}
   .ct .v{font-size:11px;color:var(--mute);font-family:ui-monospace,Menlo,monospace;
          min-width:26px;text-align:right}
-  .notes{border-top:1px solid var(--rule);margin-top:14px;padding-top:12px;
-         font-size:12px;color:var(--mute);line-height:1.6}
+  .notes{border-top:1px solid var(--rule);margin-top:10px;padding-top:10px;
+         font-size:11.5px;color:var(--mute);line-height:1.55;flex:0 0 auto}
   .notes .nh{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);
              margin-bottom:7px}
-  .notes p{margin-bottom:8px}
+  .notes p{margin-bottom:6px}
   .notes b{color:var(--ink);font-weight:600}
   .notes i{font-style:normal;color:#b9bfcf}
   footer{border-top:1px solid var(--rule);padding:11px 30px;font-size:11.5px;color:var(--dim);
@@ -72,34 +78,45 @@
     <div class="rows" id="c4"></div>
     <div class="notes">
       <div class="nh">what the strips show</div>
-      <p>Read down either column and the colour drifts. <b>Every set in the top half holds
-      the tonic</b> and at least one pillar; the rare ones at the bottom are the ones where
-      C goes missing. Popularity here is almost entirely &ldquo;does it contain home&rdquo;.</p>
+      <p>Watch the red slot. Sets that hold the tonic average <b>98 songs</b>; sets
+      without it average <b>23</b> &mdash; four times fewer, and it holds separately for
+      the threes and the fours. Almost the whole ranking is
+      &ldquo;does it contain home&rdquo;.</p>
+      <p>The exception is worth knowing: <b>(Don&rsquo;t Fear) The Reaper</b>, F G Am, has
+      no C in it at all and still lands 96 songs &mdash; ahead of most sets that do. Its
+      trick is that Am can stand in for home.</p>
+      <p>Only four sets contain all three pillars, red green blue: <i>Pillars</i>,
+      <i>Axis</i>, <i>Wouldn&rsquo;t It Be Nice</i> and <i>I Feel Fine</i>. They rank 1st,
+      1st, 2nd and 4th.</p>
       <p><b>Dm Em Am is exactly the three minor chords</b> &mdash; and it is the rarest set
       of three, at six songs. Add one chord to it and you get three of the fours:
       add F for <i>September</i>, add G for <i>And I Love Her</i>, add C for
       <i>Shake Me Down</i>.</p>
-      <p><b>C Em G is the tonic triad with each note harmonised</b> &mdash; the notes of a
-      C chord, turned back into chords.</p>
+      <p><b>C Em G is the tonic triad with each note harmonised</b> &mdash; a C chord's
+      own notes, turned back into chords.</p>
     </div>
   </div>
 </main>
 <footer>
   <div class="legend">
-    <span><i class="dot" style="background:#f0b429"></i>major &mdash; I, IV, V</span>
-    <span><i class="dot" style="background:#6f8fd8"></i>minor &mdash; ii, iii, vi</span>
+    <span><i class="dot" style="background:#E84545"></i>I</span>
+    <span><i class="dot" style="background:#F0A040"></i>ii</span>
+    <span><i class="dot" style="background:#E8C828"></i>iii</span>
+    <span><i class="dot" style="background:#50C878"></i>IV</span>
+    <span><i class="dot" style="background:#5090F0"></i>V</span>
+    <span><i class="dot" style="background:#7040B0"></i>vi</span>
     <span id="hover" style="color:#8990a2"></span>
   </div>
   <div>Hookpad corpus, diatonic runs only &mdash; borrowed and applied chords break a run.</div>
 </footer>
 <script>
 const ROWS = [{"n":3,"d":[1,4,5],"roman":"I IV V","chords":"C F G","name":"Pillars (I IV V)","artist":"AC/DC — You Shook Me All Night Long","c":428,"fam":"pillars","ex":[]},{"n":3,"d":[1,4,6],"roman":"I IV vi","chords":"C F Am","name":"Wonderwall","artist":"Oasis","c":116,"fam":"pillars + tonic-shadow","ex":[]},{"n":3,"d":[1,5,6],"roman":"I V vi","chords":"C G Am","name":"Ob-La-Di, Ob-La-Da","artist":"The Beatles","c":110,"fam":"pillars + tonic-shadow","ex":[]},{"n":3,"d":[4,5,6],"roman":"IV V vi","chords":"F G Am","name":"(Don't Fear) The Reaper","artist":"Blue Öyster Cult","c":96,"fam":"tonic-less","ex":[]},{"n":3,"d":[1,2,5],"roman":"I ii V","chords":"C Dm G","name":"Ticket to Ride","artist":"The Beatles","c":87,"fam":"pillars + supertonic","ex":[]},{"n":3,"d":[1,2,4],"roman":"I ii IV","chords":"C Dm F","name":"Man in the Mirror","artist":"Michael Jackson","c":80,"fam":"pillars + supertonic","ex":[]},{"n":3,"d":[1,3,4],"roman":"I iii IV","chords":"C Em F","name":"Girl from the North Country","artist":"Bob Dylan","c":42,"fam":"pillars with iii for V","ex":["bob dylan — girl from the north country","grouplove — tongue tied","modest mouse — float on","switchfoot — meant to live"]},{"n":3,"d":[1,3,6],"roman":"I iii vi","chords":"C Em Am","name":"Habits (Stay High)","artist":"Tove Lo","c":39,"fam":"tonic and its two relatives","ex":["tove lo — habits","311 — amber","311 — Amber","modest mouse — float on"]},{"n":3,"d":[2,4,5],"roman":"ii IV V","chords":"Dm F G","name":"On a Plain","artist":"Nirvana","c":27,"fam":"pillars with ii for I","ex":["nirvana — on a plain","nirvana — blew","incubus — dig","sheryl crow — if it makes you happy"]},{"n":3,"d":[1,3,5],"roman":"I iii V","chords":"C Em G","name":"When You Were Young","artist":"The Killers","c":22,"fam":"the tonic triad, harmonised","ex":["journey — lovin touchin squeezin","vanessa carlton — a thousand miles","killers — when you were young","cage the elephant — shake me down"]},{"n":3,"d":[3,4,5],"roman":"iii IV V","chords":"Em F G","name":"A Thousand Miles","artist":"Vanessa Carlton","c":20,"fam":"pillars with iii for I","ex":["vanessa carlton — a thousand miles","garth brooks — the dance","pixies — gigantic","shawn colvin — sunny came home"]},{"n":3,"d":[1,2,6],"roman":"I ii vi","chords":"C Dm Am","name":"Fernando","artist":"ABBA","c":19,"fam":"tonic and the two soft minors","ex":["killers — smile like you mean it","abba — fernando","beatles — all ive gotta do","beatles — all ive got to do"]},{"n":3,"d":[2,4,6],"roman":"ii IV vi","chords":"Dm F Am","name":"Ship to Wreck","artist":"Florence + the Machine","c":13,"fam":"tonic-less in major, tonic-ful in minor","ex":["Florence + the Machine — Ship to Wreck (verse)","The Shins — Caring Is Creepy (bridge)"]},{"n":3,"d":[2,3,5],"roman":"ii iii V","chords":"Dm Em G","name":"Come as You Are","artist":"Nirvana","c":11,"fam":"no tonic, no IV","ex":["nirvana — come as you are","keane — somewhere only we know","radiohead — no surprises","beatles — she came in through the bathroom window"]},{"n":3,"d":[2,5,6],"roman":"ii V vi","chords":"Dm G Am","name":"The Unforgiven","artist":"Metallica","c":11,"fam":"two-five plus the tonic-shadow","ex":["metallica — the unforgiven","abba — fernando","beatles — and i love her","avril lavigne — my happy ending"]},{"n":3,"d":[3,4,6],"roman":"iii IV vi","chords":"Em F Am","name":"Enter Sandman","artist":"Metallica","c":11,"fam":"no tonic, no V","ex":["rem — losing my religion","metallica — sad but true","pixies — gigantic","metallica — enter sandman"]},{"n":3,"d":[3,5,6],"roman":"iii V vi","chords":"Em G Am","name":"Africa","artist":"Toto","c":11,"fam":"no tonic, no IV","ex":["rem — losing my religion","red hot chili peppers — soul to squeeze","pixies — gigantic","toto — africa"]},{"n":3,"d":[2,3,4],"roman":"ii iii IV","chords":"Dm Em F","name":"Someday","artist":"Sugar Ray","c":10,"fam":"stepwise, no tonic","ex":["weezer — the world has turned","sugar ray — someday","old 97s — nineteen","metallica — sad but true"]},{"n":3,"d":[1,2,3],"roman":"I ii iii","chords":"C Dm Em","name":"Trouble","artist":"Coldplay","c":9,"fam":"stepwise cluster on the tonic","ex":["weezer — in the garage","coldplay — trouble","sugar ray — someday","cage the elephant — shake me down"]},{"n":3,"d":[2,3,6],"roman":"ii iii vi","chords":"Dm Em Am","name":"While My Guitar Gently Weeps","artist":"The Beatles","c":6,"fam":"the three minors","ex":["rem — losing my religion","beatles — While My Guitar Gently Weeps","beatles — happiness is a warm gun","paula cole — where have all the cowboys gone"]},{"n":4,"d":[1,4,5,6],"roman":"I IV V vi","chords":"C F G Am","name":"Axis (of Awesome)","artist":"","c":374,"fam":"pillars + tonic-shadow","ex":[]},{"n":4,"d":[1,2,4,5],"roman":"I ii IV V","chords":"C Dm F G","name":"Wouldn't It Be Nice","artist":"Beach Boys","c":208,"fam":"pillars + supertonic","ex":[]},{"n":4,"d":[1,2,5,6],"roman":"I ii V vi","chords":"C Dm G Am","name":"Too Little Too Late","artist":"JoJo","c":98,"fam":"pillars + supertonic","ex":[]},{"n":4,"d":[1,3,4,5],"roman":"I iii IV V","chords":"C Em F G","name":"I Feel Fine","artist":"The Beatles","c":78,"fam":"pillars + mediant","ex":[]},{"n":4,"d":[1,2,4,6],"roman":"I ii IV vi","chords":"C Dm F Am","name":"Roar","artist":"Katy Perry","c":68,"fam":"pillars + supertonic","ex":[]},{"n":4,"d":[1,3,5,6],"roman":"I iii V vi","chords":"C Em G Am","name":"Party in the U.S.A.","artist":"Miley Cyrus","c":48,"fam":"the axis with iii for IV","ex":["miley cyrus — party in the usa","coldplay — in my place","vertical horizon — everything you want","flo rida — wild ones"]},{"n":4,"d":[2,4,5,6],"roman":"ii IV V vi","chords":"Dm F G Am","name":"Mr. Jones","artist":"Counting Crows","c":45,"fam":"no-tonic","ex":[]},{"n":4,"d":[1,3,4,6],"roman":"I iii IV vi","chords":"C Em F Am","name":"Comfortably Numb","artist":"Pink Floyd","c":43,"fam":"the axis with iii for V","ex":["incubus — drive","pink floyd — comfortably numb","metallica — sad but true","lady antebellum — need you now"]},{"n":4,"d":[1,2,3,4],"roman":"I ii iii IV","chords":"C Dm Em F","name":"Getting Better","artist":"The Beatles","c":41,"fam":"stepwise (no V)","ex":[]},{"n":4,"d":[1,2,3,5],"roman":"I ii iii V","chords":"C Dm Em G","name":"Do You Want to Know a Secret","artist":"The Beatles","c":29,"fam":"stepwise cluster plus V","ex":["weezer — in the garage","blur — the universal","beatles — do you want to know a secret","beatles — im happy just to dance with you"]},{"n":4,"d":[3,4,5,6],"roman":"iii IV V vi","chords":"Em F G Am","name":"My Happiness","artist":"Powderfinger","c":29,"fam":"tonic-less","ex":[]},{"n":4,"d":[2,3,4,5],"roman":"ii iii IV V","chords":"Dm Em F G","name":"Somewhere Only We Know","artist":"Keane","c":26,"fam":"no tonic: stepwise pair plus IV and V","ex":["fastball — fire escape","avril lavigne — my happy ending","old 97s — nineteen","keane — somewhere only we know"]},{"n":4,"d":[1,2,3,6],"roman":"I ii iii vi","chords":"C Dm Em Am","name":"Shake Me Down","artist":"Cage the Elephant","c":17,"fam":"the tonic plus all three minors","ex":["cage the elephant — shake me down","sombr — back to friends","beatles — While My Guitar Gently Weeps","311 — Amber"]},{"n":4,"d":[2,3,5,6],"roman":"ii iii V vi","chords":"Dm Em G Am","name":"And I Love Her","artist":"The Beatles","c":13,"fam":"the three minors plus V","ex":["rem — losing my religion","beatles — and i love her","earth wind and fire — september","1979 — try"]},{"n":4,"d":[2,3,4,6],"roman":"ii iii IV vi","chords":"Dm Em F Am","name":"September","artist":"Earth, Wind & Fire","c":12,"fam":"the three minors plus IV","ex":["weezer — the world has turned","earth wind and fire — september","beatles — im only sleeping","america — sister golden hair"]}];
-const SLOT=[[1,'C','M'],[2,'Dm','m'],[3,'Em','m'],[4,'F','M'],[5,'G','M'],[6,'Am','m']];
+const SLOT=[[1,'C'],[2,'Dm'],[3,'Em'],[4,'F'],[5,'G'],[6,'Am']];
 const MAX = Math.max(...ROWS.map(r=>r.c));
 function render(list, el){
   el.innerHTML = list.map(r=>{
-    const strip = SLOT.map(([d,lab,q])=>
-      `<div class="sl ${r.d.includes(d)?'lit '+q:''}">${r.d.includes(d)?lab:''}</div>`).join('');
+    const strip = SLOT.map(([d,lab])=>
+      `<div class="sl ${r.d.includes(d)?'lit d'+d:''}">${r.d.includes(d)?lab:''}</div>`).join('');
     const w = Math.max(3, Math.round(Math.sqrt(r.c/MAX)*58));
     return `<div class="r" data-fam="${r.fam}" data-ex="${(r.ex||[]).join(' · ')}">
       <div class="strip">${strip}</div>
