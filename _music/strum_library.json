@@ -1,15 +1,18 @@
 {
-  "_doc": "Strum patterns for one 4/4 bar as 4 space-separated BEAT CELLS (beats 1 2 3 4). Each cell's LENGTH is its subdivision: 1=quarter, 2=eighths, 3=triplet, 4=sixteenths. Char per slot: D=downstroke, U=upstroke, x=muted chuck, .=no strike (slot 0 of a cell is the downbeat). Encoded in Hookpad as re-struck chords with empty notes. See music_chord_riff_fingerprint (Layer 2 = strike rhythm).",
-  "patterns": {
-    "quarters":          "D D D D",
-    "eighths":           "DU DU DU DU",
-    "folk-DDU-UDU":      "D. DU .U DU",
-    "driving-DU-UDU-U":  "DU .U DU .U",
-    "im-only-sleeping":  "D D D.U D.U",
-    "im-only-sleeping-16": "D D D..U D..U",
-    "wonderwall":        "D. D. DU D.",
-    "ska-upstrokes":     ".U .U .U .U",
-    "boom-chick":        "D. x. D. x.",
-    "shuffle":           "D.U D.U D.U D.U"
-  }
+ "_doc": "Strum patterns for one 4/4 bar as 4 space-separated BEAT CELLS (beats 1 2 3 4). Each cell's LENGTH is its subdivision: 1=quarter, 2=eighths, 3=triplet, 4=sixteenths. Char per slot: D=downstroke, U=upstroke, x=muted chuck, .=no strike (slot 0 of a cell is the downbeat). Encoded in Hookpad as re-struck chords with empty notes. See music_chord_riff_fingerprint (Layer 2 = strike rhythm).",
+ "patterns": {
+  "quarters": "D D D D",
+  "eighths": "DU DU DU DU",
+  "folk-DDU-UDU": "D. DU .U DU",
+  "driving-DU-UDU-U": "DU .U DU .U",
+  "im-only-sleeping": "D D D.U D.U",
+  "im-only-sleeping-16": "D D D..U D..U",
+  "wonderwall": "D. D. DU D.",
+  "ska-upstrokes": ".U .U .U .U",
+  "boom-chick": "D. x. D. x.",
+  "shuffle": "D.U D.U D.U D.U",
+  "simple-kind-of-life": "D. D. DU DU",
+  "simple-kind-of-life-b": ". D. DU DU"
+ },
+ "_doc2": "A PUSH is the &4 of one bar sustaining across the next downbeat. It shows up as a pair: bar A ends with a struck &4 held long, and bar B has no strike on beat 1. simple-kind-of-life is that pair -- No Doubt hold Dm for two bars, then C for two, and the strum is identical on both chords. The push, not a chord change, is what makes the second bar feel different from the first."
 }
