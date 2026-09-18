@@ -17,7 +17,11 @@ so the ones worth hearing come first.
 import argparse, itertools, json, os
 
 SHAPE = 'ABABABCC'
-LET = {1:'C', 2:'Dm', 3:'Em', 4:'F', 5:'G', 6:'Am'}
+LET = {1:'C', 2:'Dm', 3:'Em', 4:'F', 5:'G', 6:'Am', 7:'A#'}
+# A# is bVII: degree 7 carrying a borrowed label. mixolydian is the reading of
+# a flat-seven in a major key; the corpus also writes it as 'minor', which
+# sounds the same chord.
+BORROWED = {7: 'mixolydian'}
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -39,31 +43,46 @@ def chord(root, beat):
     return {'root': root, 'beat': beat, 'duration': 4, 'type': 5, 'inversion': 0,
             'applied': 0, 'adds': [], 'omits': [], 'alterations': [],
             'suspensions': [], 'substitutions': [], 'pedal': None,
-            'alternate': '', 'borrowed': None, 'isRest': False,
+            'alternate': '', 'borrowed': BORROWED.get(root), 'isRest': False,
             'recordingEndBeat': None}
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--bpm', type=int, default=100)
+    ap.add_argument('--ends', default='',
+                    help='restrict the CC ending to these degrees, e.g. 1,4,5 for C/F/G')
+    ap.add_argument('--pool', default='1,2,3,4,5,6',
+                    help='degrees available to A and B; add 7 for A#')
     ap.add_argument('--tonic', default='C')
     ap.add_argument('--out', default=os.path.expanduser('~/Desktop/perms-ababab-cc.txt'))
     a = ap.parse_args()
 
     pop = popularity()
-    groups = sorted(itertools.combinations([1, 2, 3, 4, 5, 6], 3),
-                    key=lambda g: (-pop.get(g, 0), g))
+    pool = [int(x) for x in a.pool.split(',') if x.strip()]
+
+    if a.ends:
+        # the ending is chosen, so enumerate (A,B) around each allowed ending
+        # rather than permuting a set: A and B may be any two other chords.
+        ends = [int(x) for x in a.ends.split(',') if x.strip()]
+        triples = [(A, B, C) for C in ends
+                   for A in pool if A != C
+                   for B in pool if B != C and B != A]
+        triples.sort(key=lambda t: (-pop.get(tuple(sorted(t)), 0), t))
+    else:
+        groups = sorted(itertools.combinations(pool, 3),
+                        key=lambda g: (-pop.get(g, 0), g))
+        triples = [p for g in groups for p in itertools.permutations(g)]
 
     chords, sections, beat = [], [], 1
-    for g in groups:
-        for perm in itertools.permutations(g):           # 6 per group
-            roles = dict(zip('ABC', perm))
-            seq = [roles[s] for s in SHAPE]
-            sections.append({'beat': beat,
-                             'name': '-'.join(LET[roles[s]] for s in 'ABC')})
-            for i, deg in enumerate(seq):
-                chords.append(chord(deg, beat + i * 4))
-            beat += len(SHAPE) * 4
+    for perm in triples:
+        roles = dict(zip('ABC', perm))
+        seq = [roles[s] for s in SHAPE]
+        sections.append({'beat': beat,
+                         'name': '-'.join(LET[roles[s]] for s in 'ABC')})
+        for i, deg in enumerate(seq):
+            chords.append(chord(deg, beat + i * 4))
+        beat += len(SHAPE) * 4
 
     song = {'version': 1, 'chords': chords, 'notes': [],
             'keys': [{'beat': 1, 'scale': 'major', 'tonic': a.tonic}],
@@ -73,7 +92,8 @@ def main():
             'endBeat': beat}
     open(a.out, 'w').write(json.dumps(song, separators=(',', ':')))
     bars = (beat - 1) // 4
-    print(f'{len(groups)} groups x 6 assignments = {len(sections)} permutations')
+    sets = {tuple(sorted(t)) for t in triples}
+    print(f'{len(sections)} permutations over {len(sets)} chord sets')
     print(f'{bars} bars, {len(chords)} chords -> {a.out}')
     print('\nfirst twelve:')
     for s in sections[:12]:
