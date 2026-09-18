@@ -7,7 +7,7 @@ With two chords and six strums that is 36 assignments, six of them uniform (the
 same strum on both) and thirty role-based -- which is the line between strumming
 a progression and playing a riff.
 
-    python3 strum_perms.py --chords Dm,C
+    python3 strum_perms.py --chords Dmadd9,Cadd9
     python3 strum_perms.py --chords Am,F,C,G --bars 1 --strums folk-DDU-UDU,wonderwall,eighths
     python3 strum_perms.py --chords Dm,C --no-push
 
@@ -48,16 +48,34 @@ def onsets(cells):
     return sorted(set(out))
 
 
-def chord(root, beat, dur):
+def parse_chord(tok):
+    """'Dm' -> (2, []),  'Dmadd9' / 'Dm+9' -> (2, [9]).
+
+    The add matters more than it looks. Simple Kind of Life is not Dm held for
+    two bars: it is Dm(add9) five times and then plain Dm on the pushed &4.
+    The push IS the chord change -- the add resolves away exactly there."""
+    t = tok.strip().replace('+', 'add')
+    adds = []
+    if 'add' in t:
+        base, _, n = t.partition('add')
+        t = base
+        adds = [int(n)] if n.isdigit() else [9]
+    if t not in DEG:
+        raise SystemExit(f'unknown chord: {tok!r}   known: {sorted(DEG)} (+add9)')
+    return DEG[t], adds
+
+
+def chord(root, beat, dur, adds=()):
     return {'root': root, 'beat': beat, 'duration': dur, 'type': 5, 'inversion': 0,
-            'applied': 0, 'adds': [], 'omits': [], 'alterations': [],
+            'applied': 0, 'adds': list(adds), 'omits': [], 'alterations': [],
             'suspensions': [], 'substitutions': [], 'pedal': None, 'alternate': '',
             'borrowed': BORROWED.get(root), 'isRest': False, 'recordingEndBeat': None}
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--chords', default='Dm,C', help='in order, e.g. Am,F,C,G')
+    ap.add_argument('--chords', default='Dmadd9,Cadd9',
+                    help='in order; add9 allowed, e.g. Dmadd9,Cadd9 or Am,F,C,G')
     ap.add_argument('--bars', type=int, default=2, help='bars each chord is held')
     ap.add_argument('--strums', default=','.join(DEFAULT))
     ap.add_argument('--no-push', dest='push', action='store_false')
@@ -73,9 +91,7 @@ def main():
     if missing:
         raise SystemExit(f'not in strum_library.json: {missing}\navailable: {sorted(lib)}')
     prog = [c.strip() for c in a.chords.split(',') if c.strip()]
-    bad = [c for c in prog if c not in DEG]
-    if bad:
-        raise SystemExit(f'unknown chord(s): {bad}\nknown: {sorted(DEG)}')
+    parsed = [parse_chord(c) for c in prog]
 
     chords, sections, beat = [], [], 1
     for combo in itertools.product(names, repeat=len(prog)):
@@ -84,7 +100,7 @@ def main():
                          'name': ('= ' if uniform else '') +
                                  ' / '.join(f'{c}:{n}' for c, n in zip(prog, combo))})
         for ci, (cname, sname) in enumerate(zip(prog, combo)):
-            root = DEG[cname]
+            root, adds = parsed[ci]
             slots = onsets(lib[sname])
             for b in range(a.bars):
                 bar0 = beat + (ci * a.bars + b) * 4
@@ -107,7 +123,10 @@ def main():
                     dur = (nxt - s) * 0.5
                     if s == 7 and pushes_out:
                         dur = 1.5
-                    chords.append(chord(root, bar0 + s * 0.5, dur))
+                    # the add resolves away on the push and stays gone for the
+                    # rest of the chord's bars -- that is the change
+                    live_adds = adds if (adds and b == 0 and not (s == 7 and pushes_out)) else []
+                    chords.append(chord(root, bar0 + s * 0.5, dur, live_adds))
         beat += len(prog) * a.bars * 4
 
     song = {'version': 1, 'chords': chords, 'notes': [],
