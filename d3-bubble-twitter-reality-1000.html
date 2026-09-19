@@ -40,14 +40,8 @@
             height: 600px;
         }
         .bubble {
-            stroke: #fff;
-            stroke-width: 1px;
+            stroke: none;
             cursor: pointer;
-            opacity: 0.85;
-        }
-        .bubble:hover {
-            opacity: 1;
-            stroke-width: 2px;
         }
         text {
             fill: #fff;
@@ -78,7 +72,7 @@
             height: 12px;
             margin-right: 5px;
             vertical-align: middle;
-            border: 1px solid #fff;
+            border: none;
         }
     </style>
 </head>
@@ -86,15 +80,15 @@
     <h1>A Circus, Not a Census: 500 Americans</h1>
     <p class="description">
         In 2021, 23% of U.S. adults used Twitter &mdash; <b>115</b> of these 500.
-        Of those 115, the most active quarter (<b style="color:#EF4444">29 people</b>)
+        Of those 115, the most active quarter (<b style="color:#FF3D9A">29 people</b>)
         produced <b>97%</b> of all the tweets. The other 86 posted a median of
         <b>zero</b> times a month.
     </p>
     <div id="vis"></div>
     <div class="legend">
-        <span><span class="color-box" style="background: #6B7280;"></span>Not on Twitter (385)</span>
-        <span><span class="color-box" style="background: #3B82F6;"></span>On Twitter, posting ~nothing (86)</span>
-        <span><span class="color-box" style="background: #EF4444;"></span>Writing 97% of it (29)</span>
+        <span><span class="color-box" style="background: #8A8F98; opacity: 0.25;"></span>Not on Twitter (385)</span>
+        <span><span class="color-box" style="background: #2DD4BF; opacity: 0.55;"></span>On Twitter, posting ~nothing (86)</span>
+        <span><span class="color-box" style="background: #FF3D9A;"></span>Writing 97% of it (29)</span>
     </div>
     <div class="legend source">
         Pew Research Center: 23% of U.S. adults used Twitter (survey Jan 25&ndash;Feb 8, 2021);
@@ -142,7 +136,11 @@
         // Color scale
         const colorScale = d3.scaleOrdinal()
             .domain(['not_on_twitter', 'lurking', 'tweeting'])
-            .range(['#6B7280', '#3B82F6', '#EF4444']);  // Gray, blue, red
+            .range(['#8A8F98', '#2DD4BF', '#FF3D9A']);
+
+        const opacityScale = d3.scaleOrdinal()
+            .domain(['not_on_twitter', 'lurking', 'tweeting'])
+            .range([0.13, 0.55, 1]);
 
         // Create SVG
         const svg = d3.select('#vis')
@@ -164,7 +162,8 @@
             .append('circle')
             .attr('class', 'bubble')
             .attr('r', d => d.radius)
-            .attr('fill', d => colorScale(d.group));
+            .attr('fill', d => colorScale(d.group))
+            .attr('opacity', d => opacityScale(d.group));
 
         // Add labels - none, too small
         const labels = elements
