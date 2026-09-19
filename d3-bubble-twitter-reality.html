@@ -85,8 +85,8 @@
     </p>
     <div id="vis"></div>
     <div class="legend">
-        <span><span class="color-box" style="background: #8A8F98; opacity: 0.4;"></span>Not on Twitter (77)</span>
-        <span><span class="color-box" style="background: #2DD4BF; opacity: 0.4;"></span>On Twitter, posting ~nothing (17)</span>
+        <span><span class="color-box" style="background: #8A8F98; opacity: 0.2;"></span>Not on Twitter (77)</span>
+        <span><span class="color-box" style="background: #2DD4BF; opacity: 0.2;"></span>On Twitter, posting ~nothing (17)</span>
         <span><span class="color-box" style="background: #FF3D9A;"></span>Writing 97% of it (6)</span>
     </div>
     <div class="legend source">
@@ -151,7 +151,7 @@
 
         const opacityScale = d3.scaleOrdinal()
             .domain(['not_on_twitter', 'lurking', 'tweeting'])
-            .range([0.4, 0.4, 1]);
+            .range([0.2, 0.2, 1]);
 
         // Create SVG
         const svg = d3.select('#vis')
