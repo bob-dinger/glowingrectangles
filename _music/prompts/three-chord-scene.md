@@ -1,76 +1,74 @@
 # One image for all twenty three-chord groups
 
-Twenty groups, twenty things in a single scene. Each word spells its group by its
-consonant sounds (k/g=C, t/d=Dm, m=Em, f/v=F, j/sh/ch=G, s/z=Am).
+Twenty groups. Each word spells its group by its consonant sounds
+(k/g=C, t/d=Dm, m=Em, f/v=F, j/sh/ch=G, s/z=Am).
+
+**Built as five things HAPPENING, four items each.** Twenty objects standing about is
+twenty things to remember; a fox on a banquet table knocking a whisky bottle onto a desk
+is one.
 
 ## The prompt
 
-> A wide, richly detailed storybook illustration of a tournament ground on a great
-> estate at the foot of a mountain range, dusk, painted in warm gouache with clear
-> readable staging — every element distinct and separated, nothing overlapping.
+> A wide, richly detailed storybook illustration of a tournament ground on a great estate
+> at the foot of a mountain range, dusk, warm gouache, crisp outlines. Five separate pieces
+> of action, clearly staged and not overlapping.
 >
-> **Sky and distance:** a jagged **mountain range** filling the horizon, and a bright
-> **comet** with a long tail streaking above it.
+> **Above and centre — the joust, the mask, the massif, the comet:** two armoured knights
+> collide mid-**joust**, lances shattering; the nearer knight wears a painted **carnival
+> mask** instead of a helm. Behind them a jagged **mountain range** fills the horizon, and
+> a bright **comet** streaks across the dusk sky above it.
 >
-> **The field, centre:** two armoured knights on horseback **jousting**, lances
-> levelled, a striped barrier between them.
+> **Left — the coachman, the footman, the jacket, the gift:** a liveried **footman** holds
+> up a **jacket** for a **coachman** to push his arms into, while balancing a ribboned
+> **wrapped present** on one palm, tilting badly.
 >
-> **Left, by a carriage:** a **coachman** in a tricorn hat holding the reins, and
-> beside him a liveried **footman** standing stiffly. A **jacket** is draped over the
-> carriage step.
+> **Right — the fox, the feast, the whisky, the desk:** a red **fox** has leapt onto the
+> long banquet **table**, scattering the roast, and has knocked a bottle of **whisky** off
+> the end so it falls toward an open **writing desk** below, ink and papers flying.
 >
-> **Right, a long banquet table:** a **feast** — roast, fruit, candles. On the table a
-> bottle of **whisky** and a **wrapped present** with a ribbon. A **carnival mask** on a
-> stick lies beside them.
+> **Foreground left — the machete, the jasmine, the mine, the painting:** a man hacks with
+> a **machete** at thick flowering **jasmine** vines to clear the timbered entrance of a
+> **mine shaft**, revealing a gilt-framed **Flemish still-life painting** propped inside.
 >
-> **Foreground left:** a **writing desk** out on the grass, with a **Flemish still-life
-> painting** on an easel behind it. A **machete** stuck upright in a tree stump. A red
-> **fox** slinking past the desk leg. **Jasmine** vines with white flowers climbing a post.
+> **Foreground right — the flamingo, the sunfish, the hagfish, the mast:** a pink
+> **flamingo** stabs its beak down and spears a round **sunfish** from the shallows, while
+> an eel-like **hagfish** coils around the fallen **mast** of a half-sunk boat beside it.
 >
-> **Foreground right, a lake:** a pink **flamingo** standing in the shallows. In the
-> water a round **sunfish** and, half-hidden, an eel-like **hagfish**. A tall ship's
-> **mast** rising from a moored boat at the water's edge.
->
-> **Cut into the hillside behind:** the timbered entrance to a **mine shaft**.
->
-> Storybook illustration, warm dusk palette, crisp outlines, everything clearly legible.
+> Storybook illustration, warm dusk palette, everything clearly legible.
 
 ## What each thing is
 
-| in the picture | word | chords |
-|---|---|---|
-| comet in the sky | COMET | C Dm Em |
-| wrapped present | GIFT | C Dm F |
-| jacket on the carriage step | JACKET | C Dm G |
-| writing desk on the grass | DESK | C Dm Am |
-| pink flamingo | FLAMINGO | C Em F |
-| coachman with the reins | COACHMAN | C Em G |
-| carnival mask on a stick | MASK | C Em Am |
-| eel-like fish in the water | HAGFISH | C F G |
-| red fox by the desk | FOX | C F Am |
-| bottle of whisky | SCOTCH | C G Am |
-| liveried servant | FOOTMAN | Dm Em F |
-| blade in the tree stump | MACHETE | Dm Em G |
-| ship's mast at the water | MAST | Dm Em Am |
-| mine entrance in the hillside | SHAFT | Dm F G |
-| the banquet table | FEAST | Dm F Am |
-| the two knights | JOUST | Dm G Am |
-| still-life painting on the easel | FLEMISH | Em F G |
-| the mountain range | MASSIF | Em F Am |
-| white flowering vines | JASMINE | Em G Am |
-| round fish in the shallows | SUNFISH | F G Am |
+COMET - C Dm Em - comet over the mountains
+GIFT - C Dm F - present tilting on the footman's palm
+JACKET - C Dm G - jacket held up for the coachman
+DESK - C Dm Am - desk the whisky falls onto
+FLAMINGO - C Em F - flamingo spearing the fish
+COACHMAN - C Em G - coachman pushing into the jacket
+MASK - C Em Am - mask worn instead of a helm
+HAGFISH - C F G - hagfish coiled round the mast
+FOX - C F Am - fox on the banquet table
+SCOTCH - C G Am - whisky bottle falling
+FOOTMAN - Dm Em F - footman holding the jacket
+MACHETE - Dm Em G - machete hacking the vines
+MAST - Dm Em Am - mast of the half-sunk boat
+SHAFT - Dm F G - mine entrance being cleared
+FEAST - Dm F Am - banquet table being scattered
+JOUST - Dm G Am - the colliding knights
+FLEMISH - Em F G - painting revealed in the mine
+MASSIF - Em F Am - mountain range behind the joust
+JASMINE - Em G Am - vines being hacked away
+SUNFISH - F G Am - fish being speared
 
 ## Notes
 
-All twenty verified against cmudict and they cover the twenty three-chord sets exactly —
-no duplicates, no gaps. Words carrying **r, p, b, th or w** are excluded throughout: those
-sounds are E, A♯ and D, chords outside the group.
+Verified against cmudict, covering the twenty three-chord sets exactly, audited clear of
+r, p, b, th and w — those sounds are E, A♯ and D, chords outside the group.
 
-Thirteen words were swapped from the sheet for being undrawable — FICTION became HAGFISH,
-DAMAGE became MACHETE, JUST became JOUST, SOFT became FEAST, SHAMEFUL became FLEMISH,
-MYSELF became MASSIF, SMASH became JASMINE, SELFISH became SUNFISH, COMFY became FLAMINGO,
-MAGIC became COACHMAN, MOTIF became FOOTMAN, MIST became MAST, GADGET became JACKET. All
-still spell the same three chords.
+Thirteen words swapped from the sheet for being undrawable: FICTION became HAGFISH, DAMAGE
+became MACHETE, JUST became JOUST, SOFT became FEAST, SHAMEFUL became FLEMISH, MYSELF
+became MASSIF, SMASH became JASMINE, SELFISH became SUNFISH, COMFY became FLAMINGO, MAGIC
+became COACHMAN, MOTIF became FOOTMAN, MIST became MAST, GADGET became JACKET. All still
+spell the same three chords.
 
-Twenty subjects is more than most generators hold in one frame. Fallback: four images of
-five — sky and field, the carriage, the table and desk, the lake.
+Five vignettes of four is also the fallback: if one frame gets crowded, generate them
+separately.
