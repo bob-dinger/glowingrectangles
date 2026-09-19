@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D3 Bubble Force - Twitter/X Reality (1000 people)</title>
+    <title>A Circus, Not a Census — 500 Americans</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body {
@@ -65,6 +65,13 @@
             display: inline-block;
             margin: 0 10px;
         }
+        .legend.source {
+            max-width: 600px;
+            color: #666;
+            font-size: 10px;
+            line-height: 1.5;
+            margin-top: 12px;
+        }
         .legend .color-box {
             display: inline-block;
             width: 12px;
@@ -76,58 +83,47 @@
     </style>
 </head>
 <body>
-    <h1>Twitter/X Reality: 500 Americans</h1>
+    <h1>A Circus, Not a Census: 500 Americans</h1>
     <p class="description">
-        Out of 500 Americans: 395 gray (not on X), 104 blue (on X, lurking), 1 red (actually tweeting).
-        That 1 red dot creates the entire discourse the media amplifies as "public opinion."
+        In 2021, 23% of U.S. adults used Twitter &mdash; <b>115</b> of these 500.
+        Of those 115, the most active quarter (<b style="color:#EF4444">29 people</b>)
+        produced <b>97%</b> of all the tweets. The other 86 posted a median of
+        <b>zero</b> times a month.
     </p>
     <div id="vis"></div>
     <div class="legend">
-        <span><span class="color-box" style="background: #6B7280;"></span>Not on X (395)</span>
-        <span><span class="color-box" style="background: #3B82F6;"></span>On X, lurking (104)</span>
-        <span><span class="color-box" style="background: #EF4444;"></span>Actually tweeting (1)</span>
+        <span><span class="color-box" style="background: #6B7280;"></span>Not on Twitter (385)</span>
+        <span><span class="color-box" style="background: #3B82F6;"></span>On Twitter, posting ~nothing (86)</span>
+        <span><span class="color-box" style="background: #EF4444;"></span>Writing 97% of it (29)</span>
+    </div>
+    <div class="legend source">
+        Pew Research Center: 23% of U.S. adults used Twitter (survey Jan 25&ndash;Feb 8, 2021);
+        the top 25% of U.S. adult Twitter users produced 97% of all tweets, and the bottom 75%
+        a median of 0 per month (Jun 12&ndash;Sep 12, 2021). X usage is 19% as of 2025.
     </div>
 
     <script>
         const width = 600;
         const height = 600;
 
-        // Generate Twitter reality data - 500 bubbles representing Americans
-        function generateTwitterRealityData(n) {
+        // 500 Americans, 2021: 23% on Twitter = 115. Of those, the top quarter
+        // (29) wrote 97% of the tweets; the other 86 posted a median of zero.
+        const NOT_ON = 385, LURKING = 86, POSTING = 29;
+
+        function generateTwitterRealityData() {
             const data = [];
-
-            // 79% not on Twitter at all (395 people)
-            for (let i = 0; i < 395; i++) {
-                data.push({
-                    id: i + 1,
-                    size: 10,
-                    group: 'not_on_twitter'
-                });
-            }
-
-            // 21% on Twitter but lurking (105 people, minus the 1 who tweets = 104)
-            for (let i = 395; i < 499; i++) {
-                data.push({
-                    id: i + 1,
-                    size: 10,
-                    group: 'lurking'
-                });
-            }
-
-            // 0.2% = 1 person actually tweeting (1% of the 21% who are on X)
-            for (let i = 499; i < 500; i++) {
-                data.push({
-                    id: i + 1,
-                    size: 10,  // Same size as everyone else
-                    group: 'tweeting'
-                });
-            }
-
+            let id = 0;
+            const push = (n, group) => {
+                for (let i = 0; i < n; i++) data.push({id: ++id, size: 10, group});
+            };
+            push(NOT_ON, 'not_on_twitter');
+            push(LURKING, 'lurking');
+            push(POSTING, 'tweeting');
             return data;
         }
 
         // Generate the data
-        const rawData = generateTwitterRealityData(500);
+        const rawData = generateTwitterRealityData();
 
         // Create nodes - all same small size
         const radius = 6;  // Doubled from 3 to 6
