@@ -19,7 +19,16 @@ from an assumption of four. 44 songs here are in 3 and 14 are in 6; hardcoding
 4 silently skips every one of them, which is how Seashores of Old Mexico --
 a known match, in 3/4 -- went missing from two earlier passes of this search.
 """
-import argparse, collections, glob, json, os, sys
+import argparse, collections, glob, json, os, re, sys
+
+# Exclude the user's own songs (mine*) and the generated workbenches. perms_*
+# is the killer here: perms_abababcc is a permutation dump of this very shape,
+# so without the filter it buries every real match. See
+# feedback_exclude_mine_songs.
+SCRATCH = re.compile(r'^(music_|perms_|mine|\d+-\d+-\d+)', re.I)
+_LIST = os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')
+LIVE = ({s['song'].replace('/', '_').lower() for s in json.load(open(_LIST))}
+        if os.path.exists(_LIST) else None)
 
 CORPUS = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 LET = {1:'C', 2:'Dm', 3:'Em', 4:'F', 5:'G', 6:'Am', 7:'A#'}
@@ -38,17 +47,28 @@ def label(c):
 def bars_of(section_beat, next_beat, chords, num_beats):
     """-> [chord per bar] or None if the section is not one-chord-per-bar.
 
-    A bar qualifies only if exactly one chord starts on its downbeat. Sections
-    with two chords in a bar, or chords landing off the grid, are not the thing
-    a bar-level shape describes."""
+    A chord FILLS every bar it spans, rather than only the bar it starts in.
+    Holding one chord for two bars and striking it twice are the same shape --
+    Layer 1 is chord-change durations, re-strikes are texture (see
+    music_chord_riff_fingerprint). Marking only onsets left a None in the
+    second bar of any held chord, and the caller rejects windows containing
+    None, so ABABABCC could only ever match songs that re-struck the last
+    chord. New Radicals' "You Get What You Give" holds its Dm for two bars and
+    was invisible to this search because of it.
+
+    Still None if two different chords share a bar, or a chord lands off the
+    downbeat grid: neither is what a bar-level shape describes."""
     bars = {}
     for c in chords:
         if not (section_beat <= c['beat'] < next_beat): continue
         off = c['beat'] - section_beat
         if off % num_beats: return None
-        b = int(off // num_beats)
-        if b in bars: return None
-        bars[b] = label(c)
+        start = int(off // num_beats)
+        span = max(1, int(round(c['duration'] / num_beats)))
+        lb = label(c)
+        for b in range(start, start + span):
+            if bars.get(b) not in (None, lb): return None
+            bars[b] = lb
     if not bars: return None
     return [bars.get(k) for k in range(max(bars) + 1)]
 
@@ -78,6 +98,11 @@ def main():
     meters = collections.Counter()
     for f in glob.glob(os.path.join(a.corpus, '*.json')):
         name = os.path.basename(f)
+        stem = name[:-5] if name.endswith('.json') else name
+        # lowercase compare: a Hookpad rename that only changes capitalisation
+        # leaves the old filename behind and exact matching drops the song
+        if SCRATCH.match(stem) or (LIVE is not None and stem.lower() not in LIVE):
+            continue
         if name.startswith('_'): continue
         song = name[:-5].split('-hooktab')[0]
         if a.songs_only and song.startswith(('mine', 'music_', 'perms', '6-', '7-', '8-', '9-')):
