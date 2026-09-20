@@ -9,12 +9,20 @@ WHERE the chord changes land inside it, counted in eighth notes (16 slots).
 That keeps 1:1:1:1 distinct from 1, and it makes a push visible as an onset on
 an odd slot instead of an even one.
 """
-import json, glob, os, collections
+import json, glob, os, re, collections
 
 D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 # Lowercased: a song renamed in Hookpad only for capitalisation keeps its old
 # filename on this (case-insensitive) disk, so exact matching drops it from the
 # census AND counts it as a rename orphan. That hid 52 songs, 24 with chords.
+SCRATCH = re.compile(r'^(music_|perms_|mine_\d|\d+-\d+-\d+)', re.I)
+def is_scratch(name):
+    """The user's own generated workbenches, not songs: perms_* permutation
+    dumps (one has 288 "sections"), music_* riff projects, and date-named
+    scratch files. They are real Hookpad entries, so the account list does not
+    exclude them, but they skew every census."""
+    return bool(SCRATCH.match(name))
+
 live = {s['song'].replace('/', '_').lower()
         for s in json.load(open(os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')))}
 
@@ -38,7 +46,7 @@ for f in glob.glob(f"{D}/*.json"):
     name = os.path.basename(f)[:-5]
     # the user's own scratch projects are all named music_<something>; they are
     # workbenches, not songs, and they skew every count
-    if name.lower() not in live or name.lower().startswith('music_'):
+    if name.lower() not in live or is_scratch(name):
         continue
     try: d = json.load(open(f))
     except Exception: continue

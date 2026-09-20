@@ -11,7 +11,7 @@ user's existing progression vocabulary (ender AAAB, vamp ABAB, shift AABB...).
 All meters, unlike window_types.py: a 2-bar window is numBeats*2 beats wide, so
 4/4 gives 16 eighth-slots and 3/4 gives 12. Hardcoding 4 drops 37 songs in 3.
 """
-import json, glob, os, collections, sys
+import json, glob, os, re, collections, sys
 
 EXACT8 = '--exact8' in sys.argv  # only sections that ARE 8 bars, not chopped
 SNAP   = '--snap'   in sys.argv  # ...and count 7- and 9-bar sections as eights
@@ -20,6 +20,14 @@ D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 # Lowercased: a song renamed in Hookpad only for capitalisation keeps its old
 # filename on this (case-insensitive) disk, so exact matching drops it from the
 # census AND counts it as a rename orphan. That hid 52 songs, 24 with chords.
+SCRATCH = re.compile(r'^(music_|perms_|mine_\d|\d+-\d+-\d+)', re.I)
+def is_scratch(name):
+    """The user's own generated workbenches, not songs: perms_* permutation
+    dumps (one has 288 "sections"), music_* riff projects, and date-named
+    scratch files. They are real Hookpad entries, so the account list does not
+    exclude them, but they skew every census."""
+    return bool(SCRATCH.match(name))
+
 live = {s['song'].replace('/', '_').lower()
         for s in json.load(open(os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')))}
 SHAPE = {'AAAA':'vamp/static', 'AAAB':'ender', 'ABAB':'vamp', 'AABB':'shift',
@@ -43,7 +51,7 @@ meters = collections.Counter()
 
 for f in glob.glob(f"{D}/*.json"):
     name = os.path.basename(f)[:-5]
-    if name.lower() not in live or name.lower().startswith('music_'): continue
+    if name.lower() not in live or is_scratch(name): continue
     try: d = json.load(open(f))
     except Exception: continue
     nb = (d.get('meters') or [{}])[0].get('numBeats', 4) or 4
