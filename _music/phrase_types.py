@@ -11,7 +11,10 @@ user's existing progression vocabulary (ender AAAB, vamp ABAB, shift AABB...).
 All meters, unlike window_types.py: a 2-bar window is numBeats*2 beats wide, so
 4/4 gives 16 eighth-slots and 3/4 gives 12. Hardcoding 4 drops 37 songs in 3.
 """
-import json, glob, os, collections
+import json, glob, os, collections, sys
+
+EXACT8 = '--exact8' in sys.argv  # only sections that ARE 8 bars, not chopped
+SNAP   = '--snap'   in sys.argv  # ...and count 7- and 9-bar sections as eights
 
 D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 live = {s['song'].replace('/', '_')
@@ -52,6 +55,19 @@ for f in glob.glob(f"{D}/*.json"):
         span = max(r[1]+r[2] for r in runs) - st
         nwin = int(span // W)
         if nwin < 4: continue
+        # a 16-bar verse otherwise contributes two words and the song lands in
+        # both; --exact8 keeps only sections that are exactly one 8-bar phrase
+        if EXACT8:
+            bars = span / nb
+            if SNAP:
+                # a section that is really 8 bars measures as 7 or 9 when it has
+                # a pickup, or when the last chord rings past the section marker.
+                # Window positions are unaffected, so take the first four either
+                # way; only the measured span was ever off.
+                if not (7 - 1e-6 <= bars <= 9 + 1e-6): continue
+                nwin = 4
+            elif nwin != 4 or abs(span - 8*nb) > 1e-6:
+                continue
         wins = []
         for w in range(nwin):
             w0 = st + w*W
