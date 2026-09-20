@@ -20,6 +20,7 @@ from an assumption of four. 44 songs here are in 3 and 14 are in 6; hardcoding
 a known match, in 3/4 -- went missing from two earlier passes of this search.
 """
 import argparse, collections, glob, json, os, re, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Exclude the user's own songs (mine*) and the generated workbenches. perms_*
 # is the killer here: perms_abababcc is a permutation dump of this very shape,
@@ -59,13 +60,18 @@ def bars_of(section_beat, next_beat, chords, num_beats, unit=None):
     Still None if two different chords share a bar, or a chord lands off the
     downbeat grid: neither is what a bar-level shape describes."""
     U = unit or num_beats          # width of one shape letter, in beats
+    # Merge re-strikes FIRST. One chord held for a bar and the same chord
+    # struck twice across two half-bars are the same shape; quantising raw
+    # entries rejected the second case outright, because its second entry
+    # lands mid-bar. 680 songs here contain at least one re-struck chord.
+    import corpus as _c
+    runs = _c.merged([c for c in chords if section_beat <= c['beat'] < next_beat])
     bars = {}
-    for c in chords:
-        if not (section_beat <= c['beat'] < next_beat): continue
-        off = c['beat'] - section_beat
+    for c, beat, dur in runs:
+        off = beat - section_beat
         if abs(off / U - round(off / U)) > 1e-6: return None
         start = int(round(off / U))
-        span = max(1, int(round(c['duration'] / U)))
+        span = max(1, int(round(dur / U)))
         lb = label(c)
         for b in range(start, start + span):
             if bars.get(b) not in (None, lb): return None
