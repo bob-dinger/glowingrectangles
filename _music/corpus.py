@@ -39,12 +39,14 @@ def live_names():
 
 
 def identity(c):
-    """What makes two chord entries the same chord. Includes adds and
-    suspensions: Dm(add9)->Dm IS a change, which is the whole point of the
-    push in Simple Kind of Life."""
+    """What makes two chord entries the same chord.
+
+    Includes adds and suspensions: Dm(add9)->Dm IS a change, which is the whole
+    point of the push in Simple Kind of Life. Deliberately EXCLUDES inversion --
+    D/F# collapses to D, per music_ignore_slash_chords."""
     return (c.get('root'), c.get('type'), tuple(c.get('adds') or []),
             tuple(c.get('suspensions') or []), c.get('borrowed'),
-            c.get('applied'), c.get('inversion'))
+            c.get('applied'))
 
 
 def merged(chords):

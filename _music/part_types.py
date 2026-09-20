@@ -12,34 +12,19 @@ many sections -- a song with four verses on one pattern should count once.
 Meter is read per song. Hardcoding 4 beats/bar silently drops every 3/4 song.
 """
 import json, glob, os, re, collections, sys
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import corpus
 
 D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 LIST = os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')
 # Lowercased: a song renamed in Hookpad only for capitalisation keeps its old
 # filename on this (case-insensitive) disk, so exact matching drops it from the
 # census AND counts it as a rename orphan. That hid 52 songs, 24 with chords.
-SCRATCH = re.compile(r'^(music_|perms_|mine|\d+-\d+-\d+)', re.I)
-def is_scratch(name):
-    """The user's own generated workbenches, not songs: perms_* permutation
-    dumps (one has 288 "sections"), music_* riff projects, everything under
-    mine_* and mine<number> (the user's own writing -- 60 files), and date-named scratch files. They are real Hookpad entries, so the account list does not
-    exclude them, but they skew every census."""
-    return bool(SCRATCH.match(name))
 
-live = {s['song'].replace('/', '_').lower()
-        for s in json.load(open(os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')))}
+live = corpus.live_names()
 
 
-def merged(chords):
-    out = []
-    for c in sorted(chords, key=lambda x: x['beat']):
-        lb = (c.get('root'), c.get('type'), tuple(c.get('adds') or []),
-              c.get('borrowed'), c.get('applied'), tuple(c.get('suspensions') or []))
-        if out and out[-1][0] == lb and abs(out[-1][1] + out[-1][2] - c['beat']) < 1e-6:
-            out[-1][2] += c['duration']
-        else:
-            out.append([lb, c['beat'], c['duration']])
-    return out
 
 
 def cell(durs):
@@ -80,7 +65,7 @@ for f in glob.glob(f"{D}/*.json"):
         end = secs[i+1][0] if i + 1 < len(secs) else 1e9
         part = [c for c in ch if start <= c['beat'] < end]
         if len(part) < 4: continue
-        m = merged(part)
+        m = corpus.merged(part)
         durs = [round(x[2], 3) for x in m]
         if len(durs) < 4: continue
         cl, reps = cell(durs)

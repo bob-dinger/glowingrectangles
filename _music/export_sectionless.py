@@ -6,22 +6,22 @@ and a melody but no sections is otherwise complete, and sectioning it is the one
 thing standing between it and every structural analysis in this folder.
 """
 import json, glob, os, re
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import corpus
 from openpyxl import Workbook
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 
 D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 
-SCRATCH = re.compile(r'^(music_|perms_|mine|\d+-\d+-\d+)', re.I)
-def is_scratch(n): return bool(SCRATCH.match(n))
 
-live = {s['song'].replace('/', '_').lower()
-        for s in json.load(open(os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')))}
+live = corpus.live_names()
 
 rows = []
 for f in glob.glob(f"{D}/*.json"):
     n = os.path.basename(f)[:-5]
-    if n.lower() not in live or is_scratch(n): continue
+    if n.lower() not in live or corpus.is_scratch(n): continue
     try: d = json.load(open(f))
     except Exception: continue
     if d.get('sections'): continue

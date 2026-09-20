@@ -10,33 +10,18 @@ That keeps 1:1:1:1 distinct from 1, and it makes a push visible as an onset on
 an odd slot instead of an even one.
 """
 import json, glob, os, re, collections
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import corpus
 
 D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 # Lowercased: a song renamed in Hookpad only for capitalisation keeps its old
 # filename on this (case-insensitive) disk, so exact matching drops it from the
 # census AND counts it as a rename orphan. That hid 52 songs, 24 with chords.
-SCRATCH = re.compile(r'^(music_|perms_|mine|\d+-\d+-\d+)', re.I)
-def is_scratch(name):
-    """The user's own generated workbenches, not songs: perms_* permutation
-    dumps (one has 288 "sections"), music_* riff projects, everything under
-    mine_* and mine<number> (the user's own writing -- 60 files), and date-named scratch files. They are real Hookpad entries, so the account list does not
-    exclude them, but they skew every census."""
-    return bool(SCRATCH.match(name))
 
-live = {s['song'].replace('/', '_').lower()
-        for s in json.load(open(os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')))}
+live = corpus.live_names()
 
 
-def merged(chords):
-    out = []
-    for c in sorted(chords, key=lambda x: x['beat']):
-        lb = (c.get('root'), c.get('type'), tuple(c.get('adds') or []),
-              c.get('borrowed'), c.get('applied'), tuple(c.get('suspensions') or []))
-        if out and out[-1][0] == lb and abs(out[-1][1] + out[-1][2] - c['beat']) < 1e-6:
-            out[-1][2] += c['duration']
-        else:
-            out.append([lb, c['beat'], c['duration']])
-    return out
 
 
 pat_songs = collections.defaultdict(set)
@@ -46,7 +31,7 @@ for f in glob.glob(f"{D}/*.json"):
     name = os.path.basename(f)[:-5]
     # the user's own scratch projects are all named music_<something>; they are
     # workbenches, not songs, and they skew every count
-    if name.lower() not in live or is_scratch(name):
+    if name.lower() not in live or corpus.is_scratch(name):
         continue
     try: d = json.load(open(f))
     except Exception: continue
@@ -57,7 +42,7 @@ for f in glob.glob(f"{D}/*.json"):
     secs = sorted([(s.get('beat', 0), s.get('name', '?')) for s in (d.get('sections') or [])]) or [(0,'all')]
     for i, (start, nm) in enumerate(secs):
         end = secs[i+1][0] if i+1 < len(secs) else 1e9
-        runs = merged([c for c in ch if start <= c['beat'] < end])
+        runs = corpus.merged([c for c in ch if start <= c['beat'] < end])
         if len(runs) < 2: continue
         span = max(r[1]+r[2] for r in runs) - start
         nwin = int(span // 8)
