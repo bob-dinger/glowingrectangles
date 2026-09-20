@@ -12,7 +12,10 @@ an odd slot instead of an even one.
 import json, glob, os, collections
 
 D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
-live = {s['song'].replace('/', '_')
+# Lowercased: a song renamed in Hookpad only for capitalisation keeps its old
+# filename on this (case-insensitive) disk, so exact matching drops it from the
+# census AND counts it as a rename orphan. That hid 52 songs, 24 with chords.
+live = {s['song'].replace('/', '_').lower()
         for s in json.load(open(os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')))}
 
 
@@ -35,7 +38,7 @@ for f in glob.glob(f"{D}/*.json"):
     name = os.path.basename(f)[:-5]
     # the user's own scratch projects are all named music_<something>; they are
     # workbenches, not songs, and they skew every count
-    if name not in live or name.startswith('music_'):
+    if name.lower() not in live or name.lower().startswith('music_'):
         continue
     try: d = json.load(open(f))
     except Exception: continue

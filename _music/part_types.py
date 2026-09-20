@@ -15,7 +15,11 @@ import json, glob, os, collections, sys
 
 D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 LIST = os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')
-live = {s['song'].replace('/', '_') for s in json.load(open(LIST))}
+# Lowercased: a song renamed in Hookpad only for capitalisation keeps its old
+# filename on this (case-insensitive) disk, so exact matching drops it from the
+# census AND counts it as a rename orphan. That hid 52 songs, 24 with chords.
+live = {s['song'].replace('/', '_').lower()
+        for s in json.load(open(os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')))}
 
 
 def merged(chords):
@@ -55,7 +59,7 @@ examples = collections.defaultdict(list)
 
 for f in glob.glob(f"{D}/*.json"):
     name = os.path.basename(f)[:-5]
-    if name not in live: continue
+    if name.lower() not in live: continue
     if name.startswith(('chord-riffs', 'riffs', 'perms', 'blocks')): continue
     try: d = json.load(open(f))
     except Exception: continue

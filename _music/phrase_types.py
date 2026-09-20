@@ -17,7 +17,10 @@ EXACT8 = '--exact8' in sys.argv  # only sections that ARE 8 bars, not chopped
 SNAP   = '--snap'   in sys.argv  # ...and count 7- and 9-bar sections as eights
 
 D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
-live = {s['song'].replace('/', '_')
+# Lowercased: a song renamed in Hookpad only for capitalisation keeps its old
+# filename on this (case-insensitive) disk, so exact matching drops it from the
+# census AND counts it as a rename orphan. That hid 52 songs, 24 with chords.
+live = {s['song'].replace('/', '_').lower()
         for s in json.load(open(os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')))}
 SHAPE = {'AAAA':'vamp/static', 'AAAB':'ender', 'ABAB':'vamp', 'AABB':'shift',
          'ABAC':'bounce', 'ABCB':'return', 'AABA':'blues/AABA', 'ABCD':'through'}
@@ -40,7 +43,7 @@ meters = collections.Counter()
 
 for f in glob.glob(f"{D}/*.json"):
     name = os.path.basename(f)[:-5]
-    if name not in live or name.startswith('music_'): continue
+    if name.lower() not in live or name.lower().startswith('music_'): continue
     try: d = json.load(open(f))
     except Exception: continue
     nb = (d.get('meters') or [{}])[0].get('numBeats', 4) or 4

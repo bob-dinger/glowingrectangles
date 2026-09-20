@@ -15,7 +15,10 @@ from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 
 D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
-live = {s['song'].replace('/', '_')
+# Lowercased: a song renamed in Hookpad only for capitalisation keeps its old
+# filename on this (case-insensitive) disk, so exact matching drops it from the
+# census AND counts it as a rename orphan. That hid 52 songs, 24 with chords.
+live = {s['song'].replace('/', '_').lower()
         for s in json.load(open(os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')))}
 TAG = re.compile(r'-(hooktab\d*|simple|melodies?|perfectMelody|mixolydian|right|wrong|'
                  r'double|solo|o|c|ly|\d+|[A-G]b?#?)$', re.I)
@@ -29,11 +32,11 @@ rows, haschords = [], collections.defaultdict(bool)
 info = {}
 for f in glob.glob(f"{D}/*.json"):
     n = os.path.basename(f)[:-5]
-    if n not in live or n.startswith('music_'): continue
+    if n.lower() not in live or n.lower().startswith('music_'): continue
     try: d = json.load(open(f))
     except Exception: continue
     ch = d.get('chords') or []
-    haschords[base(n)] |= bool(ch)
+    haschords[base(n).lower()] |= bool(ch)
     info[n] = (d, ch)
 
 for n, (d, ch) in sorted(info.items()):
@@ -48,7 +51,7 @@ for n, (d, ch) in sorted(info.items()):
     rows.append([a.title(), t.title(), n, notes, secs,
                  f"{tonic or ''} {scale or ''}".strip(),
                  bpm and round(bpm),
-                 "yes" if haschords.get(base(n)) else ""])
+                 "yes" if haschords.get(base(n).lower()) else ""])
 
 rows.sort(key=lambda r: (-r[3], r[0], r[1]))     # melody-first = closest to done
 
