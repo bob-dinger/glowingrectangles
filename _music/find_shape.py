@@ -94,6 +94,14 @@ def matches(window, shape, distinct):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('shape', help='role letters, one per unit, e.g. ABABABCC')
+    ap.add_argument('--anchor', action='store_true',
+                    help='only match windows that start on a phrase boundary '
+                         '(a multiple of the shape length from the section '
+                         'start), instead of sliding one unit at a time. A '
+                         'four-chord loop otherwise matches at every rotation.')
+    ap.add_argument('--by-song', action='store_true',
+                    help='rank by how many SONGS use a progression, not by how '
+                         'many windows matched')
     ap.add_argument('--scales', action='store_true',
                     help='also look for the shape at half-bar, 2-bar and 4-bar '
                          'units, not only one letter per bar')
@@ -132,7 +140,8 @@ def main():
             for U, tag in units:
                 seq = bars_of(s['beat'], end, ch, nb, U)
                 if not seq or len(seq) < len(shape): continue
-                for st in range(len(seq) - len(shape) + 1):
+                step = len(shape) if a.anchor else 1
+                for st in range(0, len(seq) - len(shape) + 1, step):
                     w = seq[st:st+len(shape)]
                     if any(x is None for x in w): continue
                     if matches(w, shape, not a.loose):
