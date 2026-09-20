@@ -44,7 +44,7 @@ def label(c):
     return s
 
 
-def bars_of(section_beat, next_beat, chords, num_beats):
+def bars_of(section_beat, next_beat, chords, num_beats, unit=None):
     """-> [chord per bar] or None if the section is not one-chord-per-bar.
 
     A chord FILLS every bar it spans, rather than only the bar it starts in.
@@ -58,13 +58,14 @@ def bars_of(section_beat, next_beat, chords, num_beats):
 
     Still None if two different chords share a bar, or a chord lands off the
     downbeat grid: neither is what a bar-level shape describes."""
+    U = unit or num_beats          # width of one shape letter, in beats
     bars = {}
     for c in chords:
         if not (section_beat <= c['beat'] < next_beat): continue
         off = c['beat'] - section_beat
-        if off % num_beats: return None
-        start = int(off // num_beats)
-        span = max(1, int(round(c['duration'] / num_beats)))
+        if abs(off / U - round(off / U)) > 1e-6: return None
+        start = int(round(off / U))
+        span = max(1, int(round(c['duration'] / U)))
         lb = label(c)
         for b in range(start, start + span):
             if bars.get(b) not in (None, lb): return None
@@ -86,7 +87,10 @@ def matches(window, shape, distinct):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('shape', help='role letters, one per bar, e.g. ABABABCC')
+    ap.add_argument('shape', help='role letters, one per unit, e.g. ABABABCC')
+    ap.add_argument('--scales', action='store_true',
+                    help='also look for the shape at half-bar, 2-bar and 4-bar '
+                         'units, not only one letter per bar')
     ap.add_argument('--corpus', default=CORPUS)
     ap.add_argument('--loose', action='store_true', help='allow two roles to be the same chord')
     ap.add_argument('--songs-only', action='store_true', help='skip scratch and perms files')
@@ -116,13 +120,17 @@ def main():
         secs = sorted(d.get('sections') or [], key=lambda s: s['beat']) or [{'beat':1,'name':'(whole)'}]
         for i, s in enumerate(secs):
             end = secs[i+1]['beat'] if i+1 < len(secs) else (d.get('endBeat') or 10**9)
-            seq = bars_of(s['beat'], end, ch, nb)
-            if not seq or len(seq) < len(shape): continue
-            for st in range(len(seq) - len(shape) + 1):
-                w = seq[st:st+len(shape)]
-                if any(x is None for x in w): continue
-                if matches(w, shape, not a.loose):
-                    found[' '.join(w)].add((song, s['name'], nb))
+            units = [(nb, '')] if not a.scales else [
+                (nb / 2, ' [half-bar units]'), (nb, ''),
+                (nb * 2, ' [2-bar units]'), (nb * 4, ' [4-bar units]')]
+            for U, tag in units:
+                seq = bars_of(s['beat'], end, ch, nb, U)
+                if not seq or len(seq) < len(shape): continue
+                for st in range(len(seq) - len(shape) + 1):
+                    w = seq[st:st+len(shape)]
+                    if any(x is None for x in w): continue
+                    if matches(w, shape, not a.loose):
+                        found[' '.join(w) + tag].add((song, s['name'], nb))
 
     print(f'{shape} — {len(found)} distinct progressions '
           f'(bar lengths in corpus: {dict(sorted(meters.items()))})\n')
