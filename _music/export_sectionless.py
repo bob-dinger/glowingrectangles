@@ -12,7 +12,7 @@ from openpyxl.utils import get_column_letter
 
 D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 
-SCRATCH = re.compile(r'^(music_|perms_|mine_\d|\d+-\d+-\d+)', re.I)
+SCRATCH = re.compile(r'^(music_|perms_|mine[_\d]|\d+-\d+-\d+)', re.I)
 def is_scratch(n): return bool(SCRATCH.match(n))
 
 live = {s['song'].replace('/', '_').lower()

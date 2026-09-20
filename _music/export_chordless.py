@@ -18,11 +18,11 @@ D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 # Lowercased: a song renamed in Hookpad only for capitalisation keeps its old
 # filename on this (case-insensitive) disk, so exact matching drops it from the
 # census AND counts it as a rename orphan. That hid 52 songs, 24 with chords.
-SCRATCH = re.compile(r'^(music_|perms_|mine_\d|\d+-\d+-\d+)', re.I)
+SCRATCH = re.compile(r'^(music_|perms_|mine[_\d]|\d+-\d+-\d+)', re.I)
 def is_scratch(name):
     """The user's own generated workbenches, not songs: perms_* permutation
-    dumps (one has 288 "sections"), music_* riff projects, and date-named
-    scratch files. They are real Hookpad entries, so the account list does not
+    dumps (one has 288 "sections"), music_* riff projects, everything under
+    mine_* and mine<number> (the user's own writing -- 60 files), and date-named scratch files. They are real Hookpad entries, so the account list does not
     exclude them, but they skew every census."""
     return bool(SCRATCH.match(name))
 
