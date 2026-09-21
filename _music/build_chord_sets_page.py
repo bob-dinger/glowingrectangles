@@ -65,13 +65,24 @@ for e in json.load(open(os.path.join(os.path.dirname(__file__),'chord_sets.json'
 # fantasy-scene image prompts in prompts/*.md. They beat both the progression
 # names and the exemplar song, because a set has exactly one word whereas
 # I/IV/V/vi answers to Axis, Let It Be, Stand By Me and a hundred songs.
-CH2ROM={'C':'I','Dm':'ii','Em':'iii','F':'IV','G':'V','Am':'vi','Bdim':'vii'}
+# Out-of-key degrees are spelled as APPLIED DOMINANTS on this page, not as
+# flats: A#/Bb is IV/IV, D is V/V, E is V/vi. And the same chord can arrive
+# either way depending on how it was entered in Hookpad -- D shows up as V/V in
+# one section and II in another -- which is the borrowed-label inconsistency
+# CLAUDE.md warns about. So register a word under EVERY spelling of its set.
+import itertools
+CH2ROM={'C':['I'],'Dm':['ii'],'Em':['iii'],'F':['IV'],'G':['V'],'Am':['vi'],
+        'Bdim':['vii'],'A#':['IV/IV','bVII'],'Bb':['IV/IV','bVII'],
+        'D':['V/V','II'],'E':['V/vi','III'],'Eb':['bIII'],'Ab':['bVI'],
+        'Fm':['iv'],'Gm':['v'],'A':['V/ii'],'B':['V/iii']}
 WORDS={}
 _wp=os.path.join(os.path.dirname(__file__),'chord_words.json')
 if os.path.exists(_wp):
     for w, chs in json.load(open(_wp)).items():
-        toks=[CH2ROM.get(c) for c in chs]
-        if all(toks): WORDS[frozenset(toks)]=w
+        opts=[CH2ROM.get(c) for c in chs]
+        if not all(opts): continue
+        for combo in itertools.product(*opts):
+            WORDS.setdefault(frozenset(combo), w)
 
 def section_cores(hj):
     """yield (core_frozenset, roman_share_map, section_name) per section."""
