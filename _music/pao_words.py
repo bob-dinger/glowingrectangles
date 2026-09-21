@@ -29,6 +29,14 @@ FREE = {'N','L','NG','HH','Y'}          # claimed by nothing
 
 CMU = cmudict.dict()
 
+# cmudict is full of acronyms and surnames, and ranking shortest-first surfaces
+# GDP, SGT, KPMG and a wall of Polish names. The system word list is ordinary
+# English, so intersecting with it is a cheap "is this a real word" test.
+try:
+    ENGLISH = {w.strip().lower() for w in open('/usr/share/dict/words')}
+except OSError:
+    ENGLISH = None
+
 
 def chords_of(pron):
     """phoneme list -> the chords it spells, in order, or None if unusable"""
@@ -46,11 +54,13 @@ def chords_of(pron):
     return out
 
 
-def find(target):
+def find(target, common_only=True):
     want = sorted(target)
     hits = []
     for w, prons in CMU.items():
         if not w.isalpha() or len(w) < 3:
+            continue
+        if common_only and ENGLISH is not None and w not in ENGLISH:
             continue
         got = chords_of(prons[0])
         if got is None or sorted(got) != want:

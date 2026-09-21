@@ -1,13 +1,57 @@
 {
+ "ABJECT": [
+  "C",
+  "Dm",
+  "G",
+  "A#"
+ ],
+ "ACCEPT": [
+  "C",
+  "Dm",
+  "Am",
+  "A#"
+ ],
+ "APEX": [
+  "C",
+  "Am",
+  "A#"
+ ],
  "AXE": [
   "C",
   "Am"
+ ],
+ "BASHFUL": [
+  "F",
+  "G",
+  "A#"
+ ],
+ "BAT": [
+  "Dm",
+  "A#"
+ ],
+ "BORAX": [
+  "C",
+  "E",
+  "Am",
+  "A#"
+ ],
+ "BUXOM": [
+  "C",
+  "Em",
+  "Am",
+  "A#"
  ],
  "CAMOUFLAGE": [
   "C",
   "Em",
   "F",
   "G"
+ ],
+ "CAPTIVE": [
+  "C",
+  "Dm",
+  "F",
+  "A#"
  ],
  "CASH": [
   "C",
@@ -27,6 +71,11 @@
   "C",
   "F"
  ],
+ "CHAPS": [
+  "G",
+  "Am",
+  "A#"
+ ],
  "CHECKMATE": [
   "C",
   "Dm",
@@ -39,15 +88,38 @@
   "F",
   "G"
  ],
+ "CHIPMUNK": [
+  "C",
+  "Em",
+  "G",
+  "A#"
+ ],
  "COACHMAN": [
   "C",
   "Em",
   "G"
  ],
+ "COMBAT": [
+  "C",
+  "Dm",
+  "Em",
+  "A#"
+ ],
  "COMET": [
   "C",
   "Dm",
   "Em"
+ ],
+ "CONVERGE": [
+  "C",
+  "E",
+  "F",
+  "G"
+ ],
+ "CRASH": [
+  "C",
+  "E",
+  "G"
  ],
  "DESK": [
   "C",
@@ -58,11 +130,20 @@
   "Dm",
   "Am"
  ],
+ "EGYPT": [
+  "Dm",
+  "G",
+  "A#"
+ ],
  "ENGLISHWOMAN": [
   "C",
   "D",
   "Em",
   "G"
+ ],
+ "ERASE": [
+  "E",
+  "Am"
  ],
  "EVANGELIST": [
   "Dm",
@@ -76,14 +157,34 @@
   "G",
   "Am"
  ],
+ "EXPUNGE": [
+  "C",
+  "G",
+  "Am",
+  "A#"
+ ],
  "FEAST": [
   "Dm",
   "F",
   "Am"
  ],
+ "FIB": [
+  "F",
+  "A#"
+ ],
+ "FIR": [
+  "E",
+  "F"
+ ],
  "FISH": [
   "F",
   "G"
+ ],
+ "FIXABLE": [
+  "C",
+  "F",
+  "Am",
+  "A#"
  ],
  "FIZZ": [
   "F",
@@ -120,10 +221,22 @@
   "Em",
   "F"
  ],
+ "FOLGERS": [
+  "E",
+  "F",
+  "G",
+  "Am"
+ ],
  "FOOTMAN": [
   "Dm",
   "Em",
   "F"
+ ],
+ "FORGED": [
+  "Dm",
+  "E",
+  "F",
+  "G"
  ],
  "FOX": [
   "C",
@@ -134,12 +247,6 @@
   "C",
   "Dm",
   "F",
-  "Am"
- ],
- "FRIDGES": [
-  "E",
-  "F",
-  "G",
   "Am"
  ],
  "FUJISAWA": [
@@ -159,6 +266,16 @@
   "G",
   "Am"
  ],
+ "GOTHAM": [
+  "C",
+  "D",
+  "Em"
+ ],
+ "GUAVA": [
+  "C",
+  "D",
+  "F"
+ ],
  "GUM": [
   "C",
   "Em"
@@ -167,6 +284,10 @@
   "C",
   "F",
   "G"
+ ],
+ "JAB": [
+  "G",
+  "A#"
  ],
  "JACKET": [
   "C",
@@ -187,6 +308,12 @@
   "G",
   "Am"
  ],
+ "JESTER": [
+  "Dm",
+  "E",
+  "G",
+  "Am"
+ ],
  "JET": [
   "Dm",
   "G"
@@ -195,6 +322,11 @@
   "Dm",
   "G",
   "Am"
+ ],
+ "KEPT": [
+  "C",
+  "Dm",
+  "A#"
  ],
  "LOCOMOTIVE": [
   "C",
@@ -234,6 +366,11 @@
   "Em",
   "Am"
  ],
+ "METHOD": [
+  "Dm",
+  "D",
+  "Em"
+ ],
  "MISCHIEF": [
   "Em",
   "F",
@@ -244,6 +381,12 @@
   "Dm",
   "Em",
   "F",
+  "Am"
+ ],
+ "MIXER": [
+  "C",
+  "Em",
+  "E",
   "Am"
  ],
  "MOUSE": [
@@ -258,6 +401,11 @@
   "C",
   "A#"
  ],
+ "QUAD": [
+  "C",
+  "Dm",
+  "D"
+ ],
  "QUEENFISH": [
   "C",
   "D",
@@ -269,7 +417,30 @@
   "D",
   "G"
  ],
+ "REJECT": [
+  "C",
+  "Dm",
+  "E",
+  "G"
+ ],
+ "ROCKS": [
+  "C",
+  "E",
+  "Am"
+ ],
  "SAGE": [
+  "G",
+  "Am"
+ ],
+ "SCARF": [
+  "C",
+  "E",
+  "F",
+  "Am"
+ ],
+ "SCORCH": [
+  "C",
+  "E",
   "G",
   "Am"
  ],
@@ -289,6 +460,12 @@
   "F",
   "G"
  ],
+ "SIMPLIFY": [
+  "Em",
+  "F",
+  "Am",
+  "A#"
+ ],
  "SQUASH": [
   "C",
   "D",
@@ -300,8 +477,76 @@
   "G",
   "Am"
  ],
+ "SWAM": [
+  "D",
+  "Em",
+  "Am"
+ ],
+ "SWEAR": [
+  "D",
+  "E",
+  "Am"
+ ],
+ "SWERVE": [
+  "D",
+  "E",
+  "F",
+  "Am"
+ ],
+ "SWISHER": [
+  "D",
+  "E",
+  "G",
+  "Am"
+ ],
  "VAT": [
   "Dm",
   "F"
+ ],
+ "VEGETABLE": [
+  "Dm",
+  "F",
+  "G",
+  "A#"
+ ],
+ "VISIGOTH": [
+  "C",
+  "D",
+  "F",
+  "Am"
+ ],
+ "VISUAL": [
+  "D",
+  "F",
+  "G"
+ ],
+ "WAGE": [
+  "D",
+  "G"
+ ],
+ "WAVE": [
+  "D",
+  "F"
+ ],
+ "WAX": [
+  "C",
+  "D",
+  "Am"
+ ],
+ "WAXMAN": [
+  "C",
+  "D",
+  "Em",
+  "Am"
+ ],
+ "WIG": [
+  "C",
+  "D"
+ ],
+ "WORKS": [
+  "C",
+  "D",
+  "E",
+  "Am"
  ]
 }
