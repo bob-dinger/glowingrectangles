@@ -58,7 +58,9 @@ def find(target):
         # flag words whose other pronunciations disagree
         amb = any(chords_of(p) != got for p in prons[1:])
         hits.append((w, got, amb))
-    hits.sort(key=lambda h: (h[2], -len(h[0])))
+    # shortest first: the good word is usually the short one (PUCK, FLAGPOLE),
+    # and ranking long words first buried both of them below the fold
+    hits.sort(key=lambda h: (h[2], len(h[0]), h[0]))
     return hits
 
 
