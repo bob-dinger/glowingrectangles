@@ -60,6 +60,19 @@ for e in json.load(open(os.path.join(os.path.dirname(__file__),'chord_sets.json'
     toks=[t for t in toks if t]
     if toks: NAMED[frozenset(toks)].append(e['name'])
 
+# The scene words (GOOSEFISH, CATFISH, LOCOMOTIVE...) are the handle the user
+# actually learns the sets by -- one word per unordered palette, from the
+# fantasy-scene image prompts in prompts/*.md. They beat both the progression
+# names and the exemplar song, because a set has exactly one word whereas
+# I/IV/V/vi answers to Axis, Let It Be, Stand By Me and a hundred songs.
+CH2ROM={'C':'I','Dm':'ii','Em':'iii','F':'IV','G':'V','Am':'vi','Bdim':'vii'}
+WORDS={}
+_wp=os.path.join(os.path.dirname(__file__),'chord_words.json')
+if os.path.exists(_wp):
+    for w, chs in json.load(open(_wp)).items():
+        toks=[CH2ROM.get(c) for c in chs]
+        if all(toks): WORDS[frozenset(toks)]=w
+
 def section_cores(hj):
     """yield (core_frozenset, roman_share_map, section_name) per section."""
     scale=(hj.get('keys') or [{}])[0].get('scale','major'); scale=scale if scale in ('major','minor') else 'major'
@@ -111,9 +124,11 @@ def main():
         roman=' '.join(sorted(core,key=lambda x:(len(x),x)))
         bucket=str(len(core)) if len(core)<=5 else '6+'
         names=list(dict.fromkeys(NAMED.get(core,[])))   # dedupe, keep order
+        word=WORDS.get(core)
         ranked=sorted(songs,key=lambda s:(s['a'].lower(),s['t'].lower()))
-        data[bucket].append({'chords':chords,'roman':roman,'name':(names[0] if names else exemplar(ranked)),
-                     'names':names,'bysong':not names,
+        data[bucket].append({'chords':chords,'roman':roman,
+                     'name':(word or (names[0] if names else exemplar(ranked))),
+                     'word':word,'names':names,'bysong':not (word or names),
                      'n':len(songs),'songs':ranked})
     out=os.path.join(os.path.dirname(__file__),'chord-sets.html')
     open(out,'w').write(PAGE.replace('__DATA__', json.dumps(data)))
