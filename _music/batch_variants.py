@@ -66,12 +66,23 @@ for name, d, nb in corpus.songs():
     # from the first pass, where a chord-length rule doubled Dancing Queen
     # (99bpm, chords every half bar) to 198 for no reason.
     # --both restores one doubled and one halved file for every song.
+    # Halving merges two bars into one, so a section that starts on an ODD bar
+    # lands mid-bar and Hookpad shows a 2/4 measure. Doubling always SPLITS a
+    # bar, so it is clean by construction -- across 43 doubled files, 0 of 448
+    # section markers landed mid-bar; across 32 halved, 88 of 348 did.
+    # Only halve when every section boundary and the end sit on an even bar.
+    W = nb * 2
+    pts = [x['beat'] for x in (d.get('sections') or [])] + [d.get('endBeat', 1)]
+    halve_ok = all((b - 1) % W == 0 for b in pts)
+
     if '--both' in sys.argv:
         factors = (2.0, 0.5)
     elif bpm <= DOUBLE_AT:
         factors = (2.0,)
     elif bpm >= HALVE_AT:
-        factors = (0.5,)
+        factors = (0.5,) if halve_ok else ()
+        if not halve_ok:
+            skipped.append((name, f'{bpm}bpm but halving would make part-bars'))
     else:
         factors = ()
     if not factors:
