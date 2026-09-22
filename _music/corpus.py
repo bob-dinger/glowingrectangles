@@ -75,8 +75,32 @@ MODE_OFFSET = {'major': 0, 'ionian': 0, 'dorian': 1, 'phrygian': 2, 'lydian': 3,
 
 
 def mode_of(d):
+    """The song's opening mode. Use mode_at() for anything chord-level -- 326
+    songs (30%) change key or mode mid-song and keys[0] is only the first."""
     k = (d.get('keys') or [{}])[0]
     return ((k.get('scale') if isinstance(k, dict) else None) or 'major')
+
+
+def key_spans(d):
+    """[(start_beat, end_beat, mode)] -- Hookpad stores keys as a list with
+    beats, and a mode change mid-song is invisible if you read only keys[0].
+    China Grove is C major to beat 65 and E mixolydian after it."""
+    ks = sorted([k for k in (d.get('keys') or []) if isinstance(k, dict)],
+                key=lambda k: k.get('beat', 1)) or [{'beat': 1, 'scale': 'major'}]
+    out = []
+    for i, k in enumerate(ks):
+        end = ks[i + 1].get('beat', 1) if i + 1 < len(ks) else float('inf')
+        out.append((k.get('beat', 1), end, k.get('scale') or 'major'))
+    return out
+
+
+def mode_at(d, beat):
+    """The mode in force at a given beat."""
+    m = 'major'
+    for st, en, mode in key_spans(d):
+        if st <= beat:
+            m = mode
+    return m
 
 
 def chord_name(c, mode='major'):
