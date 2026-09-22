@@ -15,7 +15,6 @@ import sys, os, re, collections, subprocess
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import corpus
 
-NAME = {1:'C', 2:'Dm', 3:'Em', 4:'F', 5:'G', 6:'Am', 7:'Bdim'}
 KEEP = ['pre-chorus', 'chorus', 'verse', 'bridge']      # pre- before chorus: it contains "chorus"
 
 def role(s):
@@ -39,9 +38,8 @@ for name, d, nb in corpus.songs():
     for (r1, a), (r2, b) in zip(runs_by, runs_by[1:]):
         if not r1 or not r2 or not a or not b:
             continue
-        c1, c2 = a[-1][0], b[0][0]
-        lab = lambda c: (NAME.get(c.get('root'), '?') +
-                         ('*' if (c.get('borrowed') or c.get('applied')) else ''))
+        c1, c2 = a[-1], b[0]
+        lab = lambda run: corpus.chord_name(run[0], corpus.mode_at(d, run[1]))
         seam[(r1, r2)] += 1
         move[(lab(c1), lab(c2))] += 1
         pair[((r1, r2), (lab(c1), lab(c2)))] += 1

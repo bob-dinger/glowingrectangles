@@ -19,7 +19,11 @@ GROUPS = {
     'MASCOT': (1,2,3,6), 'MAJESTY': (2,3,5,6), 'MISFIT': (2,3,4,6),
 }
 BY_SET = {frozenset(v): k for k, v in GROUPS.items()}
-NAME = {1:'C',2:'Dm',3:'Em',4:'F',5:'G',6:'Am',7:'Bdim'}
+# The GROUP definitions are in major white notes by construction -- GOOSEFISH
+# IS C F G Am -- so this map renders the canonical form of a group, not the
+# chords of any particular song. Matching is on DEGREE SETS, which are
+# key-independent; in a minor song degrees 1 4 5 6 sound as Am Dm Em F.
+NAME = {1:'C', 2:'Dm', 3:'Em', 4:'F', 5:'G', 6:'Am', 7:'Bdim'}
 
 hits = collections.defaultdict(set)
 outside = collections.defaultdict(set)

@@ -17,7 +17,6 @@ import sys, os, collections
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import corpus
 
-NAME = {1:'C',2:'Dm',3:'Em',4:'F',5:'G',6:'Am',7:'Bdim'}
 rows = []
 for name, d, nb in corpus.songs():
     notes = [n for n in (d.get('notes') or []) if not n.get('isRest')]
@@ -40,8 +39,8 @@ for name, d, nb in corpus.songs():
                 under = c
             else:
                 break
-        ch = NAME.get(under.get('root'), '?') if under else '?'
-        if under and (under.get('borrowed') or under.get('applied')): ch += '*'
+        ch = (corpus.chord_name(under, corpus.mode_at(d, under['beat']))
+              if under else '?')
         rows.append((name, sec, home, land, ch, dur[home]/sum(dur.values())))
 
 print(f"  {len(rows):,} sections from {len({r[0] for r in rows}):,} songs\n")
