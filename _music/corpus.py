@@ -49,11 +49,35 @@ def identity(c):
             c.get('applied'))
 
 
+def is_unreadable(c):
+    """Chords the translator cannot honestly name, to be dropped from analysis
+    rather than counted under a guess. The user, shown all seven ambiguous
+    cases: "these should be thrown out from analysis."
+
+        no root at all        286   stored as bare {"type": 5}
+        borrowed is a LIST    100   a custom scale, not a named mode
+        substitutions           9   e.g. ["tri"], a tritone sub -- different root
+        pedal                   1
+
+    NOT excluded, because these are readable and legitimate:
+        omits [3]             962   a power chord, correctly labelled I5
+        applied + borrowed     65
+        applied = 7            52   secondary leading-tone dim -- Dream On's
+                                    real diminished chords live here
+    """
+    return (not c.get('root')
+            or isinstance(c.get('borrowed'), list)
+            or bool(c.get('substitutions'))
+            or bool(c.get('pedal')))
+
+
 def merged(chords):
     """[{...}] -> [(chord, beat, duration)] with adjacent same-chord runs
     collapsed into one. Rule 1 above."""
     out = []
     for c in sorted(chords, key=lambda x: x['beat']):
+        if is_unreadable(c):
+            continue
         i = identity(c)
         if out and out[-1][0] == i and abs(out[-1][2] + out[-1][3] - c['beat']) < 1e-6:
             out[-1][3] += c['duration']
