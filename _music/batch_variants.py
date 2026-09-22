@@ -57,12 +57,24 @@ for name, d, nb in corpus.songs():
     bpm = (d.get('tempos') or [{}])[0].get('bpm')
     if not bpm:
         skipped.append((name, 'no tempo')); continue
-    # BOTH directions. Picking one meant guessing which reading the user
-    # wanted, and the guess was wrong for most of them: aiming every song at
-    # one-chord-per-bar doubled songs like Dancing Queen (99, chords every half
-    # bar) to 198, when 99 is exactly how it is felt. The tempo in the filename
-    # already tells the two apart, so there is nothing to decide here.
-    for F in (2.0, 0.5):
+    # Default rule: pull the EXTREMES toward the middle. A song at 90 or below
+    # is being counted in half-notes and doubles into a real pulse; one at 180
+    # or above is being counted in eighths and halves into one. Songs between
+    # are already where they are felt and get nothing -- which is the lesson
+    # from the first pass, where a chord-length rule doubled Dancing Queen
+    # (99bpm, chords every half bar) to 198 for no reason.
+    # --both restores one doubled and one halved file for every song.
+    if '--both' in sys.argv:
+        factors = (2.0, 0.5)
+    elif bpm <= 90:
+        factors = (2.0,)
+    elif bpm >= 180:
+        factors = (0.5,)
+    else:
+        factors = ()
+    if not factors:
+        continue
+    for F in factors:
         out = double(d, F)
         # No decimal tempos. An odd bpm halves to x.5 (99 -> 49.5), which is an
         # awkward filename and not a value the user wants stored. Rounding
