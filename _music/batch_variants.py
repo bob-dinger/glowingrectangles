@@ -22,6 +22,8 @@ from double_song import double, num
 
 OUT = os.path.expanduser('~/Desktop/hookpad_halved')
 WANT = {'G50', 'G100', 'G150', 'G200', 'G250'}
+DOUBLE_AT = 90      # <= this, the song is being counted in half-notes
+HALVE_AT  = 140     # >= this, it is being counted in eighths
 
 def norm(s):
     s = s.lower(); s = re.sub(r"[''`]", '', s); s = re.sub(r'\band\b', '', s)
@@ -66,9 +68,9 @@ for name, d, nb in corpus.songs():
     # --both restores one doubled and one halved file for every song.
     if '--both' in sys.argv:
         factors = (2.0, 0.5)
-    elif bpm <= 90:
+    elif bpm <= DOUBLE_AT:
         factors = (2.0,)
-    elif bpm >= 180:
+    elif bpm >= HALVE_AT:
         factors = (0.5,)
     else:
         factors = ()
