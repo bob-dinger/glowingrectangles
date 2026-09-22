@@ -62,6 +62,51 @@ def merged(chords):
     return [(c, b, d) for _, c, b, d in out]
 
 
+# --- naming a chord -------------------------------------------------------
+# The white-note wheel. Every mode is a ROTATION of it, so degree 1 starts at a
+# different spoke: ionian on C, dorian on Dm, ... aeolian on Am. Assuming major
+# for everything names 21% of the library wrongly -- 231 songs across six other
+# modes. The bug that surfaced this: bare root=7 in A-minor Polly is G (bVII),
+# not Bdim, and in a minor key the DIMINISHED chord is degree 2, not degree 7.
+WHITE = ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'Bdim']
+MODE_OFFSET = {'major': 0, 'ionian': 0, 'dorian': 1, 'phrygian': 2, 'lydian': 3,
+               'mixolydian': 4, 'minor': 5, 'aeolian': 5, 'locrian': 6,
+               'harmonicMinor': 5, 'phrygianDominant': 2}
+
+
+def mode_of(d):
+    k = (d.get('keys') or [{}])[0]
+    return ((k.get('scale') if isinstance(k, dict) else None) or 'major')
+
+
+def chord_name(c, mode='major'):
+    """Degree -> white-note chord name in the song's own mode.
+
+    Does NOT resolve applied/borrowed chords: those name a different pitch
+    entirely (Polly's root=7 applied=5 borrowed='major' is a D#, and Hookpad
+    labels it V/#vii-dim after its target, not itself). They come back tagged
+    with * so they can be excluded or handled separately.
+    """
+    r = c.get('root')
+    if not r:
+        return '?'
+    off = MODE_OFFSET.get(mode, 0)
+    name = WHITE[(off + r - 1) % 7]
+    if mode == 'harmonicMinor' and r == 7:
+        name = 'G#dim'                      # raised 7th
+    # #5 on a diminished triad raises the b5 to a perfect 5th, making it MINOR:
+    # Billie Jean's degree-7 is stored root=7 alterations=['#5'] inversion=1 and
+    # Hookpad displays it as Bm/D. b5 does the reverse to a minor triad.
+    alts = c.get('alterations') or []
+    if '#5' in alts and name.endswith('dim'):
+        name = name[:-3] + 'm'
+    elif 'b5' in alts and name.endswith('m'):
+        name = name[:-1] + 'dim'
+    if c.get('applied') or c.get('borrowed'):
+        name += '*'
+    return name
+
+
 def songs(corpus=CORPUS, need_chords=True):
     """Yield (name, data, num_beats) for every live, non-scratch song."""
     live = live_names()
