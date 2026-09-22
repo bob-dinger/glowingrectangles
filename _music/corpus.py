@@ -103,6 +103,19 @@ def mode_at(d, beat):
     return m
 
 
+def roman(c, mode='major'):
+    """Roman-numeral label, delegated to chord_label.py.
+
+    Do NOT reimplement this. chord_label already encodes the hard-won rules --
+    bVII vs vii (a bare degree-7 triad is the subtonic, because the diatonic
+    vii-dim essentially never appears as a plain triad), applied=7 secondary
+    leading-tone diminished, borrowed-mode accidentals, and the minor shift to
+    a relative-major reference. See music_chord_label_accuracy.
+    """
+    from chord_label import chord_label
+    return chord_label(c, mode if mode in ('major', 'minor') else 'major')
+
+
 def chord_name(c, mode='major'):
     """Degree -> white-note chord name in the song's own mode.
 
@@ -114,6 +127,10 @@ def chord_name(c, mode='major'):
     r = c.get('root')
     if not r:
         return '?'
+    # A bare degree-7 triad is bVII, not vii-dim -- chord_label's rule, reached
+    # from the same evidence the user reached it from by ear.
+    if r == 7 and not c.get('applied') and not c.get('borrowed'):
+        return WHITE[(MODE_OFFSET.get(mode, 0) + 3) % 7] + 'b7'
     off = MODE_OFFSET.get(mode, 0)
     name = WHITE[(off + r - 1) % 7]
     if mode == 'harmonicMinor' and r == 7:

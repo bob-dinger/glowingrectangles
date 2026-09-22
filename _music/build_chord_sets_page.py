@@ -86,7 +86,20 @@ if os.path.exists(_wp):
 
 def section_cores(hj):
     """yield (core_frozenset, roman_share_map, section_name) per section."""
-    scale=(hj.get('keys') or [{}])[0].get('scale','major'); scale=scale if scale in ('major','minor') else 'major'
+    # Key/mode IN FORCE at each chord, not keys[0]: 326 songs (30%) change
+    # mid-song -- China Grove is C major to beat 65 then E mixolydian, and its
+    # verse reads as vii-dim under the opening key. Modes other than major and
+    # minor were also being flattened to major, which is 97 more songs.
+    _ks = sorted([k for k in (hj.get('keys') or []) if isinstance(k, dict)],
+                 key=lambda k: k.get('beat', 1)) or [{'beat': 1, 'scale': 'major'}]
+    def scale_at(beat):
+        sc = 'major'
+        for k in _ks:
+            if k.get('beat', 1) <= beat:
+                sc = k.get('scale') or 'major'
+        return sc if sc in ('major', 'minor') else (
+            'minor' if sc in ('aeolian', 'dorian', 'phrygian', 'harmonicMinor',
+                              'melodicMinor', 'locrian') else 'major')
     secs=sorted(hj.get('sections') or [], key=lambda s:s.get('beat',0))
     if not secs: secs=[{'beat':0,'name':'(whole)'}]
     end=hj.get('endBeat',10**9)
@@ -95,7 +108,7 @@ def section_cores(hj):
         tot=defaultdict(float)
         for c in hj.get('chords') or []:
             if c.get('root') and 1<=c['root']<=7 and b0<=c.get('beat',0)<b1:
-                tot[coretok(chord_label(c,scale))]+=c.get('duration',1)
+                tot[coretok(chord_label(c, scale_at(c.get('beat', 1))))]+=c.get('duration',1)
         s=sum(tot.values())
         if s<=0: continue
         share={k:v/s for k,v in tot.items()}
