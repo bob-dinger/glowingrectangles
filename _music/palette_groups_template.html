@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Section Openings</title>
+<style>
+:root{
+  --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --soft:#f1efe8;
+  --d1:#d02828; --d2:#d07800; --d3:#9a8c00; --d4:#1f8a4c; --d5:#1663c7; --d6:#8038c0; --d7:#c02080; --d0:#8a8a85;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926;
+  --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#8d8c86;
+}}
+:root[data-theme="dark"]{
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926;
+  --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#8d8c86;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:grid;grid-template-columns:300px 1fr;grid-template-rows:auto 1fr;gap:12px 16px;padding:14px 16px;height:100vh;overflow:hidden}
+header{grid-column:1 / span 2;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+h1{font-size:17px;font-weight:700}
+.chips{display:flex;gap:4px}
+.chip{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:6px;padding:2px 9px;cursor:pointer}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.note{margin-left:auto;font-size:12px;color:var(--mute);max-width:520px;text-align:right}
+aside{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:auto;min-height:0;padding:6px}
+aside h2{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);font-weight:600;margin:8px 8px 4px}
+.g{display:flex;align-items:baseline;gap:8px;padding:3px 8px;border-radius:6px;cursor:pointer}
+.g:hover{background:var(--soft)}
+.g.on{background:var(--ink);color:var(--bg)}
+.g.on .ch span{color:inherit!important}
+.g .w{font-weight:700;font-size:13px;min-width:0;white-space:nowrap}
+.g .ch{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g .n{margin-left:auto;font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+.g.on .n{color:inherit}
+main{display:flex;flex-direction:column;gap:10px;min-height:0}
+.top{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.top .big{font-size:24px;font-weight:750}
+.top .pal{font-size:20px;font-weight:700}
+.top .pal span+span{margin-left:8px}
+.top .sub{font-size:12px;color:var(--mute)}
+.filters{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.list{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 14px;overflow:auto;flex:1;min-height:0;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(560px,1fr));column-gap:28px;align-content:start}
+.row{display:grid;grid-template-columns:118px 1fr auto;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)}
+.shape{font-size:12px;font-weight:700}
+.shape i{display:block;font-style:normal;font-weight:400;color:var(--mute);font-size:11px}
+.song{min-width:0}
+.song .t{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song .t em{font-style:normal;font-weight:400;color:var(--mute);font-size:12px}
+.song .s{font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars{font-weight:700;font-size:15px;white-space:nowrap;text-align:right}
+.bars .p{color:var(--mute);opacity:.45;font-weight:400;margin:0 3px}
+.bars .b span+span{margin-left:5px}
+.bars small{display:block;font-size:11px;font-weight:500;color:var(--mute)}
+.bars a{font-size:11px;font-weight:500;color:var(--mute);text-decoration:none;margin-left:6px}
+.bars a:hover{color:var(--ink)}
+.c1{color:var(--d1)}.c2{color:var(--d2)}.c3{color:var(--d3)}.c4{color:var(--d4)}.c5{color:var(--d5)}.c6{color:var(--d6)}.c7{color:var(--d7)}.c0{color:var(--d0)}
+.pool{font-size:10px;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--mute);margin-left:4px;vertical-align:1px}
+@media (max-width:760px){
+  body{grid-template-columns:1fr;height:auto;overflow:auto}
+  header{grid-column:auto}
+  aside{max-height:40vh}
+  .list{grid-template-columns:1fr}
+  .row{grid-template-columns:90px 1fr}
+  .bars{grid-column:1 / span 2;text-align:left}
+}
+</style></head>
+<body>
+<header>
+  <h1>Section openings <a href="palette-map.html" style="font-size:12px;font-weight:500;color:var(--mute);text-decoration:none;margin-left:6px">map view →</a></h1>
+  <span class="lab">group by</span><div class="chips" id="by"></div>
+  <span class="lab">pools</span><div class="chips" id="pools"></div>
+  <span class="note">The first 4 bars of every section except intros and outros. Palette = every chord in them, read in C.
+  Shape = the chord lengths, so "C F | G" is a back runner.</span>
+</header>
+<aside id="groups"></aside>
+<main>
+  <div class="top" id="top"></div>
+  <div class="list" id="list"></div>
+</main>
+<script>
+const ROWS = __ROWS__;
+const WORDS = __WORDS__;
+const DEG = {C:1, Dm:2, D:2, Em:3, E:3, F:4, G:5, Am:6, 'A#':7};
+const SHAPE_ORDER = ['drone','vamp','shift','ender','blues','mountain','back runner','front runner','valley','bounce','return','wander','unnamed (ABAA)'];
+const POOLS = ['G100','G150','G200','G250'];
+let by = 'palette', pools = new Set(POOLS), cur = null, filt = null;
+try { const s = JSON.parse(localStorage.getItem('palgroups') || '{}'); if (s.by) by = s.by; if (s.cur) cur = s.cur; } catch (e) {}
+const save = () => { try { localStorage.setItem('palgroups', JSON.stringify({by, cur})); } catch (e) {} };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const chord = x => `<span class="c${DEG[x] || 0}">${esc(x)}</span>`;
+const palKey = r => r.word || r.palette.join(' ');
+const shapeKey = r => r.shape || 'other';
+const shapeLabel = r => r.shape
+  ? (r.reps > 1 ? `${r.shape}<i>${r.cellbars}-bar ×${r.reps}${r.pushed ? ' · pushed' : ''}</i>` : `${r.shape}<i>4 bars${r.pushed ? ' · pushed' : ''}</i>`)
+  : `other<i>${esc(r.lengths)}${r.reps > 1 ? ' ×' + r.reps : ''}</i>`;
+
+function rows() { return ROWS.filter(r => pools.has(r.pool)); }
+function songCount(rs) { return new Set(rs.map(r => r.pool + r.title)).size; }
+
+function groups() {
+  const m = new Map();
+  for (const r of rows()) {
+    const k = by === 'palette' ? palKey(r) : shapeKey(r);
+    if (!m.has(k)) m.set(k, []);
+    m.get(k).push(r);
+  }
+  return m;
+}
+
+function renderGroups() {
+  const m = groups();
+  let html = '';
+  if (by === 'palette') {
+    const bands = [[1, 'one chord'], [2, 'two chords'], [3, 'three chords'], [4, 'four chords'], [5, 'five or more']];
+    for (const [n, lab] of bands) {
+      const ks = [...m.keys()].filter(k => { const c = m.get(k)[0].palette.length; return n === 5 ? c >= 5 : c === n; })
+        .sort((a, b) => songCount(m.get(b)) - songCount(m.get(a)) || a.localeCompare(b));
+      if (!ks.length) continue;
+      html += `<h2>${lab}</h2>` + ks.map(k => {
+        const r0 = m.get(k)[0];
+        return `<div class="g ${k === cur ? 'on' : ''}" data-k="${esc(k)}"><span class="w">${r0.word ? esc(r0.word) : '<span style="opacity:.6">no word</span>'}</span>
+          <span class="ch">${r0.palette.map(chord).join(' ')}</span><span class="n">${songCount(m.get(k))}</span></div>`;
+      }).join('');
+    }
+  } else {
+    const ks = [...m.keys()].sort((a, b) => (SHAPE_ORDER.indexOf(a) + 100) % 100 - (SHAPE_ORDER.indexOf(b) + 100) % 100 || (a === 'other') - (b === 'other'));
+    html += '<h2>shapes</h2>' + ks.map(k => `<div class="g ${k === cur ? 'on' : ''}" data-k="${esc(k)}"><span class="w">${esc(k)}</span><span class="n">${songCount(m.get(k))}</span></div>`).join('');
+  }
+  document.getElementById('groups').innerHTML = html;
+}
+
+function renderMain() {
+  const m = groups();
+  if (!m.has(cur)) cur = [...m.keys()].sort((a, b) => songCount(m.get(b)) - songCount(m.get(a)))[0];
+  const rs = m.get(cur) || [];
+  const sub = by === 'palette' ? shapeKey : palKey;
+  const counts = new Map();
+  rs.forEach(r => counts.set(sub(r), (counts.get(sub(r)) || 0) + 1));
+  if (filt && !counts.has(filt)) filt = null;
+  const r0 = rs[0];
+  document.getElementById('top').innerHTML = (by === 'palette'
+      ? `<div><div class="big">${r0 && r0.word ? esc(r0.word) : 'no word'}</div><div class="sub">${songCount(rs)} songs · ${rs.length} openings</div></div>
+         <div class="pal">${r0 ? r0.palette.map(chord).join('') : ''}</div>`
+      : `<div><div class="big">${esc(cur)}</div><div class="sub">${songCount(rs)} songs · ${rs.length} openings</div></div>`) +
+    `<div class="filters"><button class="chip ${filt ? '' : 'on'}" data-f="">all</button>` +
+    [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) =>
+      `<button class="chip ${filt === k ? 'on' : ''}" data-f="${esc(k)}">${esc(k)} ${n}</button>`).join('') + '</div>';
+  const shown = rs.filter(r => !filt || sub(r) === filt)
+    .sort((a, b) => sub(a).localeCompare(sub(b)) || a.title.localeCompare(b.title));
+  document.getElementById('list').innerHTML = shown.map(r => {
+    const inC = r.cbars.map(b => `<span class="b">${b.map(chord).join('')}</span>`).join('<span class="p">|</span>');
+    const played = r.bars.map(b => b.map(([t]) => t).join(' ')).join(' | ');
+    const left = by === 'palette' ? shapeLabel(r)
+      : `${r.word ? esc(r.word) : 'no word'}<i>${r.shape ? '' : esc(r.lengths)}</i>`;
+    return `<div class="row"><div class="shape">${left}</div>
+      <div class="song"><div class="t">${esc(r.title)} <em>${esc(r.artist)}</em><span class="pool">${r.pool}</span></div>
+        <div class="s">${esc(r.section)}</div></div>
+      <div class="bars">${inC}<small>${esc(r.key)}: ${esc(played)}${r.hookpad ? `<a href="${esc(r.hookpad)}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}</small></div></div>`;
+  }).join('');
+}
+
+function render() {
+  document.getElementById('by').innerHTML = ['palette', 'shape'].map(b => `<button class="chip ${by === b ? 'on' : ''}" data-by="${b}">${b}</button>`).join('');
+  document.getElementById('pools').innerHTML = POOLS.map(p => `<button class="chip ${pools.has(p) ? 'on' : ''}" data-p="${p}">${p}</button>`).join('');
+  renderMain(); renderGroups(); save();
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-k],[data-f],[data-by],[data-p]');
+  if (!t) return;
+  if (t.dataset.k !== undefined) { cur = t.dataset.k; filt = null; }
+  else if (t.dataset.f !== undefined) filt = t.dataset.f || null;
+  else if (t.dataset.by) { if (by !== t.dataset.by) { by = t.dataset.by; cur = null; filt = null; } }
+  else if (t.dataset.p) { pools.has(t.dataset.p) && pools.size > 1 ? pools.delete(t.dataset.p) : pools.add(t.dataset.p); }
+  render();
+});
+render();
+</script>
+</body></html>

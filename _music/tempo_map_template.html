@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tempo Map</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+:root{
+  --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --soft:#f1efe8; --link:#d9d6cc;
+  --p1:#1f8a8a; --p2:#d07800; --p3:#7a4fc4; --p4:#c8386a;
+  --d1:#d02828; --d2:#d07800; --d3:#9a8c00; --d4:#1f8a4c; --d5:#1663c7; --d6:#8038c0; --d7:#c02080; --d0:#a3a39c;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926; --link:#3b3a35;
+  --p1:#3cc4c4; --p2:#ffa94d; --p3:#a988f0; --p4:#f0709a;
+  --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#77766f;
+}}
+:root[data-theme="dark"]{
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926; --link:#3b3a35;
+  --p1:#3cc4c4; --p2:#ffa94d; --p3:#a988f0; --p4:#f0709a;
+  --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#77766f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:grid;grid-template-columns:1fr 450px;grid-template-rows:auto 1fr;gap:12px 16px;padding:14px 16px;height:100vh;overflow:hidden}
+header{grid-column:1 / span 2;display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap}
+h1{font-size:17px;font-weight:700}
+h1 a{font-size:12px;font-weight:500;color:var(--mute);margin-left:8px;text-decoration:none}
+h1 a:hover{color:var(--ink)}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin-left:6px}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font:inherit;font-size:11.5px;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:6px;padding:2px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.chip i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#stage{background:var(--card);border:1px solid var(--line);border-radius:12px;position:relative;min-height:0;overflow:hidden}
+#stage svg{width:100%;height:100%;display:block;cursor:grab}
+.axis text{font-size:11px;fill:var(--mute)}
+.axis line,.axis path{stroke:var(--line)}
+.hint{position:absolute;top:10px;left:14px;font-size:12px;color:var(--mute);pointer-events:none}
+.link{stroke:var(--link);stroke-width:1.5;opacity:.7;fill:none}
+.link.hot{stroke:var(--ink);stroke-width:2.2;opacity:1}
+.dbl{stroke:var(--mute);stroke-width:1.2;stroke-dasharray:3 4;fill:none;opacity:0}
+.dbl.hot{opacity:.8}
+.node{cursor:pointer}
+.node .hub{fill:var(--card)}
+.node text{fill:var(--ink);text-anchor:middle;pointer-events:none}
+.node .num{font-weight:750}
+.node .cnt{fill:var(--mute);font-size:10px}
+.node.dim{opacity:.18}
+.node.sel .hub{stroke:var(--ink);stroke-width:2.5}
+aside{background:var(--card);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.head{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.head .w{font-size:26px;font-weight:750}
+.head .w small{font-size:14px;font-weight:500;color:var(--mute);margin-left:6px}
+.head .sub{font-size:12px;color:var(--mute);margin-top:2px}
+.head .sub b{font-weight:650}
+.words{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:6px;font-size:12px}
+.words span{white-space:nowrap}
+.words b{font-weight:700}
+.nb{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.nb button{font:inherit;font-size:12px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:6px;padding:1px 7px;cursor:pointer}
+.nb button:disabled{opacity:.35;cursor:default}
+.nb button b{font-weight:700}
+.songs{overflow:auto;flex:1;padding:4px 16px 12px}
+.songs h3{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:10px 0 2px;font-weight:600;display:flex;align-items:center;gap:6px}
+.songs h3 i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.r{padding:5px 0;border-bottom:1px solid var(--line)}
+.r .t{display:flex;gap:6px;align-items:baseline}
+.r .t b{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r .t em{font-style:normal;color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r .t .lk{margin-left:auto;display:flex;gap:8px;flex:none}
+.r .t a{font-size:11px;color:var(--mute);text-decoration:none;white-space:nowrap}
+.r .t a:hover{color:var(--ink)}
+.r .t a.no{opacity:.5}
+.r .m{display:flex;gap:12px;font-size:12px;color:var(--mute);margin-top:1px;flex-wrap:wrap}
+.r .m .bpm{color:var(--ink);font-weight:700}
+.r .m .k{color:var(--ink)}
+.r .m .tag{font-weight:650;color:var(--ink)}
+.r .m .tag.un{font-weight:500;color:var(--mute)}
+.r .f{font-size:11.5px;color:var(--mute)}
+.empty{color:var(--mute);padding:20px 16px;font-size:13px}
+@media (max-width:860px){
+  body{grid-template-columns:1fr;grid-template-rows:auto 60vh auto;height:auto;overflow:auto}
+  header{grid-column:auto}
+  aside{max-height:70vh}
+}
+</style></head>
+<body>
+<header>
+  <h1>Tempo map<a href="palette-map.html">palette map →</a></h1>
+  <span class="lab">pools</span><div class="chips" id="pools"></div>
+  <span class="lab">list by</span><div class="chips" id="by"></div>
+</header>
+<div id="stage">
+  <svg id="svg"></svg>
+  <div class="hint">One circle per tempo (bpm_10) · size = songs · ring = pools · ← → to step · dashed = half / double time</div>
+</div>
+<aside id="side"></aside>
+<script>
+const ROWS = __ROWS__;
+const POOLS = ['G100','G150','G200','G250'];
+const css = getComputedStyle(document.documentElement);
+const pcol = p => css.getPropertyValue('--p' + (POOLS.indexOf(p) + 1)).trim();
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let pools = new Set(POOLS), sel = null, by = 'pool';
+try { const s = JSON.parse(localStorage.getItem('tempomap') || '{}'); if (s.sel) sel = +s.sel; if (s.by) by = s.by; } catch (e) {}
+
+const rows = ROWS.filter(r => typeof r.bpm10 === 'number');
+const T = [...new Set(rows.map(r => r.bpm10))].sort((a, b) => a - b);
+const nodes = T.map(t => ({ id: t, rows: rows.filter(r => r.bpm10 === t) }));
+const byId = new Map(nodes.map(n => [n.id, n]));
+const links = [];
+for (let i = 1; i < T.length; i++) links.push({ source: T[i - 1], target: T[i] });
+const dbls = T.filter(t => byId.has(t * 2)).map(t => ({ a: t, b: t * 2 }));
+
+const live = n => n.rows.filter(r => pools.has(r.pool));
+let rad = c => c ? 14 + 7 * Math.sqrt(c) : 6;
+
+// ---- drawing: x is the tempo itself, the force only keeps circles apart ----
+const svg = d3.select('#svg');
+const stage = document.getElementById('stage');
+let W = stage.clientWidth, H = stage.clientHeight;
+const g = svg.append('g');
+svg.call(d3.zoom().scaleExtent([.5, 4]).on('zoom', e => g.attr('transform', e.transform)));
+let x = d3.scaleLinear();
+const gx = g.append('g').attr('class', 'axis');
+const gd = g.append('g'), gl = g.append('g'), gn = g.append('g');
+function scales() {
+  x.domain([T[0] - 5, T[T.length - 1] + 5]).range([50, W - 50]);
+  gx.attr('transform', `translate(0,${H - 34})`).call(d3.axisBottom(x).tickValues(T).tickFormat(d => d).tickSize(4));
+}
+scales();
+const sim = d3.forceSimulation(nodes)
+  .force('x', d3.forceX(d => x(d.id)).strength(.9))
+  .force('y', d3.forceY(() => H / 2 - 14).strength(.06))
+  .force('collide', d3.forceCollide(d => d.r + 6).strength(.9))
+  .on('tick', tick);
+let link = gl.selectAll('line'), node = gn.selectAll('g.node'), dbl = gd.selectAll('path');
+function tick() {
+  link.attr('x1', d => byId.get(d.source).x).attr('y1', d => byId.get(d.source).y)
+      .attr('x2', d => byId.get(d.target).x).attr('y2', d => byId.get(d.target).y);
+  dbl.attr('d', d => {
+    const a = byId.get(d.a), b = byId.get(d.b), mx = (a.x + b.x) / 2, my = Math.min(a.y, b.y) - 40 - (b.x - a.x) * .18;
+    return `M${a.x},${a.y} Q${mx},${my} ${b.x},${b.y}`;
+  });
+  node.attr('transform', d => `translate(${d.x},${d.y})`);
+}
+
+function draw() {
+  for (const d of nodes) { d.c = live(d).length; d.r = rad(d.c); }
+  if (!(byId.get(sel) || {}).c) sel = nodes.reduce((a, b) => (b.c > a.c ? b : a)).id;
+  link = gl.selectAll('line').data(links).join('line').attr('class', 'link')
+    .classed('hot', l => l.source === sel || l.target === sel);
+  dbl = gd.selectAll('path').data(dbls).join('path').attr('class', 'dbl')
+    .classed('hot', l => l.a === sel || l.b === sel);
+  node = gn.selectAll('g.node').data(nodes, d => d.id).join(enter => {
+    const e = enter.append('g').attr('class', 'node').on('click', (ev, d) => select(d.id))
+      .call(d3.drag()
+        .on('start', (ev, d) => { if (!ev.active) sim.alphaTarget(.2).restart(); d.fx = d.x; d.fy = d.y; })
+        .on('drag', (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
+        .on('end', (ev, d) => { if (!ev.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+    e.append('title'); e.append('g').attr('class', 'ring'); e.append('circle').attr('class', 'hub');
+    e.append('text').attr('class', 'num'); e.append('text').attr('class', 'cnt');
+    return e;
+  });
+  const arc = d3.arc();
+  node.select('.ring').each(function (d) {
+    const parts = POOLS.filter(p => pools.has(p)).map(p => ({ p, v: d.rows.filter(r => r.pool === p).length })).filter(o => o.v);
+    const pie = d3.pie().sort(null).value(o => o.v)(parts);
+    d3.select(this).selectAll('path').data(pie).join('path')
+      .attr('d', p => arc({ innerRadius: d.r * .68, outerRadius: d.r, startAngle: p.startAngle, endAngle: p.endAngle, padAngle: .03 }))
+      .attr('fill', p => pcol(p.data.p));
+  });
+  node.select('.hub').attr('r', d => d.r * .68);
+  node.select('.num').text(d => d.id).attr('font-size', d => Math.max(10, Math.min(17, d.r * .5))).attr('dy', d => d.c ? '-.05em' : '.35em');
+  node.select('.cnt').text(d => d.c ? d.c : '').attr('dy', d => Math.max(10, Math.min(17, d.r * .5)) * .95);
+  node.select('title').text(d => `${d.id} bpm · ${d.c} songs`);
+  node.classed('dim', d => !d.c).classed('sel', d => d.id === sel);
+  sim.force('collide').radius(d => d.r + 6);
+  sim.alpha(.5).restart();
+}
+
+function formTxt(f) {
+  return f.map(([n, b]) => `${n.replace(/^(\w)\w*\s*/, (m, a) => a.toUpperCase())}${b}`).join(' ');
+}
+function row(r) {
+  const exact = r.bpm && +r.bpm !== r.bpm10 ? ` <span title="listed bpm">(${esc(r.bpm)})</span>` : '';
+  const hp = r.hpbpm && +r.hpbpm !== +r.bpm ? ` <span title="Hookpad bpm">hp ${esc(r.hpbpm)}</span>` : '';
+  const key = r.key + (r.hpkey && !String(r.key).toLowerCase().startsWith(r.hpkey.split(' ')[0].toLowerCase()) ? ` · hp ${r.hpkey}` : '');
+  const tag = r.tag ? `<span class="tag ${r.tag.named ? '' : 'un'}">${esc(r.tag.word)} <span style="font-weight:500">${esc(r.tag.shape)}</span></span>` : '';
+  return `<div class="r"><div class="t"><b>${esc(r.title)}</b><em>${esc(r.artist)}</em>
+      <span class="lk">${r.hookpad ? `<a href="${esc(r.hookpad)}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}
+      ${r.ug ? `<a class="${r.ughow === 'search' ? 'no' : ''}" href="${esc(r.ug)}" target="_blank" rel="noopener">${r.ughow === 'search' ? 'UG search' : 'UG'} ↗</a>` : ''}</span></div>
+    <div class="m"><span class="bpm">${esc(r.bpm10)}${exact}${hp}</span><span class="k">${esc(key)}</span>${tag}</div><div class="f" title="section lengths">${esc(formTxt(r.form || []))}</div></div>`;
+}
+
+function side() {
+  const el = document.getElementById('side');
+  const n = byId.get(sel);
+  const rs = live(n).sort((a, b) => (+a.bpm || a.bpm10) - (+b.bpm || b.bpm10) || a.title.localeCompare(b.title));
+  const i = T.indexOf(sel);
+  const words = d3.rollups(rs.filter(r => r.tag && r.tag.named), v => v.length, r => r.tag.word).sort((a, b) => b[1] - a[1]);
+  const per = POOLS.filter(p => pools.has(p)).map(p => [p, rs.filter(r => r.pool === p).length]).filter(o => o[1]);
+  let groups;
+  if (by === 'pool') groups = per.map(([p]) => [p, rs.filter(r => r.pool === p), pcol(p)]);
+  else if (by === 'key') groups = d3.groups(rs, r => String(r.key).split(/[ ,(]/)[0].toUpperCase()).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])).map(([k, v]) => [k, v, '']);
+  else groups = d3.groups(rs, r => r.tag ? r.tag.shape : 'no chords').sort((a, b) => b[1].length - a[1].length).map(([k, v]) => [k, v, '']);
+  const step = (t, lab) => `<button ${byId.has(t) && byId.get(t).c ? `data-go="${t}"` : 'disabled'}>${lab}</button>`;
+  el.innerHTML = `<div class="head"><div class="w">${sel}<small>bpm</small></div>
+      <div class="sub"><b>${rs.length} songs</b> · ${per.map(([p, c]) => `${p} ${c}`).join(' · ')}</div>
+      ${words.length ? `<div class="words">${words.slice(0, 8).map(([w, c]) => `<span><b>${esc(w)}</b> ${c}</span>`).join('')}</div>` : ''}
+      <div class="nb">${step(T[i - 1], `← ${T[i - 1] ?? ''}`)}${step(T[i + 1], `${T[i + 1] ?? ''} →`)}
+        ${sel % 20 ? '' : step(sel / 2, `½ = ${sel / 2}`)}${step(sel * 2, `×2 = ${sel * 2}`)}</div></div>
+    <div class="songs">${groups.map(([k, v, c]) => `<h3>${c ? `<i style="background:${c}"></i>` : ''}${esc(k)} · ${v.length}</h3>` + v.map(row).join('')).join('')
+      || '<div class="empty">No songs with this filter.</div>'}</div>`;
+}
+
+function select(id) { sel = id; try { localStorage.setItem('tempomap', JSON.stringify({ sel, by })); } catch (e) {} draw(); side(); }
+
+function chips() {
+  document.getElementById('pools').innerHTML = POOLS.map(p =>
+    `<button class="chip ${pools.has(p) ? 'on' : ''}" data-p="${p}"><i style="background:${pcol(p)}"></i>${p}</button>`).join('');
+  document.getElementById('by').innerHTML = [['pool', 'pool'], ['key', 'key'], ['shape', 'shape']]
+    .map(([v, l]) => `<button class="chip ${by === v ? 'on' : ''}" data-by="${v}">${l}</button>`).join('');
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-p],[data-go],[data-by]');
+  if (!t) return;
+  if (t.dataset.go) return select(+t.dataset.go);
+  if (t.dataset.by) { by = t.dataset.by; select(sel); chips(); return; }
+  if (t.dataset.p) { pools.has(t.dataset.p) && pools.size > 1 ? pools.delete(t.dataset.p) : pools.add(t.dataset.p); }
+  chips(); draw(); side();
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  const vis = T.filter(t => byId.get(t).c), i = vis.indexOf(sel);
+  const j = e.key === 'ArrowLeft' ? i - 1 : i + 1;
+  if (vis[j] !== undefined) { e.preventDefault(); select(vis[j]); }
+});
+new ResizeObserver(() => {
+  W = stage.clientWidth; H = stage.clientHeight; scales();
+  sim.force('x', d3.forceX(d => x(d.id)).strength(.9)).force('y', d3.forceY(() => H / 2 - 14).strength(.06)).alpha(.5).restart();
+}).observe(stage);
+for (const d of nodes) { d.x = x(d.id); d.y = H / 2 + (Math.random() - .5) * 60; }
+if (!byId.has(sel)) sel = 120;
+chips(); draw(); side();
+</script>
+</body></html>

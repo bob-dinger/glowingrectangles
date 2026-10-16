@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__POOL__ Quiz</title>
+<style>
+:root{
+  --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd;
+  --ok:#2f9e5a; --bad:#d0453a; --none:#d9d7cf; --hide:#efede6;
+  --d1:#d02828; --d2:#d07800; --d3:#9a8c00; --d4:#1f8a4c; --d5:#1663c7; --d6:#8038c0; --d7:#c02080; --d0:#888;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e;
+  --ok:#4cc27a; --bad:#ec6a5f; --none:#3a3935; --hide:#2a2926;
+  --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#999;
+}}
+:root[data-theme="dark"]{
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e;
+  --ok:#4cc27a; --bad:#ec6a5f; --none:#3a3935; --hide:#2a2926;
+  --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#999;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:grid;grid-template-columns:1fr 290px;gap:18px;padding:16px;height:100vh;overflow:hidden}
+main{display:flex;flex-direction:column;gap:12px;min-height:0}
+header{display:flex;align-items:baseline;gap:14px}
+.pools{display:flex;gap:4px}
+.pools a{font-size:12px;color:var(--mute);text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:1px 7px}
+.pools a.on{color:var(--bg);background:var(--ink);border-color:var(--ink)}
+header h1{font-size:15px;color:var(--mute);font-weight:600}
+header .help{margin-left:auto;font-size:12px;color:var(--mute)}
+kbd{font:11px ui-monospace,monospace;border:1px solid var(--line);border-radius:4px;padding:0 4px;background:var(--card)}
+.song{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+.song{display:flex;align-items:center;gap:16px}
+.links{margin-left:auto;display:flex;gap:8px}
+.links a{font-size:14px;font-weight:600;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+.links a:hover{background:var(--hide)}
+.links a.weak{color:var(--mute)}
+.song .t{font-size:30px;font-weight:750;letter-spacing:-.01em}
+.song .a{color:var(--mute);font-size:15px}
+.grid{display:grid;grid-template-columns:180px 180px 1fr;grid-template-rows:auto 1fr;gap:12px;flex:1;min-height:0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;position:relative;min-height:0;display:flex;flex-direction:column}
+.panel.prog{grid-column:1 / span 3;overflow:auto}
+.panel.form{overflow:auto}
+.ph{display:flex;align-items:center;gap:8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin-bottom:6px}
+.ph .n{font:11px ui-monospace,monospace;border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.marks{margin-left:auto;display:flex;gap:4px}
+.marks button{border:1px solid var(--line);background:transparent;color:var(--mute);border-radius:6px;width:30px;height:24px;font-size:13px;cursor:pointer}
+.marks button.on.y{background:var(--ok);border-color:var(--ok);color:#fff}
+.marks button.on.x{background:var(--bad);border-color:var(--bad);color:#fff}
+.cover{flex:1;display:flex;align-items:center;justify-content:center;background:var(--hide);border-radius:8px;color:var(--mute);cursor:pointer;font-size:13px;min-height:44px}
+.big{font-size:24px;font-weight:700;line-height:1.15}
+.sub{font-size:13px;color:var(--mute)}
+.form ol{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.form li{border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:14px;white-space:nowrap}
+.form li b{font-variant-numeric:tabular-nums;margin-left:4px}
+.prow{display:grid;grid-template-columns:170px 1fr;gap:10px;padding:2px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.prow:last-child{border-bottom:0}
+.parts{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+.parts .tag{display:block;text-transform:none;letter-spacing:0;color:var(--ink);font-size:11.5px;line-height:1.25}
+.parts .tag b{font-weight:750;letter-spacing:.02em}
+.parts .tag b.nw{font-weight:500;color:var(--mute)}
+.parts .tag small{color:var(--mute);font-size:10.5px}
+.parts i{display:block;text-transform:none;letter-spacing:0;font-style:normal;color:var(--d2)}
+.chords{font-size:19px;font-weight:700;line-height:1.32}
+.chords .bar{white-space:nowrap}
+.chords .bar span+span{margin-left:6px}
+.chords .pipe{color:var(--mute);opacity:.45;margin:0 2px;font-weight:400}
+.chords .x{font-size:14px;color:var(--mute);font-weight:600;margin-left:8px}
+.c1{color:var(--d1)}.c2{color:var(--d2)}.c3{color:var(--d3)}.c4{color:var(--d4)}.c5{color:var(--d5)}.c6{color:var(--d6)}.c7{color:var(--d7)}.c0{color:var(--d0)}
+footer{display:flex;gap:10px;align-items:center}
+footer button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:7px 16px;cursor:pointer}
+footer button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+footer .msg{color:var(--mute);font-size:13px}
+aside{display:flex;flex-direction:column;gap:10px;min-height:0}
+.stats{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.stats .row{display:flex;justify-content:space-between;padding:1px 0}
+.stats .row b{font-variant-numeric:tabular-nums}
+.tiles{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;overflow:auto;flex:1;min-height:0}
+.tiles h2{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);font-weight:600;margin-bottom:6px}
+.tl{display:grid;grid-template-columns:repeat(2,1fr);gap:3px 8px}
+.tile{display:flex;align-items:center;gap:5px;font-size:11.5px;cursor:pointer;white-space:nowrap;overflow:hidden;border-radius:4px;padding:1px 3px}
+.tile:hover{background:var(--hide)}
+.tile.cur{outline:1.5px solid var(--ink)}
+.tile .q{display:grid;grid-template-columns:repeat(4,5px);gap:1px;flex:0 0 auto}
+.tile .q i{width:5px;height:10px;border-radius:1px;background:var(--none)}
+.tile .q i.y{background:var(--ok)} .tile .q i.x{background:var(--bad)}
+.tile span{overflow:hidden;text-overflow:ellipsis}
+.legend{font-size:11px;color:var(--mute)}
+@media (max-width:760px){
+  body{grid-template-columns:1fr;height:auto;overflow:auto;padding:16px}
+  .grid{grid-template-columns:1fr}
+  .panel.prog{grid-column:auto}
+  aside{display:none}
+}
+</style></head>
+<body>
+<main>
+  <header><h1>__POOL__ quiz</h1><nav class="pools">__NAV__</nav>
+    <span class="help"><kbd>space</kbd> reveal next &nbsp; <kbd>1</kbd>–<kbd>4</kbd> reveal, again = missed &nbsp; <kbd>enter</kbd> next song</span></header>
+  <div class="song"><div><div class="t" id="t"></div><div class="a" id="a"></div></div><div class="links" id="links"></div></div>
+  <div class="grid">
+    <section class="panel" data-f="0"></section>
+    <section class="panel" data-f="1"></section>
+    <section class="panel form" data-f="2"></section>
+    <section class="panel prog" data-f="3"></section>
+  </div>
+  <footer>
+    <button class="primary" id="next">Next song ↵</button>
+    <button id="all">Reveal all</button>
+    <span class="msg" id="msg"></span>
+  </footer>
+</main>
+<aside>
+  <div class="stats" id="stats"></div>
+  <div class="tiles"><h2>Songs <span class="legend">· key · tempo · lengths · chords</span></h2><div class="tl" id="tl"></div></div>
+</aside>
+<script>
+const CARDS = __CARDS__;
+const POOL = "__POOL__";
+const FIELDS = ['Key', 'Tempo', 'Section lengths', 'Progressions'];
+const LS = 'poolquiz:' + POOL;
+let store = {};
+try { store = JSON.parse(localStorage.getItem(LS) || '{}') || {}; } catch (e) { store = {}; }
+const save = () => { try { localStorage.setItem(LS, JSON.stringify(store)); } catch (e) {} };
+
+let cur = 0, shown = [false, false, false, false], marks = [true, true, true, true];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function body(f, c) {
+  if (f === 0) return `<div class="sub">sheet</div><div class="big">${esc(c.key)}</div>` +
+    `<div class="sub" style="margin-top:4px">Hookpad</div><div style="font-size:18px;font-weight:700">${c.hpkeys.map(esc).join(' → ')}</div>`;
+  if (f === 1) return `<div class="big">${c.bpm10 ?? '—'}</div>` +
+    `<div class="sub">Hookpad ${c.hpbpm ?? c.hptempos[0] ?? '—'}${c.bpm && c.bpm !== c.hpbpm ? ` · listed ${c.bpm}` : ''}</div>` +
+    (c.hptempos.length > 1 ? `<div class="sub">tempo changes: ${c.hptempos.join(' → ')}</div>` : '') +
+    (c.meter ? `<div class="sub">${c.meter} time</div>` : '');
+  if (f === 2) return `<ol>${c.form.map(([n, b]) => `<li>${esc(n)}<b>${b}</b></li>`).join('')}</ol>`;
+  return c.prog.map(p => {
+    const brk = new Set(p.lines || []);
+    const bars = p.bars.map((bar, i) => (i === 0 ? '' : brk.has(i) ? '<br>' : ' <span class="pipe">|</span> ') +
+      `<span class="bar">${bar.length ? bar.map(([t, d]) => `<span class="c${d}">${esc(t)}</span>`).join('') : '–'}</span>`).join('');
+    const n = p.bars.length * p.times;
+    const tags = (p.tags || []).map(g => `<span class="tag"><b class="${g.named ? '' : 'nw'}">${esc(g.word)}</b> ${esc(g.shape)}</span>`).join('');
+    return `<div class="prow"><div class="parts">${p.parts.map(esc).join(' = ')}${p.key ? `<i>in ${esc(p.key)}</i>` : ''}${tags}</div>
+      <div class="chords">${bars}${p.times > 1 ? `<span class="x">×${p.times}</span>` : ''}<span class="x" style="white-space:nowrap">${n} bar${n === 1 ? "" : "s"}</span></div></div>`;
+  }).join('');
+}
+
+function render() {
+  const c = CARDS[cur];
+  document.getElementById('t').textContent = c.title;
+  document.getElementById('a').textContent = c.artist;
+  document.getElementById('links').innerHTML =
+    (c.hookpad ? `<a href="${esc(c.hookpad)}" target="_blank" rel="noopener">Hookpad ↗</a>` : '') +
+    `<a href="${esc(c.ug)}" target="_blank" rel="noopener" class="${c.ughow === 'search' ? 'weak' : ''}">${c.ughow === 'search' ? 'UG search ↗' : 'UG tab ↗'}</a>`;
+  document.querySelectorAll('.panel').forEach(el => {
+    const f = +el.dataset.f;
+    const mk = shown[f] ? `<span class="marks"><button class="y ${marks[f] ? 'on' : ''}" data-m="${f}" data-v="1">✓</button><button class="x ${marks[f] ? '' : 'on'}" data-m="${f}" data-v="0">✗</button></span>` : '';
+    el.innerHTML = `<div class="ph"><span class="n">${f + 1}</span>${FIELDS[f]}${mk}</div>` +
+      (shown[f] ? `<div>${body(f, c)}</div>` : `<div class="cover" data-r="${f}">say it, then click to reveal</div>`);
+  });
+  tiles(); stats();
+}
+
+function tiles() {
+  document.getElementById('tl').innerHTML = CARDS.map((c, i) => {
+    const r = store[c.id];
+    const q = FIELDS.map((_, f) => `<i class="${r ? (r.last[f] ? 'y' : 'x') : ''}"></i>`).join('');
+    return `<div class="tile ${i === cur ? 'cur' : ''}" data-i="${i}" title="${esc(c.title)} — ${esc(c.artist)}"><span class="q">${q}</span><span>${esc(c.title)}</span></div>`;
+  }).join('');
+}
+
+function stats() {
+  const seen = CARDS.filter(c => store[c.id]);
+  const per = FIELDS.map((_, f) => seen.filter(c => store[c.id].last[f]).length);
+  const all = seen.filter(c => store[c.id].last.every(Boolean)).length;
+  document.getElementById('stats').innerHTML =
+    `<div class="row"><span>Seen</span><b>${seen.length} / ${CARDS.length}</b></div>` +
+    `<div class="row"><span>All four right</span><b>${all}</b></div>` +
+    FIELDS.map((f, i) => `<div class="row"><span style="color:var(--mute)">${f}</span><b>${per[i]}</b></div>`).join('');
+}
+
+// next song: unseen first, then the fewest fields right last time, then the
+// longest since you saw it; a little shuffle so the order isn't alphabetical
+function pick() {
+  const now = Date.now();
+  const score = (c, i) => {
+    if (i === cur) return 1e12;
+    const r = store[c.id];
+    if (!r) return -1e9 + Math.random();
+    return r.last.filter(Boolean).length * 1e8 - (now - r.at) / 1000 + Math.random();
+  };
+  let best = 0, bs = Infinity;
+  CARDS.forEach((c, i) => { const s = score(c, i); if (s < bs) { bs = s; best = i; } });
+  return best;
+}
+
+function go(i) { cur = i; shown = [false, false, false, false]; marks = [true, true, true, true]; render(); }
+function reveal(f) { if (f === undefined) f = shown.indexOf(false); if (f >= 0) { shown[f] = true; render(); } }
+function next() {
+  if (shown.some(Boolean)) {
+    const c = CARDS[cur], r = store[c.id] || { n: 0, right: [0, 0, 0, 0] };
+    r.n++; r.at = Date.now();
+    r.last = FIELDS.map((_, f) => shown[f] ? marks[f] : (r.last ? r.last[f] : false));
+    shown.forEach((s, f) => { if (s && marks[f]) r.right[f]++; });
+    store[c.id] = r; save();
+    document.getElementById('msg').textContent = `${c.title}: ${r.last.filter(Boolean).length}/4`;
+  }
+  go(pick());
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-r],[data-m],[data-i]');
+  if (!t) return;
+  if (t.dataset.r !== undefined) reveal(+t.dataset.r);
+  else if (t.dataset.m !== undefined) { marks[+t.dataset.m] = t.dataset.v === '1'; render(); }
+  else go(+t.dataset.i);
+});
+document.getElementById('next').onclick = next;
+document.getElementById('all').onclick = () => { shown = [true, true, true, true]; render(); };
+document.addEventListener('keydown', e => {
+  if (e.key === ' ') { e.preventDefault(); reveal(); }
+  else if (e.key === 'Enter') { e.preventDefault(); next(); }
+  else if ('1234'.includes(e.key) && e.key.length === 1) {
+    const f = +e.key - 1; if (!shown[f]) shown[f] = true; else marks[f] = !marks[f]; render();
+  }
+});
+go(pick());
+</script>
+</body></html>

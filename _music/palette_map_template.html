@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Palette Map</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+:root{
+  --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --soft:#f1efe8; --link:#d9d6cc;
+  --d1:#d02828; --d2:#d07800; --d3:#9a8c00; --d4:#1f8a4c; --d5:#1663c7; --d6:#8038c0; --d7:#c02080; --d0:#a3a39c;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926; --link:#3b3a35;
+  --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#77766f;
+}}
+:root[data-theme="dark"]{
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926; --link:#3b3a35;
+  --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#77766f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:grid;grid-template-columns:1fr 430px;grid-template-rows:auto 1fr;gap:12px 16px;padding:14px 16px;height:100vh;overflow:hidden}
+header{grid-column:1 / span 2;display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap}
+h1{font-size:17px;font-weight:700}
+h1 a{font-size:12px;font-weight:500;color:var(--mute);margin-left:8px;text-decoration:none}
+h1 a:hover{color:var(--ink)}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font:inherit;font-size:11.5px;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:6px;padding:2px 9px;cursor:pointer}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#stage{background:var(--card);border:1px solid var(--line);border-radius:12px;position:relative;min-height:0;overflow:hidden}
+#stage svg{width:100%;height:100%;display:block;cursor:grab}
+.cols{position:absolute;top:10px;left:0;right:0;display:flex;pointer-events:none}
+.cols div{flex:1;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.hint{position:absolute;bottom:10px;left:14px;font-size:12px;color:var(--mute);pointer-events:none}
+.link{stroke:var(--link);stroke-width:1.2;opacity:.55}
+.link.hot{stroke:var(--ink);stroke-width:2;opacity:1}
+.node{cursor:pointer}
+.node .hub{fill:var(--card)}
+.node text{font-weight:700;fill:var(--ink);text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:var(--card);stroke-width:3px}
+.node.dim{opacity:.15}
+.node.sel .hub{stroke:var(--ink);stroke-width:2.5}
+aside{background:var(--card);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.head{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.head .w{font-size:24px;font-weight:750}
+.head .pal{font-size:18px;font-weight:700;margin-top:2px}
+.head .pal span+span{margin-left:8px}
+.head .sub{font-size:12px;color:var(--mute);margin-top:4px}
+.nb{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.nb button{font:inherit;font-size:12px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:6px;padding:1px 7px;cursor:pointer}
+.nb button b{font-weight:700}
+.songs{overflow:auto;flex:1;padding:4px 16px 12px}
+.songs h3{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:10px 0 2px;font-weight:600}
+.r{padding:4px 0;border-bottom:1px solid var(--line)}
+.r .t{display:flex;gap:6px;align-items:baseline}
+.r .t b{font-weight:650}
+.r .t em{font-style:normal;color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r .t a{margin-left:auto;font-size:11px;color:var(--mute);text-decoration:none;white-space:nowrap}
+.r .t a:hover{color:var(--ink)}
+.r .bars{font-weight:700;font-size:14px}
+.r .bars .p{color:var(--mute);opacity:.45;font-weight:400;margin:0 3px}
+.r .bars .b span+span{margin-left:4px}
+.r .bars small{font-size:11px;font-weight:500;color:var(--mute);margin-left:8px}
+.empty{color:var(--mute);padding:20px 16px;font-size:13px}
+.c1{color:var(--d1)}.c2{color:var(--d2)}.c3{color:var(--d3)}.c4{color:var(--d4)}.c5{color:var(--d5)}.c6{color:var(--d6)}.c7{color:var(--d7)}.c0{color:var(--d0)}
+@media (max-width:860px){
+  body{grid-template-columns:1fr;grid-template-rows:auto 60vh auto;height:auto;overflow:auto}
+  header{grid-column:auto}
+  aside{max-height:70vh}
+}
+</style></head>
+<body>
+<header>
+  <h1>Palette map<a href="palette-groups.html">list view →</a></h1>
+  <span class="lab">shape</span><div class="chips" id="shapes"></div>
+  <span class="lab">pools</span><div class="chips" id="pools"></div>
+  <span class="lab">show</span><div class="chips" id="minn"></div>
+</header>
+<div id="stage">
+  <div class="cols"><div>1 chord</div><div>2 chords</div><div>3 chords</div><div>4 chords</div><div>5+</div></div>
+  <svg id="svg"></svg>
+  <div class="hint">Lines join palettes one chord apart · size = songs · drag to rearrange · scroll to zoom</div>
+</div>
+<aside id="side"></aside>
+<script>
+const ROWS = __ROWS__;
+const DEG = {C:1, Dm:2, D:2, Em:3, E:3, F:4, G:5, Am:6, 'A#':7};
+const SHAPE_ORDER = ['drone','vamp','shift','ender','blues','mountain','back runner','front runner','valley','bounce','return','wander','unnamed (ABAA)','other'];
+const POOLS = ['G100','G150','G200','G250'];
+const css = getComputedStyle(document.documentElement);
+const col = d => css.getPropertyValue('--d' + (DEG[d] || 0)).trim();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const chord = x => `<span class="c${DEG[x] || 0}">${esc(x)}</span>`;
+const palKey = r => r.word || r.palette.join(' ');
+const shapeKey = r => r.shape || 'other';
+let pools = new Set(POOLS), shape = null, sel = null, minN = 2;
+try { const s = JSON.parse(localStorage.getItem('palmap') || '{}'); if (s.sel) sel = s.sel; } catch (e) {}
+
+// ---- palettes and the one-chord-apart links (fixed; filters only resize) ----
+const pal = new Map();
+for (const r of ROWS) {
+  const k = palKey(r);
+  if (!pal.has(k)) pal.set(k, { id: k, word: r.word, chords: r.palette, n: r.palette.length, rows: [] });
+  pal.get(k).rows.push(r);
+}
+const nodes = [...pal.values()];
+const links = [];
+for (const a of nodes) for (const b of nodes) {
+  if (b.n !== a.n + 1) continue;
+  if (a.chords.every(c => b.chords.includes(c)))
+    links.push({ source: a.id, target: b.id, add: b.chords.find(c => !a.chords.includes(c)) });
+}
+
+function live(p) { return p.rows.filter(r => pools.has(r.pool) && (!shape || shapeKey(r) === shape)); }
+function songs(rs) { return new Set(rs.map(r => r.pool + r.title)).size; }
+const rad = c => c ? (shape ? 12 + 7 * Math.sqrt(c) : 9 + 4.2 * Math.sqrt(c)) : 4;
+
+// ---- drawing ----
+const svg = d3.select('#svg');
+const stage = document.getElementById('stage');
+let W = stage.clientWidth, H = stage.clientHeight;
+const g = svg.append('g');
+svg.call(d3.zoom().scaleExtent([.4, 4]).on('zoom', e => g.attr('transform', e.transform)));
+const colX = n => W * ((Math.min(n, 5) - .5) / 5);
+
+const gl = g.append('g'), gn = g.append('g');
+let link = gl.selectAll('line'), node = gn.selectAll('g.node');
+const sim = d3.forceSimulation()
+  .force('link', d3.forceLink().id(d => d.id).distance(75).strength(.3))
+  .force('charge', d3.forceManyBody().strength(-220))
+  .force('x', d3.forceX(d => colX(d.n)).strength(.5))
+  .force('y', d3.forceY(() => H / 2).strength(.07))
+  .force('collide', d3.forceCollide(d => d.r + 8))
+  .on('tick', () => {
+    link.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+
+function draw() {
+  for (const d of nodes) { d.c = songs(live(d)); d.r = rad(d.c); }
+  // a shape filter is already narrow -- show every palette that has it, and
+  // move the selection off a palette that has none
+  const floor = shape ? 1 : minN;
+  if (!(pal.get(sel) || {}).c) sel = nodes.reduce((a, b) => (b.c > a.c ? b : a)).id;
+  const vis = nodes.filter(d => d.c >= floor || d.id === sel);
+  const ids = new Set(vis.map(d => d.id));
+  const vl = links.filter(l => ids.has(l.source.id || l.source) && ids.has(l.target.id || l.target));
+  const near = new Set([sel]);
+  vl.forEach(l => { const s = l.source.id || l.source, e = l.target.id || l.target;
+    if (s === sel) near.add(e); if (e === sel) near.add(s); });
+
+  link = gl.selectAll('line').data(vl, l => (l.source.id || l.source) + '>' + (l.target.id || l.target))
+    .join('line').attr('class', 'link');
+  node = gn.selectAll('g.node').data(vis, d => d.id).join(enter => {
+    const e = enter.append('g').attr('class', 'node').on('click', (ev, d) => select(d.id))
+      .call(d3.drag()
+        .on('start', (ev, d) => { if (!ev.active) sim.alphaTarget(.2).restart(); d.fx = d.x; d.fy = d.y; })
+        .on('drag', (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
+        .on('end', (ev, d) => { if (!ev.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+    e.append('title'); e.append('g').attr('class', 'ring'); e.append('circle').attr('class', 'hub'); e.append('text');
+    return e;
+  });
+  const arc = d3.arc();
+  node.select('.ring').each(function (d) {
+    const pie = d3.pie().sort(null).value(1)(d.chords);
+    d3.select(this).selectAll('path').data(pie).join('path')
+      .attr('d', p => arc({ innerRadius: d.r * .6, outerRadius: d.r, startAngle: p.startAngle, endAngle: p.endAngle, padAngle: .04 }))
+      .attr('fill', p => col(p.data));
+  });
+  node.select('.hub').attr('r', d => d.r * .6);
+  // label the big ones always, the rest only around the selection
+  // every ring is labelled; the hubs and the selection's neighbours full size,
+  // the rest small so they don't crowd
+  const big = d => shape || d.c >= 4 || near.has(d.id);
+  node.select('text').text(d => d.word || d.chords.join(' '))
+    .attr('font-size', d => d.r >= 24 ? 11 : big(d) ? 9.5 : 7.5)
+    .attr('dy', d => d.r >= 24 ? '.35em' : d.r + (big(d) ? 11 : 9))
+    .attr('style', d => d.word ? '' : 'font-weight:500;fill:var(--mute)');
+  node.select('title').text(d => `${d.word || 'no word'} · ${d.chords.join(' ')} · ${d.c} songs`);
+  node.classed('dim', d => !d.c).classed('sel', d => d.id === sel);
+  link.classed('hot', l => (l.source.id || l.source) === sel || (l.target.id || l.target) === sel);
+  sim.nodes(vis); sim.force('link').links(vl);
+  sim.force('collide').radius(d => d.r + 8);
+  sim.alpha(.6).restart();
+}
+
+function side() {
+  const el = document.getElementById('side');
+  const p = pal.get(sel);
+  if (!p) { el.innerHTML = '<div class="empty">Click a palette to see its songs.</div>'; return; }
+  const rs = live(p);
+  const nbs = links.filter(l => (l.source.id || l.source) === sel || (l.target.id || l.target) === sel).map(l => {
+    const s = pal.get(l.source.id || l.source), e = pal.get(l.target.id || l.target);
+    const up = s.id === sel, other = up ? e : s;
+    return { id: other.id, txt: up ? `+${l.add}` : `−${l.add}`, w: other.word || other.chords.join(' '), c: other.c };
+  }).sort((a, b) => b.c - a.c);
+  const byShape = d3.group(rs, shapeKey);
+  const keys = [...byShape.keys()].sort((a, b) => SHAPE_ORDER.indexOf(a) - SHAPE_ORDER.indexOf(b));
+  el.innerHTML = `<div class="head"><div class="w">${esc(p.word || 'no word')}</div>
+      <div class="pal">${p.chords.map(chord).join('')}</div>
+      <div class="sub">${songs(rs)} songs · ${rs.length} openings${shape ? ' · ' + esc(shape) + ' only' : ''}</div>
+      <div class="nb">${nbs.map(n => `<button data-go="${esc(n.id)}"><b>${esc(n.txt)}</b> ${esc(n.w)} ${n.c}</button>`).join('')}</div></div>
+    <div class="songs">${keys.map(k => `<h3>${esc(k)} · ${byShape.get(k).length}</h3>` +
+      byShape.get(k).sort((a, b) => a.title.localeCompare(b.title)).map(r => {
+        const inC = r.cbars.map(b => `<span class="b">${b.map(chord).join('')}</span>`).join('<span class="p">|</span>');
+        const how = r.shape ? (r.reps > 1 ? `${r.cellbars}-bar ×${r.reps}` : '4 bars') + (r.pushed ? ' · pushed' : '') : r.lengths;
+        return `<div class="r"><div class="t"><b>${esc(r.title)}</b><em>${esc(r.artist)} · ${esc(r.section)}</em>
+          ${r.hookpad ? `<a href="${esc(r.hookpad)}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}</div>
+          <div class="bars">${inC}<small>${esc(how)}</small></div></div>`;
+      }).join('')).join('') || '<div class="empty">No openings with this filter.</div>'}</div>`;
+}
+
+function select(id) { sel = id; try { localStorage.setItem('palmap', JSON.stringify({ sel })); } catch (e) {} draw(); side(); }
+
+function chips() {
+  const counts = d3.rollup(ROWS.filter(r => pools.has(r.pool)), v => v.length, shapeKey);
+  document.getElementById('shapes').innerHTML = `<button class="chip ${shape ? '' : 'on'}" data-s="">all</button>` +
+    SHAPE_ORDER.filter(s => counts.get(s)).map(s => `<button class="chip ${shape === s ? 'on' : ''}" data-s="${esc(s)}">${esc(s)}</button>`).join('');
+  document.getElementById('minn').innerHTML = [[1, 'every palette'], [2, '2+ songs'], [4, '4+ songs']]
+    .map(([n, l]) => `<button class="chip ${minN === n ? 'on' : ''}" data-m="${n}">${l}</button>`).join('');
+  document.getElementById('pools').innerHTML = POOLS.map(p => `<button class="chip ${pools.has(p) ? 'on' : ''}" data-p="${p}">${p}</button>`).join('');
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-s],[data-p],[data-go],[data-m]');
+  if (!t) return;
+  if (t.dataset.go) return select(t.dataset.go);
+  if (t.dataset.s !== undefined) shape = t.dataset.s || null;
+  if (t.dataset.m) minN = +t.dataset.m;
+  if (t.dataset.p) { pools.has(t.dataset.p) && pools.size > 1 ? pools.delete(t.dataset.p) : pools.add(t.dataset.p); }
+  chips(); draw(); side();
+});
+new ResizeObserver(() => {
+  W = stage.clientWidth; H = stage.clientHeight;
+  sim.force('x', d3.forceX(d => colX(d.n)).strength(.55)).force('y', d3.forceY(() => H / 2).strength(.06)).alpha(.5).restart();
+}).observe(stage);
+for (const d of nodes) { d.x = colX(d.n) + (Math.random() - .5) * 40; d.y = H / 2 + (Math.random() - .5) * H * .6; }
+if (!pal.has(sel)) sel = 'GOOSEFISH';
+chips(); draw(); side();
+</script>
+</body></html>
