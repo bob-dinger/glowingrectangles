@@ -79,6 +79,12 @@ aside{background:var(--card);border:1px solid var(--line);border-radius:12px;dis
 .r .m .tag.un{font-weight:500;color:var(--mute)}
 .r .f{font-size:11.5px;color:var(--mute)}
 .empty{color:var(--mute);padding:20px 16px;font-size:13px}
+#q{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:7px;padding:4px 10px;width:230px;margin-left:auto}
+#q:focus{outline:2px solid var(--ink);outline-offset:0}
+.node.hit .hub{stroke:var(--ink);stroke-width:3}
+.songs h3.go{cursor:pointer;color:var(--ink)}
+.songs h3.go:hover{text-decoration:underline}
+mark{background:var(--hl,#ffe58a);color:inherit;border-radius:2px}
 @media (max-width:860px){
   body{grid-template-columns:1fr;grid-template-rows:auto 60vh auto;height:auto;overflow:auto}
   header{grid-column:auto}
@@ -90,6 +96,7 @@ aside{background:var(--card);border:1px solid var(--line);border-radius:12px;dis
   <h1>Tempo map<a href="palette-map.html">palette map →</a></h1>
   <span class="lab">pools</span><div class="chips" id="pools"></div>
   <span class="lab">list by</span><div class="chips" id="by"></div>
+  <input id="q" type="search" placeholder="Search songs, artists, keys…  ( / )" autocomplete="off">
 </header>
 <div id="stage">
   <svg id="svg"></svg>
@@ -114,6 +121,10 @@ for (let i = 1; i < T.length; i++) links.push({ source: T[i - 1], target: T[i] }
 const dbls = T.filter(t => byId.has(t * 2)).map(t => ({ a: t, b: t * 2 }));
 
 const live = n => n.rows.filter(r => pools.has(r.pool));
+let q = '';
+const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const hits = r => !q || q.split(/\s+/).every(w => norm(`${r.title} ${r.artist} ${r.key} ${r.tag ? r.tag.word : ''}`).includes(w));
+const mark = s => { if (!q) return esc(s); let h = esc(s); for (const w of q.split(/\s+/).filter(Boolean)) h = h.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>'); return h; };
 let rad = c => c ? 14 + 7 * Math.sqrt(c) : 6;
 
 // ---- drawing: x is the tempo itself, the force only keeps circles apart ----
@@ -175,7 +186,7 @@ function draw() {
   node.select('.num').text(d => d.id).attr('font-size', d => Math.max(10, Math.min(17, d.r * .5))).attr('dy', d => d.c ? '-.05em' : '.35em');
   node.select('.cnt').text(d => d.c ? d.c : '').attr('dy', d => Math.max(10, Math.min(17, d.r * .5)) * .95);
   node.select('title').text(d => `${d.id} bpm · ${d.c} songs`);
-  node.classed('dim', d => !d.c).classed('sel', d => d.id === sel);
+  node.classed('dim', d => !d.c || (q && !live(d).some(hits))).classed('hit', d => q && live(d).some(hits)).classed('sel', d => d.id === sel);
   sim.force('collide').radius(d => d.r + 6);
   sim.alpha(.5).restart();
 }
@@ -188,7 +199,7 @@ function row(r) {
   const hp = r.hpbpm && +r.hpbpm !== +r.bpm ? ` <span title="Hookpad bpm">hp ${esc(r.hpbpm)}</span>` : '';
   const key = r.key + (r.hpkey && !String(r.key).toLowerCase().startsWith(r.hpkey.split(' ')[0].toLowerCase()) ? ` · hp ${r.hpkey}` : '');
   const tag = r.tag ? `<span class="tag ${r.tag.named ? '' : 'un'}">${esc(r.tag.word)} <span style="font-weight:500">${esc(r.tag.shape)}</span></span>` : '';
-  return `<div class="r"><div class="t"><b>${esc(r.title)}</b><em>${esc(r.artist)}</em>
+  return `<div class="r"><div class="t"><b>${mark(r.title)}</b><em>${mark(r.artist)}</em>
       <span class="lk">${r.hookpad ? `<a href="${esc(r.hookpad)}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}
       ${r.ug ? `<a class="${r.ughow === 'search' ? 'no' : ''}" href="${esc(r.ug)}" target="_blank" rel="noopener">${r.ughow === 'search' ? 'UG search' : 'UG'} ↗</a>` : ''}</span></div>
     <div class="m"><span class="bpm">${esc(r.bpm10)}${exact}${hp}</span><span class="k">${esc(key)}</span>${tag}</div><div class="f" title="section lengths">${esc(formTxt(r.form || []))}</div></div>`;
@@ -196,6 +207,14 @@ function row(r) {
 
 function side() {
   const el = document.getElementById('side');
+  if (q) {
+    const found = nodes.map(n => [n.id, live(n).filter(hits).sort((a, b) => (+a.bpm || a.bpm10) - (+b.bpm || b.bpm10) || a.title.localeCompare(b.title))]).filter(([, v]) => v.length);
+    const n = found.reduce((a, [, v]) => a + v.length, 0);
+    el.innerHTML = `<div class="head"><div class="w">“${esc(q)}”<small>${n} song${n === 1 ? '' : 's'}</small></div>
+        <div class="sub">${found.length ? `at ${found.map(([t]) => t).join(', ')} bpm · click a tempo to open it` : 'no matches in these pools'}</div></div>
+      <div class="songs">${found.map(([t, v]) => `<h3 class="go" data-go="${t}">${t} bpm · ${v.length} →</h3>` + v.map(row).join('')).join('')}</div>`;
+    return;
+  }
   const n = byId.get(sel);
   const rs = live(n).sort((a, b) => (+a.bpm || a.bpm10) - (+b.bpm || b.bpm10) || a.title.localeCompare(b.title));
   const i = T.indexOf(sel);
@@ -227,12 +246,20 @@ function chips() {
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-p],[data-go],[data-by]');
   if (!t) return;
-  if (t.dataset.go) return select(+t.dataset.go);
+  if (t.dataset.go) { if (q) { q = ''; document.getElementById('q').value = ''; } return select(+t.dataset.go); }
   if (t.dataset.by) { by = t.dataset.by; select(sel); chips(); return; }
   if (t.dataset.p) { pools.has(t.dataset.p) && pools.size > 1 ? pools.delete(t.dataset.p) : pools.add(t.dataset.p); }
   chips(); draw(); side();
 });
+const qi = document.getElementById('q');
+qi.addEventListener('input', () => { q = norm(qi.value.trim()); draw(); side(); });
+qi.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { qi.value = ''; q = ''; qi.blur(); draw(); side(); }
+  if (e.key === 'Enter') { const f = nodes.find(n => live(n).some(hits)); if (f) { const s = f.id; qi.value = ''; q = ''; qi.blur(); select(s); } }
+});
 document.addEventListener('keydown', e => {
+  if (e.target === qi) return;
+  if (e.key === '/') { e.preventDefault(); qi.focus(); return; }
   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
   const vis = T.filter(t => byId.get(t).c), i = vis.indexOf(sel);
   const j = e.key === 'ArrowLeft' ? i - 1 : i + 1;
