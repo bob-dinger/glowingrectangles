@@ -197,7 +197,7 @@ function row(r) {
 function side() {
   const el = document.getElementById('side');
   const n = byId.get(sel);
-  const rs = live(n).sort((a, b) => String(a.title).localeCompare(String(b.title), undefined, { sensitivity: 'base', numeric: true }));
+  const rs = live(n).sort((a, b) => (+a.bpm || a.bpm10) - (+b.bpm || b.bpm10) || a.title.localeCompare(b.title));
   const i = T.indexOf(sel);
   const words = d3.rollups(rs.filter(r => r.tag && r.tag.named), v => v.length, r => r.tag.word).sort((a, b) => b[1] - a[1]);
   const per = POOLS.filter(p => pools.has(p)).map(p => [p, rs.filter(r => r.pool === p).length]).filter(o => o[1]);
