@@ -20,7 +20,7 @@ OUT = os.path.join(HERE, 'tempo-map.html')
 POOLS = ['G50', 'G100', 'G150', 'G200', 'G250']
 
 
-def main():
+def collect():
     rows = []
     for pool in POOLS:
         cards, missing = Q.build_cards(pool)
@@ -31,6 +31,11 @@ def main():
                              hpkey=c['letters'], bpm10=c['bpm10'], bpm=c['bpm'], hpbpm=c['hpbpm'],
                              form=c['form'], tag=tags[0] if tags else None,
                              hookpad=c['hookpad'], ug=c['ug'], ughow=c['ughow']))
+    return rows
+
+
+def main():
+    rows = collect()
     page = open(os.path.join(HERE, 'tempo_map_template.html')).read()
     open(OUT, 'w').write(page.replace('__ROWS__', json.dumps(rows, ensure_ascii=False)))
     tempos = sorted({r['bpm10'] for r in rows if isinstance(r['bpm10'], (int, float))})

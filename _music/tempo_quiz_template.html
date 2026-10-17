@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tempo Quiz</title>
+<style>
+:root{
+  --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --hide:#efede6;
+  --ok:#2f9e5a; --near:#d0a000; --bad:#d0453a; --none:#d9d7cf;
+  --p0:#4a8a2a; --p1:#1f8a8a; --p2:#d07800; --p3:#7a4fc4; --p4:#c8386a;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --hide:#2a2926;
+  --ok:#4cc27a; --near:#e6c040; --bad:#ec6a5f; --none:#3a3935;
+  --p0:#8fd16a; --p1:#3cc4c4; --p2:#ffa94d; --p3:#a988f0; --p4:#f0709a;
+}}
+:root[data-theme="dark"]{
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --hide:#2a2926;
+  --ok:#4cc27a; --near:#e6c040; --bad:#ec6a5f; --none:#3a3935;
+  --p0:#8fd16a; --p1:#3cc4c4; --p2:#ffa94d; --p3:#a988f0; --p4:#f0709a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:grid;grid-template-columns:1fr 300px;gap:18px;padding:16px;height:100vh;overflow:hidden}
+main{display:flex;flex-direction:column;gap:12px;min-height:0}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:15px;color:var(--mute);font-weight:600}
+header h1 a{color:inherit;text-decoration:none;font-weight:400;font-size:13px;margin-left:8px}
+.chips{display:flex;gap:4px}
+.chip{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:6px;padding:2px 8px;cursor:pointer;display:flex;align-items:center;gap:5px}
+.chip i{width:8px;height:8px;border-radius:50%}
+.chip.on{color:var(--bg);background:var(--ink);border-color:var(--ink)}
+.help{margin-left:auto;font-size:12px;color:var(--mute)}
+kbd{font:11px ui-monospace,monospace;border:1px solid var(--line);border-radius:4px;padding:0 4px;background:var(--card)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:16px}
+.card .t{font-size:32px;font-weight:750;letter-spacing:-.01em}
+.card .a{color:var(--mute);font-size:15px;display:flex;align-items:center;gap:6px}
+.card .a i{width:8px;height:8px;border-radius:50%}
+.links{margin-left:auto;display:flex;gap:8px}
+.links a{font-size:14px;font-weight:600;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+.links a.weak{color:var(--mute)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+.ph{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.tempos{display:grid;grid-template-columns:repeat(15,1fr);gap:6px}
+.tempos button{font:inherit;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;height:52px;cursor:pointer}
+.tempos button:hover{background:var(--hide)}
+.tempos button.sel{outline:2px solid var(--ink);outline-offset:1px}
+.tempos button.tap{background:var(--hide)}
+.tempos button.right{background:var(--ok);border-color:var(--ok);color:#fff}
+.tempos button.wrong{background:var(--bad);border-color:var(--bad);color:#fff}
+.tempos button:disabled{cursor:default}
+.tapbox{display:flex;align-items:center;gap:14px;margin-top:12px}
+.tapbox button{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:8px 18px;cursor:pointer}
+.tapbox .bpm{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;min-width:70px}
+.tapbox .sub{font-size:13px;color:var(--mute)}
+.result{flex:1;min-height:0;display:flex;gap:14px}
+.result .panel{flex:1;overflow:auto}
+.verdict{font-size:26px;font-weight:750}
+.verdict.right{color:var(--ok)} .verdict.near{color:var(--near)} .verdict.wrong{color:var(--bad)}
+.facts{margin-top:6px;font-size:14px;color:var(--mute)}
+.facts b{color:var(--ink);font-variant-numeric:tabular-nums}
+.play{margin-top:12px;font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:7px 16px;cursor:pointer}
+.play.on{background:var(--ink);color:var(--bg)}
+.mates{list-style:none;columns:2;column-gap:18px}
+.mates li{font-size:13.5px;padding:2px 0;break-inside:avoid;display:flex;gap:6px;align-items:baseline}
+.mates li i{width:7px;height:7px;border-radius:50%;flex:0 0 auto;transform:translateY(-1px)}
+.mates li small{color:var(--mute)}
+.mates li b{font-weight:600}
+.empty{color:var(--mute);font-size:14px;display:flex;align-items:center;justify-content:center;height:100%}
+footer{display:flex;gap:10px;align-items:center}
+footer button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:7px 16px;cursor:pointer}
+footer button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+footer .msg{color:var(--mute);font-size:13px}
+aside{display:flex;flex-direction:column;gap:10px;min-height:0}
+.stats{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.stats .row{display:flex;justify-content:space-between;padding:1px 0}
+.stats .row b{font-variant-numeric:tabular-nums}
+.ladder{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.ladder h2,.tiles h2{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);font-weight:600;margin-bottom:6px}
+.rung{display:grid;grid-template-columns:34px 1fr 38px;gap:6px;align-items:center;font-size:12px;font-variant-numeric:tabular-nums;padding:1px 0}
+.rung .bar{height:8px;border-radius:4px;background:var(--none);overflow:hidden;display:flex}
+.rung .bar i{height:100%}
+.rung small{color:var(--mute);text-align:right}
+.tiles{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;overflow:auto;flex:1;min-height:0}
+.tl{display:grid;grid-template-columns:repeat(2,1fr);gap:2px 8px}
+.tile{display:flex;align-items:center;gap:5px;font-size:11.5px;cursor:pointer;white-space:nowrap;overflow:hidden;border-radius:4px;padding:1px 3px}
+.tile:hover{background:var(--hide)}
+.tile.cur{outline:1.5px solid var(--ink)}
+.tile i{width:8px;height:8px;border-radius:2px;background:var(--none);flex:0 0 auto}
+.tile i.right{background:var(--ok)} .tile i.near{background:var(--near)} .tile i.wrong{background:var(--bad)}
+.tile span{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:760px){
+  body{grid-template-columns:1fr;height:auto;overflow:auto}
+  .tempos{grid-template-columns:repeat(5,1fr)}
+  aside{display:none}
+}
+</style></head>
+<body>
+<main>
+  <header><h1>Tempo quiz<a href="tempo-map.html">tempo map →</a></h1><div class="chips" id="pools"></div>
+    <span class="help"><kbd>←</kbd><kbd>→</kbd> choose &nbsp; <kbd>t</kbd> tap &nbsp; <kbd>enter</kbd> answer / next &nbsp; <kbd>p</kbd> play</span></header>
+  <div class="card"><div><div class="t" id="t"></div><div class="a" id="a"></div></div><div class="links" id="links"></div></div>
+  <div class="panel">
+    <div class="ph">What tempo? <span id="hint"></span></div>
+    <div class="tempos" id="tempos"></div>
+    <div class="tapbox"><button id="tap">Tap the beat (t)</button><span class="bpm" id="tapbpm">—</span><span class="sub" id="tapsub">tap the song in your head, four or more times</span></div>
+  </div>
+  <div class="result" id="result"></div>
+  <footer>
+    <button class="primary" id="next">Next song ↵</button>
+    <span class="msg" id="msg"></span>
+  </footer>
+</main>
+<aside>
+  <div class="stats" id="stats"></div>
+  <div class="ladder"><h2>By tempo · right / seen</h2><div id="ladder"></div></div>
+  <div class="tiles"><h2>Songs</h2><div class="tl" id="tl"></div></div>
+</aside>
+<script>
+const ROWS = __ROWS__;
+const POOLS = __POOLS__;
+const T = [];
+for (let b = 70; b <= 210; b += 10) T.push(b);
+const css = getComputedStyle(document.documentElement);
+const pcol = p => css.getPropertyValue('--p' + POOLS.indexOf(p)).trim();
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ROWS.forEach(r => r.id = (r.pool + '|' + r.title + '|' + r.artist).toLowerCase());
+
+const LS = 'tempoquiz';
+let store = {}, pools = new Set(POOLS);
+try { const s = JSON.parse(localStorage.getItem(LS) || '{}'); store = s.store || {}; if (s.pools && s.pools.length) pools = new Set(s.pools.filter(p => POOLS.includes(p))); } catch (e) {}
+if (!pools.size) pools = new Set(POOLS);
+const save = () => { try { localStorage.setItem(LS, JSON.stringify({ store, pools: [...pools] })); } catch (e) {} };
+
+const live = () => ROWS.filter(r => pools.has(r.pool));
+let cur = null, sel = 7, answered = null, taps = [];
+
+// right = exact bucket; near = one bucket off; half/double = the same feel at the other metric level
+function judge(guess, r) {
+  if (guess === r.bpm10) return 'right';
+  if (Math.abs(guess - r.bpm10) === 10) return 'near';
+  if (Math.abs(guess * 2 - r.bpm10) <= 10 || Math.abs(guess / 2 - r.bpm10) <= 5) return 'half';
+  return 'wrong';
+}
+const LABEL = { right: 'Right', near: 'One off', half: 'Half / double time', wrong: 'Not quite' };
+const CLS = { right: 'right', near: 'near', half: 'near', wrong: 'wrong' };
+
+// next song: unseen first, then wrong last time, then the longest since seen; a little shuffle
+function pick() {
+  const rs = live(), now = Date.now();
+  if (!rs.length) return null;
+  const score = r => {
+    if (cur && r.id === cur.id) return 1e15;
+    const s = store[r.id];
+    if (!s) return -1e12 + Math.random() * 1e6;
+    const rank = { wrong: 0, half: 1, near: 1, right: 3 }[s.last] ?? 0;
+    return rank * 1e10 + s.streak * 1e9 - (now - s.at) / 1000 + Math.random() * 60;
+  };
+  return rs.reduce((a, b) => score(b) < score(a) ? b : a);
+}
+
+function go(r) {
+  stop(); cur = r; answered = null; taps = [];
+  document.getElementById('tapbpm').textContent = '—';
+  render();
+}
+
+function render() {
+  const r = cur;
+  document.getElementById('t').textContent = r ? r.title : 'No songs';
+  document.getElementById('a').innerHTML = r ? `<i style="background:${pcol(r.pool)}"></i>${esc(r.artist)} · ${r.pool}` : '';
+  document.getElementById('links').innerHTML = !r ? '' :
+    (r.hookpad ? `<a href="${esc(r.hookpad)}" target="_blank" rel="noopener">Hookpad ↗</a>` : '') +
+    `<a href="${esc(r.ug)}" target="_blank" rel="noopener" class="${r.ughow === 'search' ? 'weak' : ''}">${r.ughow === 'search' ? 'UG search ↗' : 'UG tab ↗'}</a>`;
+  const tb = tapBpm();
+  const near = tb ? T.reduce((a, b) => Math.abs(b - tb) < Math.abs(a - tb) ? b : a) : null;
+  document.getElementById('tempos').innerHTML = T.map((b, i) => {
+    let c = i === sel && !answered ? 'sel' : '';
+    if (b === near && !answered) c += ' tap';
+    if (answered) c = b === cur.bpm10 ? 'right' : (b === answered.guess ? 'wrong' : '');
+    return `<button class="${c}" data-b="${i}" ${answered ? 'disabled' : ''}>${b}</button>`;
+  }).join('');
+  document.getElementById('hint').textContent = answered ? '' : 'click a tempo, or tap and press enter';
+  result(); side();
+}
+
+function result() {
+  const el = document.getElementById('result');
+  if (!answered) { el.innerHTML = `<div class="panel"><div class="empty">Say it, tap it, then pick.</div></div>`; return; }
+  const r = cur, v = answered.v;
+  const mates = ROWS.filter(x => x.bpm10 === r.bpm10 && x.id !== r.id && pools.has(x.pool))
+    .sort((a, b) => (+a.bpm || a.bpm10) - (+b.bpm || b.bpm10));
+  el.innerHTML = `<div class="panel" style="flex:0 0 330px">
+      <div class="verdict ${CLS[v]}">${LABEL[v]}${v === 'right' ? '' : ` — it's ${r.bpm10}`}</div>
+      <div class="facts">you said <b>${answered.guess}</b>${answered.tap ? ` (tapped <b>${answered.tap}</b>)` : ''}</div>
+      <div class="facts">listed <b>${r.bpm ?? '—'}</b>${r.hpbpm ? ` · Hookpad <b>${r.hpbpm}</b>` : ''} · key <b>${esc(r.key)}</b></div>
+      <button class="play" id="play">▶ Hear ${r.bpm || r.bpm10} (p)</button></div>
+    <div class="panel"><div class="ph">Also at ${r.bpm10} · ${mates.length}</div>
+      ${mates.length ? `<ul class="mates">${mates.map(x => `<li><i style="background:${pcol(x.pool)}"></i><span><b>${esc(x.title)}</b> <small>${esc(x.artist)} · ${x.bpm ?? ''}</small></span></li>`).join('')}</ul>` : '<div class="empty">Only this song.</div>'}</div>`;
+  document.getElementById('play').onclick = toggle;
+}
+
+function side() {
+  const rs = live(), seen = rs.filter(r => store[r.id]);
+  const n = k => seen.filter(r => store[r.id].last === k).length;
+  document.getElementById('stats').innerHTML =
+    `<div class="row"><span>Seen</span><b>${seen.length} / ${rs.length}</b></div>` +
+    `<div class="row"><span style="color:var(--ok)">Right last time</span><b>${n('right')}</b></div>` +
+    `<div class="row"><span style="color:var(--near)">One off / half-double</span><b>${n('near') + n('half')}</b></div>` +
+    `<div class="row"><span style="color:var(--bad)">Missed</span><b>${n('wrong')}</b></div>`;
+  document.getElementById('ladder').innerHTML = T.map(b => {
+    const at = rs.filter(r => r.bpm10 === b);
+    if (!at.length) return '';
+    const s = at.filter(r => store[r.id]);
+    const ok = s.filter(r => store[r.id].last === 'right').length;
+    const nr = s.filter(r => ['near', 'half'].includes(store[r.id].last)).length;
+    const pct = x => (x / at.length * 100) + '%';
+    return `<div class="rung"><b>${b}</b><span class="bar"><i style="width:${pct(ok)};background:var(--ok)"></i><i style="width:${pct(nr)};background:var(--near)"></i><i style="width:${pct(s.length - ok - nr)};background:var(--bad)"></i></span><small>${ok}/${at.length}</small></div>`;
+  }).join('');
+  document.getElementById('tl').innerHTML = rs.slice().sort((a, b) => a.bpm10 - b.bpm10 || a.title.localeCompare(b.title)).map(r => {
+    const s = store[r.id];
+    return `<div class="tile ${cur && r.id === cur.id ? 'cur' : ''}" data-id="${esc(r.id)}" title="${esc(r.title)} — ${esc(r.artist)}"><i class="${s ? CLS[s.last] : ''}"></i><span>${esc(r.title)}</span></div>`;
+  }).join('');
+  document.getElementById('pools').innerHTML = POOLS.map(p =>
+    `<button class="chip ${pools.has(p) ? 'on' : ''}" data-p="${p}"><i style="background:${pcol(p)}"></i>${p}</button>`).join('');
+}
+
+function answer(guess) {
+  if (!cur || answered) return;
+  const v = judge(guess, cur), tb = tapBpm();
+  answered = { guess, v, tap: tb };
+  const s = store[cur.id] || { n: 0, right: 0, streak: 0 };
+  s.n++; s.at = Date.now(); s.last = v;
+  if (v === 'right') { s.right++; s.streak++; } else s.streak = 0;
+  store[cur.id] = s; save();
+  document.getElementById('msg').textContent = `${cur.title}: ${LABEL[v].toLowerCase()}`;
+  render();
+}
+
+// tap tempo: median interval of the last few taps; a 2.5 s pause starts over
+function tap() {
+  const now = performance.now();
+  if (taps.length && now - taps[taps.length - 1] > 2500) taps = [];
+  taps.push(now); taps = taps.slice(-8);
+  const b = tapBpm();
+  document.getElementById('tapbpm').textContent = b ? b : '·'.repeat(taps.length);
+  if (b && !answered) sel = T.indexOf(T.reduce((a, x) => Math.abs(x - b) < Math.abs(a - b) ? x : a));
+  render();
+}
+function tapBpm() {
+  if (taps.length < 4) return null;
+  const d = taps.slice(1).map((t, i) => t - taps[i]).sort((a, b) => a - b);
+  return Math.round(60000 / d[Math.floor(d.length / 2)]);
+}
+
+// click track at the listed bpm, accent on 1, four bars then stop
+let ctx = null, timer = null;
+function stop() { if (timer) { clearInterval(timer); timer = null; } const b = document.getElementById('play'); if (b) b.classList.remove('on'); }
+function toggle() {
+  if (timer) return stop();
+  if (!cur) return;
+  ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+  const bpm = +cur.bpm || cur.bpm10, beat = 60 / bpm;
+  let k = 0, t0 = ctx.currentTime + 0.05;
+  const click = (when, acc) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.value = acc ? 1600 : 1000;
+    g.gain.setValueAtTime(acc ? 0.5 : 0.3, when); g.gain.exponentialRampToValueAtTime(0.001, when + 0.05);
+    o.connect(g).connect(ctx.destination); o.start(when); o.stop(when + 0.06);
+  };
+  for (; k < 16; k++) click(t0 + k * beat, k % 4 === 0);
+  document.getElementById('play').classList.add('on');
+  timer = setTimeout(stop, (16 * beat + 0.1) * 1000);
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-b],[data-p],[data-id]');
+  if (!t) return;
+  if (t.dataset.b !== undefined) { sel = +t.dataset.b; answer(T[sel]); }
+  else if (t.dataset.p) {
+    pools.has(t.dataset.p) && pools.size > 1 ? pools.delete(t.dataset.p) : pools.add(t.dataset.p);
+    save(); if (cur && !pools.has(cur.pool)) go(pick()); else render();
+  }
+  else { const r = ROWS.find(x => x.id === t.dataset.id); if (r) go(r); }
+});
+document.getElementById('tap').onclick = tap;
+document.getElementById('next').onclick = () => go(pick());
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'ArrowLeft' && !answered) { sel = Math.max(0, sel - 1); render(); }
+  else if (e.key === 'ArrowRight' && !answered) { sel = Math.min(T.length - 1, sel + 1); render(); }
+  else if (e.key === 't' || e.key === ' ') { e.preventDefault(); if (!answered) tap(); }
+  else if (e.key === 'p') { if (answered) toggle(); }
+  else if (e.key === 'Enter') { e.preventDefault(); answered ? go(pick()) : answer(T[sel]); }
+});
+go(pick());
+</script>
+</body></html>
