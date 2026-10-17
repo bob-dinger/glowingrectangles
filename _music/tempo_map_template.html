@@ -6,17 +6,17 @@
 <style>
 :root{
   --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --soft:#f1efe8; --link:#d9d6cc;
-  --p1:#1f8a8a; --p2:#d07800; --p3:#7a4fc4; --p4:#c8386a;
+  --p0:#4a8a2a; --p1:#1f8a8a; --p2:#d07800; --p3:#7a4fc4; --p4:#c8386a;
   --d1:#d02828; --d2:#d07800; --d3:#9a8c00; --d4:#1f8a4c; --d5:#1663c7; --d6:#8038c0; --d7:#c02080; --d0:#a3a39c;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926; --link:#3b3a35;
-  --p1:#3cc4c4; --p2:#ffa94d; --p3:#a988f0; --p4:#f0709a;
+  --p0:#8fd16a; --p1:#3cc4c4; --p2:#ffa94d; --p3:#a988f0; --p4:#f0709a;
   --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#77766f;
 }}
 :root[data-theme="dark"]{
   --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926; --link:#3b3a35;
-  --p1:#3cc4c4; --p2:#ffa94d; --p3:#a988f0; --p4:#f0709a;
+  --p0:#8fd16a; --p1:#3cc4c4; --p2:#ffa94d; --p3:#a988f0; --p4:#f0709a;
   --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#77766f;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -98,9 +98,9 @@ aside{background:var(--card);border:1px solid var(--line);border-radius:12px;dis
 <aside id="side"></aside>
 <script>
 const ROWS = __ROWS__;
-const POOLS = ['G100','G150','G200','G250'];
+const POOLS = ['G50','G100','G150','G200','G250'];
 const css = getComputedStyle(document.documentElement);
-const pcol = p => css.getPropertyValue('--p' + (POOLS.indexOf(p) + 1)).trim();
+const pcol = p => css.getPropertyValue('--p' + POOLS.indexOf(p)).trim();
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let pools = new Set(POOLS), sel = null, by = 'pool';
 try { const s = JSON.parse(localStorage.getItem('tempomap') || '{}'); if (s.sel) sel = +s.sel; if (s.by) by = s.by; } catch (e) {}

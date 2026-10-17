@@ -28,6 +28,11 @@ PC = {n: i for i, n in enumerate(NAMES)}
 PC.update({'Db': 1, 'Eb': 3, 'Gb': 6, 'Ab': 8, 'Bb': 10})
 
 
+# songs where the user picked a variant over the base file (2026-10-15:
+# Everywhere's -189 has the melody and the chords they trust)
+PREFER = {'michellebranch_everywhere': '189'}
+
+
 def resolve(artist, title, files):
     """sheet row -> Hookpad file. pp.find's token fallback is too loose here:
     it filed Real World under `matchbox.json` (a Beatles cover) and All You
@@ -44,7 +49,9 @@ def resolve(artist, title, files):
         best = difflib.get_close_matches(want, [r[2] for r in rows], 1, .8)
         hits = [r for r in rows if best and r[2] == best[0]]
     if not hits: return None
-    hits.sort(key=lambda r: ({'right': 0, '': 1}.get(r[3].lower(), 2),   # -right, then base
+    pick = PREFER.get(hits[0][1] + '_' + hits[0][2])
+    hits.sort(key=lambda r: (0 if pick and r[3].lower() == pick else 1,
+                             {'right': 0, '': 1}.get(r[3].lower(), 2),   # -right, then base
                              -difflib.SequenceMatcher(None, art, r[1]).ratio(),
                              -os.path.getmtime(r[0])))
     return hits[0][0]
@@ -292,13 +299,17 @@ def build_cards(pool):
     sheet = next(n for n in wb.sheetnames if n.replace(' ', '') == 'Guitar' + pool[1:])
     rows = [r for r in wb[sheet].iter_rows(values_only=True) if any(r)]
     # the sheets disagree on layout: Guitar100 is artist,title,your_key,bpm,
-    # hookpad_bpm,bpm_10 and Guitar150-250 are song,band,key,bpm,bpm_10
+    # hookpad_bpm,bpm_10, Guitar150-250 are song,band,key,bpm,bpm_10, and Guitar50
+    # is title,artist,key,bpm,nearest (its bpm_10)
     head = [str(h or '').strip().lower() for h in rows[0]]
     col = lambda *names: next((head.index(n) for n in names if n in head), None)
     ix = [col('artist', 'band'), col('title', 'song'), col('your_key', 'key'),
-          col('bpm'), col('hookpad_bpm'), col('bpm_10')]
+          col('bpm'), col('hookpad_bpm'), col('bpm_10', 'nearest')]
     assert ix[0] is not None and ix[1] is not None, head
     rows = [rows[0]] + [tuple(r[i] if i is not None and i < len(r) else None for i in ix)
+                        for r in rows[1:]]
+    # a title can be a number (Smashing Pumpkins "1979"): artist and title are text
+    rows = [rows[0]] + [tuple(str(v) if k < 2 and v is not None else v for k, v in enumerate(r))
                         for r in rows[1:]]
     library = json.load(open(HOOKPAD_LIST))
     # the export keeps a file for every song ever renamed or deleted, so only

@@ -3,7 +3,7 @@
 The guitar pools by tempo: one circle per bpm_10 (70, 80, 90 ...), sized by how
 many songs sit there; click one for its songs.
 
-    themap_venv/python build_tempo_map.py          # G100-G250 -> tempo-map.html
+    themap_venv/python build_tempo_map.py          # G50-G250 -> tempo-map.html
 
 Same data as the pool quizzes (build_pool_quiz.build_cards): the tempo is the
 tracker's rounded bpm_10, the one the user memorises, with the exact bpm and the
@@ -17,7 +17,7 @@ import build_pool_quiz as Q
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'tempo-map.html')
-POOLS = ['G100', 'G150', 'G200', 'G250']
+POOLS = ['G50', 'G100', 'G150', 'G200', 'G250']
 
 
 def main():
