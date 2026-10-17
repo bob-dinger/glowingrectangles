@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tempo Map</title>
+<title>__TITLE__</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
 :root{
@@ -93,8 +93,8 @@ mark{background:var(--hl,#ffe58a);color:inherit;border-radius:2px}
 </style></head>
 <body>
 <header>
-  <h1>Tempo map<a href="palette-map.html">palette map →</a></h1>
-  <span class="lab">pools</span><div class="chips" id="pools"></div>
+  <h1>__H1__</h1>
+  <span class="lab">__POOLLAB__</span><div class="chips" id="pools"></div>
   <span class="lab">list by</span><div class="chips" id="by"></div>
   <input id="q" type="search" placeholder="Search songs, artists, keys…  ( / )" autocomplete="off">
 </header>
@@ -105,12 +105,14 @@ mark{background:var(--hl,#ffe58a);color:inherit;border-radius:2px}
 <aside id="side"></aside>
 <script>
 const ROWS = __ROWS__;
-const POOLS = ['G50','G100','G150','G200','G250'];
+const CFG = __CFG__;
+const POOLS = CFG.pools;
+const PNAME = p => (CFG.names || {})[p] || p;
 const css = getComputedStyle(document.documentElement);
-const pcol = p => css.getPropertyValue('--p' + POOLS.indexOf(p)).trim();
+const pcol = p => CFG.colors ? CFG.colors[POOLS.indexOf(p)] : css.getPropertyValue('--p' + POOLS.indexOf(p)).trim();
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let pools = new Set(POOLS), sel = null, by = 'pool';
-try { const s = JSON.parse(localStorage.getItem('tempomap') || '{}'); if (s.sel) sel = +s.sel; if (s.by) by = s.by; } catch (e) {}
+try { const s = JSON.parse(localStorage.getItem(CFG.ls) || '{}'); if (s.sel) sel = +s.sel; if (s.by) by = s.by; } catch (e) {}
 
 const rows = ROWS.filter(r => typeof r.bpm10 === 'number');
 const T = [...new Set(rows.map(r => r.bpm10))].sort((a, b) => a - b);
@@ -221,7 +223,7 @@ function side() {
   const words = d3.rollups(rs.filter(r => r.tag && r.tag.named), v => v.length, r => r.tag.word).sort((a, b) => b[1] - a[1]);
   const per = POOLS.filter(p => pools.has(p)).map(p => [p, rs.filter(r => r.pool === p).length]).filter(o => o[1]);
   let groups;
-  if (by === 'pool') groups = per.map(([p]) => [p, rs.filter(r => r.pool === p), pcol(p)]);
+  if (by === 'pool') groups = per.map(([p]) => [PNAME(p), rs.filter(r => r.pool === p), pcol(p)]);
   else if (by === 'key') groups = d3.groups(rs, r => String(r.key).split(/[ ,(]/)[0].toUpperCase()).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])).map(([k, v]) => [k, v, '']);
   else groups = d3.groups(rs, r => r.tag ? r.tag.shape : 'no chords').sort((a, b) => b[1].length - a[1].length).map(([k, v]) => [k, v, '']);
   const step = (t, lab) => `<button ${byId.has(t) && byId.get(t).c ? `data-go="${t}"` : 'disabled'}>${lab}</button>`;
@@ -234,11 +236,11 @@ function side() {
       || '<div class="empty">No songs with this filter.</div>'}</div>`;
 }
 
-function select(id) { sel = id; try { localStorage.setItem('tempomap', JSON.stringify({ sel, by })); } catch (e) {} draw(); side(); }
+function select(id) { sel = id; try { localStorage.setItem(CFG.ls, JSON.stringify({ sel, by })); } catch (e) {} draw(); side(); }
 
 function chips() {
   document.getElementById('pools').innerHTML = POOLS.map(p =>
-    `<button class="chip ${pools.has(p) ? 'on' : ''}" data-p="${p}"><i style="background:${pcol(p)}"></i>${p}</button>`).join('');
+    `<button class="chip ${pools.has(p) ? 'on' : ''}" data-p="${p}" title="${esc(PNAME(p))}"><i style="background:${pcol(p)}"></i>${p}</button>`).join('');
   document.getElementById('by').innerHTML = [['pool', 'pool'], ['key', 'key'], ['shape', 'shape']]
     .map(([v, l]) => `<button class="chip ${by === v ? 'on' : ''}" data-by="${v}">${l}</button>`).join('');
 }

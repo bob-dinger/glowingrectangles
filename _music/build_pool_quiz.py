@@ -293,6 +293,51 @@ def song(path, row):
                 form=form, prog=list(groups.values()))
 
 
+def context():
+    """(files, library, catalog) -- what card_for needs, loaded once"""
+    library = json.load(open(HOOKPAD_LIST))
+    # the export keeps a file for every song ever renamed or deleted, so only
+    # files whose name is still in the library count: Dancing Queen otherwise
+    # resolved to the old file the user deleted in favour of -hooktab
+    live = {s.get('song', '').lower() for s in library}
+    files = [f for f in glob.glob(os.path.join(pp.EXPORT, '*.json'))
+             if os.path.splitext(os.path.basename(f))[0].lower() in live]
+    catalog = []
+    for p in UG_CATALOGS:
+        if os.path.exists(p):
+            import csv
+            catalog = list(csv.DictReader(open(p, newline=''))); break
+    return files, library, catalog
+
+
+def card_for(r, files, library, catalog):
+    """one sheet row (artist, title, key, bpm, hookpad_bpm, bpm_10) -> card, or None
+    when no Hookpad file matches. Shared with build_tempo_map's Beatles page."""
+    path = resolve(r[0], r[1], files)
+    if not path: return None
+    c = song(path, r)
+    c['hookpad'] = hookpad_url(path, library)
+    # the opening's palette word and shape, as on palette-groups.html, so
+    # each round also practises placing the song in a group you know
+    import build_palette_groups as PG
+    op = {}
+    for o in PG.openings(path):
+        op.setdefault(o['section'], o)
+    for p in c['prog']:
+        tags = []
+        for nm in p['parts']:
+            o = op.get(nm)
+            if not o: continue
+            t = {'word': o['word'] or ' '.join(o['palette']), 'named': bool(o['word']),
+                 'shape': o['shape'] or 'other', 'how': (f"{o['cellbars']:g}-bar ×{o['reps']}" if o['shape'] and o['reps'] > 1 else '')}
+            if t not in tags: tags.append(t)
+        p['tags'] = tags
+    fa, _, ft = pp.split_variant(os.path.splitext(os.path.basename(path))[0])[0].partition('_')
+    c['ug'], c['ughow'] = ug_url(r[0], [r[1], ft], catalog, aliases=[fa])
+    c['id'] = pp.norm(f'{r[0]}_{r[1]}')
+    return c
+
+
 def build_cards(pool):
     """the pool's tracker rows -> (cards, unresolved titles); shared with build_tempo_map"""
     wb = openpyxl.load_workbook(TRACKER, read_only=True)
@@ -311,42 +356,11 @@ def build_cards(pool):
     # a title can be a number (Smashing Pumpkins "1979"): artist and title are text
     rows = [rows[0]] + [tuple(str(v) if k < 2 and v is not None else v for k, v in enumerate(r))
                         for r in rows[1:]]
-    library = json.load(open(HOOKPAD_LIST))
-    # the export keeps a file for every song ever renamed or deleted, so only
-    # files whose name is still in the library count: Dancing Queen otherwise
-    # resolved to the old file the user deleted in favour of -hooktab
-    live = {s.get('song', '').lower() for s in library}
-    files = [f for f in glob.glob(os.path.join(pp.EXPORT, '*.json'))
-             if os.path.splitext(os.path.basename(f))[0].lower() in live]
-    catalog = []
-    for p in UG_CATALOGS:
-        if os.path.exists(p):
-            import csv
-            catalog = list(csv.DictReader(open(p, newline=''))); break
+    ctx = context()
     cards, missing = [], []
     for r in rows[1:]:
-        path = resolve(r[0], r[1], files)
-        if not path: missing.append(r[1]); continue
-        c = song(path, r)
-        c['hookpad'] = hookpad_url(path, library)
-        # the opening's palette word and shape, as on palette-groups.html, so
-        # each round also practises placing the song in a group you know
-        import build_palette_groups as PG
-        op = {}
-        for o in PG.openings(path):
-            op.setdefault(o['section'], o)
-        for p in c['prog']:
-            tags = []
-            for nm in p['parts']:
-                o = op.get(nm)
-                if not o: continue
-                t = {'word': o['word'] or ' '.join(o['palette']), 'named': bool(o['word']),
-                     'shape': o['shape'] or 'other', 'how': (f"{o['cellbars']:g}-bar ×{o['reps']}" if o['shape'] and o['reps'] > 1 else '')}
-                if t not in tags: tags.append(t)
-            p['tags'] = tags
-        fa, _, ft = pp.split_variant(os.path.splitext(os.path.basename(path))[0])[0].partition('_')
-        c['ug'], c['ughow'] = ug_url(r[0], [r[1], ft], catalog, aliases=[fa])
-        c['id'] = pp.norm(f'{r[0]}_{r[1]}')
+        c = card_for(r, *ctx)
+        if c is None: missing.append(r[1]); continue
         cards.append(c)
     cards.sort(key=lambda c: c['title'].lower())
     return cards, missing
