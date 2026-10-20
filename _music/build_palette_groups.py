@@ -3,7 +3,7 @@
 Group the guitar-pool songs by how each section OPENS: the palette word of its
 first four bars and the shape those chords make.
 
-    themap_venv/python build_palette_groups.py          # G50-G250 -> palette-groups.html
+    themap_venv/python build_palette_groups.py          # whole library -> palette-groups.html + palette-map.html
 
 The unit is the first four bars of every section, starting at its first chord,
 leaving out intros and outros (the user: "remove outro and intro from the
@@ -31,7 +31,6 @@ import build_pool_quiz as Q
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'palette-groups.html')
-POOLS = ['G50', 'G100', 'G150', 'G200', 'G250']
 WORDS = json.load(open(os.path.join(HERE, 'chord_words.json')))
 BYSET = {frozenset(v): k for k, v in WORDS.items()}
 NINE = {(0, ''): 'C', (2, 'm'): 'Dm', (4, 'm'): 'Em', (5, ''): 'F', (7, ''): 'G',
@@ -184,48 +183,83 @@ def openings(path, bpb_override=None):
                    lengths=lengths, reps=reps, pushed=push, cellbars=round(4 / reps, 2))
 
 
+GROUPS = ['G50-250', 'G300-650', 'G700-1300', 'Beatles', 'other']
+SCRATCH = re.compile(r'^(music_|perms_|mine|chord-riffs|\d+-\d+-\d+)', re.I)
+
+
+def group(lst, stem):
+    if lst:
+        n = int(lst[1:])
+        return 'G50-250' if n <= 250 else 'G300-650' if n <= 650 else 'G700-1300'
+    return 'Beatles' if stem.startswith('beatles_') else 'other'
+
+
 def main():
+    """Every song in the Hookpad library (not the user's own, the workbenches or
+    -variants). A song on a guitar list keeps that list's title/artist and its
+    list as a tag; the rest are named from the file."""
     wb = openpyxl.load_workbook(Q.TRACKER, read_only=True)
     library = json.load(open(Q.HOOKPAD_LIST))
     live = {s.get('song', '').lower() for s in library}
     files = [f for f in glob.glob(os.path.join(pp.EXPORT, '*.json'))
              if os.path.splitext(os.path.basename(f))[0].lower() in live]
-    rows = []
-    for pool in POOLS:
-        sheet = next(n for n in wb.sheetnames if n.replace(' ', '') == 'Guitar' + pool[1:])
+    # guitar lists, smallest first: a song on several keeps the first
+    sheets = sorted((n for n in wb.sheetnames if re.fullmatch(r'Guitar\s*\d+', n)),
+                    key=lambda n: int(re.sub(r'\D', '', n)))
+    listed = {}
+    for sheet in sheets:
+        lst = 'G' + re.sub(r'\D', '', sheet)
         sr = [r for r in wb[sheet].iter_rows(values_only=True) if any(r)]
         head = [str(h or '').strip().lower() for h in sr[0]]
-        ia = head.index('artist') if 'artist' in head else head.index('band')
-        it = head.index('title') if 'title' in head else head.index('song')
-        for r in sr[1:]:
-            if not isinstance(r[ia], str) or not isinstance(r[it], str): continue   # blank / stray rows (G50 has some)
-            path = Q.resolve(r[ia], r[it], files)
-            if not path: continue
-            title, artist = str(r[it]), str(r[ia])
-            if title == title.lower(): title = Q.title_case(title)
-            if artist == artist.lower(): artist = Q.title_case(artist)
-            hp = Q.hookpad_url(path, library)
-            seen = {}
-            for o in openings(path):
-                k = json.dumps(o['cbars'])
-                if k in seen:                       # same opening, another section
-                    if o['section'] not in seen[k]['section']:
-                        seen[k]['section'] += ' = ' + o['section']
-                    continue
-                o.update(pool=pool, title=title, artist=artist, hookpad=hp)
-                seen[k] = o
-                rows.append(o)
-    page = open(os.path.join(HERE, 'palette_groups_template.html')).read()
-    open(OUT, 'w').write(page.replace('__ROWS__', json.dumps(rows, ensure_ascii=False))
-                             .replace('__WORDS__', json.dumps(WORDS)))
-    # the same rows drawn as a force map of palettes, one chord apart
-    mp = open(os.path.join(HERE, 'palette_map_template.html')).read()
-    open(os.path.join(HERE, 'palette-map.html'), 'w').write(
-        mp.replace('__ROWS__', json.dumps(rows, ensure_ascii=False)))
+        if {'artist', 'band'} & set(head) and {'title', 'song'} & set(head):
+            ia = head.index('artist') if 'artist' in head else head.index('band')
+            it = head.index('title') if 'title' in head else head.index('song')
+            pairs, check = [(r[ia], r[it]) for r in sr[1:]], False
+        else:
+            # G300+ have no header and swap the columns from sheet to sheet:
+            # take the first two text cells, try both ways round, and keep the
+            # one whose matched file has that artist
+            pairs, check = [], True
+            for r in sr:
+                t = [c for c in r if isinstance(c, str) and c.strip()][:2]
+                if len(t) == 2: pairs += [(t[0], t[1]), (t[1], t[0])]
+        for artist, title in pairs:
+            if not isinstance(artist, str) or not isinstance(title, str): continue   # blank / stray rows (G50 has some)
+            path = Q.resolve(artist, title, files)
+            if not path or path in listed: continue
+            fa = pp.norm(os.path.basename(path).split('_', 1)[0])
+            if check and fa and pp.norm(artist)[:4] not in fa and fa[:4] not in pp.norm(artist): continue
+            listed[path] = (lst, str(title), str(artist))
+    rows = []
+    for path in sorted(files):
+        stem = os.path.splitext(os.path.basename(path))[0]
+        if SCRATCH.match(stem): continue
+        if path not in listed and pp.split_variant(stem)[1]: continue      # -simple, -hooktab, -150 ...
+        lst, title, artist = listed.get(path) or (None, *(stem.split('_', 1)[::-1] if '_' in stem else (stem, '')))
+        if title == title.lower(): title = Q.title_case(title)
+        if artist == artist.lower(): artist = Q.title_case(artist)
+        hp = Q.hookpad_url(path, library)
+        seen = {}
+        try: ops = list(openings(path))
+        except Exception: continue
+        for o in ops:
+            k = json.dumps(o['cbars'])
+            if k in seen:                       # same opening, another section
+                if o['section'] not in seen[k]['section']:
+                    seen[k]['section'] += ' = ' + o['section']
+                continue
+            o.update(pool=group(lst, stem), list=lst or '', title=title, artist=artist, hookpad=hp)
+            seen[k] = o
+            rows.append(o)
+    for name, out in (('palette_groups_template.html', OUT), ('palette_map_template.html', os.path.join(HERE, 'palette-map.html'))):
+        page = open(os.path.join(HERE, name)).read()
+        open(out, 'w').write(page.replace('__ROWS__', json.dumps(rows, ensure_ascii=False))
+                                 .replace('__WORDS__', json.dumps(WORDS)).replace('__POOLS__', json.dumps(GROUPS)))
     named = sum(1 for r in rows if r['shape'])
-    print(f'{OUT}\n  {len(rows)} openings from {len({(r["pool"], r["title"]) for r in rows})} songs'
+    print(f'{OUT}\n  {len(rows)} openings from {len({(r["artist"], r["title"]) for r in rows})} songs'
           f'\n  palette word: {sum(1 for r in rows if r["word"])}   shape name: {named}'
           f'   lengths only: {len(rows) - named}')
+    for g in GROUPS: print(f'  {g:10} {len({(r["artist"], r["title"]) for r in rows if r["pool"] == g})} songs')
 
 
 if __name__ == '__main__':

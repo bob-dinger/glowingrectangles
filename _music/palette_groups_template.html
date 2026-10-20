@@ -87,7 +87,7 @@ const ROWS = __ROWS__;
 const WORDS = __WORDS__;
 const DEG = {C:1, Dm:2, D:2, Em:3, E:3, F:4, G:5, Am:6, 'A#':7};
 const SHAPE_ORDER = ['drone','vamp','shift','ender','blues','mountain','back runner','front runner','valley','bounce','return','wander','unnamed (ABAA)'];
-const POOLS = ['G50','G100','G150','G200','G250'];
+const POOLS = __POOLS__;
 let by = 'palette', pools = new Set(POOLS), cur = null, filt = null;
 try { const s = JSON.parse(localStorage.getItem('palgroups') || '{}'); if (s.by) by = s.by; if (s.cur) cur = s.cur; } catch (e) {}
 const save = () => { try { localStorage.setItem('palgroups', JSON.stringify({by, cur})); } catch (e) {} };
@@ -158,7 +158,7 @@ function renderMain() {
     const left = by === 'palette' ? shapeLabel(r)
       : `${r.word ? esc(r.word) : 'no word'}<i>${r.shape ? '' : esc(r.lengths)}</i>`;
     return `<div class="row"><div class="shape">${left}</div>
-      <div class="song"><div class="t">${esc(r.title)} <em>${esc(r.artist)}</em><span class="pool">${r.pool}</span></div>
+      <div class="song"><div class="t">${esc(r.title)} <em>${esc(r.artist)}</em><span class="pool">${r.list || r.pool}</span></div>
         <div class="s">${esc(r.section)}</div></div>
       <div class="bars">${inC}<small>${esc(r.key)}: ${esc(played)}${r.hookpad ? `<a href="${esc(r.hookpad)}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}</small></div></div>`;
   }).join('');
