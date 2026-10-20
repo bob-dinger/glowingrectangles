@@ -3,7 +3,7 @@
 Group the guitar-pool songs by how each section OPENS: the palette word of its
 first four bars and the shape those chords make.
 
-    themap_venv/python build_palette_groups.py          # G100-G250 -> palette-groups.html
+    themap_venv/python build_palette_groups.py          # G50-G250 -> palette-groups.html
 
 The unit is the first four bars of every section, starting at its first chord,
 leaving out intros and outros (the user: "remove outro and intro from the
@@ -31,7 +31,7 @@ import build_pool_quiz as Q
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'palette-groups.html')
-POOLS = ['G100', 'G150', 'G200', 'G250']
+POOLS = ['G50', 'G100', 'G150', 'G200', 'G250']
 WORDS = json.load(open(os.path.join(HERE, 'chord_words.json')))
 BYSET = {frozenset(v): k for k, v in WORDS.items()}
 NINE = {(0, ''): 'C', (2, 'm'): 'Dm', (4, 'm'): 'Em', (5, ''): 'F', (7, ''): 'G',
@@ -198,6 +198,7 @@ def main():
         ia = head.index('artist') if 'artist' in head else head.index('band')
         it = head.index('title') if 'title' in head else head.index('song')
         for r in sr[1:]:
+            if not isinstance(r[ia], str) or not isinstance(r[it], str): continue   # blank / stray rows (G50 has some)
             path = Q.resolve(r[ia], r[it], files)
             if not path: continue
             title, artist = str(r[it]), str(r[ia])
