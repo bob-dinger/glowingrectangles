@@ -127,7 +127,9 @@ let q = '';
 const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const hits = r => !q || q.split(/\s+/).every(w => norm(`${r.title} ${r.artist} ${r.key} ${r.tag ? r.tag.word : ''}`).includes(w));
 const mark = s => { if (!q) return esc(s); let h = esc(s); for (const w of q.split(/\s+/).filter(Boolean)) h = h.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>'); return h; };
-let rad = c => c ? 14 + 7 * Math.sqrt(c) : 6;
+// area ~ songs, scaled so the busiest tempo fits the stage whatever the pool filter
+let maxC = 1;
+let rad = c => c ? 10 + (Math.min(H * .2, 95) - 10) * Math.sqrt(c / maxC) : 5;
 
 // ---- drawing: x is the tempo itself, the force only keeps circles apart ----
 const svg = d3.select('#svg');
@@ -160,7 +162,9 @@ function tick() {
 }
 
 function draw() {
-  for (const d of nodes) { d.c = live(d).length; d.r = rad(d.c); }
+  for (const d of nodes) d.c = live(d).length;
+  maxC = Math.max(1, ...nodes.map(d => d.c));
+  for (const d of nodes) d.r = rad(d.c);
   if (!(byId.get(sel) || {}).c) sel = nodes.reduce((a, b) => (b.c > a.c ? b : a)).id;
   link = gl.selectAll('line').data(links).join('line').attr('class', 'link')
     .classed('hot', l => l.source === sel || l.target === sel);
@@ -201,7 +205,7 @@ function row(r) {
   const hp = r.hpbpm && +r.hpbpm !== +r.bpm ? ` <span title="Hookpad bpm">hp ${esc(r.hpbpm)}</span>` : '';
   const key = r.key + (r.hpkey && !String(r.key).toLowerCase().startsWith(r.hpkey.split(' ')[0].toLowerCase()) ? ` · hp ${r.hpkey}` : '');
   const tag = r.tag ? `<span class="tag ${r.tag.named ? '' : 'un'}">${esc(r.tag.word)} <span style="font-weight:500">${esc(r.tag.shape)}</span></span>` : '';
-  return `<div class="r"><div class="t"><b>${mark(r.title)}</b><em>${mark(r.artist)}</em>
+  return `<div class="r"><div class="t"><b>${mark(r.title)}</b><em>${mark(r.artist)}${r.list ? ' · ' + esc(r.list) : ''}</em>
       <span class="lk">${r.hookpad ? `<a href="${esc(r.hookpad)}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}
       ${r.ug ? `<a class="${r.ughow === 'search' ? 'no' : ''}" href="${esc(r.ug)}" target="_blank" rel="noopener">${r.ughow === 'search' ? 'UG search' : 'UG'} ↗</a>` : ''}</span></div>
     <div class="m"><span class="bpm">${esc(r.bpm10)}${exact}${hp}</span><span class="k">${esc(key)}</span>${tag}</div><div class="f" title="section lengths">${esc(formTxt(r.form || []))}</div></div>`;

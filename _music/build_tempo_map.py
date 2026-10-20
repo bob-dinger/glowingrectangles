@@ -3,7 +3,8 @@
 The guitar pools by tempo: one circle per bpm_10 (70, 80, 90 ...), sized by how
 many songs sit there; click one for its songs.
 
-    themap_venv/python build_tempo_map.py          # G50-G250 -> tempo-map.html
+    themap_venv/python build_tempo_map.py          # whole library -> tempo-map.html
+    themap_venv/python build_tempo_map.py --beatles  # -> beatles-tempo-map.html
 
 Same data as the pool quizzes (build_pool_quiz.build_cards): the tempo is the
 tracker's rounded bpm_10, the one the user memorises, with the exact bpm and the
@@ -19,6 +20,36 @@ import openpyxl
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'tempo-map.html')
 POOLS = ['G50', 'G100', 'G150', 'G200', 'G250']
+
+
+def collect_all():
+    """Every song in the Hookpad library (the palette pages' set), at its Hookpad
+    tempo -- the user corrected those by hand, so Hookpad is the source here,
+    not the tracker. Tagged by the same five groups as palette-map.html."""
+    import build_palette_groups as PG
+    files, library, catalog = Q.context()
+    wb = openpyxl.load_workbook(Q.TRACKER, read_only=True)
+    listed = PG.listed_songs(wb, files)
+    rows, none = [], []
+    for path in PG.library_files(files, listed):
+        stem = os.path.splitext(os.path.basename(path))[0]
+        d = json.load(open(path))
+        tempos = sorted(d.get('tempos') or [], key=lambda t: t.get('beat', 1))
+        bpm = tempos[0].get('bpm') if tempos else None
+        if not bpm: none.append(stem); continue
+        bpm = int(bpm) if float(bpm) == int(bpm) else round(float(bpm), 1)
+        lst, title, artist = listed.get(path) or (None, *(stem.split('_', 1)[::-1] if '_' in stem else (stem, '')))
+        if title == title.lower(): title = Q.title_case(title)
+        if artist == artist.lower(): artist = Q.title_case(artist)
+        try: c = Q.card_for_path(path, (artist, title, None, bpm, None, int(round(bpm / 10) * 10)), library, catalog)
+        except Exception as e: none.append(f'{stem} ({type(e).__name__})'); continue
+        tags = [t for p in c['prog'] for t in p.get('tags', [])]
+        rows.append(dict(pool=PG.group(lst, stem), list=lst or '', title=title, artist=artist, key=c['letters'],
+                         hpkey=c['letters'], bpm10=int(round(bpm / 10) * 10), bpm=bpm, hpbpm=None,
+                         form=c['form'], tag=tags[0] if tags else None,
+                         hookpad=c['hookpad'], ug=c['ug'], ughow=c['ughow']))
+    if none: print(f'  skipped {len(none)} (no tempo / unreadable): {none[:8]}')
+    return rows
 
 
 def collect():
@@ -98,8 +129,9 @@ def main():
               'Beatles Tempo Map', 'Beatles tempo map<a href="tempo-map.html">guitar pools →</a>', 'projects')
         print(f'{BEATLES_OUT}\n  {len(rows)} songs   unresolved {len(missing)}: {missing}')
         return
-    rows = collect()
-    write(OUT, rows, dict(pools=POOLS, ls='tempomap'), 'Tempo Map',
+    rows = collect_all()
+    import build_palette_groups as PG
+    write(OUT, rows, dict(pools=PG.GROUPS, ls='tempomap2'), 'Tempo Map',
           'Tempo map<a href="palette-map.html">palette map →</a><a href="beatles-tempo-map.html">beatles →</a>', 'pools')
     tempos = sorted({r['bpm10'] for r in rows if isinstance(r['bpm10'], (int, float))})
     print(f'{OUT}\n  {len(rows)} songs in {len(tempos)} tempos, {tempos[0]}-{tempos[-1]}'
