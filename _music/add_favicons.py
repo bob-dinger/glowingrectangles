@@ -94,14 +94,14 @@ def main():
         if not ic: missing.append(name); continue
         label, kind = ic
         tag = f'<link rel="icon" id="gg-icon" href="{svg(label, C[kind])}">'
-        h = open(path, encoding='utf-8').read()
+        h = open(path, encoding='utf-8', newline='').read()      # keep CRLF files CRLF
         if 'id="gg-icon"' in h:
             h = re.sub(r'<link rel="icon" id="gg-icon"[^>]*>', lambda m: tag, h, count=1)
         elif '</title>' in h:
-            h = h.replace('</title>', '</title>\n' + tag, 1)
+            h = h.replace('</title>', '</title>' + ('\r\n' if '\r\n' in h else '\n') + tag, 1)
         else:
             missing.append(name + ' (no <title>)'); continue
-        open(path, 'w', encoding='utf-8').write(h)
+        open(path, 'w', encoding='utf-8', newline='').write(h)
         done += 1
     print(f'{done} pages have an icon' + (f'; none for: {missing}' if missing else ''))
 
