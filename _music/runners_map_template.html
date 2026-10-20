@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Runners Map</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+:root{
+  --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --soft:#f1efe8; --link:#d9d6cc;
+  --d1:#d02828; --d2:#d07800; --d3:#9a8c00; --d4:#1f8a4c; --d5:#1663c7; --d6:#8038c0; --d7:#c02080; --d0:#a3a39c;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926; --link:#3b3a35;
+  --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#77766f;
+}}
+:root[data-theme="dark"]{
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926; --link:#3b3a35;
+  --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#77766f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:grid;grid-template-columns:1fr 430px;grid-template-rows:auto 1fr;gap:12px 16px;padding:14px 16px;height:100vh;overflow:hidden}
+header{grid-column:1 / span 2;display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap}
+h1{font-size:17px;font-weight:700}
+h1 a{font-size:12px;font-weight:500;color:var(--mute);margin-left:8px;text-decoration:none}
+h1 a:hover{color:var(--ink)}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font:inherit;font-size:11.5px;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:6px;padding:2px 9px;cursor:pointer}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#q{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:2px 8px;width:170px}
+#stage{background:var(--card);border:1px solid var(--line);border-radius:12px;position:relative;min-height:0;overflow:hidden}
+#stage svg{width:100%;height:100%;display:block;cursor:grab}
+.cols{position:absolute;top:10px;left:0;right:0;display:flex;pointer-events:none}
+.cols div{flex:1;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.cols b{display:block;font-size:13px;letter-spacing:0;text-transform:none;color:var(--ink);font-weight:650}
+.hint{position:absolute;bottom:10px;left:14px;right:14px;font-size:12px;color:var(--mute);pointer-events:none}
+.link{stroke:var(--link);stroke-width:1.4;opacity:.7}
+.link.hot{stroke:var(--ink);stroke-width:2.2;opacity:1}
+.node{cursor:pointer}
+.node .hub{fill:var(--card)}
+.node text{font-weight:700;fill:var(--ink);text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:var(--card);stroke-width:3px}
+.node.dim{opacity:.12}
+.node.sel .hub{stroke:var(--ink);stroke-width:2.5}
+.node.hit .hub{stroke:var(--d1);stroke-width:3}
+aside{background:var(--card);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.head{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.head .w{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);font-weight:600}
+.head .pal{font-size:24px;font-weight:750;margin-top:2px;display:flex;align-items:center;gap:6px}
+.head .pal .p{color:var(--mute);opacity:.45;font-weight:400}
+.head .rom{font-size:13px;color:var(--mute);margin-top:2px}
+.dur{display:flex;gap:3px;margin-top:8px;height:16px}
+.dur span{border-radius:3px;font-size:10px;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
+.head .sub{font-size:12px;color:var(--mute);margin-top:6px}
+.nb{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;align-items:center}
+.nb .lab{margin-right:2px}
+.nb button{font:inherit;font-size:12px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:6px;padding:1px 7px;cursor:pointer}
+.nb button b{font-weight:700}
+.songs{overflow:auto;flex:1;padding:4px 16px 12px}
+.r{padding:5px 0;border-bottom:1px solid var(--line)}
+.r .t{display:flex;gap:6px;align-items:baseline}
+.r .t b{font-weight:650}
+.r .t em{font-style:normal;color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r .t a{margin-left:auto;font-size:11px;color:var(--mute);text-decoration:none;white-space:nowrap}
+.r .t a:hover{color:var(--ink)}
+.r .bars{font-weight:700;font-size:14px}
+.r .bars .p{color:var(--mute);opacity:.45;font-weight:400;margin:0 3px}
+.r .bars .b span+span{margin-left:4px}
+.r .bars small{font-size:11px;font-weight:500;color:var(--mute);margin-left:8px}
+.r.hit{background:var(--soft)}
+.empty{color:var(--mute);padding:20px 16px;font-size:13px}
+.c1{color:var(--d1)}.c2{color:var(--d2)}.c3{color:var(--d3)}.c4{color:var(--d4)}.c5{color:var(--d5)}.c6{color:var(--d6)}.c7{color:var(--d7)}.c0{color:var(--d0)}
+@media (max-width:860px){
+  body{grid-template-columns:1fr;grid-template-rows:auto 60vh auto;height:auto;overflow:auto}
+  header{grid-column:auto}
+  aside{max-height:70vh}
+}
+</style></head>
+<body>
+<header>
+  <h1>Runners map<a href="palette-map.html">palette map →</a></h1>
+  <span class="lab">show</span><div class="chips" id="minn"></div>
+  <span class="lab">chords</span><div class="chips" id="dia"></div>
+  <span class="lab">find</span><input id="q" placeholder="song or artist" autocomplete="off">
+</header>
+<div id="stage">
+  <div class="cols"><div><b>Front runners</b>long · short short</div><div><b>Back runners</b>short short · long</div></div>
+  <svg id="svg"></svg>
+  <div class="hint">size = songs · the ring is the rhythm: the long chord takes half · lines join the same loop heard from a different bar (F C | G looped = G | F C) · drag · scroll to zoom</div>
+</div>
+<aside id="side"></aside>
+<script>
+const ROWS = __ROWS__;
+const DEG = {C:1, Dm:2, D:2, Em:3, E:3, F:4, G:5, Am:6, 'A#':7};
+const SIX = new Set(['C','Dm','Em','F','G','Am']);
+const ROMAN = {C:'I', Dm:'ii', D:'II', Em:'iii', E:'III', F:'IV', G:'V', Am:'vi', 'A#':'bVII'};
+const css = getComputedStyle(document.documentElement);
+const col = d => css.getPropertyValue('--d' + (DEG[d] || 0)).trim();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const chord = x => `<span class="c${DEG[x] || 0}">${esc(x)}</span>`;
+const FRONT = 'front runner', BACK = 'back runner';
+// how the order sounds: which chord is long
+const sounds = (shape, c) => shape === FRONT ? [[c[0]], [c[1], c[2]]] : [[c[0], c[1]], [c[2]]];
+const label = (shape, c) => sounds(shape, c).map(b => b.join(' ')).join(' | ');
+let minN = 2, diaOnly = false, sel = null, q = '';
+try { const s = JSON.parse(localStorage.getItem('runmap') || '{}'); if (s.sel) sel = s.sel; } catch (e) {}
+
+// ---- one node per (shape, chord order) ----
+const by = new Map();
+for (const r of ROWS) {
+  const k = r.shape + ':' + r.chords.join(' ');
+  if (!by.has(k)) by.set(k, { id: k, shape: r.shape, chords: r.chords, rows: [] });
+  by.get(k).rows.push(r);
+}
+const nodes = [...by.values()];
+for (const d of nodes) d.c = new Set(d.rows.map(r => r.song)).size;
+// a back runner A B | C on repeat is the front runner C | A B
+const links = [];
+for (const d of nodes) if (d.shape === BACK) {
+  const [a, b, c] = d.chords, k = FRONT + ':' + [c, a, b].join(' ');
+  if (by.has(k)) links.push({ source: d.id, target: k });
+}
+const loopOf = d => d.shape === BACK ? FRONT + ':' + [d.chords[2], d.chords[0], d.chords[1]].join(' ')
+                                     : BACK + ':' + [d.chords[1], d.chords[2], d.chords[0]].join(' ');
+const sameSet = d => nodes.filter(o => o.id !== d.id && [...o.chords].sort().join() === [...d.chords].sort().join());
+const rad = c => 8 + 5 * Math.sqrt(c);
+
+// ---- drawing ----
+const svg = d3.select('#svg');
+const stage = document.getElementById('stage');
+let W = stage.clientWidth, H = stage.clientHeight;
+const g = svg.append('g');
+svg.call(d3.zoom().scaleExtent([.4, 4]).on('zoom', e => g.attr('transform', e.transform)));
+const colX = s => W * (s === FRONT ? .27 : .73);
+const gl = g.append('g'), gn = g.append('g');
+let link = gl.selectAll('line'), node = gn.selectAll('g.node');
+const sim = d3.forceSimulation()
+  .force('link', d3.forceLink().id(d => d.id).distance(90).strength(.05))
+  .force('charge', d3.forceManyBody().strength(-110))
+  .force('x', d3.forceX(d => colX(d.shape)).strength(.1))
+  .force('y', d3.forceY(() => H / 2 + 14).strength(.05))
+  .force('collide', d3.forceCollide(d => d.r + 10))
+  .on('tick', () => {
+    for (const d of node.data()) {   // keep each side on its own side
+      const half = d.shape === FRONT ? [d.r + 6, W / 2 - d.r - 6] : [W / 2 + d.r + 6, W - d.r - 6];
+      d.x = Math.max(half[0], Math.min(half[1], d.x)); d.y = Math.max(d.r + 40, Math.min(H - d.r - 30, d.y));
+    }
+    link.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+
+const ok = d => !diaOnly || d.chords.every(c => SIX.has(c));
+const hits = d => q && d.rows.some(r => (r.title + ' ' + r.artist).toLowerCase().includes(q));
+function draw() {
+  for (const d of nodes) d.r = rad(d.c);
+  const vis = nodes.filter(d => ok(d) && (d.c >= minN || d.id === sel || hits(d)));
+  if (!vis.some(d => d.id === sel)) sel = vis.reduce((a, b) => (b.c > a.c ? b : a)).id;
+  const ids = new Set(vis.map(d => d.id));
+  const vl = links.filter(l => ids.has(l.source.id || l.source) && ids.has(l.target.id || l.target));
+  link = gl.selectAll('line').data(vl, l => (l.source.id || l.source) + '>' + (l.target.id || l.target)).join('line').attr('class', 'link');
+  node = gn.selectAll('g.node').data(vis, d => d.id).join(enter => {
+    const e = enter.append('g').attr('class', 'node').on('click', (ev, d) => select(d.id))
+      .call(d3.drag()
+        .on('start', (ev, d) => { if (!ev.active) sim.alphaTarget(.2).restart(); d.fx = d.x; d.fy = d.y; })
+        .on('drag', (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
+        .on('end', (ev, d) => { if (!ev.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+    e.append('title'); e.append('g').attr('class', 'ring'); e.append('circle').attr('class', 'hub'); e.append('text');
+    return e;
+  });
+  const arc = d3.arc();
+  node.select('.ring').each(function (d) {
+    // the ring is the rhythm: long = 2 parts, short = 1
+    const w = d.shape === FRONT ? [2, 1, 1] : [1, 1, 2];
+    const pie = d3.pie().sort(null).value((_, i) => w[i])(d.chords);
+    d3.select(this).selectAll('path').data(pie).join('path')
+      .attr('d', p => arc({ innerRadius: d.r * .58, outerRadius: d.r, startAngle: p.startAngle, endAngle: p.endAngle, padAngle: .05 }))
+      .attr('fill', p => col(p.data));
+  });
+  node.select('.hub').attr('r', d => d.r * .58);
+  const near = new Set([sel, loopOf(by.get(sel))]);
+  node.select('text').text(d => label(d.shape, d.chords))
+    .attr('font-size', d => d.c >= 6 || near.has(d.id) ? 10 : 8)
+    .attr('dy', d => d.r + (d.c >= 6 ? 11 : 9));
+  node.select('title').text(d => `${d.shape} · ${label(d.shape, d.chords)} · ${d.c} songs`);
+  node.classed('sel', d => d.id === sel).classed('hit', hits).classed('dim', d => q && !hits(d) && d.id !== sel);
+  link.classed('hot', l => near.has(l.source.id || l.source) && near.has(l.target.id || l.target));
+  sim.nodes(vis); sim.force('link').links(vl);
+  sim.force('collide').radius(d => d.r + 10);
+  sim.alpha(.6).restart();
+}
+
+function side() {
+  const el = document.getElementById('side');
+  const d = by.get(sel);
+  if (!d) { el.innerHTML = '<div class="empty">Click a circle to see its songs.</div>'; return; }
+  const sb = sounds(d.shape, d.chords);
+  const w = d.shape === FRONT ? [2, 1, 1] : [1, 1, 2];
+  const loop = by.get(loopOf(d));
+  const others = sameSet(d).sort((a, b) => b.c - a.c);
+  const btn = o => `<button data-go="${esc(o.id)}"><b>${esc(label(o.shape, o.chords))}</b> ${o.shape === FRONT ? 'front' : 'back'} · ${o.c}</button>`;
+  const rs = [...d.rows].sort((a, b) => (hitR(b) - hitR(a)) || a.title.localeCompare(b.title));
+  el.innerHTML = `<div class="head"><div class="w">${esc(d.shape)}</div>
+      <div class="pal">${sb.map(b => b.map(chord).join(' ')).join('<span class="p">|</span>')}</div>
+      <div class="rom">${d.chords.map(c => ROMAN[c] || c).join(' – ')}</div>
+      <div class="dur">${d.chords.map((c, i) => `<span style="flex:${w[i]};background:${col(c)}">${esc(c)}</span>`).join('')}</div>
+      <div class="sub">${d.c} songs${d.rows.length > d.c ? ' · ' + d.rows.length + ' sections' : ''}</div>
+      <div class="nb"><span class="lab">same loop</span>${loop ? btn(loop) : '<span class="sub" style="margin:0">none yet as a ' + (d.shape === FRONT ? 'back' : 'front') + ' runner</span>'}</div>
+      ${others.length ? `<div class="nb"><span class="lab">same chords</span>${others.map(btn).join('')}</div>` : ''}</div>
+    <div class="songs">${rs.map(r => {
+        const how = (r.cell < 4 ? `${r.cell}-bar ×${Math.round(4 / r.cell)}` : '4 bars') + (r.pushed ? ' · pushed' : '');
+        const inC = r.cbars.map(b => `<span class="b">${b.map(chord).join('')}</span>`).join('<span class="p">|</span>');
+        return `<div class="r ${hitR(r) ? 'hit' : ''}"><div class="t"><b>${esc(r.title)}</b><em>${esc(r.artist)} · ${esc(r.section)} · bar ${r.bar}</em>
+          ${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}</div>
+          <div class="bars">${inC}<small>${esc(how)}${r.key && !r.key.startsWith('C major') ? ' · played in ' + esc(r.key) : ''}</small></div></div>`;
+      }).join('')}</div>`;
+}
+const hitR = r => q && (r.title + ' ' + r.artist).toLowerCase().includes(q) ? 1 : 0;
+
+function select(id) { sel = id; try { localStorage.setItem('runmap', JSON.stringify({ sel })); } catch (e) {} draw(); side(); }
+function chips() {
+  document.getElementById('minn').innerHTML = [[1, 'every order'], [2, '2+ songs'], [4, '4+ songs']]
+    .map(([n, l]) => `<button class="chip ${minN === n ? 'on' : ''}" data-m="${n}">${l}</button>`).join('');
+  document.getElementById('dia').innerHTML = [[false, 'all'], [true, 'C Dm Em F G Am only']]
+    .map(([v, l]) => `<button class="chip ${diaOnly === v ? 'on' : ''}" data-d="${v}">${l}</button>`).join('');
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-go],[data-m],[data-d]');
+  if (!t) return;
+  if (t.dataset.go) return select(t.dataset.go);
+  if (t.dataset.m) minN = +t.dataset.m;
+  if (t.dataset.d) diaOnly = t.dataset.d === 'true';
+  chips(); draw(); side();
+});
+document.getElementById('q').addEventListener('input', e => {
+  q = e.target.value.trim().toLowerCase();
+  if (q) { const m = nodes.filter(hits).sort((a, b) => b.c - a.c)[0]; if (m) sel = m.id; }
+  draw(); side();
+});
+new ResizeObserver(() => {
+  W = stage.clientWidth; H = stage.clientHeight;
+  sim.force('x', d3.forceX(d => colX(d.shape)).strength(.1)).force('y', d3.forceY(() => H / 2 + 14).strength(.05)).alpha(.5).restart();
+}).observe(stage);
+for (const d of nodes) { d.x = colX(d.shape) + (Math.random() - .5) * 80; d.y = H / 2 + (Math.random() - .5) * H * .7; }
+if (!by.has(sel)) sel = 'back runner:F Am G';
+chips(); draw(); side();
+</script>
+</body></html>
