@@ -194,15 +194,9 @@ def group(lst, stem):
     return 'Beatles' if stem.startswith('beatles_') else 'other'
 
 
-def main():
-    """Every song in the Hookpad library (not the user's own, the workbenches or
-    -variants). A song on a guitar list keeps that list's title/artist and its
-    list as a tag; the rest are named from the file."""
-    wb = openpyxl.load_workbook(Q.TRACKER, read_only=True)
-    library = json.load(open(Q.HOOKPAD_LIST))
-    live = {s.get('song', '').lower() for s in library}
-    files = [f for f in glob.glob(os.path.join(pp.EXPORT, '*.json'))
-             if os.path.splitext(os.path.basename(f))[0].lower() in live]
+def listed_songs(wb, files):
+    """{file: (list, title, artist)} for every song on a Guitar sheet. Shared
+    with build_tempo_map."""
     # guitar lists, smallest first: a song on several keeps the first
     sheets = sorted((n for n in wb.sheetnames if re.fullmatch(r'Guitar\s*\d+', n)),
                     key=lambda n: int(re.sub(r'\D', '', n)))
@@ -230,11 +224,34 @@ def main():
             fa = pp.norm(os.path.basename(path).split('_', 1)[0])
             if check and fa and pp.norm(artist)[:4] not in fa and fa[:4] not in pp.norm(artist): continue
             listed[path] = (lst, str(title), str(artist))
-    rows = []
+    return listed
+
+
+def library_files(files, listed):
+    """the songs the whole-library pages cover: not the user's own, the
+    workbenches, or -variants (unless a guitar list names the variant)"""
+    out = []
     for path in sorted(files):
         stem = os.path.splitext(os.path.basename(path))[0]
-        if SCRATCH.match(stem): continue
-        if path not in listed and pp.split_variant(stem)[1]: continue      # -simple, -hooktab, -150 ...
+        if SCRATCH.match(stem) or re.search(r'-(midi|pasted)$', stem): continue
+        if path not in listed and pp.split_variant(stem)[1]: continue
+        out.append(path)
+    return out
+
+
+def main():
+    """Every song in the Hookpad library (not the user's own, the workbenches or
+    -variants). A song on a guitar list keeps that list's title/artist and its
+    list as a tag; the rest are named from the file."""
+    wb = openpyxl.load_workbook(Q.TRACKER, read_only=True)
+    library = json.load(open(Q.HOOKPAD_LIST))
+    live = {s.get('song', '').lower() for s in library}
+    files = [f for f in glob.glob(os.path.join(pp.EXPORT, '*.json'))
+             if os.path.splitext(os.path.basename(f))[0].lower() in live]
+    listed = listed_songs(wb, files)
+    rows = []
+    for path in library_files(files, listed):
+        stem = os.path.splitext(os.path.basename(path))[0]
         lst, title, artist = listed.get(path) or (None, *(stem.split('_', 1)[::-1] if '_' in stem else (stem, '')))
         if title == title.lower(): title = Q.title_case(title)
         if artist == artist.lower(): artist = Q.title_case(artist)

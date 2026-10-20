@@ -315,6 +315,11 @@ def card_for(r, files, library, catalog):
     when no Hookpad file matches. Shared with build_tempo_map's Beatles page."""
     path = resolve(r[0], r[1], files)
     if not path: return None
+    return card_for_path(path, r, library, catalog)
+
+
+def card_for_path(path, r, library, catalog):
+    """card_for once the file is known (build_tempo_map's whole-library page)"""
     c = song(path, r)
     c['hookpad'] = hookpad_url(path, library)
     # the opening's palette word and shape, as on palette-groups.html, so
