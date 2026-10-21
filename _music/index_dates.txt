@@ -1,0 +1,55 @@
+Music index cards, top to bottom, with the date each page was first committed.
+Rule: the index runs oldest -> newest; a new card goes at the END (the ../guitar/
+pages are their own group at the top). Regenerate: themap_venv/python index_dates.py
+
+  1  2026-01-13   Guitar Fretboard                   ../guitar/fretboard.html
+  2  2026-08-30   Octaves                            ../guitar/octaves.html   <-- OUT OF ORDER
+  3  2026-08-25   Octave Runs                        ../guitar/octave-runs.html
+  4  2026-08-25   Scale Patterns                     ../guitar/scale-patterns.html
+  5  2026-08-25   Two Boxes                          ../guitar/two-boxes.html
+  6  2026-02-14   Piano Chords                       piano.html
+  7  2026-02-14   Song Browser                       song-browser.html
+  8  2026-02-14   Chord Permutations                 permutations.html
+  9  2026-02-14   Patterns Explorer                  patterns.html
+ 10  2026-02-14   Nineteen                           nineteen.html
+ 11  2026-02-14   Chords by Key                      keys.html
+ 12  2026-02-14   Phrase Patterns                    phrase-patterns.html
+ 13  2026-07-16   Chord Roles Across Keys            key-roles.html   <-- OUT OF ORDER
+ 14  2026-05-26   What Key?                          key-quiz.html
+ 15  2026-05-26   Chord Change Ear                   chord-change-ear.html
+ 16  2026-05-26   Sections by Length                 eight-bar-sections.html
+ 17  2026-05-28   Patterns by Length                 eight-bar-patterns.html
+ 18  2026-06-05   Section Templates                  templates.html
+ 19  2026-06-07   Songs                              songs.html
+ 20  2026-06-11   Tab → Note                         tab-quiz.html
+ 21  2026-06-11   Fretboard                          fretboard.html
+ 22  2026-06-22   Melody Structures                  melody-structures.html
+ 23  2026-07-01   Songs by Key                       songs-by-key.html
+ 24  2026-07-02   Chord Colors                       chord-colors.html
+ 25  2026-07-03   Favorite Parts                     favorites.html
+ 26  2026-07-03   Strum Library                      strum-library.html
+ 27  2026-07-06   Simplified Library                 simplified-library.html
+ 28  2026-07-12   Chord Sets                         chord-sets.html
+ 29  2026-07-13   Chord Tree                         chord-tree.html
+ 30  2026-07-13   Key Changes                        key-changes.html
+ 31  2026-07-13   Key Map                            key-map.html
+ 32  2026-07-16   Block Browser                      blocks.html
+ 33  2026-07-18   12-Bar Blues                       blues.html
+ 34  2026-07-18   Song Videos                        videos.html
+ 35  2026-07-18   Song Structures                    forms.html
+ 36  2026-07-28   Song Structures · Guitar 50 + 100  forms2.html   <-- OUT OF ORDER
+ 37  2026-07-21   Change Rhythm                      change-rhythm.html
+ 38  2026-07-21   Mixolydian                         mixolydian.html
+ 39  2026-07-21   Vamp Home                          vamp-home.html
+ 40  2026-07-21   Phrase Forms                       phrases.html
+ 41  2026-09-14   How Few                            how-few.html
+ 42  2026-09-14   Rhythm Library                     rhythm-library.html
+ 43  2026-09-14   The Thirteen                       thirteen.html
+ 44  2026-09-16   Every Ordering of Three            permutations-120.html
+ 45  2026-10-15   Pool Quizzes                       g100-quiz.html
+ 46  2026-10-15   Palette Map                        palette-map.html
+ 47  2026-10-15   Tempo Map                          tempo-map.html
+ 48  2026-10-16   Beatles Tempo Map                  beatles-tempo-map.html
+ 49  2026-10-16   Tempo Quiz                         tempo-quiz.html
+ 50  2026-10-20   Runners Map                        runners-map.html
+ 51  2026-10-20   Guitar Lessons                     guitar-lessons.html
