@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guitar Lessons</title>
+<link rel="icon" id="gg-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f8a3a'/%3E%3Ctext x='32' y='33' font-family='-apple-system,Helvetica,Arial,sans-serif' font-weight='800' font-size='30' fill='white' text-anchor='middle' dominant-baseline='central'%3EGL%3C/text%3E%3C/svg%3E">
+<style>
+:root{ --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --soft:#f1efe8; --yt:#d02828; --cov:#1663c7; --hp:#1f8a4c; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926; --yt:#ff6b6b; --cov:#5ea2ff; --hp:#4cc27a; }}
+:root[data-theme="dark"]{ --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926; --yt:#ff6b6b; --cov:#5ea2ff; --hp:#4cc27a; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:grid;grid-template-rows:auto auto 1fr;gap:10px;padding:14px 16px;height:100vh;overflow:hidden}
+header{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
+h1{font-size:17px;font-weight:700}
+h1 small{font-size:13px;font-weight:500;color:var(--mute);margin-left:6px}
+#q{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:5px 10px;width:300px}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:6px;padding:2px 9px;cursor:pointer}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.az{display:flex;gap:2px;flex-wrap:wrap}
+.az a{font-size:12px;font-weight:650;color:var(--ink);text-decoration:none;padding:1px 6px;border-radius:4px}
+.az a:hover{background:var(--soft)}
+.az a.off{color:var(--line);pointer-events:none}
+#list{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:auto;min-height:0;padding:4px 16px 16px;
+  columns:3 340px;column-gap:28px}
+.art{break-inside:avoid;padding-top:10px}
+.art h2{font-size:13px;font-weight:700;border-bottom:1px solid var(--line);padding-bottom:2px;margin-bottom:2px}
+.art h2 small{font-weight:500;color:var(--mute);font-size:11px;margin-left:4px}
+.s{display:flex;align-items:baseline;gap:6px;padding:2px 0;font-size:13px}
+.s .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s .t i{font-style:normal;color:var(--mute);font-size:11px;margin-left:4px}
+.s a{font-size:11.5px;font-weight:650;text-decoration:none;border-radius:4px;padding:0 5px;white-space:nowrap}
+.s a.l{color:var(--yt)} .s a.c{color:var(--cov)} .s a.h{color:var(--hp)}
+.s a:hover{background:var(--soft)}
+.s a:visited{opacity:.55}
+.empty{color:var(--mute);padding:20px 0}
+</style></head>
+<body>
+<header>
+  <h1>Guitar lessons<small id="n"></small></h1>
+  <input id="q" placeholder="find a song or artist" autocomplete="off" autofocus>
+  <span class="lab">pools</span><div class="chips" id="pools"></div>
+</header>
+<div class="az" id="az"></div>
+<div id="list"></div>
+<script>
+const ROWS = __ROWS__, POOLS = __POOLS__;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const yt = (r, what) => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(`${r.a} ${r.t} guitar ${what}`);
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const letter = a => { const c = norm(a.replace(/^the /i, ''))[0] || '#'; return /[a-z]/.test(c) ? c.toUpperCase() : '#'; };
+let pools = new Set(POOLS), q = '';
+try { const s = JSON.parse(localStorage.getItem('lessons') || '{}'); if (s.pools) pools = new Set(s.pools.filter(p => POOLS.includes(p))); if (!pools.size) pools = new Set(POOLS); } catch (e) {}
+
+function draw() {
+  const words = norm(q).split(/\s+/).filter(Boolean);
+  const rs = ROWS.filter(r => pools.has(r.p) && words.every(w => norm(r.t + ' ' + r.a).includes(w)));
+  const by = new Map();
+  for (const r of rs) { if (!by.has(r.a)) by.set(r.a, []); by.get(r.a).push(r); }
+  const seen = new Set();
+  let h = '';
+  for (const [a, songs] of by) {
+    const L = letter(a), anchor = seen.has(L) ? '' : ` id="L-${L}"`; seen.add(L);
+    h += `<div class="art"${anchor}><h2>${esc(a || '—')}<small>${songs.length}</small></h2>` + songs.map(r =>
+      `<div class="s"><span class="t" title="${esc(r.t)}">${esc(r.t)}${r.l ? `<i>${esc(r.l)}</i>` : ''}</span>
+        <a class="l" href="${yt(r, 'lesson')}" target="_blank" rel="noopener">lesson</a>
+        <a class="c" href="${yt(r, 'cover')}" target="_blank" rel="noopener">cover</a>
+        ${r.h ? `<a class="h" href="${esc(r.h)}" target="_blank" rel="noopener">hookpad</a>` : ''}</div>`).join('') + '</div>';
+  }
+  document.getElementById('list').innerHTML = h || '<div class="empty">No songs match.</div>';
+  document.getElementById('n').textContent = `${rs.length} songs · ${by.size} artists`;
+  document.getElementById('az').innerHTML = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map(c => `<a href="#L-${c}" class="${seen.has(c) ? '' : 'off'}">${c}</a>`).join('');
+  document.getElementById('pools').innerHTML = POOLS.map(p => `<button class="chip ${pools.has(p) ? 'on' : ''}" data-p="${p}">${p}</button>`).join('');
+}
+document.getElementById('q').addEventListener('input', e => { q = e.target.value; draw(); });
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-p]'); if (!t) return;
+  const p = t.dataset.p; pools.has(p) && pools.size > 1 ? pools.delete(p) : pools.add(p);
+  try { localStorage.setItem('lessons', JSON.stringify({ pools: [...pools] })); } catch (x) {}
+  draw();
+});
+document.addEventListener('keydown', e => { if (e.key === '/' && e.target.id !== 'q') { e.preventDefault(); document.getElementById('q').focus(); } });
+draw();
+</script>
+</body></html>

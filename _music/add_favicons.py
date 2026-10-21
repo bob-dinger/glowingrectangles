@@ -56,7 +56,7 @@ ICONS = {
     'keys.html': ('K', 'key'), 'songs-by-key.html': ('SK', 'key'),
     # rhythm
     'change-rhythm.html': ('CR', 'rhythm'), 'rhythm-library.html': ('RL', 'rhythm'), 'rhythm-slots.html': ('16S', 'rhythm'),
-    'strum-library.html': ('ST', 'rhythm'),
+    'strum-library.html': ('ST', 'rhythm'), 'drums.html': ('DR', 'rhythm'), 'drums_template.html': ('DR', 'rhythm'),
     # melody
     'melody-structures.html': ('MS', 'melody'),
     # beatles
@@ -65,6 +65,7 @@ ICONS = {
     'songs.html': ('SN', 'song'), 'song-browser.html': ('SBR', 'song'), 'song.html': ('SV', 'song'),
     'song_viewer.html': ('NW', 'song'), 'videos.html': ('▶', 'song'), 'ug.html': ('UG', 'song'),
     'piano.html': ('PNO', 'song'), 'fretboard.html': ('FB', 'song'),
+    'guitar-lessons.html': ('GL', 'guitar'), 'guitar_lessons_template.html': ('GL', 'guitar'),
     'john-deere-verse.html': ('JD', 'song'), 'times-they-are-a-changin-verse.html': ('TT', 'song'),
 }
 
