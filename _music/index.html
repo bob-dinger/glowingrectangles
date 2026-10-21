@@ -55,8 +55,9 @@ html, body {
 
 .card-grid {
     display: grid;
-    grid-template-columns: repeat(4, 240px);
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 14px;
+    width: 100%;
     max-width: 1000px;
 }
 
@@ -189,6 +190,27 @@ html, body {
 .phrase-D { background: rgba(230, 170, 40, 0.2); color: #f0d888; }
 
 .accent { background: rgba(99, 102, 241, 0.2); color: #a5a8fc; }
+
+/* phones: one column of compact cards, icon beside the title */
+@media (max-width: 600px) {
+    .page { padding: 52px 16px 24px; }
+    .back-link { position: absolute; top: 16px; left: 16px; }
+    .header { margin-bottom: 24px; }
+    .header h1 { font-size: 24px; }
+    .header p { font-size: 13px; }
+    .card-grid { grid-template-columns: 1fr; gap: 10px; }
+    .card {
+        display: grid;
+        grid-template-columns: 30px 1fr;
+        column-gap: 12px;
+        padding: 14px 16px;
+    }
+    .card:hover { transform: none; }
+    .card-icon { grid-row: 1 / span 3; font-size: 22px; margin: 0; }
+    .card-title { font-size: 15px; margin-bottom: 4px; }
+    .card-chips { margin-top: 8px; }
+    .pm-actions { flex-wrap: wrap; }
+}
 </style>
 </head>
 <body>
