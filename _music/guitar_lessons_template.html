@@ -56,7 +56,8 @@ try { const s = JSON.parse(localStorage.getItem('lessons') || '{}'); if (s.pools
 
 function draw() {
   const words = norm(q).split(/\s+/).filter(Boolean);
-  const rs = ROWS.filter(r => pools.has(r.p) && words.every(w => norm(r.t + ' ' + r.a).includes(w)));
+  // a search looks through every pool, so a remembered filter can't hide a match
+  const rs = ROWS.filter(r => (words.length || pools.has(r.p)) && words.every(w => norm(r.t + ' ' + r.a).includes(w)));
   const by = new Map();
   for (const r of rs) { if (!by.has(r.a)) by.set(r.a, []); by.get(r.a).push(r); }
   const seen = new Set();
@@ -72,12 +73,17 @@ function draw() {
   document.getElementById('list').innerHTML = h || '<div class="empty">No songs match.</div>';
   document.getElementById('n').textContent = `${rs.length} songs · ${by.size} artists`;
   document.getElementById('az').innerHTML = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map(c => `<a href="#L-${c}" class="${seen.has(c) ? '' : 'off'}">${c}</a>`).join('');
-  document.getElementById('pools').innerHTML = POOLS.map(p => `<button class="chip ${pools.has(p) ? 'on' : ''}" data-p="${p}">${p}</button>`).join('');
+  document.getElementById('pools').innerHTML = POOLS.map(p => `<button class="chip ${pools.has(p) && !words.length ? 'on' : ''}" data-p="${p}">${p}</button>`).join('');
 }
 document.getElementById('q').addEventListener('input', e => { q = e.target.value; draw(); });
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-p]'); if (!t) return;
-  const p = t.dataset.p; pools.has(p) && pools.size > 1 ? pools.delete(p) : pools.add(p);
+  // all on -> just this pool; just this pool again -> all; otherwise toggle it
+  const p = t.dataset.p;
+  if (pools.size === POOLS.length) pools = new Set([p]);
+  else if (pools.size === 1 && pools.has(p)) pools = new Set(POOLS);
+  else pools.has(p) ? pools.delete(p) : pools.add(p);
+  if (q) { q = ''; document.getElementById('q').value = ''; }
   try { localStorage.setItem('lessons', JSON.stringify({ pools: [...pools] })); } catch (x) {}
   draw();
 });
