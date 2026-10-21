@@ -184,7 +184,8 @@ def openings(path, bpb_override=None):
 
 
 GROUPS = ['G50-250', 'G300-650', 'G700-1300', 'Beatles', 'other']
-SCRATCH = re.compile(r'^(music_|perms_|mine|chord-riffs|\d+-\d+-\d+)', re.I)
+SCRATCH = re.compile(r'^(music_|perms_|mine|song_|riffs_|chord-riffs|\d+-\d+-\d+)', re.I)
+# song_ = the user's own (Badger, Falcon, Zebra); riffs_ = riff workbenches of songs already in the library
 
 
 def group(lst, stem):
@@ -227,6 +228,11 @@ def listed_songs(wb, files):
     return listed
 
 
+def title_artist(stem):
+    """file stem -> (title, artist)"""
+    return tuple(stem.split('_', 1)[::-1]) if '_' in stem else (stem, '')
+
+
 def library_files(files, listed):
     """the songs the whole-library pages cover: not the user's own, the
     workbenches, or -variants (unless a guitar list names the variant)"""
@@ -252,7 +258,7 @@ def main():
     rows = []
     for path in library_files(files, listed):
         stem = os.path.splitext(os.path.basename(path))[0]
-        lst, title, artist = listed.get(path) or (None, *(stem.split('_', 1)[::-1] if '_' in stem else (stem, '')))
+        lst, title, artist = listed.get(path) or (None, *title_artist(stem))
         if title == title.lower(): title = Q.title_case(title)
         if artist == artist.lower(): artist = Q.title_case(artist)
         hp = Q.hookpad_url(path, library)

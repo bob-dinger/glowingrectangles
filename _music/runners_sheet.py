@@ -27,7 +27,7 @@ from hashids import Hashids
 
 D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 OUT = os.path.expanduser('~/Desktop/runners.xlsx')
-SCRATCH = re.compile(r'^(music_|perms_|mine|chord-riffs|\d+-\d+-\d+)', re.I)
+SCRATCH = re.compile(r'^(music_|perms_|mine|song_|riffs_|chord-riffs|\d+-\d+-\d+)', re.I)
 VARIANT = re.compile(r'-(\d{2,3}|hooktab|simple|double|C|right|wrong|mixolydian|filled|3way)$')
 HASH = Hashids(salt='XI0Y4UFrK6EPLnarrI4y', min_length=11, alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_')
 ROMAN = {'C': 'I', 'Dm': 'ii', 'D': 'II', 'Em': 'iii', 'E': 'III', 'F': 'IV', 'G': 'V', 'Am': 'vi', 'A#': 'bVII'}

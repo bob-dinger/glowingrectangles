@@ -27,7 +27,7 @@ def main():
     for path in PG.library_files(files, listed):
         stem = os.path.splitext(os.path.basename(path))[0]
         if path not in listed and '_' not in stem: continue      # no artist = a scratch file (Min3E)
-        lst, title, artist = listed.get(path) or (None, *(stem.split('_', 1)[::-1] if '_' in stem else (stem, '')))
+        lst, title, artist = listed.get(path) or (None, *PG.title_artist(stem))
         if title == title.lower(): title = Q.title_case(title)
         if artist == artist.lower(): artist = Q.title_case(artist)
         rows.append(dict(t=title.strip(), a=artist.strip(), p=PG.group(lst, stem), l=lst or '',

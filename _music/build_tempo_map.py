@@ -38,7 +38,7 @@ def collect_all():
         bpm = tempos[0].get('bpm') if tempos else None
         if not bpm: none.append(stem); continue
         bpm = int(bpm) if float(bpm) == int(bpm) else round(float(bpm), 1)
-        lst, title, artist = listed.get(path) or (None, *(stem.split('_', 1)[::-1] if '_' in stem else (stem, '')))
+        lst, title, artist = listed.get(path) or (None, *PG.title_artist(stem))
         if title == title.lower(): title = Q.title_case(title)
         if artist == artist.lower(): artist = Q.title_case(artist)
         try: c = Q.card_for_path(path, (artist, title, None, bpm, None, int(round(bpm / 10) * 10)), library, catalog)
