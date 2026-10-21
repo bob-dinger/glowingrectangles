@@ -1,0 +1,160 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Attention Spheres</title>
+<style>
+  :root{--ink:#e9e6df; --dim:#8d8880; --line:#2a2a2c; --bg:#0e0f12;
+        --who:#8fa6d8; --hot:#ff6a42; color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;height:100vh;overflow:hidden;background:var(--bg);color:var(--ink);
+       font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+       display:grid;grid-template-columns:1fr 330px}
+  main{position:relative;min-width:0;cursor:grab}
+  main.drag{cursor:grabbing}
+  canvas{display:block;width:100%;height:100vh}
+  .hud{position:absolute;left:22px;top:20px;pointer-events:none}
+  .hud .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+  .hud .val{font-size:26px;font-weight:600;letter-spacing:-.6px;line-height:1.1}
+  .hint{position:absolute;left:22px;bottom:18px;font-size:12px;color:var(--dim);pointer-events:none}
+  aside{border-left:1px solid var(--line);padding:24px 22px;display:flex;flex-direction:column;
+        gap:16px;overflow:hidden}
+  h1{font-size:18px;margin:0;letter-spacing:-.2px}
+  h1 span{color:var(--dim);font-weight:400}
+  p{margin:0;color:#b9b4ac;font-size:13.5px}
+  .note{font-size:12px;color:var(--dim)}
+  .story{font-weight:600;font-size:15px;color:var(--ink)}
+  .steps{display:flex;flex-direction:column;gap:6px;margin-top:auto}
+  button{all:unset;cursor:pointer;padding:8px 11px;border:1px solid var(--line);border-radius:7px;
+         font-size:13px;background:#15161a;transition:.15s;color:#cfcac2}
+  button:hover{border-color:#43454a}
+  button[aria-current=true]{background:var(--ink);color:#0e0f12;border-color:var(--ink)}
+  @media (max-width:820px){
+    body{grid-template-columns:1fr;grid-template-rows:1fr auto;height:auto;overflow:auto}
+    canvas{height:60vh} aside{border-left:0;border-top:1px solid var(--line)}
+  }
+</style>
+
+<main id="m">
+  <canvas id="c"></canvas>
+  <div class="hud">
+    <div class="lbl">you are facing</div>
+    <div class="val" id="facing"></div>
+    <div class="lbl" style="margin-top:12px">others in here with you</div>
+    <div class="val" id="count"></div>
+  </div>
+  <div class="hint">drag to look around · the story stays where it is</div>
+</main>
+
+<aside>
+  <h1>Inside the sphere <span>— looking out</span></h1>
+  <p>You are standing in the middle of it. Everyone around you is turned the same
+     way, toward the same thing. Turn your head and you see them, not it.</p>
+  <div>
+    <div class="story" id="story"></div>
+    <p class="note" id="says" style="margin-top:6px"></p>
+  </div>
+  <p class="note">Leaving a sphere is not a decision you announce. The view just
+     swings, and you are among different people looking at something else.</p>
+  <p class="note">Illustrative — the shape of the thing, not a measurement.</p>
+  <div class="steps" id="steps"></div>
+</aside>
+
+<script>
+const MOMENTS=[
+ {story:'A verdict comes down',      n:214, says:'Look in any direction and someone is here with you.'},
+ {story:'A war escalates overnight', n:268, says:'The densest kind. Turning away feels like leaving the room.'},
+ {story:'A local school closes',     n: 31, says:'Turn around and you are almost alone. It matters just as much.'},
+ {story:'A singer dies',             n:186, says:'These faces were in other spheres an hour ago.'},
+ {story:'A quiet policy change',     n:  9, says:'Nine people. You can see all of them at once, and the thing they are watching will outlast every other sphere here.'},
+];
+const c=document.getElementById('c'), ctx=c.getContext('2d'), main=document.getElementById('m');
+const N=300, F=430;                         // focal length -> ~70 degree view
+let yaw=0, pitch=0, drag=null, drift=0.00035, cur=0, swing=0, W=0, H=0;
+
+// everyone sits on a direction around the viewer, spread evenly, at jittered distance
+const people=Array.from({length:N},(_,i)=>{
+  const y=1-(i/(N-1))*2, r=Math.sqrt(Math.max(0,1-y*y)), th=i*Math.PI*(3-Math.sqrt(5));
+  return {d:[Math.cos(th)*r, y*0.72, Math.sin(th)*r], r:0.82+((i*37)%100)/100*0.5};
+});
+const STORY=[0,0.06,1];                     // the thing everyone faces
+
+function resize(){
+  const dpr=Math.min(devicePixelRatio||1,2);
+  W=main.clientWidth; H=main.clientHeight;
+  c.width=W*dpr; c.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize',resize);
+
+function cam(v){                             // world -> camera space (yaw then pitch)
+  const cy=Math.cos(yaw), sy=Math.sin(yaw), cp=Math.cos(pitch), sp=Math.sin(pitch);
+  const x=v[0]*cy - v[2]*sy, z=v[0]*sy + v[2]*cy;
+  return [x, v[1]*cp - z*sp, v[1]*sp + z*cp];
+}
+const proj=p => p[2]<=0.05 ? null : [W/2 + F*p[0]/p[2], H/2 - F*p[1]/p[2], p[2]];
+
+function frame(){
+  if(!drag){ yaw+=drift; }
+  if(swing){ const step=swing*0.055; yaw+=step; swing-=step; if(Math.abs(swing)<0.002) swing=0; }
+  resizeIfNeeded();
+  ctx.clearRect(0,0,W,H);
+
+  const m=MOMENTS[cur], here=people.slice(0,m.n);
+  const sc=cam(STORY), sp=proj(sc);
+
+  // the crowd, far to near
+  const drawn=here.map(p=>{
+    const v=[p.d[0]*p.r,p.d[1]*p.r,p.d[2]*p.r];
+    const q=proj(cam(v));
+    return q?{q,p,v}:null;
+  }).filter(Boolean).sort((a,b)=>b.q[2]-a.q[2]);
+
+  for(const {q,p,v} of drawn){
+    const near=1/q[2];
+    // each person's gaze: a short segment from them toward the story
+    const g=[v[0]+(STORY[0]-v[0])*0.16, v[1]+(STORY[1]-v[1])*0.16, v[2]+(STORY[2]-v[2])*0.16];
+    const gq=proj(cam(g));
+    if(gq){
+      ctx.strokeStyle='rgba(143,166,216,'+(0.05+near*0.10).toFixed(3)+')';
+      ctx.lineWidth=0.8; ctx.beginPath(); ctx.moveTo(q[0],q[1]); ctx.lineTo(gq[0],gq[1]); ctx.stroke();
+    }
+    ctx.fillStyle='rgba(143,166,216,'+(0.30+Math.min(near,1.2)*0.5).toFixed(2)+')';
+    ctx.beginPath(); ctx.arc(q[0],q[1],1.4+near*2.6,0,7); ctx.fill();
+  }
+
+  // the story, if it is in front of you
+  if(sp){
+    const r=11+Math.sin(performance.now()/420)*1.1;
+    const grd=ctx.createRadialGradient(sp[0],sp[1],0,sp[0],sp[1],r*7);
+    grd.addColorStop(0,'rgba(255,106,66,0.40)'); grd.addColorStop(1,'rgba(255,106,66,0)');
+    ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(sp[0],sp[1],r*7,0,7); ctx.fill();
+    ctx.fillStyle='#ff6a42'; ctx.beginPath(); ctx.arc(sp[0],sp[1],r,0,7); ctx.fill();
+  }
+
+  // how far round you have turned from it
+  const off=Math.round(Math.abs(((yaw*180/Math.PI)+180)%360-180));
+  document.getElementById('facing').textContent =
+    off<22 ? 'the story' : off>150 ? 'away from it' : off+'° off it';
+  document.getElementById('count').textContent = drawn.length + ' of ' + m.n + ' in view';
+  requestAnimationFrame(frame);
+}
+function resizeIfNeeded(){ if(main.clientWidth!==W||main.clientHeight!==H) resize(); }
+
+main.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};main.classList.add('drag');
+  main.setPointerCapture(e.pointerId)});
+main.addEventListener('pointermove',e=>{ if(!drag)return;
+  yaw += (e.clientX-drag.x)*0.006; pitch = Math.max(-0.5,Math.min(0.5,pitch+(e.clientY-drag.y)*0.004));
+  drag={x:e.clientX,y:e.clientY}; });
+addEventListener('pointerup',()=>{drag=null;main.classList.remove('drag')});
+
+function show(i){
+  if(i!==cur) swing = (i>cur?1:-1)*2.3;      // leaving a sphere: the view swings
+  cur=i; const m=MOMENTS[i];
+  document.getElementById('story').textContent=m.story;
+  document.getElementById('says').textContent=m.says;
+  [...document.querySelectorAll('#steps button')].forEach((b,j)=>
+    b.setAttribute('aria-current', j===i?'true':'false'));
+}
+MOMENTS.forEach((m,i)=>{const b=document.createElement('button');
+  b.textContent=m.story; b.onclick=()=>show(i); document.getElementById('steps').appendChild(b)});
+resize(); show(0); frame();
+</script>
