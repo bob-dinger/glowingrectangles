@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parts I Know</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23151515'/%3E%3Ctext x='32' y='33' font-family='-apple-system,Helvetica,Arial,sans-serif' font-weight='800' font-size='40' fill='white' text-anchor='middle' dominant-baseline='central'%3E%E2%99%AA%3C/text%3E%3C/svg%3E">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    min-height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 32px 28px;
+}
+
+.back-link {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: #4a4a6a;
+    text-decoration: none;
+    font-size: 13px;
+    z-index: 100;
+    transition: color 0.15s;
+}
+.back-link:hover { color: #e0e0e0; }
+
+.header { text-align: center; margin-bottom: 28px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+.header p { font-size: 14px; color: #6a6a8a; }
+
+/* three levels side by side: melody, chords, both */
+.levels {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr;
+    gap: 14px;
+    width: 100%;
+    max-width: 1240px;
+}
+
+.level {
+    background: #16162a;
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    padding: 18px 20px;
+}
+.level.learning { border-style: dashed; }
+
+.level-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.level-num {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 3px;
+}
+.level-title { font-size: 16px; font-weight: 600; }
+.level-count { font-size: 12px; color: #6a6a8a; margin-left: auto; }
+.level-desc { font-size: 12px; color: #6a6a8a; line-height: 1.5; margin-bottom: 14px; }
+
+.l1 .level-num { background: rgba(60, 120, 220, 0.25); color: #90b8f8; }
+.l2 .level-num { background: rgba(50, 180, 80, 0.25); color: #88e8a0; }
+.l3 .level-num { background: rgba(230, 170, 40, 0.25); color: #f0d888; }
+
+.groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+
+.group-name {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #4a4a6a;
+    margin-bottom: 6px;
+}
+
+.songs { list-style: none; }
+.songs a {
+    display: block;
+    padding: 4px 8px;
+    margin: 0 -8px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s;
+}
+.songs a:hover { background: #1e1e3a; }
+.song-title { font-size: 13.5px; color: #e0e0e0; }
+.song-artist { font-size: 11px; color: #6a6a8a; margin-left: 6px; }
+
+.empty {
+    font-size: 12px;
+    color: #4a4a6a;
+    font-style: italic;
+    padding: 4px 0;
+}
+
+.footnote {
+    margin-top: 16px;
+    font-size: 11px;
+    color: #4a4a6a;
+}
+
+@media (max-width: 900px) {
+    .page { padding: 52px 16px 24px; }
+    .back-link { position: absolute; top: 16px; left: 16px; }
+    .levels { grid-template-columns: 1fr; }
+    .groups { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 520px) {
+    .groups { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back-link">&larr; Music</a>
+
+<div class="page">
+    <div class="header">
+        <h1>Parts I Know</h1>
+        <p>Guitar parts I can play: single-note riffs, chord riffs, and the ones that mix both</p>
+    </div>
+
+    <div class="levels" id="levels"></div>
+    <div class="footnote">Click a song to search YouTube for its guitar lesson.</div>
+</div>
+
+<script>
+// Each level: one-note riffs, chord-only riffs, then both at once.
+var LEVELS = [
+    {
+        cls: 'l1', num: '1', title: 'Melodic riffs', desc: 'One note at a time.',
+        groups: [
+            { name: 'Beatles', songs: [
+                ['Lucy in the Sky with Diamonds', 'The Beatles'],
+                ['If I Needed Someone', 'The Beatles'],
+                ['Day Tripper', 'The Beatles'],
+                ['Paperback Writer', 'The Beatles'],
+                ['Ticket to Ride', 'The Beatles'],
+                ['In My Life', 'The Beatles'],
+                ['She Said She Said', 'The Beatles'],
+                ['I Feel Fine', 'The Beatles'],
+                ['And Your Bird Can Sing', 'The Beatles']
+            ]},
+            { name: 'Classic rock', songs: [
+                ['Oh, Pretty Woman', 'Roy Orbison'],
+                ['Stairway to Heaven', 'Led Zeppelin'],
+                ["Ain't Talkin' 'bout Love", 'Van Halen'],
+                ['Beat It', 'Michael Jackson'],
+                ['You Wreck Me', 'Tom Petty'],
+                ['Satisfaction', 'The Rolling Stones'],
+                ["Sweet Child O' Mine", "Guns N' Roses"]
+            ]},
+            { name: 'Alternative and later', songs: [
+                ['The Unforgiven', 'Metallica'],
+                ['4th Time Around', 'Bob Dylan'],
+                ['Debaser', 'Pixies'],
+                ['Lo/Hi', 'The Black Keys'],
+                ['Shiny Happy People', 'R.E.M.'],
+                ['Time to Pretend', 'MGMT'],
+                ['Amber', '311'],
+                ['All You Wanted', 'Michelle Branch'],
+                ['Blew', 'Nirvana'],
+                ['Come As You Are', 'Nirvana'],
+                ['Tyler', 'Toadies'],
+                ['Found Out About You', 'Gin Blossoms'],
+                ['Fire Escape', 'Fastball'],
+                ['Seven Nation Army', 'The White Stripes']
+            ]}
+        ]
+    },
+    {
+        cls: 'l2', num: '2', title: 'Progression riffs', desc: 'All chords.',
+        groups: [{ name: '', songs: [] }]
+    },
+    {
+        cls: 'l3 learning', num: '3', title: 'Combination', desc: 'Chords and melody together. Learning now.',
+        groups: [{ name: '', songs: [
+            ['Over the Hills and Far Away', 'Led Zeppelin'],
+            ['Losing My Religion', 'R.E.M.']
+        ]}]
+    }
+];
+
+function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function lessonUrl(title, artist) {
+    return 'https://www.youtube.com/results?search_query=' +
+        encodeURIComponent(title + ' ' + artist + ' guitar riff lesson');
+}
+
+var html = LEVELS.map(function (lv) {
+    var count = lv.groups.reduce(function (n, g) { return n + g.songs.length; }, 0);
+    var groups = lv.groups.map(function (g) {
+        var items = g.songs.length ? g.songs.map(function (s) {
+            return '<li><a href="' + lessonUrl(s[0], s[1]) + '" target="_blank" rel="noopener">' +
+                '<span class="song-title">' + esc(s[0]) + '</span>' +
+                '<span class="song-artist">' + esc(s[1]) + '</span></a></li>';
+        }).join('') : '<li class="empty">To fill in.</li>';
+        return '<div>' + (g.name ? '<div class="group-name">' + esc(g.name) + '</div>' : '') +
+            '<ul class="songs">' + items + '</ul></div>';
+    }).join('');
+    return '<section class="level ' + lv.cls + '">' +
+        '<div class="level-head"><span class="level-num">' + lv.num + '</span>' +
+        '<span class="level-title">' + lv.title + '</span>' +
+        '<span class="level-count">' + count + '</span></div>' +
+        '<div class="level-desc">' + lv.desc + '</div>' +
+        (lv.groups.length > 1 ? '<div class="groups">' + groups + '</div>' : groups) +
+        '</section>';
+}).join('');
+
+document.getElementById('levels').innerHTML = html;
+</script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Axis Map</title>
+<link rel="icon" id="gg-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f8b8d'/%3E%3Ctext x='32' y='33' font-family='-apple-system,Helvetica,Arial,sans-serif' font-weight='800' font-size='30' fill='white' text-anchor='middle' dominant-baseline='central'%3EAX%3C/text%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+:root{
+  --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --soft:#f1efe8; --link:#d9d6cc;
+  --d1:#d02828; --d2:#d07800; --d3:#9a8c00; --d4:#1f8a4c; --d5:#1663c7; --d6:#8038c0; --d7:#c02080; --d0:#a3a39c;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926; --link:#3b3a35;
+  --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#77766f;
+}}
+:root[data-theme="dark"]{
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926; --link:#3b3a35;
+  --d1:#ff6b6b; --d2:#ffa94d; --d3:#e0cf3a; --d4:#4cc27a; --d5:#5ea2ff; --d6:#b98cf0; --d7:#f06bb5; --d0:#77766f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:grid;grid-template-columns:1fr 430px;grid-template-rows:auto 1fr;gap:12px 16px;padding:14px 16px;height:100vh;overflow:hidden}
+header{grid-column:1 / span 2;display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap}
+h1{font-size:17px;font-weight:700}
+h1 a{font-size:12px;font-weight:500;color:var(--mute);margin-left:8px;text-decoration:none}
+h1 a:hover{color:var(--ink)}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+#q{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:2px 8px;width:170px}
+.tot{font-size:12px;color:var(--mute)}
+#stage{background:var(--card);border:1px solid var(--line);border-radius:12px;position:relative;min-height:0;overflow:hidden}
+#stage svg{width:100%;height:100%;display:block}
+.hint{position:absolute;bottom:10px;left:14px;right:14px;font-size:12px;color:var(--mute);pointer-events:none}
+.rowline{stroke:var(--link);stroke-width:1.4}
+.rowline.hot{stroke:var(--ink);stroke-width:2}
+.colhead{font-size:11px;fill:var(--mute);text-anchor:middle;text-transform:uppercase;letter-spacing:.06em}
+.colhead tspan.b{font-size:13px;font-weight:650;fill:var(--ink);letter-spacing:0}
+.rowhead{font-size:11px;fill:var(--mute)}
+.rowhead .n{font-size:12px;font-weight:650;fill:var(--ink)}
+.node{cursor:pointer}
+.node .hub{fill:var(--card)}
+.node .empty{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:3 3}
+.node .cnt{font-weight:700;fill:var(--ink);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.node .ord{font-weight:650;text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:var(--card);stroke-width:3px}
+.node.dim{opacity:.15}
+.node.sel .hub{stroke:var(--ink);stroke-width:2.5}
+.node.hit .hub{stroke:var(--d1);stroke-width:3}
+aside{background:var(--card);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.head{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.head .w{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);font-weight:600}
+.head .pal{font-size:24px;font-weight:750;margin-top:2px;display:flex;align-items:center;gap:8px}
+.head .rom{font-size:13px;color:var(--mute);margin-top:2px}
+.head .sub{font-size:12px;color:var(--mute);margin-top:6px}
+.nb{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;align-items:center}
+.nb .lab{margin-right:2px}
+.nb button{font:inherit;font-size:12px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:6px;padding:1px 7px;cursor:pointer}
+.nb button b{font-weight:700}
+.songs{overflow:auto;flex:1;padding:4px 16px 12px}
+.r{padding:5px 0;border-bottom:1px solid var(--line)}
+.r .t{display:flex;gap:6px;align-items:baseline}
+.r .t b{font-weight:650}
+.r .t em{font-style:normal;color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r .t a{margin-left:auto;font-size:11px;color:var(--mute);text-decoration:none;white-space:nowrap}
+.r .t a:hover{color:var(--ink)}
+.r .bars{font-weight:700;font-size:14px}
+.r .bars .p{color:var(--mute);opacity:.45;font-weight:400;margin:0 3px}
+.r .bars .b span+span{margin-left:4px}
+.r .bars small{font-size:11px;font-weight:500;color:var(--mute);margin-left:8px}
+.r.hit{background:var(--soft)}
+.empty-side{color:var(--mute);padding:20px 16px;font-size:13px}
+.c1{color:var(--d1)}.c2{color:var(--d2)}.c3{color:var(--d3)}.c4{color:var(--d4)}.c5{color:var(--d5)}.c6{color:var(--d6)}.c7{color:var(--d7)}.c0{color:var(--d0)}
+@media (max-width:860px){
+  body{grid-template-columns:1fr;grid-template-rows:auto 70vh auto;height:auto;overflow:auto}
+  header{grid-column:auto}
+  aside{max-height:70vh}
+}
+</style></head>
+<body>
+<header>
+  <h1>Axis map<a href="runners-map.html">runners map →</a><a href="palette-map.html">palette map →</a></h1>
+  <span class="tot" id="tot"></span>
+  <span class="lab">find</span><input id="q" placeholder="song or artist" autocomplete="off">
+</header>
+<div id="stage">
+  <svg id="svg"></svg>
+  <div class="hint">every order of C G Am F · size = songs · each row is one loop: its four circles are the same chords looped, starting on a different chord · dashed = not in the library</div>
+</div>
+<aside id="side"></aside>
+<script>
+const ROWS = __ROWS__;
+const DEG = {C:1, F:4, G:5, Am:6};
+const ROMAN = {C:'I', F:'IV', G:'V', Am:'vi'};
+const START = ['C', 'G', 'Am', 'F'];
+// the six loops, each written from C; a loop's names go on its row
+const NAMED = {'C G Am F': 'axis', 'C Am F G': "'50s doo-wop"};
+const css = getComputedStyle(document.documentElement);
+const col = d => css.getPropertyValue('--d' + (DEG[d] || 0)).trim();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const chord = x => `<span class="c${DEG[x] || 0}">${esc(x)}</span>`;
+const rot = (a, i) => a.slice(i).concat(a.slice(0, i));
+let sel = null, q = '';
+try { const s = JSON.parse(localStorage.getItem('axismap') || '{}'); if (s.sel) sel = s.sel; } catch (e) {}
+
+// ---- 24 nodes: 6 loops x 4 rotations ----
+const perms = a => a.length < 2 ? [a] : a.flatMap((x, i) => perms(a.filter((_, j) => j !== i)).map(p => [x, ...p]));
+const loops = perms(['G', 'Am', 'F']).map(p => ['C', ...p]);
+const by = new Map();
+for (const lp of loops) for (const s of START) {
+  const ch = rot(lp, lp.indexOf(s)), id = ch.join(' ');
+  by.set(id, { id, chords: ch, loop: lp.join(' '), start: s, rows: [] });
+}
+for (const r of ROWS) { const n = by.get(r.chords.join(' ')); if (n) n.rows.push(r); }
+const nodes = [...by.values()];
+for (const d of nodes) d.c = new Set(d.rows.map(r => r.song)).size;
+const loopTotal = lp => nodes.filter(d => d.loop === lp).reduce((a, d) => a + d.c, 0);
+const order = loops.map(l => l.join(' ')).sort((a, b) => loopTotal(b) - loopTotal(a));
+const maxC = Math.max(1, ...nodes.map(d => d.c));
+document.getElementById('tot').textContent =
+  `${new Set(ROWS.map(r => r.song)).size} songs · ${nodes.filter(d => d.c).length} of 24 orders found`;
+
+// ---- drawing: a fixed grid, no physics ----
+const svg = d3.select('#svg');
+const stage = document.getElementById('stage');
+const hits = d => q && d.rows.some(r => (r.title + ' ' + r.artist).toLowerCase().includes(q));
+function draw() {
+  const W = stage.clientWidth, H = stage.clientHeight;
+  const left = 150, top = 52, bottom = 34;
+  const cw = (W - left - 20) / 4, rh = (H - top - bottom) / 6;
+  const R = Math.min(cw, rh) * .36;
+  const rad = c => c ? Math.max(9, R * Math.sqrt(c / maxC)) : 9;
+  const X = s => left + cw * (START.indexOf(s) + .5);
+  const Y = lp => top + rh * (order.indexOf(lp) + .45);
+  svg.selectAll('*').remove();
+  const cur = by.get(sel);
+  START.forEach(s => svg.append('text').attr('class', 'colhead').attr('x', X(s)).attr('y', 22)
+    .call(t => { t.append('tspan').text('starts on'); t.append('tspan').attr('class', 'b').attr('x', X(s)).attr('dy', 15).text(s); }));
+  for (const lp of order) {
+    const y = Y(lp);
+    svg.append('line').attr('class', 'rowline' + (cur && cur.loop === lp ? ' hot' : ''))
+      .attr('x1', X('C')).attr('x2', X('F')).attr('y1', y).attr('y2', y);
+    const t = svg.append('text').attr('class', 'rowhead').attr('x', 14).attr('y', y - 4);
+    t.append('tspan').attr('class', 'n').text(lp + ' loop');
+    t.append('tspan').attr('x', 14).attr('dy', 15).text((NAMED[lp] ? NAMED[lp] + ' · ' : '') + loopTotal(lp) + ' songs');
+  }
+  const arc = d3.arc(), pie = d3.pie().sort(null).value(1);
+  const node = svg.selectAll('g.node').data(nodes).join('g')
+    .attr('class', d => 'node' + (d.id === sel ? ' sel' : '') + (hits(d) ? ' hit' : '') + (q && !hits(d) && d.id !== sel ? ' dim' : ''))
+    .attr('transform', d => `translate(${X(d.start)},${Y(d.loop)})`)
+    .on('click', (ev, d) => select(d.id));
+  node.append('title').text(d => `${d.id} · ${d.chords.map(c => ROMAN[c]).join(' ')} · ${d.c} songs`);
+  node.each(function (d) {
+    const g = d3.select(this), r = rad(d.c);
+    if (!d.c) { g.append('circle').attr('class', 'empty').attr('r', r); g.append('circle').attr('class', 'hub').attr('r', r - 2).style('fill', 'transparent'); }
+    else {
+      g.selectAll('path').data(pie(d.chords)).join('path')
+        .attr('d', p => arc({ innerRadius: r * .58, outerRadius: r, startAngle: p.startAngle, endAngle: p.endAngle, padAngle: .05 }))
+        .attr('fill', p => col(p.data));
+      g.append('circle').attr('class', 'hub').attr('r', r * .58);
+      if (r > 14) g.append('text').attr('class', 'cnt').attr('font-size', Math.min(16, r * .45)).text(d.c);
+    }
+    const lab = g.append('text').attr('class', 'ord').attr('dy', r + 14).attr('font-size', 11.5);
+    d.chords.forEach((c, i) => lab.append('tspan').attr('fill', col(c)).text((i ? ' ' : '') + c));
+  });
+}
+
+function side() {
+  const el = document.getElementById('side');
+  const d = by.get(sel);
+  if (!d) { el.innerHTML = '<div class="empty-side">Click a circle to see its songs.</div>'; return; }
+  const sameLoop = nodes.filter(o => o.loop === d.loop && o.id !== d.id);
+  const btn = o => `<button data-go="${esc(o.id)}"><b>${esc(o.id)}</b> · ${o.c}</button>`;
+  const rs = [...d.rows].sort((a, b) => (hitR(b) - hitR(a)) || a.title.localeCompare(b.title));
+  el.innerHTML = `<div class="head"><div class="w">${esc(d.loop)} loop${NAMED[d.loop] ? ' · ' + NAMED[d.loop] : ''} · starts on ${esc(d.start)}</div>
+      <div class="pal">${d.chords.map(chord).join(' ')}</div>
+      <div class="rom">${d.chords.map(c => ROMAN[c]).join(' – ')}</div>
+      <div class="sub">${d.c ? d.c + ' songs' + (d.rows.length > d.c ? ' · ' + d.rows.length + ' sections' : '') : 'not in the library yet'}</div>
+      <div class="nb"><span class="lab">same loop</span>${sameLoop.map(btn).join('')}</div></div>
+    <div class="songs">${rs.map(r => {
+        const how = (r.cell < 4 ? `${r.cell}-bar ×${Math.round(4 / r.cell)}` : '4 bars') + (r.pushed ? ' · pushed' : '');
+        const inC = r.cbars.map(b => `<span class="b">${b.map(chord).join('')}</span>`).join('<span class="p">|</span>');
+        return `<div class="r ${hitR(r) ? 'hit' : ''}"><div class="t"><b>${esc(r.title)}</b><em>${esc(r.artist)} · ${esc(r.section)} · bar ${r.bar}</em>
+          ${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}</div>
+          <div class="bars">${inC}<small>${esc(how)}${r.key && !r.key.startsWith('C major') ? ' · played in ' + esc(r.key) : ''}</small></div></div>`;
+      }).join('')}</div>`;
+}
+const hitR = r => q && (r.title + ' ' + r.artist).toLowerCase().includes(q) ? 1 : 0;
+
+function select(id) { sel = id; try { localStorage.setItem('axismap', JSON.stringify({ sel })); } catch (e) {} draw(); side(); }
+document.addEventListener('click', e => { const t = e.target.closest('[data-go]'); if (t) select(t.dataset.go); });
+document.getElementById('q').addEventListener('input', e => {
+  q = e.target.value.trim().toLowerCase();
+  if (q) { const m = nodes.filter(hits).sort((a, b) => b.c - a.c)[0]; if (m) sel = m.id; }
+  draw(); side();
+});
+new ResizeObserver(draw).observe(stage);
+if (!by.has(sel)) sel = 'C G Am F';
+draw(); side();
+</script>
+</body></html>

@@ -56,7 +56,13 @@ def in_c(c, tonic, scale):
     if rest.startswith(('dim', '°', 'm7b5')): q = 'dim'
     elif rest.startswith('aug'): q = 'aug'
     elif rest.startswith('m') and not rest.startswith('maj'): q = 'm'
-    elif rest.startswith(('sus', '5')): q = DIATONIC_Q.get(rel, '')
+    elif rest.startswith(('sus', '5')):
+        # no third to read: an applied chord (V/V etc.) is major by definition --
+        # Building a Mystery's D5 is stored as V/V, a D, not the diatonic Dm.
+        # Borrowed power chords keep the diatonic guess; their mode label is
+        # arbitrary across transcribers, so it says nothing about the third.
+        ap = int(c.get('applied') or 0)
+        q = '' if ap and ap != 7 else DIATONIC_Q.get(rel, '')
     else: q = ''
     return NINE.get((rel, q)) or Q.NAMES[rel] + q
 
