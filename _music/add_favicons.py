@@ -23,6 +23,7 @@ ICONS = {
     'palette-map.html': ('PM', 'map'), 'palette_map_template.html': ('PM', 'map'),
     'palette-groups.html': ('PG', 'map'), 'palette_groups_template.html': ('PG', 'map'),
     'runners-map.html': ('RM', 'map'), 'runners_map_template.html': ('RM', 'map'),
+    'same-progressions.html': ('SP', 'map'), 'same_progressions_template.html': ('SP', 'map'),
     'tempo-map.html': ('TM', 'map'), 'tempo_map_template.html': ('TM', 'map'),
     'beatles-tempo-map.html': ('TM', 'beatles'), 'key-map.html': ('KM', 'map'),
     # quizzes
