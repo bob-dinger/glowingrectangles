@@ -16,9 +16,10 @@ circle entered from a different chord (front vs back runner, runners-map).
 
 Rules from corpus.py: re-strikes merged, scratch songs out, meter per song,
 mode per section (roman() reads minor through the relative major). Variants
-(-simple, -80, -hooktab...) are left out when the plain song is also there,
-so one song is never counted twice; a variant that is the ONLY copy (140
-songs exist only as -hooktab imports) stands in for it.
+(-simple, -80, -hooktab, -D...) and duplicate files collapse into ONE song
+(same(), below), keeping the plain-named file, or else the one with the most
+melody; a variant that is the only copy (140 songs exist only as -hooktab
+imports) stands in for it.
 """
 import collections, json, math, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -26,9 +27,34 @@ import corpus as C
 from hashids import Hashids
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-VARIANT = re.compile(r'(-(\d{2,3}|hooktab|simple|double|C|right|wrong|mixolydian|filled|3way)|_o_c_ly_?|_o_)$', re.I)
 HASH = Hashids(salt='XI0Y4UFrK6EPLnarrI4y', min_length=11,
                alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_')
+# every suffix the library uses for a second copy of a song
+SUFFIX = re.compile(r'(-(\d{2,3}(-\d{2,3})?|hooktab\d*|simple\d*|double|right|wrong|mixolydian|filled|3way|midi'
+                    r'|pasted|perfectmelody|6_8|[a-g])|_dynamics|_o_c_ly_?|_o_|(?<=[a-z])[23])$', re.I)
+# the same song under another name: found 2026-10-22 by identical chord files
+# (Love Song is a copy of Love Story; the Conway / Alabama files are Mel
+# McDaniel's transcriptions) and by title (One of Us is What If God...)
+ALIAS = {'taylor swift_love song': 'taylor swift_love story',
+         'conway twittie_babys got her blue jeans on': 'mel mcdaniel_babys got her blue jeans on',
+         'alabama_louisiana saturday night': 'mel mcdaniel_louisiana saturday night',
+         'harry style_as it was': 'harry styles_as it was',
+         'john anderson_straight tequlia night': 'john anderson_straight tequila night',
+         'joan osborne_what if god was one of us': 'joan osborne_one of us',
+         'michelle branch_all i wanted': 'michelle branch_all you wanted',
+         'beatles_getback': 'beatles_get back',
+         'weezer_the world has turned': 'weezer_the world has turned and left me here'}
+
+
+def same(name):
+    """the one key every copy of a song shares"""
+    k = name.lower()
+    while SUFFIX.search(k):
+        k = SUFFIX.sub('', k)
+    k = re.sub(r'\s+', ' ', k.replace('_ ', '_')).strip()
+    return ALIAS.get(k, k)
+
+
 SKIP_SEC = re.compile(r'intro|outro|coda|ending|instrumental|solo', re.I)
 
 
@@ -159,14 +185,15 @@ def main():
     for s in json.load(open(lst)):
         ids.setdefault(s['song'].replace('/', '_').lower(), s['ID'])
     songs, recs = [], {'exact': [], 'plain': []}
-    every = list(C.songs())
-    names = {n.lower() for n, _, _ in every}
-    taken = set()
-    for name, d, nb in every:
-        base = VARIANT.sub('', name)
-        if base != name and (base.lower() in names or base.lower() in taken):
-            continue
-        taken.add(base.lower())
+    # one file per song: the plain-named copy, else the one with the most melody
+    best = {}
+    for name, d, nb in C.songs():
+        k = same(name)
+        rank = (name.lower() == k, len(d.get('notes') or []))
+        if k not in best or rank > best[k][0]:
+            best[k] = (rank, name, d, nb)
+    for _, name, d, nb in sorted(best.values(), key=lambda b: b[1].lower()):
+        base = same(name)
         mc = C.merged(d['chords'])
         bpm = ((d.get('tempos') or [{}])[0] or {}).get('bpm')
         tonic = ((d.get('keys') or [{}])[0] or {}).get('tonic') or ''
