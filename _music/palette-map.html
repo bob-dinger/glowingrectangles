@@ -202,20 +202,17 @@ function side() {
     const up = s.id === sel, other = up ? e : s;
     return { id: other.id, txt: up ? `+${l.add}` : `−${l.add}`, w: other.word || other.chords.join(' '), c: other.c };
   }).sort((a, b) => b.c - a.c);
-  const byShape = d3.group(rs, shapeKey);
-  const keys = [...byShape.keys()].sort((a, b) => SHAPE_ORDER.indexOf(a) - SHAPE_ORDER.indexOf(b));
   el.innerHTML = `<div class="head"><div class="w">${esc(p.word || 'no word')}</div>
       <div class="pal">${p.chords.map(chord).join('')}</div>
       <div class="sub">${songs(rs)} songs · ${rs.length} openings${shape ? ' · ' + esc(shape) + ' only' : ''}</div>
       <div class="nb">${nbs.map(n => `<button data-go="${esc(n.id)}"><b>${esc(n.txt)}</b> ${esc(n.w)} ${n.c}</button>`).join('')}</div></div>
-    <div class="songs">${keys.map(k => `<h3>${esc(k)} · ${byShape.get(k).length}</h3>` +
-      byShape.get(k).sort((a, b) => a.title.localeCompare(b.title)).map(r => {
+    <div class="songs">${[...rs].sort((a, b) => a.title.localeCompare(b.title) || a.artist.localeCompare(b.artist)).map(r => {
         const inC = r.cbars.map(b => `<span class="b">${b.map(chord).join('')}</span>`).join('<span class="p">|</span>');
-        const how = r.shape ? (r.reps > 1 ? `${r.cellbars}-bar ×${r.reps}` : '4 bars') + (r.pushed ? ' · pushed' : '') : r.lengths;
+        const how = shapeKey(r) + ' · ' + (r.shape ? (r.reps > 1 ? `${r.cellbars}-bar ×${r.reps}` : '4 bars') + (r.pushed ? ' · pushed' : '') : r.lengths);
         return `<div class="r"><div class="t"><b>${esc(r.title)}</b><em>${esc(r.artist)} · ${esc(r.section)}</em>
           ${r.hookpad ? `<a href="${esc(r.hookpad)}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}</div>
           <div class="bars">${inC}<small>${esc(how)}</small></div></div>`;
-      }).join('')).join('') || '<div class="empty">No openings with this filter.</div>'}</div>`;
+      }).join('') || '<div class="empty">No openings with this filter.</div>'}</div>`;
 }
 
 function select(id) { sel = id; try { localStorage.setItem('palmap', JSON.stringify({ sel })); } catch (e) {} draw(); side(); }
