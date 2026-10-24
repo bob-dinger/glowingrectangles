@@ -191,6 +191,19 @@
    "chords_C": "C Am F G"
   },
   {
+   "key": "viva_la_vida",
+   "name": "Viva la Vida",
+   "n": 4,
+   "ordered": true,
+   "mode": "major",
+   "roman": "IV V I vi",
+   "chords": "F G C Am",
+   "family": "pillars + tonic-shadow",
+   "rotation_of": "stand_by_me",
+   "note": "the doo-wop/50s cycle entered on the IV: I->vi->IV->V is the same loop. Bennett names it in '7 super common chord progressions and why they work' and refers to it as 4516 elsewhere.",
+   "source": "bennett"
+  },
+  {
    "key": "one_two_three_four",
    "name": "1-2-3-4 (Major Scale Climb)",
    "n": 4,
@@ -1094,6 +1107,26 @@
    "corpus_sections": 14
   },
   {
+   "key": "wonderwall",
+   "name": "Wonderwall",
+   "artist": "Oasis",
+   "n": 4,
+   "ordered": false,
+   "degrees": [
+    1,
+    2,
+    5,
+    6
+   ],
+   "roman": "I ii V vi",
+   "chords_C": "C Dm G Am",
+   "has_I": true,
+   "n_minor": 2,
+   "family": "pillars + supertonic",
+   "word": "fact",
+   "note": "the verse loop: vi I V ii (Em7 G Dsus4 A7sus4); the chorus is I IV vi"
+  },
+  {
    "key": "too_little_too_late",
    "name": "Too Little Too Late",
    "artist": "JoJo",
@@ -1133,26 +1166,6 @@
    "corpus_sections": 13,
    "songs_exact_palette": 105,
    "word": "flag"
-  },
-  {
-   "key": "wonderwall",
-   "name": "Wonderwall",
-   "artist": "Oasis",
-   "n": 3,
-   "ordered": false,
-   "degrees": [
-    1,
-    4,
-    6
-   ],
-   "roman": "I IV vi",
-   "chords_C": "C F Am",
-   "has_I": true,
-   "n_minor": 1,
-   "family": "pillars + tonic-shadow",
-   "corpus_sections": 11,
-   "songs_exact_palette": 128,
-   "word": "fact"
   },
   {
    "key": "jeremy",
