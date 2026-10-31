@@ -33,11 +33,11 @@ header p b{color:var(--ink);font-weight:600}
 .groups .half b{color:var(--ink);letter-spacing:0;text-transform:none;font-size:12.5px;margin-right:6px}
 .groups .g{font-size:11.5px;color:var(--mute);text-align:center}
 .groups .g b{display:block;color:var(--ink);font-weight:650;font-size:12px}
-.rows{flex:1;display:grid;grid-template-rows:repeat(3,1fr);gap:10px;min-height:0}
+.groups .g i{display:block;font-style:normal;font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.12em}
+.rows{flex:1;display:grid;grid-template-rows:repeat(6,1fr);gap:6px;min-height:0}
 .row{display:grid;grid-template-columns:64px repeat(6,1fr);gap:10px;min-height:0}
 .rl{display:flex;flex-direction:column;justify-content:center;font-size:11px;color:var(--mute);line-height:1.3}
-.rl b{font-size:18px;font-weight:750}
-.pair{display:grid;grid-template-rows:1fr 1fr;gap:6px;min-height:0}
+.rl b{font-size:12.5px;font-weight:750;letter-spacing:.02em}
 .cell{border:1px solid var(--line);border-radius:9px;padding:7px 8px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;min-height:0;position:relative;background:var(--card)}
 .cell:hover{border-color:var(--mute)}
 .cell.sel{outline:2.5px solid var(--ink);outline-offset:-1px}
@@ -59,6 +59,7 @@ header p b{color:var(--ink);font-weight:600}
 .head .bars span{height:40px;font-size:16px}
 .head .sub{font-size:12.5px;color:var(--mute);margin-top:8px}
 .rots{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;align-items:center;font-size:12px;color:var(--mute)}
+.rots button i{font-style:normal;color:var(--mute)}
 .rots button{font:inherit;font-size:12px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:6px;padding:1px 7px;cursor:pointer}
 .rots button:hover{background:var(--soft)}
 .songs{overflow:auto;flex:1;padding:2px 16px 12px}
@@ -79,7 +80,7 @@ header p b{color:var(--ink);font-weight:600}
   .box{margin-bottom:12px}
   #grid{overflow-x:auto}
   .groups,.row{grid-template-columns:44px repeat(6,minmax(64px,1fr));gap:6px}
-  .rows{grid-template-rows:none;gap:8px}
+  .rows{grid-template-rows:none;gap:6px}
   .cell{min-height:58px}
   #side{max-height:none}
   .songs{overflow:visible}
@@ -88,7 +89,7 @@ header p b{color:var(--ink);font-weight:600}
 <body>
 <header>
   <h1>Pillar Perms<a href="index.html">music index →</a></h1>
-  <p>Four bars of <b>I</b>, <b>IV</b> and <b>V</b>, one chord a bar, all three used: <b>36</b> orders. One chord is always doubled; the row says which, the column says where it sits.</p>
+  <p>Four bars of <b>I</b>, <b>IV</b> and <b>V</b>, one chord a bar, all three used: <b>36</b> orders. One chord is always doubled, so every order is one of six <b>shapes</b> (columns, A = the first chord heard) with I, IV and V dealt to A, B and C (rows).</p>
 </header>
 <div id="grid" class="box">
   <div class="groups" id="groups"></div>
@@ -111,31 +112,33 @@ byOrder.forEach(l => l.sort((a, b) => a.s.t.localeCompare(b.s.t) || a.s.a.locale
 const idx = {}; DATA.orders.forEach((o, i) => idx[key(o)] = i);
 const max = Math.max(...byOrder.map(l => l.length));
 
-// placements of the doubled chord: held (next to each other) on the left, changing every bar on the right
-const SPOTS = [[0, 1, 'bars 1–2'], [1, 2, 'bars 2–3'], [2, 3, 'bars 3–4'], [0, 2, 'bars 1 · 3'], [1, 3, 'bars 2 · 4'], [0, 3, 'bars 1 · 4']];
-function orderFor(dbl, spot, flip){
-  const rest = P.filter(c => c !== dbl); if (flip) rest.reverse();
-  const o = []; o[spot[0]] = dbl; o[spot[1]] = dbl;
-  let j = 0; for (let i = 0; i < 4; i++) if (!o[i]) o[i] = rest[j++];
-  return o;
-}
+// six shapes: A is the first chord, B the next new one, C the last. Held (the doubled
+// chord sits in two bars side by side) on the left, every bar a change on the right.
+// Names as on the palette pages.
+const SHAPES = [['AABC', 'front runner'], ['ABBC', 'valley'], ['ABCC', 'back runner'],
+                ['ABAC', 'bounce'], ['ABCB', 'return'], ['ABCA', 'mountain']];
+const DEALS = [['I', 'IV', 'V'], ['I', 'V', 'IV'], ['IV', 'I', 'V'], ['IV', 'V', 'I'], ['V', 'I', 'IV'], ['V', 'IV', 'I']];
+const orderFor = (shape, deal) => [...shape].map(L => deal['ABC'.indexOf(L)]);
+function shapeOf(o){ const seen = []; return o.map(c => { if (!seen.includes(c)) seen.push(c); return 'ABC'[seen.indexOf(c)]; }).join(''); }
+const shapeName = o => SHAPES.find(s => s[0] === shapeOf(o))[1];
 const bars = o => `<div class="bars">${o.map(c => `<span class="c-${c}">${c}</span>`).join('')}</div>`;
 
 document.getElementById('groups').innerHTML = `<div></div>
-  <div class="half"><b>Held</b>the doubled chord rings 2 bars</div>
+  <div class="half"><b>Held</b>one chord rings 2 bars</div>
   <div class="half"><b>Every bar changes</b>18 orders</div>
-  <div></div>` + SPOTS.map(s => `<div class="g"><b>${s[2]}</b></div>`).join('');
+  <div></div>` + SHAPES.map(s => `<div class="g"><b>${s[1]}</b><i>${s[0]}</i></div>`).join('');
 
 let sel = idx['I V IV I'];
 function drawGrid(){
-  document.getElementById('rows').innerHTML = P.map(d => `<div class="row">
-    <div class="rl"><b class="c-txt" style="color:var(--d${d === 'I' ? 1 : d === 'IV' ? 4 : 5})">${d}</b>twice</div>` +
-    SPOTS.map(sp => `<div class="pair">${[0, 1].map(f => {
-      const o = orderFor(d, sp, f), i = idx[key(o)], n = byOrder[i].length;
+  const col = c => `var(--d${c === 'I' ? 1 : c === 'IV' ? 4 : 5})`;
+  document.getElementById('rows').innerHTML = DEALS.map(d => `<div class="row">
+    <div class="rl"><b>${d.map((c, j) => `<span style="color:${col(c)}">${c}</span>`).join(' ')}</b>as A B C</div>` +
+    SHAPES.map(([sh]) => {
+      const o = orderFor(sh, d), i = idx[key(o)], n = byOrder[i].length;
       return `<div class="cell${n ? '' : ' zero'}${i === sel ? ' sel' : ''}" data-i="${i}">
         <div class="heat" style="opacity:${n ? 0.03 + 0.17 * Math.sqrt(n / max) : 0}"></div>
         <div class="n">${n}<small>${n === 1 ? 'song' : 'songs'}</small></div>${bars(o)}</div>`;
-    }).join('')}</div>`).join('') + `</div>`).join('');
+    }).join('') + `</div>`).join('');
   document.querySelectorAll('.cell').forEach(c => c.onclick = () => { sel = +c.dataset.i; drawGrid(); side(); });
   const songs = new Set(DATA.hits.map(h => h[1])).size;
   const heard = byOrder.filter(l => l.length).length;
@@ -148,10 +151,10 @@ function side(){
   const loop = o[3] === o[0] ? 'Looped, bar 4 runs into bar 1 on the same chord: it holds across the seam.' : 'Looped, every change is a real change, the seam included.';
   const rots = [...new Set(rotations(o).map(key))].filter(k => k !== key(o));
   document.getElementById('side').innerHTML = `<div class="head">
-      <div class="top"><button class="play" id="pl" title="play twice, in C">▶</button><b>${o.join(' ')}</b><span>${o.map(c => LETTER[c]).join(' ')} in C · ${l.length} ${l.length === 1 ? 'song' : 'songs'}</span></div>
+      <div class="top"><button class="play" id="pl" title="play twice, in C">▶</button><b>${o.join(' ')}</b><span>${shapeName(o)} · ${shapeOf(o)} · ${o.map(c => LETTER[c]).join(' ')} in C · ${l.length} ${l.length === 1 ? 'song' : 'songs'}</span></div>
       ${bars(o)}
       <div class="sub">${loop}</div>
-      <div class="rots">same loop from another bar: ${rots.map(k => `<button data-k="${k}">${k} <b>${byOrder[idx[k]].length}</b></button>`).join('')}</div>
+      <div class="rots">same loop from another bar: ${rots.map(k => `<button data-k="${k}">${k} <i>${shapeName(k.split(' '))}</i> <b>${byOrder[idx[k]].length}</b></button>`).join('')}</div>
     </div>
     <div class="songs">${l.length ? l.map(h => `<div class="r">
       <div class="t"><b>${esc(h.s.t)}</b><em>${esc(h.s.a)}</em></div>
