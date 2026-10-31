@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pillar Perms</title>
+<link rel="icon" id="gg-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23d02828'/%3E%3Ctext x='32' y='33' font-family='-apple-system,Helvetica,Arial,sans-serif' font-weight='800' font-size='30' fill='white' text-anchor='middle' dominant-baseline='central'%3EPP%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --soft:#f1efe8;
+  --d1:#d02828; --d4:#1f8a4c; --d5:#1663c7;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926;
+  --d1:#ff6b6b; --d4:#4cc27a; --d5:#5ea2ff;
+}}
+:root[data-theme="dark"]{
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926;
+  --d1:#ff6b6b; --d4:#4cc27a; --d5:#5ea2ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:grid;grid-template-columns:1fr 430px;grid-template-rows:auto 1fr;gap:12px 16px;padding:14px 16px;height:100vh;overflow:hidden}
+header{grid-column:1 / span 2;display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap}
+h1{font-size:17px;font-weight:700}
+h1 a{font-size:12px;font-weight:500;color:var(--mute);margin-left:8px;text-decoration:none}
+h1 a:hover{color:var(--ink)}
+header p{font-size:12.5px;color:var(--mute)}
+header p b{color:var(--ink);font-weight:600}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;min-height:0;overflow:hidden}
+#grid{display:flex;flex-direction:column;padding:14px 16px 12px;gap:8px}
+.groups{display:grid;grid-template-columns:64px repeat(6,1fr);gap:10px}
+.groups .half{grid-column:span 3;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);border-bottom:2px solid var(--line);padding-bottom:3px}
+.groups .half b{color:var(--ink);letter-spacing:0;text-transform:none;font-size:12.5px;margin-right:6px}
+.groups .g{font-size:11.5px;color:var(--mute);text-align:center}
+.groups .g b{display:block;color:var(--ink);font-weight:650;font-size:12px}
+.rows{flex:1;display:grid;grid-template-rows:repeat(3,1fr);gap:10px;min-height:0}
+.row{display:grid;grid-template-columns:64px repeat(6,1fr);gap:10px;min-height:0}
+.rl{display:flex;flex-direction:column;justify-content:center;font-size:11px;color:var(--mute);line-height:1.3}
+.rl b{font-size:18px;font-weight:750}
+.pair{display:grid;grid-template-rows:1fr 1fr;gap:6px;min-height:0}
+.cell{border:1px solid var(--line);border-radius:9px;padding:7px 8px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;min-height:0;position:relative;background:var(--card)}
+.cell:hover{border-color:var(--mute)}
+.cell.sel{outline:2.5px solid var(--ink);outline-offset:-1px}
+.cell .heat{position:absolute;inset:0;border-radius:8px;background:var(--ink);pointer-events:none}
+.cell .n{font-size:20px;font-weight:750;position:relative;line-height:1}
+.cell .n small{font-size:11px;font-weight:500;color:var(--mute);margin-left:3px}
+.cell.zero .n{color:var(--mute)}
+.bars{display:flex;gap:2px;position:relative}
+.bars span{flex:1;height:20px;border-radius:4px;color:#fff;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center}
+.c-I{background:var(--d1)} .c-IV{background:var(--d4)} .c-V{background:var(--d5)}
+.foot{font-size:12px;color:var(--mute)}
+.foot b{color:var(--ink)}
+/* side panel */
+#side{display:flex;flex-direction:column}
+.head{padding:14px 16px 12px;border-bottom:1px solid var(--line)}
+.head .top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.head .top b{font-size:22px;font-weight:750}
+.head .top span{color:var(--mute);font-size:12.5px}
+.head .bars span{height:40px;font-size:16px}
+.head .sub{font-size:12.5px;color:var(--mute);margin-top:8px}
+.rots{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;align-items:center;font-size:12px;color:var(--mute)}
+.rots button{font:inherit;font-size:12px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:6px;padding:1px 7px;cursor:pointer}
+.rots button:hover{background:var(--soft)}
+.songs{overflow:auto;flex:1;padding:2px 16px 12px}
+.r{display:grid;grid-template-columns:1fr auto;gap:1px 8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.r .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r .t b{font-weight:650}
+.r .t em{font-style:normal;color:var(--mute);font-size:12px;margin-left:6px}
+.r .m{font-size:11.5px;color:var(--mute)}
+.r .lk{grid-row:1 / span 2;grid-column:2;display:flex;gap:8px;align-items:center}
+.r .lk a{font-size:11px;color:var(--mute);text-decoration:none}
+.r .lk a:hover{color:var(--ink)}
+.play{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;font-size:11px}
+.play:hover,.play.on{background:var(--ink);color:var(--bg)}
+.empty{color:var(--mute);padding:20px 16px;font-size:13px}
+@media (max-width:820px){
+  body{display:block;height:auto;overflow:auto;padding:12px 16px}
+  header{margin-bottom:10px}
+  .box{margin-bottom:12px}
+  #grid{overflow-x:auto}
+  .groups,.row{grid-template-columns:44px repeat(6,minmax(64px,1fr));gap:6px}
+  .rows{grid-template-rows:none;gap:8px}
+  .cell{min-height:58px}
+  #side{max-height:none}
+  .songs{overflow:visible}
+}
+</style></head>
+<body>
+<header>
+  <h1>Pillar Perms<a href="index.html">music index →</a></h1>
+  <p>Four bars of <b>I</b>, <b>IV</b> and <b>V</b>, one chord a bar, all three used: <b>36</b> orders. One chord is always doubled; the row says which, the column says where it sits.</p>
+</header>
+<div id="grid" class="box">
+  <div class="groups" id="groups"></div>
+  <div class="rows" id="rows"></div>
+  <div class="foot" id="foot"></div>
+</div>
+<aside id="side" class="box"></aside>
+<script>
+const DATA = {"orders":[["I","I","IV","V"],["I","I","V","IV"],["I","IV","I","V"],["I","IV","IV","V"],["I","IV","V","I"],["I","IV","V","IV"],["I","IV","V","V"],["I","V","I","IV"],["I","V","IV","I"],["I","V","IV","IV"],["I","V","IV","V"],["I","V","V","IV"],["IV","I","I","V"],["IV","I","IV","V"],["IV","I","V","I"],["IV","I","V","IV"],["IV","I","V","V"],["IV","IV","I","V"],["IV","IV","V","I"],["IV","V","I","I"],["IV","V","I","IV"],["IV","V","I","V"],["IV","V","IV","I"],["IV","V","V","I"],["V","I","I","IV"],["V","I","IV","I"],["V","I","IV","IV"],["V","I","IV","V"],["V","I","V","IV"],["V","IV","I","I"],["V","IV","I","IV"],["V","IV","I","V"],["V","IV","IV","I"],["V","IV","V","I"],["V","V","I","IV"],["V","V","IV","I"]],"songs":[{"t":"You Shook Me All Night Long","a":"Acdc","k":"C major","bpm":129,"u":"WeglMwblxrY"},{"t":"Take On Me","a":"Aha","k":"C major","bpm":172,"u":"nvgyJpL_xkA"},{"t":"Dallas","a":"Alan Jackson","k":"C major","bpm":154,"u":"ZOxVbLeMxdq"},{"t":"Livin On Love","a":"Alan Jackson","k":"C major","bpm":117,"u":"AQodMvzprmD"},{"t":"Neon Rainbow","a":"Alan Jackson","k":"C major","bpm":149,"u":"veoYBRqnmdn"},{"t":"Small Town Southern Man","a":"Alan Jackson","k":"C major","bpm":150,"u":"dPoDeVQaZmn"},{"t":"Sister Golden Hair","a":"America","k":"E major","bpm":135,"u":"QLgnlWjwyo-"},{"t":"If I Die Young","a":"Band Perry","k":"C major","bpm":75,"u":"RPxeA_k-xb_"},{"t":"Act Naturally","a":"Beatles","k":"G major","bpm":160,"u":"ROmNOANLEgN"},{"t":"All My Loving","a":"Beatles","k":"E major","bpm":155,"u":"jDgX__Gn_mK"},{"t":"All Together Now","a":"Beatles","k":"G major","bpm":95,"u":"AQodMvaQBmD"},{"t":"Baby Its You","a":"Beatles","k":"G major","bpm":122,"u":"YAg-QEAjAgl"},{"t":"Babys In Black","a":"Beatles","k":"A major","bpm":204,"u":"YAg-QERaJgl"},{"t":"Bad Boy","a":"Beatles","k":"C major","bpm":138,"u":"jDgX_kGLLmK"},{"t":"Cant Buy Me Love","a":"Beatles","k":"C major","bpm":171,"u":"zngRwKAVxJj"},{"t":"Chains","a":"Beatles","k":"Bb major","bpm":130,"u":"YAg-QEREJgl"},{"t":"Dig It","a":"Beatles","k":"F major","bpm":161,"u":"yvmrQzObzoO"},{"t":"Dizzy Miss Lizzy","a":"Beatles","k":"A major","bpm":125,"u":"QLgnlWNVZo-"},{"t":"Dont Pass Me By","a":"Beatles","k":"C major","bpm":86,"u":"ZbgOG-vVpgn"},{"t":"Everybodys Trying To Be My Baby","a":"Beatles","k":"C major","bpm":146,"u":"bWgMWOjVXol"},{"t":"Flying","a":"Beatles","k":"C major","bpm":93,"u":"jDgX_kGwEmK"},{"t":"Got To Get You Into My Life","a":"Beatles","k":"G major","bpm":137,"u":"lamkXqzYgDM"},{"t":"Here Comes The Sun","a":"Beatles","k":"A major","bpm":128,"u":"LAgQBOrrxyO"},{"t":"Hey Jude","a":"Beatles","k":"F major","bpm":76,"u":"ZwxKbZJbged"},{"t":"Honey Dont","a":"Beatles","k":"C major","bpm":180,"u":"WeglKOVeKmr"},{"t":"Ill Get You","a":"Beatles","k":"D major","bpm":127,"u":"lamkYWJzAxD"},{"t":"Im So Tired","a":"Beatles","k":"A major","bpm":67,"u":"AQodnyYKgDl"},{"t":"Long Long Long","a":"Beatles","k":"F major","bpm":107,"u":"Abm_wqRzQma"},{"t":"Long Tall Sally","a":"Beatles","k":"G major","bpm":182,"u":"nJmBYAwEAoA"},{"t":"Lovely Rita","a":"Beatles","k":"E major","bpm":87,"u":"Rzoj_wBNmDe"},{"t":"Matchbox","a":"Beatles","k":"A major","bpm":162,"u":"dPoDeVazAmn"},{"t":"Money","a":"Beatles","k":"E major","bpm":130,"u":"AaoGVqJZzxe"},{"t":"No Reply","a":"Beatles","k":"C major","bpm":124,"u":"KexEjerVo_B"},{"t":"Nowhere Man","a":"Beatles","k":"E major","bpm":121,"u":"AaoGwrAkoeQ"},{"t":"Please Please Me","a":"Beatles","k":"E major","bpm":140,"u":"JkmZBEKPmqn"},{"t":"Rock And Roll Music","a":"Beatles","k":"A major","bpm":156,"u":"nZgWj_DBVmr"},{"t":"Roll Over Beethoven","a":"Beatles","k":"D major","bpm":168,"u":"AQodMvapKmD"},{"t":"Slow Down","a":"Beatles","k":"C major","bpm":154,"u":"AQodMvaEYmD"},{"t":"The Word","a":"Beatles","k":"D major","bpm":121,"u":"nvgyJpvXxkA"},{"t":"When I Get Home","a":"Beatles","k":"A major","bpm":123,"u":"ZbgOG-Z--gn"},{"t":"With A Little Help From My Friends","a":"Beatles","k":"C major","bpm":109,"u":"VMgJXZGQKoq"},{"t":"Words Of Love","a":"Beatles","k":"A major","bpm":122,"u":"ANmpJQ-jbxy"},{"t":"You Like Me Too Much","a":"Beatles","k":"G major","bpm":80,"u":"JkmZAPXJ-oq"},{"t":"Youve Got To Hide Your Love Away","a":"Beatles","k":"G major","bpm":91,"u":"Abm_dylDgak"},{"t":"Heaven Is A Place On Earth","a":"Belinda Carlisle","k":"E major","bpm":122,"u":"LAgQBOEAxyO"},{"t":"Piano Man","a":"Billy Joel","k":"C major","bpm":180,"u":"bWgMvwJjxlX"},{"t":"Adams Song","a":"Blink 182","k":"C major","bpm":135,"u":"RPxe-ydyexb"},{"t":"Blowin In The Wind","a":"Bob Dylan","k":"C major","bpm":179,"u":"zngRbJ_VgJj"},{"t":"Desolation Row","a":"Bob Dylan","k":"C major","bpm":108,"u":"kygzMlKQmKB"},{"t":"Its All Over Now Baby Blue","a":"Bob Dylan","k":"C major","bpm":120,"u":"yvmrQz-AzoO"},{"t":"Mr Tambourine Man","a":"Bob Dylan","k":"C major","bpm":170,"u":"dPoDnJvdgnM"},{"t":"Queen Jane Approximately","a":"Bob Dylan","k":"C major","bpm":104,"u":"VMgJXZLjKoq"},{"t":"Sad Eyed Lady Of The Lowlands","a":"Bob Dylan","k":"D major","bpm":171,"u":"LAgQbkLERxy"},{"t":"The Times They Are A Changin","a":"Bob Dylan","k":"C major","bpm":171,"u":"yvgPXXW_jgY"},{"t":"Times They Are A Changin","a":"Bob Dylan","k":"C major","bpm":165,"u":"ROmNOAqWngN"},{"t":"10000 Emerald Pools","a":"Borns","k":"C major","bpm":140,"u":"_NgbAZVrmQA"},{"t":"Brand New Man","a":"Brooks And Dunn","k":"C major","bpm":127,"u":"nvgyJpMZxkA"},{"t":"Neon Moon","a":"Brooks And Dunn","k":"A major","bpm":103,"u":"KexEqAOKx_B"},{"t":"Born To Run","a":"Bruce Springsteen","k":"E major","bpm":142,"u":"WeglKOYkAmr"},{"t":"Everything I Do","a":"Bryan Adams","k":"Db major","bpm":65,"u":"lamkYWQKYxD"},{"t":"Bad Moon Rising","a":"Ccr","k":"D major","bpm":177,"u":"yvmrGyXJgOW"},{"t":"Fortunate Son","a":"Ccr","k":"G major","bpm":136,"u":"JNgqRVYnxrz"},{"t":"Travelin Band","a":"Ccr","k":"C major","bpm":155,"u":"JkmZBEk_mqn"},{"t":"Good Luck Babe","a":"Chappell Roan","k":"D major","bpm":117,"u":"YAg-QEAVBgl"},{"t":"Nothin But The Taillights","a":"Clint Black","k":"C major","bpm":158,"u":"KexEQLpLx_B"},{"t":"State Of Mind","a":"Clint Black","k":"C major","bpm":90,"u":"RPxenynLob_"},{"t":"In My Place","a":"Coldplay","k":"C major","bpm":144,"u":"kygzQLYzmKB"},{"t":"Nashville Blues","a":"Cory Morrow","k":"G major","bpm":85,"u":"dPoDeVPylmn"},{"t":"Mr Jones","a":"Counting Crows","k":"C major","bpm":142,"u":"LAgQbkWKrxy"},{"t":"Friday Im In Love","a":"Cure","k":"C major","bpm":136,"u":"KexEqAVVx_B"},{"t":"Under Pressure","a":"David Bowie","k":"C major","bpm":114,"u":"jDgXpPw_gKl"},{"t":"Sit Still Look Pretty","a":"Daya","k":"C major","bpm":90,"u":"kwxA-NVrxKG"},{"t":"Walk Of Life","a":"Dire Straits","k":"E major","bpm":172,"u":"YAg-QEdkAgl"},{"t":"The Boys Of Summer","a":"Don Henley","k":"D# major","bpm":177,"u":"ZOxVJOpeNxd"},{"t":"Choosin Texas","a":"Ella Langley","k":"Db major","bpm":112,"u":"nJmBYAdnAoA"},{"t":"Blessed","a":"Elton John","k":"Ab major","bpm":102,"u":"LAgQbkDVrxy"},{"t":"The Way You Love Me","a":"Faith Hill","k":"C major","bpm":102,"u":"WeglKOebKmr"},{"t":"The Way","a":"Fastball","k":"C major","bpm":121,"u":"YAg-PKRBmle"},{"t":"Gold Dust Woman","a":"Fleetwood Mac","k":"C major","bpm":123,"u":"YAg-W_MDole"},{"t":"Gypsy","a":"Fleetwood Mac","k":"C major","bpm":132,"u":"kygz-eMbmKB"},{"t":"Its The Same Old Song","a":"Four Tops","k":"C major","bpm":126,"u":"RPxe-ydMaxb"},{"t":"Much Too Young","a":"Garth Brooks","k":"C major","bpm":150,"u":"ZwxKbZQbged"},{"t":"Amarillo By Morning","a":"George Strait","k":"C major","bpm":121,"u":"yvgP_-yXmYq"},{"t":"Blue Clear Sky","a":"George Strait","k":"C major","bpm":124,"u":"yvmrqNazoOW"},{"t":"Carried Away","a":"George Strait","k":"C major","bpm":80,"u":"zngRBMrpgJj"},{"t":"Ocean Front Property","a":"George Strait","k":"C major","bpm":180,"u":"d_gwkGeNgGV"},{"t":"Still Make Cheyenne","a":"George Strait","k":"C major","bpm":110,"u":"kygzQLVbmKB"},{"t":"Write This Down","a":"George Strait","k":"G major","bpm":123,"u":"Abm_nVnLoak"},{"t":"Rhinestone Cowboy","a":"Glen Campbell","k":"C major","bpm":112,"u":"LAgQBOPRxyO"},{"t":"Vacation","a":"Go Gos","k":"E major","bpm":158,"u":"JkmZAP_Maoq"},{"t":"Slide","a":"Goo Goo Dolls","k":"C major","bpm":112,"u":"YAg-Z-pBxle"},{"t":"Basketcase","a":"Green Day","k":"C major","bpm":180,"u":"_NgbAGObmQA"},{"t":"Good Riddance","a":"Green Day","k":"G major","bpm":96,"u":"_Ngbn-rOgQA"},{"t":"She","a":"Green Day","k":"F# major","bpm":184,"u":"kwxA-AnXxKG"},{"t":"Malibu","a":"Hole","k":"D major","bpm":121,"u":"veoYvEXqmdn"},{"t":"Let The Mystery","a":"Iris Dement","k":"C major","bpm":160,"u":"QLgnGvbPx-V"},{"t":"Margaritaville","a":"Jimmy Buffet","k":"D major","bpm":124,"u":"ZwxKbLrwged"},{"t":"Heads Carolina Tails California","a":"Joe Dee Messina","k":"C major","bpm":137,"u":"RPxeBDJPob_"},{"t":"John Deere Green","a":"Joe Diffie","k":"G major","bpm":130,"u":"YAg-_ZrPole"},{"t":"Friday Night Blues","a":"John Conlee","k":"C major","bpm":115,"u":"eWxLywMpoaK"},{"t":"Country Roads","a":"John Denver","k":"A major","bpm":82,"u":"ANmpJQQydxy"},{"t":"Everybodys Changing","a":"Keane","k":"C major","bpm":94,"u":"dPoDeVqPZmn"},{"t":"Is It Any Wonder","a":"Keane","k":"C major","bpm":129,"u":"Abm_nvdQoak"},{"t":"Blue On Black","a":"Kenny Wayne Sheppard","k":"C major","bpm":92,"u":"ZOxVvPkyxdq"},{"t":"Mr Brightside","a":"Killers","k":"C major","bpm":148,"u":"veoYvnYzmdn"},{"t":"Smile Like You Mean It","a":"Killers","k":"C major","bpm":125,"u":"RPxenqjAob_"},{"t":"Independence Day","a":"Martina Mcbride","k":"G major","bpm":118,"u":"AQodXlBXoDl"},{"t":"Louisiana Saturday Night","a":"Mel Mcdaniel","k":"D major","bpm":160,"u":"VMgJXZGJVoq"},{"t":"Time To Pretend","a":"Mgmt","k":"D major","bpm":99,"u":"jDgXQpZyxKl"},{"t":"Always Something Remind Me","a":"Naked Eyes","k":"D major","bpm":151,"u":"JkmZAPLXboq"},{"t":"Everybody Talks","a":"Neon Trees","k":"D major","bpm":150,"u":"eWxLyqlMoaK"},{"t":"Shattered","a":"Oar","k":"C major","bpm":106,"u":"veoYeyrGodn"},{"t":"Champagne Supernova","a":"Oasis","k":"C major","bpm":75,"u":"Abm_nvwPoak"},{"t":"Wagon Wheel","a":"Old Crow Medicine Show","k":"C major","bpm":150,"u":"veoYejGaodn"},{"t":"Every Breath You Take","a":"Police","k":"C major","bpm":117,"u":"bWgMPXGkmlX"},{"t":"I Wanna Be Sedated","a":"Ramones","k":"E major","bpm":163,"u":"ZbgORzyMmnY"},{"t":"Maggie May","a":"Rod Stewart","k":"D major","bpm":129,"u":"WeglKKwNLmr"},{"t":"Satisfaction","a":"Rolling Stones","k":"E major","bpm":136,"u":"KexEOjeYm_B"},{"t":"Some Girls Do","a":"Sawyer Brown","k":"C major","bpm":140,"u":"ANmpnEWqxyM"},{"t":"Caring Is Creepy","a":"Shins","k":"C major","bpm":180,"u":"veoYeyRyodn"},{"t":"Two Princes","a":"Spin Doctors","k":"D major","bpm":103,"u":"yvmrAWeKoOW"},{"t":"American Girl","a":"Tom Petty","k":"D major","bpm":114,"u":"Dpgv-XGBmad"},{"t":"Drops Of Jupiter","a":"Train","k":"C major","bpm":80,"u":"d_gw_QlnbgG"},{"t":"Mysterious Ways","a":"U2","k":"Bb major","bpm":100,"u":"dPoDeVzyRmn"},{"t":"Seein Red","a":"Unwritten Law","k":"F# major","bpm":103,"u":"kwxAAVEkLxK"},{"t":"Brown Eyed Girl","a":"Van Morrison","k":"C major","bpm":150,"u":"VMgJjrbVgqK"},{"t":"The Sweater Song","a":"Weezer","k":"F# major","bpm":80,"u":"ZwxKOq-Pxed"},{"t":"Teenage Dirtbag","a":"Wheatus","k":"E major","bpm":180,"u":"KexEjZvvo_B"},{"t":"Pancho And Lefty","a":"Willie Nelson","k":"G major","bpm":123,"u":"nvgyMJlOgkA"},{"t":"This Land Is Your Land","a":"Woody Guthrie","k":"D major","bpm":108,"u":"veoYeyPkodn"},{"t":"Maps","a":"Yeah Yeah Yeahs","k":"G major","bpm":121,"u":"YAg-PVLJmle"},{"t":"Superposition","a":"Young The Giant","k":"G major","bpm":90,"u":"Abm_wqrarma"},{"t":"Pillow Talk","a":"Zayn","k":"C major","bpm":125,"u":"Wegl_ObamrY"}],"hits":[[4,0,"Verse",1],[6,0,"Verse",13],[10,1,"Chorus",13],[6,2,"chorus",1],[19,2,"chorus",13],[7,3,"verse",1],[25,3,"Chorus",1],[16,3,"Chorus",5],[31,4,"Verse",13],[14,5,"Verse",1],[16,5,"Verse",5],[35,6,"Chorus",1],[17,7,"Verse",5],[2,8,"verse",1],[4,8,"verse",5],[19,9,"verse",5],[13,10,"pre-chorus",1],[20,11,"solo",1],[27,11,"solo",5],[10,12,"intro",1],[2,13,"verse",1],[14,13,"verse",5],[15,13,"verse",9],[7,13,"verse",13],[8,13,"verse",17],[32,14,"verse",9],[31,15,"verse",9],[5,16,"instrumental",1],[2,17,"intro",1],[14,17,"intro",5],[15,17,"verse",1],[7,17,"verse",5],[8,17,"verse",9],[12,18,"chorus",5],[15,19,"chorus",1],[2,19,"chorus",5],[8,19,"interlude",9],[31,20,"instrumental",9],[3,21,"chorus",1],[0,22,"Verse",1],[14,23,"verse",5],[25,24,"chorus",1],[14,24,"chorus",9],[15,24,"interlude",1],[8,24,"interlude",5],[31,24,"interlude",9],[0,25,"verse",1],[21,25,"chorus",5],[21,26,"Verse II",1],[16,27,"verse",5],[2,28,"verse",1],[8,28,"verse",9],[31,29,"intro",1],[2,30,"verse",1],[8,30,"verse",9],[8,31,"intro",1],[28,31,"intro",5],[15,31,"outro",1],[7,31,"outro",5],[19,32,"verse",1],[8,33,"verse",1],[19,34,"bridge",1],[14,35,"chorus",1],[28,35,"chorus",5],[4,35,"verse",1],[24,36,"intro",5],[4,36,"intro",9],[14,36,"outro",1],[2,37,"intro",1],[8,37,"intro",9],[15,37,"chorus",1],[29,38,"verse",9],[6,39,"verse",5],[16,40,"refrain",5],[20,41,"interlude",1],[27,41,"interlude",5],[4,41,"verse",1],[6,42,"chorus",1],[6,43,"chorus",1],[10,44,"Verse I",1],[8,45,"Intro",1],[20,45,"Intro",13],[28,45,"Verse",1],[4,45,"Verse",13],[1,45,"Chorus",1],[5,46,"solo",1],[4,47,"Verse",1],[6,47,"Verse",13],[19,47,"Chorus",1],[35,48,"Verse",5],[8,48,"Verse",21],[29,49,"verse",1],[20,50,"Chorus",1],[6,50,"Chorus",5],[5,50,"Chorus",13],[7,51,"chorus",1],[10,52,"verse",1],[7,53,"verse1",21],[7,54,"(whole)",41],[16,55,"intro",1],[20,56,"chorus",1],[19,56,"chorus",5],[19,57,"Chorus",5],[24,58,"verse",1],[0,58,"chorus",1],[10,59,"intro",1],[29,60,"Chorus",5],[2,61,"verse",1],[33,62,"Verse",9],[19,63,"chorus",13],[8,64,"verse",1],[29,64,"Verse",1],[9,65,"Verse",1],[17,66,"Chorus",1],[20,67,"bridge",1],[23,68,"chorus",1],[25,69,"Intro",9],[2,69,"Verse I",1],[4,70,"Outro II",1],[21,70,"Outro II",5],[0,71,"Chorus",1],[7,72,"pre-chorus",1],[10,72,"pre-chorus",5],[11,73,"chorus",1],[19,74,"chorus",13],[14,75,"chorus",1],[28,76,"verse",5],[10,76,"chorus",1],[9,76,"chorus",21],[16,77,"chorus",5],[27,78,"Chorus",1],[19,79,"verse",17],[0,80,"verse",1],[9,80,"chorus",1],[17,80,"Section",5],[31,81,"Verse",5],[29,81,"Verse",13],[19,81,"Chorus",5],[15,82,"Verse",13],[7,83,"Chorus",1],[9,84,"Verse",1],[16,85,"Verse",5],[0,85,"Chorus",5],[4,85,"Chorus",13],[2,86,"verse",1],[18,86,"verse",5],[21,86,"verse",13],[10,86,"Chorus",5],[19,87,"Chorus",5],[11,88,"pre-chorus",1],[6,89,"verse",1],[10,89,"chorus",1],[4,90,"Chorus B",9],[19,91,"Chorus",1],[0,92,"intro",1],[35,93,"Chorus",1],[16,93,"Chorus",13],[16,94,"bridge",1],[4,95,"Verse",1],[19,96,"chorus",1],[29,96,"chorus",13],[10,97,"Verse I",1],[10,98,"verse",13],[25,98,"Bridge",1],[27,98,"Bridge",5],[18,99,"Verse",5],[8,100,"chorus",5],[20,101,"chorus",1],[34,102,"verse",5],[29,103,"Chorus",9],[9,104,"verse",1],[2,105,"refrain",1],[6,106,"verse",5],[14,106,"Chorus",13],[8,107,"chorus",1],[34,108,"refrain",1],[19,109,"interlude",5],[29,110,"Chorus",5],[19,111,"Verse",5],[16,112,"Bridge",5],[9,113,"Verse",5],[19,114,"Intro",5],[0,115,"verse",1],[27,115,"chorus",5],[6,116,"verse",1],[13,116,"pre-chorus",1],[7,117,"pre-chorus",1],[14,117,"pre-chorus",1],[29,118,"Verse I",1],[9,119,"verse",5],[13,120,"chorus",1],[19,121,"chorus",5],[15,122,"verse",5],[2,123,"verse",1],[16,124,"verse",5],[2,125,"Verse",1],[5,126,"Chorus",1],[7,127,"verse",9],[17,128,"verse",5],[14,129,"Refrain",1],[14,130,"verse",5],[16,131,"Chorus",1],[18,132,"Chorus",5]]};
+const P = ['I', 'IV', 'V'];
+const NOTES = {I: [0, 4, 7], IV: [5, 9, 12], V: [7, 11, 14]};
+const LETTER = {I: 'C', IV: 'F', V: 'G'};
+const key = o => o.join(' ');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+
+// order -> its songs
+const byOrder = DATA.orders.map(() => []);
+for (const [o, si, sec, bar] of DATA.hits) byOrder[o].push({s: DATA.songs[si], sec, bar});
+byOrder.forEach(l => l.sort((a, b) => a.s.t.localeCompare(b.s.t) || a.s.a.localeCompare(b.s.a)));
+const idx = {}; DATA.orders.forEach((o, i) => idx[key(o)] = i);
+const max = Math.max(...byOrder.map(l => l.length));
+
+// placements of the doubled chord: held (next to each other) on the left, changing every bar on the right
+const SPOTS = [[0, 1, 'bars 1–2'], [1, 2, 'bars 2–3'], [2, 3, 'bars 3–4'], [0, 2, 'bars 1 · 3'], [1, 3, 'bars 2 · 4'], [0, 3, 'bars 1 · 4']];
+function orderFor(dbl, spot, flip){
+  const rest = P.filter(c => c !== dbl); if (flip) rest.reverse();
+  const o = []; o[spot[0]] = dbl; o[spot[1]] = dbl;
+  let j = 0; for (let i = 0; i < 4; i++) if (!o[i]) o[i] = rest[j++];
+  return o;
+}
+const bars = o => `<div class="bars">${o.map(c => `<span class="c-${c}">${c}</span>`).join('')}</div>`;
+
+document.getElementById('groups').innerHTML = `<div></div>
+  <div class="half"><b>Held</b>the doubled chord rings 2 bars</div>
+  <div class="half"><b>Every bar changes</b>18 orders</div>
+  <div></div>` + SPOTS.map(s => `<div class="g"><b>${s[2]}</b></div>`).join('');
+
+let sel = idx['I V IV I'];
+function drawGrid(){
+  document.getElementById('rows').innerHTML = P.map(d => `<div class="row">
+    <div class="rl"><b class="c-txt" style="color:var(--d${d === 'I' ? 1 : d === 'IV' ? 4 : 5})">${d}</b>twice</div>` +
+    SPOTS.map(sp => `<div class="pair">${[0, 1].map(f => {
+      const o = orderFor(d, sp, f), i = idx[key(o)], n = byOrder[i].length;
+      return `<div class="cell${n ? '' : ' zero'}${i === sel ? ' sel' : ''}" data-i="${i}">
+        <div class="heat" style="opacity:${n ? 0.03 + 0.17 * Math.sqrt(n / max) : 0}"></div>
+        <div class="n">${n}<small>${n === 1 ? 'song' : 'songs'}</small></div>${bars(o)}</div>`;
+    }).join('')}</div>`).join('') + `</div>`).join('');
+  document.querySelectorAll('.cell').forEach(c => c.onclick = () => { sel = +c.dataset.i; drawGrid(); side(); });
+  const songs = new Set(DATA.hits.map(h => h[1])).size;
+  const heard = byOrder.filter(l => l.length).length;
+  document.getElementById('foot').innerHTML = `<b>${heard}</b> of 36 heard in <b>${songs}</b> songs · major-key sections read in 4-bar blocks from their first bar · each song once per order · darker = more songs`;
+}
+
+function rotations(o){ const out = []; for (let i = 1; i < 4; i++) out.push(o.slice(i).concat(o.slice(0, i))); return out; }
+function side(){
+  const o = DATA.orders[sel], l = byOrder[sel];
+  const loop = o[3] === o[0] ? 'Looped, bar 4 runs into bar 1 on the same chord: it holds across the seam.' : 'Looped, every change is a real change, the seam included.';
+  const rots = [...new Set(rotations(o).map(key))].filter(k => k !== key(o));
+  document.getElementById('side').innerHTML = `<div class="head">
+      <div class="top"><button class="play" id="pl" title="play twice, in C">▶</button><b>${o.join(' ')}</b><span>${o.map(c => LETTER[c]).join(' ')} in C · ${l.length} ${l.length === 1 ? 'song' : 'songs'}</span></div>
+      ${bars(o)}
+      <div class="sub">${loop}</div>
+      <div class="rots">same loop from another bar: ${rots.map(k => `<button data-k="${k}">${k} <b>${byOrder[idx[k]].length}</b></button>`).join('')}</div>
+    </div>
+    <div class="songs">${l.length ? l.map(h => `<div class="r">
+      <div class="t"><b>${esc(h.s.t)}</b><em>${esc(h.s.a)}</em></div>
+      <div class="m">${esc(h.sec)} · from bar ${h.bar} · ${esc(h.s.k)}${h.s.bpm ? ' · ' + Math.round(h.s.bpm) + ' bpm' : ''}</div>
+      <div class="lk">${h.s.u ? `<a href="https://hookpad.hooktheory.com/?idOfUserSong=${h.s.u}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}
+        <a href="https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(h.s.a + ' ' + h.s.t)}" target="_blank" rel="noopener">UG ↗</a></div>
+    </div>`).join('') : '<div class="empty">No song in the library plays this order in a 4-bar block.</div>'}</div>`;
+  document.getElementById('pl').onclick = e => play(o, e.currentTarget);
+  document.querySelectorAll('.rots button').forEach(b => b.onclick = () => { sel = idx[b.dataset.k]; drawGrid(); side(); });
+}
+
+// ---- playback: the four bars twice, in C, 100 bpm ----
+let ac = null, voices = [], playing = null, stopT = null;
+function stop(){ voices.forEach(v => { try { v.stop(); } catch (e) {} }); voices = [];
+  if (playing) playing.classList.remove('on'); playing = null; clearTimeout(stopT); }
+function play(o, btn){
+  if (playing === btn) { stop(); return; }
+  stop();
+  ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+  const bar = 4 * 60 / 100;
+  let t = ac.currentTime + 0.05;
+  for (let pass = 0; pass < 2; pass++) o.forEach(c => {
+    [NOTES[c][0] - 12, ...NOTES[c]].forEach(semi => {
+      const osc = ac.createOscillator(), v = ac.createGain();
+      osc.type = 'triangle'; osc.frequency.value = 261.63 * Math.pow(2, semi / 12);
+      v.gain.setValueAtTime(0, t); v.gain.linearRampToValueAtTime(0.08, t + 0.02);
+      v.gain.setTargetAtTime(0.04, t + 0.1, 0.5); v.gain.setTargetAtTime(0, t + bar - 0.06, 0.02);
+      osc.connect(v).connect(ac.destination); osc.start(t); osc.stop(t + bar + 0.1); voices.push(osc);
+    });
+    t += bar;
+  });
+  playing = btn; btn.classList.add('on');
+  stopT = setTimeout(stop, (t - ac.currentTime) * 1000 + 100);
+}
+
+drawGrid(); side();
+</script>
+</body></html>
