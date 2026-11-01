@@ -30,7 +30,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 HASH = Hashids(salt='XI0Y4UFrK6EPLnarrI4y', min_length=11,
                alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_')
 # every suffix the library uses for a second copy of a song
-SUFFIX = re.compile(r'(-(\d{2,3}(-\d{2,3})?|hooktab\d*|simple\d*|double|right|wrong|mixolydian|filled|3way|midi'
+SUFFIX = re.compile(r'(-(\d{2,3}(-\d{2,3})?|hooktab\d*|simple\d*|double|right|wrong|mixolydian|filled|3way|midi|audiochords\d*|chords|auto|fixed(-\w+)?'
                     r'|pasted|perfectmelody|6_8|[a-g])|_dynamics|_o_c_ly_?|_o_|(?<=[a-z])[23])$', re.I)
 # the same song under another name: found 2026-10-22 by identical chord files
 # (Love Song is a copy of Love Story; the Conway / Alabama files are Mel
