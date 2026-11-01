@@ -65,6 +65,12 @@ def sounding(notes, max_rest=4):
     return out
 
 
+def step(n):
+    """a note's height in scale steps, as Hookpad draws it: degree + 7 an octave, a sharp/flat half a step"""
+    m = re.match(r'([b#]?)(\d)', str(n['sd']))
+    return int(m.group(2)) - 1 + 7 * (n.get('octave') or 0) + {'#': 0.5, 'b': -0.5}.get(m.group(1), 0)
+
+
 def shape(h):
     """h = the longest note of each 2-bar line (4 lines)"""
     if max(h) - min(h) <= 0.5: return 'even'
@@ -92,8 +98,9 @@ def main():
             best[k] = (rank, name, d)
     songs, secs = [], []
     for _, name, d in sorted(best.values(), key=lambda b: b[1].lower()):
-        notes = sorted((float(n['beat']), float(n['duration'])) for n in d['notes'] if not n.get('isRest') and n.get('sd'))
-        snd = sounding(notes)
+        ns = sorted((float(n['beat']), float(n['duration']), step(n), n['sd']) for n in d['notes'] if not n.get('isRest') and n.get('sd'))
+        snd = sounding([(b, du) for b, du, _, _ in ns])
+        pitch = {b: (p, str(n)) for b, _, p, n in ns}
         seen, mine = set(), []
         for sec, b0, end in C.sections(d):
             kd = kind(sec)
@@ -110,11 +117,9 @@ def main():
             if sum(1 for x in holds if x) < 3: continue
             seen.add(kd)
             t0 = inside[0][0]
-            strip = []                                   # sounding lengths in order, a rest as a negative number
-            for b, du, r in inside:
-                strip.append(round(min(du, end - b) * 4) / 4)
-                if r and b + du + r < end: strip.append(-round(r * 4) / 4)
-            mine.append([kd, str(sec), int((end - b0) // 4), holds, shape(holds), round((t0 - b0) * 4) / 4, strip])
+            roll = [[round((b - b0) * 4) / 4, round(min(du, end - b, b0 + 32 - b) * 4) / 4, *pitch[b]]   # piano roll of the first 8 bars
+                    for b, du, r in inside if b < b0 + 32]
+            mine.append([kd, str(sec), int((end - b0) // 4), holds, shape(holds), roll])
         if not mine: continue
         base = same(name)
         artist, title = base.split('_', 1) if '_' in base else ('', base)

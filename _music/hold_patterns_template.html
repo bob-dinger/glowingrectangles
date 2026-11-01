@@ -6,94 +6,82 @@
 <style>
 :root{
   --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --soft:#f1efe8;
-  --note:#c9c6bc; --hold:#c0392b; --tick:#d9d6cc;
+  --note:#9c998f; --hold:#c0392b; --bar:#ebe9e2; --bar2:#cfccc2; --tonic:#f4f1e8;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926;
-  --note:#56544e; --hold:#ff6b5b; --tick:#3d3c37;
+  --note:#77746c; --hold:#ff6b5b; --bar:#2a2926; --bar2:#45433e; --tonic:#262522;
 }}
 :root[data-theme="dark"]{
   --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926;
-  --note:#56544e; --hold:#ff6b5b; --tick:#3d3c37;
+  --note:#77746c; --hold:#ff6b5b; --bar:#2a2926; --bar2:#45433e; --tonic:#262522;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  display:grid;grid-template-columns:1fr 470px;grid-template-rows:auto 1fr;gap:12px 16px;padding:14px 16px;height:100vh;overflow:hidden}
-header{grid-column:1 / span 2;display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:14px 16px 40px;max-width:1240px;margin:0 auto}
+header{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;margin-bottom:10px}
 h1{font-size:17px;font-weight:700}
 h1 a{font-size:12px;font-weight:500;color:var(--mute);margin-left:8px;text-decoration:none}
 h1 a:hover{color:var(--ink)}
 header p{font-size:12.5px;color:var(--mute);max-width:980px}
 header p b{color:var(--ink);font-weight:600}
-.box{background:var(--card);border:1px solid var(--line);border-radius:12px;min-height:0;overflow:hidden}
-#left{display:flex;flex-direction:column;padding:14px 16px 12px;gap:12px}
-.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.top{position:sticky;top:0;z-index:2;background:var(--bg);padding:8px 0 10px;border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
 .tabs button{font:inherit;font-size:13px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:4px 12px;cursor:pointer}
 .tabs button span{color:var(--mute);font-size:12px;margin-left:5px}
 .tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .tabs button.on span{color:var(--bg);opacity:.7}
-.cards{flex:1;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);gap:10px;min-height:0}
-.card{border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;position:relative;background:var(--card);min-height:0}
+.tabs input{margin-left:auto;font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:4px 10px;width:200px}
+.cards{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}
+.card{border:1px solid var(--line);border-radius:10px;padding:7px 9px 6px;cursor:pointer;background:var(--card);display:flex;flex-direction:column;gap:3px;min-width:0}
 .card:hover{border-color:var(--mute)}
 .card.sel{outline:2.5px solid var(--ink);outline-offset:-1px}
-.card .heat{position:absolute;inset:0;border-radius:9px;background:var(--ink);pointer-events:none}
-.card h3{font-size:14px;font-weight:700;position:relative}
-.card .n{font-size:22px;font-weight:750;position:relative;line-height:1}
-.card .n small{font-size:11.5px;font-weight:500;color:var(--mute);margin-left:4px}
-.card .d{font-size:11.5px;color:var(--mute);position:relative}
-.glyph{flex:1;display:flex;align-items:flex-end;gap:5px;min-height:28px;max-height:64px;position:relative;margin:auto 0}
-.glyph i{flex:1;max-width:22px;background:var(--hold);border-radius:3px 3px 0 0;opacity:.8}
-.foot{font-size:12px;color:var(--mute)}
-.foot b{color:var(--ink)}
-/* side */
-#side{display:flex;flex-direction:column}
-.head{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
-.head h2{font-size:20px;font-weight:750}
-.head h2 span{font-size:12.5px;font-weight:500;color:var(--mute);margin-left:8px}
-.head p{font-size:12.5px;color:var(--mute);margin-top:4px}
-.head .key{display:flex;gap:12px;font-size:11.5px;color:var(--mute);margin-top:8px;align-items:center}
-.head .key i{display:inline-block;width:18px;height:8px;border-radius:2px;margin-right:4px;vertical-align:middle}
-.songs{overflow:auto;flex:1;padding:2px 16px 12px}
-.r{display:grid;grid-template-columns:1fr auto;gap:3px 10px;padding:8px 0;border-bottom:1px solid var(--line)}
-.r .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.r .t b{font-weight:650}
-.r .t em{font-style:normal;color:var(--mute);font-size:12px;margin-left:6px}
-.r .h{font-size:12px;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
-.r .h b{color:var(--hold);font-weight:700}
-.r svg{grid-column:1 / span 2;width:100%;height:22px;display:block}
-.r .m{grid-column:1;font-size:11.5px;color:var(--mute)}
-.r .lk{grid-column:2;display:flex;gap:8px;justify-content:flex-end}
-.r .lk a{font-size:11px;color:var(--mute);text-decoration:none}
-.r .lk a:hover{color:var(--ink)}
-.r.star{background:var(--soft);margin:0 -8px;padding:8px}
-@media (max-width:820px){
-  body{display:block;height:auto;overflow:auto;padding:12px 16px}
-  header{margin-bottom:10px}
-  .box{margin-bottom:12px}
-  .cards{grid-template-columns:repeat(2,1fr);grid-template-rows:none}
-  .card{min-height:110px}
-  .songs{overflow:visible}
+.card h3{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card svg{width:100%;height:34px;display:block}
+.card .n{font-size:16px;font-weight:750;line-height:1.1}
+.card .n small{font-size:11px;font-weight:500;color:var(--mute);margin-left:4px}
+.sel-head{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;margin:14px 0 4px}
+.sel-head h2{font-size:20px;font-weight:750}
+.sel-head h2 span{font-size:12.5px;font-weight:500;color:var(--mute);margin-left:8px}
+.sel-head p{font-size:12.5px;color:var(--mute)}
+.key{display:flex;gap:14px;font-size:11.5px;color:var(--mute);align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.key i{display:inline-block;width:18px;height:7px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.r{display:grid;grid-template-columns:230px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);align-items:start}
+.r.star{background:var(--soft);margin:0 -10px;padding:12px 10px;border-radius:8px}
+.info{min-width:0;padding-top:16px}
+.info .t{font-weight:650;line-height:1.25}
+.info .a{color:var(--mute);font-size:12.5px}
+.info .m{color:var(--mute);font-size:11.5px;margin-top:4px}
+.info .lk{display:flex;gap:10px;margin-top:4px}
+.info .lk a{font-size:11.5px;color:var(--mute);text-decoration:none}
+.info .lk a:hover{color:var(--ink)}
+.roll{width:100%;display:block;overflow:visible}
+.roll text{font-size:11px;font-variant-numeric:tabular-nums}
+.more{display:block;margin:16px auto 0;font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 16px;cursor:pointer}
+@media (max-width:900px){
+  .cards{grid-template-columns:repeat(4,1fr)}
+  .r{grid-template-columns:1fr;gap:4px}
+  .info{padding-top:0}
+  .tabs input{margin-left:0;width:100%}
+  .top{position:static}
 }
 </style></head>
 <body>
 <header>
   <h1>Hold Patterns<a href="index.html">music index →</a></h1>
-  <p>A melody reads by where it <b>lands</b>. Each section's first 8 bars, read as four 2-bar lines: the <b>longest note of each line</b>, held until the next note sounds. Straight Tequila Night's verse lands <b>1.5 · 4 · 2 · 4</b> beats: short line, long answer.</p>
+  <p>A melody reads by where it <b>lands</b>. Each section's first 8 bars as a piano roll, read as four 2-bar lines; each note lasts until the next one sounds. The <b>longest note of each line</b> is in red, its length in beats above it. Straight Tequila Night's verse lands <b>1.5 · 4 · 2 · 4</b>: short line, long answer.</p>
 </header>
-<div id="left" class="box">
+<div class="top">
   <div class="tabs" id="tabs"></div>
   <div class="cards" id="cards"></div>
-  <div class="foot" id="foot"></div>
 </div>
-<aside id="side" class="box"></aside>
+<div id="list"></div>
 <script>
 const DATA = __DATA__;
 const SHAPES = [
   ['call & answer', [1.5, 4, 1.5, 4], 'lines 2 and 4 land a beat or more longer than 1 and 3'],
   ['answer & call', [4, 1.5, 4, 1.5], 'lines 1 and 3 land longer: the long note comes first'],
-  ['growing', [1.5, 2, 3, 4], 'each line holds at least as long as the last; the 4th a beat longer'],
-  ['shrinking', [4, 3, 2, 1.5], 'each line holds no longer than the last; the 1st a beat longer'],
+  ['growing', [1.5, 2, 3, 4], 'each line holds at least as long as the last; the 4th a beat longer than the 1st'],
+  ['shrinking', [4, 3, 2, 1.5], 'each line holds no longer than the last; the 1st a beat longer than the 4th'],
   ['long landing', [1.5, 2, 1.5, 4], 'the 4th line lands a beat longer than any before it'],
   ['long start', [4, 1.5, 2, 1.5], 'the 1st line holds a beat longer than any after it'],
   ['even', [2, 2, 2, 2], 'all four lines land within half a beat of each other'],
@@ -102,72 +90,103 @@ const SHAPES = [
 const KIND_NAME = {verse: 'Verse', chorus: 'Chorus', 'pre-chorus': 'Pre-chorus', bridge: 'Bridge'};
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 const fmt = x => (Math.round(x * 2) / 2).toString();
-let kind = 'verse', shape = 'call & answer';
+const PAGE = 60;
+let kind = 'verse', shape = 'call & answer', q = '', shown = PAGE;
 
 function rows(k, s){ return DATA.secs.filter(x => x[1] === k && (!s || x[5] === s)); }
 
 function tabs(){
   document.getElementById('tabs').innerHTML = DATA.kinds.map(k =>
-    `<button data-k="${k}" class="${k === kind ? 'on' : ''}">${KIND_NAME[k]}<span>${rows(k).length}</span></button>`).join('');
-  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { kind = b.dataset.k; draw(); });
+    `<button data-k="${k}" class="${k === kind ? 'on' : ''}">${KIND_NAME[k]}<span>${rows(k).length}</span></button>`).join('') +
+    `<input id="q" placeholder="find a song or artist" value="${esc(q)}">`;
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { kind = b.dataset.k; shown = PAGE; draw(); });
+  const inp = document.getElementById('q');
+  inp.oninput = () => { q = inp.value; shown = PAGE; list(); };
+}
+
+// a made-up 8 bars in the shape: quick notes, then each line's hold running to the line's end
+function glyph(ex){
+  const notes = [], zig = [2, 3, 2, 4, 3, 3];
+  ex.forEach((h, ln) => {
+    const lo = 8 * ln, hs = lo + 8 - h;
+    for (let t = lo, i = 0; t < hs - 0.01; t += 1, i++) notes.push([t, Math.min(1, hs - t), zig[(i + ln) % zig.length], 0]);
+    notes.push([hs, h, ln % 2 ? 0 : 1, 1]);
+  });
+  return `<svg viewBox="0 0 32 5" preserveAspectRatio="none">${[8, 16, 24].map(x => `<rect x="${x}" y="0" width="0.12" height="5" fill="var(--bar2)"/>`).join('')}
+    ${notes.map(([t, d, p, hold]) => `<rect x="${t}" y="${4.15 - p}" width="${Math.max(d - 0.35, 0.2)}" height="${hold ? 1 : 0.7}" fill="var(--${hold ? 'hold' : 'note'})" opacity="${hold ? 1 : 0.55}"/>`).join('')}</svg>`;
 }
 
 function cards(){
-  const all = rows(kind), max = Math.max(...SHAPES.map(s => rows(kind, s[0]).length));
-  document.getElementById('cards').innerHTML = SHAPES.map(([name, ex, d]) => {
-    const n = rows(kind, name).length, top = Math.max(...ex);
+  const all = rows(kind);
+  document.getElementById('cards').innerHTML = SHAPES.map(([name, ex]) => {
+    const n = rows(kind, name).length;
     return `<div class="card${name === shape ? ' sel' : ''}" data-s="${name}">
-      <div class="heat" style="opacity:${n ? 0.02 + 0.12 * Math.sqrt(n / max) : 0}"></div>
-      <h3>${name}</h3>
-      <div class="glyph">${ex.map(v => `<i style="height:${Math.round(100 * v / top)}%"></i>`).join('')}</div>
-      <div class="n">${n}<small>${Math.round(100 * n / all.length)}%</small></div>
-      <div class="d">${d}</div></div>`;
+      <h3>${name}</h3>${glyph(ex)}
+      <div class="n">${n}<small>${Math.round(100 * n / all.length)}%</small></div></div>`;
   }).join('');
-  document.querySelectorAll('.card').forEach(c => c.onclick = () => { shape = c.dataset.s; draw(); });
-  document.getElementById('foot').innerHTML = `<b>${all.length}</b> ${KIND_NAME[kind].toLowerCase()}s from <b>${new Set(all.map(x => x[0])).size}</b> songs · 4/4 only · the first ${KIND_NAME[kind].toLowerCase()} of each song · copies of a song collapse to the one with the most melody`;
+  document.querySelectorAll('.card').forEach(c => c.onclick = () => { shape = c.dataset.s; shown = PAGE; draw(); });
 }
 
-// the section's first 8 bars as a strip: every note as long as it sounds, holds (1.5+ beats) in red
-function strip(sec){
-  const [, , , , , , t0, lens] = sec, W = 32;
-  let t = t0, out = '';
-  for (let k = 1; k < 4; k++) out += `<line x1="${k * 8 / W * 100}%" x2="${k * 8 / W * 100}%" y1="0" y2="22" stroke="var(--tick)" stroke-width="1"/>`;
-  for (const v of lens){
-    if (t >= W) break;
-    if (v < 0){ t += -v; continue; }
-    const s = Math.max(t, 0), e = Math.min(t + v, W);
-    if (e > s){
-      const hold = v >= 1.5;
-      out += `<rect x="${s / W * 100}%" y="${hold ? 5 : 8}" width="calc(${(e - s) / W * 100}% - 1px)" height="${hold ? 12 : 6}" rx="2" fill="var(--${hold ? 'hold' : 'note'})"/>`;
-    }
-    t += v;
+// which note is each line's hold: the longest that starts in it (a 1-beat pickup counts for line 1), clipped to the line
+function holdNotes(roll){
+  const pick = new Set();
+  for (let ln = 0; ln < 4; ln++){
+    const lo = 8 * ln, hi = lo + 8;
+    let best = -1, len = 0;
+    roll.forEach(([t, d], i) => {
+      if (t >= lo - (ln ? 0 : 1) && t < hi){ const l = Math.min(d, hi - t); if (l > len){ len = l; best = i; } }
+    });
+    if (best >= 0) pick.add(best);
   }
-  return `<svg preserveAspectRatio="none">${out}</svg>`;
+  return pick;
 }
 
-function side(){
-  const list = rows(kind, shape).slice().sort((a, b) => DATA.songs[a[0]].t.localeCompare(DATA.songs[b[0]].t) || DATA.songs[a[0]].a.localeCompare(DATA.songs[b[0]].a));
+function roll(sec){
+  const notes = sec[6], holds = sec[4], top = Math.max(...holds), pick = holdNotes(notes);
+  const ps = notes.map(n => n[2]);
+  const lo = Math.floor(Math.min(...ps)) - 1, hi = Math.ceil(Math.max(...ps)) + 1;
+  const rowH = Math.max(4, Math.min(9, 110 / (hi - lo + 1))), head = 16, H = head + (hi - lo + 1) * rowH;
+  const X = t => `${(t + 1) / 33 * 100}%`, Y = p => head + (hi - p) * rowH;
+  let out = '';
+  for (let p = Math.ceil(lo); p <= hi; p++) if (((p % 7) + 7) % 7 === 0)       // the tonic rows
+    out += `<rect x="0" y="${Y(p)}" width="100%" height="${rowH}" fill="var(--tonic)"/>`;
+  for (let b = 0; b <= 32; b += 4)
+    out += `<rect x="${X(b)}" y="${head}" width="${b % 8 ? 1 : 1.5}" height="${H - head}" fill="var(--${b % 8 ? 'bar' : 'bar2'})"/>`;
+  holds.forEach((h, ln) => out += `<text x="${X(8 * ln + 4)}" y="11" text-anchor="middle" fill="var(--${h === top ? 'hold' : 'mute'})" font-weight="${h === top ? 700 : 500}">${fmt(h)}</text>`);
+  notes.forEach(([t, d, p, sd], i) => {
+    const s = Math.max(t, -1), hold = pick.has(i);
+    out += `<rect x="${X(s)}" y="${Y(p) + 0.5}" width="calc(${(t + d - s) / 33 * 100}% - 1.5px)" height="${rowH - 1}" rx="1.5" fill="var(--${hold ? 'hold' : 'note'})"/>`;
+    if (hold && d >= 1) out += `<text x="calc(${X(s)} + 3px)" y="${Y(p) - 2}" fill="var(--hold)" font-size="10">${esc(sd)}</text>`;
+  });
+  return `<svg class="roll" height="${H}">${out}</svg>`;
+}
+
+function list(){
+  const needle = q.trim().toLowerCase();
+  let rs = (needle ? rows(kind) : rows(kind, shape)).slice();
+  if (needle) rs = rs.filter(x => (DATA.songs[x[0]].t + ' ' + DATA.songs[x[0]].a).toLowerCase().includes(needle));
+  rs.sort((a, b) => DATA.songs[a[0]].t.localeCompare(DATA.songs[b[0]].t) || DATA.songs[a[0]].a.localeCompare(DATA.songs[b[0]].a));
   const desc = SHAPES.find(s => s[0] === shape)[2];
-  document.getElementById('side').innerHTML = `<div class="head">
-      <h2>${shape}<span>${KIND_NAME[kind]} · ${list.length} ${list.length === 1 ? 'song' : 'songs'}</span></h2>
-      <p>${desc}. The four numbers are each line's longest note, in beats.</p>
-      <div class="key"><span><i style="background:var(--note)"></i>note, as long as it sounds</span><span><i style="background:var(--hold)"></i>hold, 1.5+ beats</span><span>| every 2 bars</span></div>
-    </div>
-    <div class="songs">${list.length ? list.map(x => {
-      const s = DATA.songs[x[0]], top = Math.max(...x[4]);
-      const star = /straight tequila/i.test(s.t) ? ' star' : '';
+  const title = needle ? `“${esc(q.trim())}”<span>${KIND_NAME[kind]} · ${rs.length} found, any shape</span>`
+                       : `${shape}<span>${KIND_NAME[kind]} · ${rs.length} ${rs.length === 1 ? 'song' : 'songs'}, A–Z</span>`;
+  document.getElementById('list').innerHTML = `<div class="sel-head"><h2>${title}</h2>${needle ? '' : `<p>${desc}.</p>`}</div>
+    <div class="key"><span><i style="background:var(--note)"></i>note, as long as it sounds</span><span><i style="background:var(--hold)"></i>each line's longest note, with its scale degree</span><span><i style="background:var(--tonic);border:1px solid var(--bar2)"></i>the 1 (tonic) row</span><span>darker bar line every 2 bars · first 8 bars</span></div>
+    ${rs.slice(0, shown).map(x => {
+      const s = DATA.songs[x[0]], star = /straight tequila/i.test(s.t) ? ' star' : '';
       return `<div class="r${star}">
-        <div class="t"><b>${esc(s.t)}</b><em>${esc(s.a)}</em></div>
-        <div class="h">${x[4].map(v => v === top ? `<b>${fmt(v)}</b>` : fmt(v)).join(' · ')}</div>
-        ${strip(x)}
-        <div class="m">${esc(x[2])} · ${x[3]} bars${s.bpm ? ' · ' + Math.round(s.bpm) + ' bpm' : ''}</div>
-        <div class="lk">${s.u ? `<a href="https://hookpad.hooktheory.com/?idOfUserSong=${s.u}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}
-          <a href="https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(s.a + ' ' + s.t)}" target="_blank" rel="noopener">UG ↗</a></div>
+        <div class="info"><div class="t">${esc(s.t)}</div><div class="a">${esc(s.a)}</div>
+          <div class="m">${esc(x[2])} · ${x[3]} bars${s.bpm ? ' · ' + Math.round(s.bpm) + ' bpm' : ''}${needle ? ' · ' + x[5] : ''}</div>
+          <div class="lk">${s.u ? `<a href="https://hookpad.hooktheory.com/?idOfUserSong=${s.u}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}
+            <a href="https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(s.a + ' ' + s.t)}" target="_blank" rel="noopener">UG ↗</a></div></div>
+        ${roll(x)}
       </div>`;
-    }).join('') : '<p style="padding:16px;color:var(--mute)">No sections in this shape.</p>'}</div>`;
+    }).join('') || '<p style="padding:16px 0;color:var(--mute)">Nothing here.</p>'}
+    ${rs.length > shown ? `<button class="more" id="more">show ${Math.min(PAGE, rs.length - shown)} more of ${rs.length - shown}</button>` : ''}`;
+  const m = document.getElementById('more');
+  if (m) m.onclick = () => { shown += PAGE; list(); };
 }
 
-function draw(){ tabs(); cards(); side(); }
+function draw(){ tabs(); cards(); list(); }
 draw();
 </script>
 </body></html>
