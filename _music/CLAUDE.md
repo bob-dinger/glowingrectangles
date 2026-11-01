@@ -58,7 +58,7 @@ This unlocks **programmatic song import**: chord-chart parser → paste-compatib
 
 ## Creating songs via the API (VERIFIED 2026-10-30)
 
-`hookpad_upload_variants.upload(tok, name, obj)` creates a private song (POST /v1/songs, then PATCH isPrivate). The object must be the WHOLE saved project, built with `tempo_variant_pastes.full_json(d, 1)` from a downloaded file, then edited. A paste-style object (notes/chords/keys/tempos/sections only) saves fine but Hookpad refuses to open it ("can't be opened by this version of hookpad"): it needs `version`, `bands`, `settings`, etc. An existing song can be overwritten with `PATCH /v1/songs/{ID} {jsonData: json_data(obj)}`.
+`hookpad_upload_variants.upload(tok, name, obj)` creates a private song (POST /v1/songs, then PATCH isPrivate). The object must be the WHOLE saved project, built with `tempo_variant_pastes.full_json(d, 1)` from a downloaded file, then edited. A paste-style object (notes/chords/keys/tempos/sections only) saves fine but Hookpad refuses to open it ("can't be opened by this version of hookpad"): it needs `version`, `bands`, `settings`, etc. An existing song can be overwritten with `PATCH /v1/songs/{ID} {jsonData: json_data(obj)}`. Never empty `inactiveNotes` (the melody layers): `activeMelodyIndex` points into it, and a song whose active layer is gone gives the same "can't be opened" error by URL and hangs in the UI (Talk, 2026-11-01).
 
 ## Chord data quirks (very important)
 
