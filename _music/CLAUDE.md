@@ -30,6 +30,7 @@ Use `/Users/robert/Desktop/themap/themap_claude/.venv/bin/python` — has `supab
 - `melisma_align.py` — aligns lyrics to melody notes, marks melisma. Encodes 12 heuristic rules.
 - `melisma_examples.json` — verified test corpus (11+ examples).
 - `validate_corpus.py` — runs `melisma_align` against the corpus, reports pass/fail per song.
+- `audio_to_hookpad.py` — a recording → Hookpad song with the sung melody (demucs vocal split → basic-pitch → one line on the band's beat grid → scale degrees) and rough chords. Run with `.venv_audio/bin/python` (Python 3.11, has demucs/basic-pitch/torch); `--base <json>` keeps that song's chords and replaces only the melody; `--upload` creates it private. Work files in `~/Desktop/music/audio_work/<name>/` (audio stays out of the repo). Nashville Blues: key and tempo guessed right, 73% of verse notes right to the half beat. A draft for cleanup, and a strong check on a hand transcription.
 
 ## Hookpad API quirks
 
@@ -54,6 +55,10 @@ Bypass options if you don't want to compute fp: include `version: 1` in the obje
 This unlocks **programmatic song import**: chord-chart parser → paste-compatible JSON → user pastes into Hookpad → song appears. Reference code in conversation history; first working example was a I-IV-V-I, fingerprint `81d2ad45cbb6be919f675caebd42b838f5bb3792`.
 
 **Full-song paste verified 2026-05-14**: pasting a complete song object — including `notes`, `chords`, `keys`, `tempos`, `meters`, `sections`, `breaks`, `endBeat`, `audioTracks` — into an empty Hookpad session works. The `studied-songs.html` browser has a "Copy song as Hookpad paste-JSON" button that does this. Full round-trip is now: pull from Hookpad API → analyze/visualize locally → paste back into Hookpad UI. No need to manually re-enter chords/melody.
+
+## Creating songs via the API (VERIFIED 2026-10-30)
+
+`hookpad_upload_variants.upload(tok, name, obj)` creates a private song (POST /v1/songs, then PATCH isPrivate). The object must be the WHOLE saved project, built with `tempo_variant_pastes.full_json(d, 1)` from a downloaded file, then edited. A paste-style object (notes/chords/keys/tempos/sections only) saves fine but Hookpad refuses to open it ("can't be opened by this version of hookpad"): it needs `version`, `bands`, `settings`, etc. An existing song can be overwritten with `PATCH /v1/songs/{ID} {jsonData: json_data(obj)}`.
 
 ## Chord data quirks (very important)
 
