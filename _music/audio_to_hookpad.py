@@ -150,6 +150,14 @@ def melody(line, beats, tonic, mode, proto):
     return notes
 
 
+def legato(notes):
+    """each note lasts until the next one starts: no gaps, so the long notes show
+    (the user reads a melody by its long and landing notes)"""
+    for n, nxt in zip(notes, notes[1:]):
+        n['duration'] = nxt['beat'] - n['beat']
+    return notes
+
+
 def chords(y, sr, beats, tonic, mode, proto, end):
     sc = scale(mode)
     t0 = PCS[tonic]
@@ -267,6 +275,7 @@ def main():
     ap.add_argument('--no-ug', action='store_true', help='ignore UG: choose among the key\'s six triads')
     ap.add_argument('--chords-only', action='store_true',
                     help='with --base: keep that song (melody and all) and only give it the record\'s chords')
+    ap.add_argument('--gaps', action='store_true', help='keep the sung durations (default: each note lasts until the next)')
     ap.add_argument('--upload', action='store_true', help='create it as a private Hookpad song')
     a = ap.parse_args()
     if a.chords_only and not a.base:
@@ -300,6 +309,8 @@ def main():
     proto_n = (base.get('notes') or [{'sd': '1', 'octave': 0, 'beat': 1, 'duration': 1, 'isRest': False,
                                       'recordingEndBeat': None}])[0]
     o['notes'] = melody(line, beats, tonic, mode, {k: v for k, v in proto_n.items()})
+    if not a.gaps:
+        legato(o['notes'])
     end = max(n['beat'] + n['duration'] for n in o['notes'])
     o['endBeat'] = max(o['endBeat'] if a.base else 1, 1 + 4 * math.ceil((end - 1) / 4))
     if not a.base:
