@@ -242,7 +242,8 @@ def project(base_path, keep_chords):
     o.pop('fp', None)
     o['cursor'] = {'beat': 1, 'location': (o.get('cursor') or {}).get('location', 'cursor-note-staff')}
     o['audioTracks'], o['externalAudioFiles'] = [], []
-    o['inactiveNotes'] = []
+    # inactiveNotes (the other melody layers) stay: activeMelodyIndex / visibleMelodies
+    # point into them, and a song whose layers are gone will not open in Hookpad
     if isinstance(o.get('lyrics'), dict):
         o['lyrics']['isOpen'] = o['lyrics']['isFocused'] = False
     if not keep_chords:
