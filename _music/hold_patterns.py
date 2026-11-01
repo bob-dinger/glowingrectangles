@@ -71,6 +71,14 @@ def step(n):
     return int(m.group(2)) - 1 + 7 * (n.get('octave') or 0) + {'#': 0.5, 'b': -0.5}.get(m.group(1), 0)
 
 
+def base_numeral(label, applied):
+    """'Imaj7' -> 'I', 'vi7' -> 'vi', 'V7/V' -> 'V/V': the chord for filtering, extensions dropped"""
+    m = re.match(r'([b#]?(?:vii|iii|ii|iv|vi|v|i|VII|III|II|IV|VI|V|I)°?)', label)
+    if not m: return label
+    tail = re.search(r'/([b#]?[iIvV]+)$', label) if applied else None
+    return m.group(1) + ('/' + tail.group(1) if tail else '')
+
+
 def shape(h):
     """h = the longest note of each 2-bar line (4 lines)"""
     if max(h) - min(h) <= 0.5: return 'even'
@@ -98,9 +106,11 @@ def main():
             best[k] = (rank, name, d)
     songs, secs = [], []
     for _, name, d in sorted(best.values(), key=lambda b: b[1].lower()):
-        ns = sorted((float(n['beat']), float(n['duration']), step(n), n['sd']) for n in d['notes'] if not n.get('isRest') and n.get('sd'))
-        snd = sounding([(b, du) for b, du, _, _ in ns])
-        pitch = {b: (p, str(n)) for b, _, p, n in ns}
+        ns = sorted((float(n['beat']), float(n['duration']), step(n), str(n['sd']), int(n.get('octave') or 0))
+                    for n in d['notes'] if not n.get('isRest') and n.get('sd'))
+        snd = sounding([(b, du) for b, du, *_ in ns])
+        pitch = {b: (p, sd, o) for b, _, p, sd, o in ns}
+        chs = sorted((c for c in d.get('chords') or [] if not c.get('isRest') and c.get('root')), key=lambda c: c['beat'])
         seen, mine = set(), []
         for sec, b0, end in C.sections(d):
             kd = kind(sec)
@@ -108,18 +118,45 @@ def main():
             inside = [(b, du, r) for b, du, r in snd if b0 - 1 <= b < end]       # a pickup half a bar early counts
             if len(inside) < 6: continue
             # one value per 2-bar line over the first 8 bars: the longest note that starts in it
-            holds = []
+            holds, hold_at = [], []
             for ln in range(4):
                 lo, hi = b0 + 8 * ln, min(end, b0 + 8 * ln + 8)
                 if lo >= end: break
-                ds = [min(du, hi - b) for b, du, r in inside if lo - (1 if ln == 0 else 0) <= b < hi]
-                holds.append(round(max(ds) * 2) / 2 if ds else 0)
+                ds = [(min(du, hi - b), -i) for i, (b, du, r) in enumerate(inside) if lo - (1 if ln == 0 else 0) <= b < hi]
+                holds.append(round(max(ds)[0] * 2) / 2 if ds else 0)
+                hold_at.append(-max(ds)[1] if ds else -1)
             if sum(1 for x in holds if x) < 3: continue
             seen.add(kd)
-            t0 = inside[0][0]
-            roll = [[round((b - b0) * 4) / 4, round(min(du, end - b, b0 + 32 - b) * 4) / 4, *pitch[b]]   # piano roll of the first 8 bars
-                    for b, du, r in inside if b < b0 + 32]
-            mine.append([kd, str(sec), int((end - b0) // 4), holds, shape(holds), roll])
+            win = b0 + min(32, end - b0)
+            roll = [[round((b - b0) * 4) / 4, round(min(du, end - b, win - b) * 4) / 4, *pitch[b]]   # piano roll of the first 8 bars
+                    for b, du, r in inside if b < win]
+            hold_at = [i if i < len(roll) else -1 for i in hold_at]
+            # the chords of those 8 bars: [t, dur, label, then the Hookpad fields for a paste]
+            chords = []
+            for c in chs:
+                cb, ce = float(c['beat']), float(c['beat']) + float(c.get('duration') or 4)
+                if ce <= b0 or cb >= win: continue
+                t = max(cb, b0)
+                chords.append([round((t - b0) * 4) / 4, round((min(ce, win) - t) * 4) / 4, C.roman(c, C.mode_at(d, cb)),
+                               c['root'], int(c.get('type') or 5), c.get('inversion') or 0, c.get('applied') or 0,
+                               c.get('borrowed') or '', c.get('adds') or [], c.get('omits') or [],
+                               c.get('alterations') or [], c.get('suspensions') or []])
+            def under(i):
+                """the chord a hold sits on: the one sounding as it starts, or one arriving within a beat
+                that the note then holds over for at least a beat (a note sung just ahead of its chord)"""
+                if i < 0: return -1
+                t, d = roll[i][0], roll[i][1]
+                for j, c in enumerate(chords):
+                    if t < c[0] <= t + 1 and t + d - c[0] >= 1: return j
+                for j, c in enumerate(chords):
+                    if c[0] <= max(t, 0) < c[0] + c[1]: return j
+                return -1
+            uj = [under(i) for i in hold_at]
+            ks = [k for k in C.key_spans(d) if k[0] <= b0] or C.key_spans(d)
+            kk = sorted([k for k in (d.get('keys') or []) if isinstance(k, dict) and k.get('beat', 1) <= b0], key=lambda k: k.get('beat', 1))
+            key = [(kk[-1].get('tonic') if kk else None) or 'C', ks[-1][2]]
+            mine.append([kd, str(sec), int((end - b0) // 4), holds, shape(holds), roll, chords, hold_at,
+                         [base_numeral(chords[j][2], chords[j][6]) if j >= 0 else '' for j in uj], key, uj])
         if not mine: continue
         base = same(name)
         artist, title = base.split('_', 1) if '_' in base else ('', base)
