@@ -63,7 +63,7 @@ def refresh_list(token):
         if len(data) < 100:
             break
         page += 1
-        time.sleep(2.0)   # generous throttle to avoid 429
+        time.sleep(3.0)   # CLAUDE.md: >= 3 s between list pages or it 429s
     os.makedirs(os.path.dirname(LIST_CACHE), exist_ok=True)
     with open(LIST_CACHE, 'w') as fh:
         json.dump(out, fh)
