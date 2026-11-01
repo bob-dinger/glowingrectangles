@@ -61,6 +61,7 @@ header p b{color:var(--ink);font-weight:600}
 .filters .clear{border:0;background:none;color:var(--mute);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline}
 .cp{font:inherit;font-size:11.5px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:2px 8px;cursor:pointer;margin-top:6px;margin-right:4px}
 .cp:hover{border-color:var(--mute)}
+.cp.rmx{border-color:var(--hold);color:var(--hold)}
 .cp.ok{background:var(--ink);color:var(--bg)}
 .more{display:block;margin:16px auto 0;font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 16px;cursor:pointer}
 @media (max-width:900px){
@@ -74,7 +75,7 @@ header p b{color:var(--ink);font-weight:600}
 <body>
 <header>
   <h1>Hold Patterns<a href="index.html">music index →</a></h1>
-  <p>A melody reads by where it <b>lands</b>. Each section's first 8 bars as a piano roll, read as four 2-bar lines; each note lasts until the next one sounds. The <b>longest note of each line</b> is in red, its length in beats above it. Straight Tequila Night's verse lands <b>1.5 · 4 · 2 · 4</b>: short line, long answer.</p>
+  <p>A melody reads by where it <b>lands</b>. Each section's first 8 bars as a piano roll, read as four 2-bar lines; each note lasts until the next one sounds. The <b>longest note of each line</b> is in red, its length in beats above it. Straight Tequila Night's verse lands <b>1.5 · 4 · 2 · 4</b>: short line, long answer. <b>remix ×8</b> copies one Hookpad paste: the section, then 7 takes in its exact rhythm over other progressions and melody styles (pentatonic, chord tones, arpeggio, repeated notes, the original contour); click again for new takes.</p>
 </header>
 <div class="top">
   <div class="tabs" id="tabs"></div>
@@ -215,12 +216,12 @@ function list(){
           <div class="m">${esc(x[2])} · ${x[3]} bars${s.bpm ? ' · ' + Math.round(s.bpm) + ' bpm' : ''}${needle ? ' · ' + x[5] : ''}</div>
           <div class="lk">${s.u ? `<a href="https://hookpad.hooktheory.com/?idOfUserSong=${s.u}" target="_blank" rel="noopener">Hookpad ↗</a>` : ''}
             <a href="https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(s.a + ' ' + s.t)}" target="_blank" rel="noopener">UG ↗</a></div>
-          <button class="cp" data-i="${DATA.secs.indexOf(x)}" data-w="all" title="melody and chords of these 8 bars, as a Hookpad paste">copy 8 bars</button><button class="cp" data-i="${DATA.secs.indexOf(x)}" data-w="holds" title="just the four red holds, no chords: write your own line over your own chords">copy holds only</button></div>
+          <button class="cp" data-i="${DATA.secs.indexOf(x)}" data-w="all" title="melody and chords of these 8 bars, as a Hookpad paste">copy 8 bars</button><button class="cp" data-i="${DATA.secs.indexOf(x)}" data-w="holds" title="just the four red holds, no chords: write your own line over your own chords">copy holds only</button><button class="cp rmx" data-i="${DATA.secs.indexOf(x)}" title="the original, then 7 takes in the same rhythm over other progressions and melody styles, as one Hookpad paste; every click rolls new ones">remix ×8</button></div>
         ${roll(x)}
       </div>`;
     }).join('') || '<p style="padding:16px 0;color:var(--mute)">Nothing here.</p>'}
     ${rs.length > shown ? `<button class="more" id="more">show ${Math.min(PAGE, rs.length - shown)} more of ${rs.length - shown}</button>` : ''}`;
-  document.querySelectorAll('.cp').forEach(b => b.onclick = () => copy(+b.dataset.i, b.dataset.w === 'holds', b));
+  document.querySelectorAll('.cp').forEach(b => b.onclick = () => b.classList.contains('rmx') ? copyRemix(+b.dataset.i, b) : copy(+b.dataset.i, b.dataset.w === 'holds', b));
   const m = document.getElementById('more');
   if (m) m.onclick = () => { shown += PAGE; list(); };
 }
@@ -244,6 +245,133 @@ async function copy(i, holdsOnly, btn){
     endBeat: 1 + lead + 32, audioTracks: []};
   const label = btn.textContent;
   try { await navigator.clipboard.writeText(JSON.stringify(obj)); btn.textContent = '✓ copied, paste in Hookpad'; }
+  catch (e) { btn.textContent = 'copy failed'; }
+  btn.classList.add('ok');
+  setTimeout(() => { btn.textContent = label; btn.classList.remove('ok'); }, 2200);
+}
+
+// ---------- remix: the same rhythm, new pitches over new chords ----------
+// Pitches are diatonic steps in the section's mode (degree - 1 + 7 x octave); a chord is its root degree,
+// a plain triad in that mode. A borrowed-sounding loop (i-bVII-bVI) is written in the mode it is diatonic
+// to -- minor, mixolydian, dorian -- so every chord and note stays plain in Hookpad.
+const PROGS = [
+  ['I–V–vi–IV', 'major', [1, 5, 6, 4]], ['vi–IV–I–V', 'major', [6, 4, 1, 5]], ['I–vi–IV–V', 'major', [1, 6, 4, 5]],
+  ['I–IV–vi–V', 'major', [1, 4, 6, 5]], ['IV–I–V–vi', 'major', [4, 1, 5, 6]], ['I–iii–IV–V', 'major', [1, 3, 4, 5]],
+  ['ii–V–I–I', 'major', [2, 5, 1, 1]], ['I–IV–I–V', 'major', [1, 4, 1, 5]], ['I–I–IV–IV', 'major', [1, 1, 4, 4]],
+  ['i–bVII–bVI–bVII', 'minor', [1, 7, 6, 7]], ['i–bVI–bIII–bVII', 'minor', [1, 6, 3, 7]], ['i–iv–bVII–i', 'minor', [1, 4, 7, 1]],
+  ['I–bVII–IV–I', 'mixolydian', [1, 7, 4, 1]], ['i–IV (dorian)', 'dorian', [1, 4]],
+];
+const STYLES = {
+  'contour': 'the original line, each long note moved to the nearest chord tone',
+  'chord tones': 'holds land on a chord tone; quick notes step toward the next one',
+  'pentatonic': 'only the 5 pentatonic notes; holds on chord tones',
+  'arpeggio': 'quick notes walk the chord',
+  'repeated': 'quick notes sit on one note per line, moving only into the hold',
+};
+const PENTA = {major: [0, 1, 2, 4, 5], mixolydian: [0, 1, 2, 4, 5], minor: [0, 2, 3, 4, 6], dorian: [0, 2, 3, 4, 6]};
+const md = (a, n) => ((a % n) + n) % n;
+const pickOne = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const triad = r => [r - 1, r + 1, r + 3].map(v => md(v, 7));
+function near(set, from, lo, hi){               // the step nearest `from` whose degree is in `set`, kept in range
+  let best = null;
+  for (let s = lo; s <= hi; s++) if (set.includes(md(s, 7))){
+    const d = Math.abs(s - from) + Math.random() * 0.1;
+    if (best === null || d < best[0]) best = [d, s];
+  }
+  return best ? best[1] : Math.round(from);
+}
+
+function remixNotes(x, chordAt, mode, style){
+  const roll = x[6], pick = holdNotes(x);
+  const orig = roll.map(n => Math.floor(n[2]));
+  const mid = orig.slice().sort((a, b) => a - b)[orig.length >> 1], lo = mid - 5, hi = mid + 5;
+  const penta = PENTA[mode] || PENTA.major, all = [0, 1, 2, 3, 4, 5, 6];
+  const tonesAt = t => triad(chordAt(Math.max(t, 0)));
+  const scaleSet = style === 'pentatonic' ? penta : all;
+  const hold = roll.map((n, i) => pick.has(i) || n[1] >= 1.5);
+  // 1. the holds: a chord tone, near the last one, wandering a little
+  const out = new Array(roll.length);
+  let last = mid;
+  roll.forEach((n, i) => {
+    if (!hold[i]) return;
+    const ct = tonesAt(n[0] + Math.min(1, n[1] / 2));
+    const set = style === 'pentatonic' ? (ct.filter(v => penta.includes(v)).length ? ct.filter(v => penta.includes(v)) : penta) : ct;
+    const from = style === 'contour' ? orig[i] : last + pickOne([-2, -1, 0, 1, 2]);
+    out[i] = near(set, from, lo, hi); last = out[i];
+  });
+  // 2. the quick notes between them
+  let prev = out.find(v => v !== undefined) ?? mid, recite = null, line = -1;
+  roll.forEach((n, i) => {
+    if (hold[i]){ prev = out[i]; return; }
+    const nextHold = out.slice(i + 1).find(v => v !== undefined) ?? prev;
+    const ln = Math.max(0, Math.floor(n[0] / 8));
+    let s;
+    if (style === 'contour') s = orig[i];
+    else if (style === 'arpeggio'){
+      const ct = tonesAt(n[0]), dir = nextHold > prev ? 1 : nextHold < prev ? -1 : pickOne([-1, 1]);
+      s = prev + dir; while (!ct.includes(md(s, 7))) s += dir;
+      if (s > hi || s < lo) s = near(ct, prev - dir, lo, hi);
+    } else if (style === 'repeated'){
+      if (ln !== line){ line = ln; recite = near(tonesAt(n[0]), nextHold + pickOne([1, 2, -1]), lo, hi); }
+      s = recite;
+    } else {
+      const dir = Math.sign(nextHold - prev), r = Math.random();
+      s = prev + (r < 0.6 ? (dir || pickOne([-1, 1])) : r < 0.8 ? 0 : -(dir || 1));
+      s = near(scaleSet, s, lo, hi);
+    }
+    out[i] = Math.max(lo, Math.min(hi, s)); prev = out[i];
+  });
+  return roll.map((n, i) => ({t: n[0], d: n[1], step: out[i]}));
+}
+
+async function copyRemix(i, btn){
+  const x = DATA.secs[i], s = DATA.songs[x[0]], roll = x[6];
+  const lead = roll.some(n => n[0] < 0) ? 4 : 0, block = lead + 32;
+  const mkChord = (root, beat, duration, o = {}) => ({root, beat: num(beat), duration: num(duration), type: o.type || 5,
+    inversion: o.inversion || 0, applied: o.applied || 0, adds: o.adds || [], omits: o.omits || [], alterations: o.alterations || [],
+    suspensions: o.suspensions || [], substitutions: [], pedal: null, alternate: '', borrowed: o.borrowed || '', isRest: false, recordingEndBeat: null});
+  const note = (sd, octave, beat, d) => ({sd: String(sd), octave, beat: num(beat), duration: num(d), isRest: false, recordingEndBeat: null});
+  const notes = [], chords = [], keys = [], sections = [];
+  const songMode = x[10][1];
+  // the takes: the song's own chords twice, then five other loops, each with a style
+  const styles = Object.keys(STYLES);
+  const takes = [{own: true, style: 'pentatonic'}, {own: true, style: pickOne(['chord tones', 'arpeggio', 'repeated'])}];
+  shuffle(PROGS).slice(0, 5).forEach((p, k) => takes.push({prog: p, style: k === 0 ? 'contour' : pickOne(styles)}));
+  let at = 1;
+  // the original
+  keys.push({beat: at, scale: songMode, tonic: x[10][0]});
+  sections.push({beat: at + lead, name: `0 original · ${s.t}`.slice(0, 60)});
+  roll.forEach(([t, d, , sd, oct]) => notes.push(note(sd, oct, at + lead + t, d)));
+  x[7].forEach(([t, d, , root, type, inversion, applied, borrowed, adds, omits, alterations, suspensions]) =>
+    chords.push(mkChord(root, at + lead + t, d, {type, inversion, applied, borrowed, adds, omits, alterations, suspensions})));
+  at += block;
+  takes.forEach((tk, k) => {
+    let mode, chordAt, name;
+    if (tk.own){
+      mode = PENTA[songMode] ? songMode : 'major';
+      chordAt = t => { const c = x[7].find(c => c[0] <= t && t < c[0] + c[1]) || x[7][0]; return c ? c[3] : 1; };
+      name = `own chords · ${tk.style}`;
+      x[7].forEach(([t, d, , root, type, inversion, applied, borrowed, adds, omits, alterations, suspensions]) =>
+        chords.push(mkChord(root, at + lead + t, d, {type, inversion, applied, borrowed, adds, omits, alterations, suspensions})));
+    } else {
+      const [label, m, roots] = tk.prog;
+      mode = m;
+      chordAt = t => roots[Math.floor(Math.max(t, 0) / 4) % roots.length];   // one chord a bar, the loop played twice
+      name = `${label} · ${tk.style}`;
+      for (let bar = 0; bar < 8; bar++) chords.push(mkChord(roots[bar % roots.length], at + lead + 4 * bar, 4));
+    }
+    keys.push({beat: at, scale: tk.own ? songMode : mode, tonic: x[10][0]});
+    sections.push({beat: at + lead, name: `${k + 1} ${name}`.slice(0, 60)});
+    remixNotes(x, chordAt, mode, tk.style).forEach(n =>
+      notes.push(note(md(n.step, 7) + 1, Math.floor(n.step / 7), at + lead + n.t, n.d)));
+    at += block;
+  });
+  const obj = {version: 1, chords, notes, keys,
+    tempos: [{beat: 1, bpm: s.bpm || 100, swingFactor: 0, swingBeat: 0.5}],
+    meters: [{beat: 1, numBeats: 4, beatUnit: 1}], breaks: [], sections, endBeat: at, audioTracks: []};
+  const label = btn.textContent;
+  try { await navigator.clipboard.writeText(JSON.stringify(obj)); btn.textContent = '✓ 8 takes copied'; }
   catch (e) { btn.textContent = 'copy failed'; }
   btn.classList.add('ok');
   setTimeout(() => { btn.textContent = label; btn.classList.remove('ok'); }, 2200);
