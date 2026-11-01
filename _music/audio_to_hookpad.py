@@ -150,11 +150,15 @@ def melody(line, beats, tonic, mode, proto):
     return notes
 
 
-def legato(notes):
+def legato(notes, max_rest=4):
     """each note lasts until the next one starts: no gaps, so the long notes show
-    (the user reads a melody by its long and landing notes)"""
+    (the user reads a melody by its long and landing notes). A rest longer than
+    a bar (an instrumental stretch) is kept: the note stops at the next half bar
+    after it was sung, or Straight Tequila's last chorus note ran 16 beats."""
     for n, nxt in zip(notes, notes[1:]):
-        n['duration'] = nxt['beat'] - n['beat']
+        end = n['beat'] + n['duration']
+        n['duration'] = (nxt['beat'] if nxt['beat'] - end <= max_rest
+                         else math.ceil((end - 1) / 2) * 2 + 1) - n['beat']
     return notes
 
 
