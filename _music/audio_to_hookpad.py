@@ -18,16 +18,20 @@ clean up by ear, not a finished transcription.
 4. Notes become scale degrees in the key (--key, else guessed from the band).
    A chromatic note between two scale notes is almost always a slide, so it
    becomes whichever neighbour the line is on next to it.
-5. Chords: with --base, that song's chords, sections and lyrics are kept and
-   only the melody is replaced. Without one, each half bar of the band gets the
-   diatonic triad that fits it best, repeats merged. Rough: Am7 and C look alike.
+5. Chords (audio_chords.py): with --base, that song's chords, sections and
+   lyrics are kept and only the melody is replaced. Without one, the chords
+   come from the song's UG chart when ~/Desktop/music/ug_tabs has it (its chord
+   list, after the capo, moved to the record's key if the chart is in another,
+   with their extensions: Am7, Cadd9), else the key's six triads; each half bar
+   of the band is scored against them (chroma + bass note) and smoothed so a
+   chord holds unless the band moves. About 3 in 4 beats right.
 
 Work files go to ~/Desktop/music/audio_work/<name>/ (outside the repo: the
 audio is someone else's recording). The song JSON is written there too;
 --upload creates it as a private Hookpad song (via the main venv, which has the
 upload helpers).
 """
-import argparse, copy, json, math, os, subprocess, sys
+import argparse, copy, json, math, os, re, subprocess, sys
 import numpy as np, librosa
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -170,6 +174,30 @@ def chords(y, sr, beats, tonic, mode, proto, end):
     return [c for c in out if c['beat'] < end]
 
 
+def song_chords(a, band, beats, tonic, mode, proto, end):
+    """The UG chart's chords (moved to the record's key if the chart is in
+    another), else the key's six triads; a chord per half bar, smoothed.
+    Settings from a 9-song test against hand Hookpad chords (2026-11-01):
+    74% of beats right against 73% for one-triad-per-half-bar."""
+    import audio_chords as AC
+    ug = None
+    if not a.no_ug:
+        ug = a.ug or AC.find_ug(*(re.sub(r'-[^ ]*$', '', a.name).split('_', 1) + [''])[:2])
+    if ug:
+        capo, counts, _ = AC.ug_chart(ug)
+        cand = AC.sounding(AC.candidates(counts), capo)
+        s, _ = AC.chart_key(band, beats, list(cand), treble='mid')
+        cand = {AC.transpose(c, s): n for c, n in cand.items()}
+        path = AC.best_path(band, beats, list(cand), change=0.1, bass_w=0.3, unit=2, prior=cand, treble='mid')
+        how = (f'chords from UG {os.path.basename(ug)}: {" ".join(cand)}'
+               + (f' (chart moved {s} semitones to the record)' if s else ''))
+    else:
+        path = AC.best_path(band, beats, AC.diatonic(tonic, mode), change=0.05, bass_w=0.15, unit=2, treble='mid')
+        how = f'chords: the six triads of {tonic} {mode} (no UG chart)'
+    out = [AC.to_hookpad(n, tonic, mode, proto, b, du) for n, b, du in path if b < end]
+    return out, how
+
+
 def project(base_path, keep_chords):
     d = json.load(open(base_path))
     d = d.get('jsonData', d)
@@ -198,6 +226,8 @@ def main():
     ap.add_argument('--mode', default=None, help='major, minor, mixolydian ... (default: guessed, major/minor)')
     ap.add_argument('--base', help='Hookpad JSON whose chords/sections/lyrics to keep (only the melody is replaced)')
     ap.add_argument('--first-beat', type=float, help='seconds where bar 1 starts (default: first beat heard)')
+    ap.add_argument('--ug', help='UG page to take the chord list from (default: found from --name)')
+    ap.add_argument('--no-ug', action='store_true', help='ignore UG: choose among the key\'s six triads')
     ap.add_argument('--upload', action='store_true', help='create it as a private Hookpad song')
     a = ap.parse_args()
 
@@ -224,7 +254,8 @@ def main():
     end = max(n['beat'] + n['duration'] for n in o['notes'])
     o['endBeat'] = max(o['endBeat'] if a.base else 1, 1 + 4 * math.ceil((end - 1) / 4))
     if not a.base:
-        o['chords'] = chords(y, sr, beats, tonic, mode, base['chords'][0], o['endBeat'])
+        o['chords'], how = song_chords(a, band, beats, tonic, mode, base['chords'][0], o['endBeat'])
+        print(how)
     o['keys'] = [{'beat': 1, 'scale': mode, 'tonic': tonic}]
     o['tempos'] = [{**(o.get('tempos') or [{}])[0], 'beat': 1, 'bpm': round(bpm)}]
     out = os.path.join(work, 'song.json')
