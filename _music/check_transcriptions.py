@@ -99,7 +99,10 @@ def check(audio, hp_file, work):
     for b, du, pc in hn: hp_prof[pc] += du
     for b, pc, du in sung: sung_prof[pc] += du
     corr = [float(np.corrcoef(np.roll(hp_prof, s), sung_prof)[0, 1]) for s in range(12)]
-    shift = int(np.argmax(corr))
+    # a pentatonic or modal line looks nearly the same a 4th/5th away (Talk: 0.78
+    # as written, 0.82 up a 5th), so every shift close to the best is tried in
+    # time below and the one whose notes actually line up wins
+    shifts = [s for s in range(12) if corr[s] >= max(corr) - 0.1]
     # 2. tempo factor: the file's beats against the record's
     ratio = bpm / file_bpm if file_bpm else 1
     factor = min((0.5, 1, 2), key=lambda f: abs(np.log(ratio / f)))
@@ -116,9 +119,13 @@ def check(audio, hp_file, work):
         return hit / len(hn)
     span = int(max(b for b, *_ in sung) + 32)
     offs = np.arange(-64, span, 0.5)
-    coarse = [(score(o, shift), o) for o in offs[::2]]
-    o0 = max(coarse)[1]
-    m_shift, off = max((score(o, shift), o) for o in np.arange(o0 - 2, o0 + 2.5, 0.5))
+    best = None
+    for sh in shifts:
+        o0 = max((score(o, sh), o) for o in offs[::2])[1]
+        m, o1 = max((score(o, sh), o) for o in np.arange(o0 - 2, o0 + 2.5, 0.5))
+        if best is None or m > best[0]:
+            best = (m, o1, sh)
+    m_shift, off, shift = best
     as_is = max(score(o, 0) for o in np.arange(off - 2, off + 2.5, 0.5)) if shift else m_shift
     return dict(hookpad=os.path.basename(hp_file)[:-5], key=f"{keys[0]['tonic']} {keys[0].get('scale')}",
                 notes=len(hn), file_bpm=file_bpm, record_bpm=round(bpm, 1), tempo_factor=factor,
