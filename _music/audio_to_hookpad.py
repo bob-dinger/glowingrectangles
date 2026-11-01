@@ -174,7 +174,7 @@ def chords(y, sr, beats, tonic, mode, proto, end):
     return [c for c in out if c['beat'] < end]
 
 
-def song_chords(a, band, beats, tonic, mode, proto, end):
+def song_path(a, band, beats, tonic, mode):
     """The UG chart's chords (moved to the record's key if the chart is in
     another), else the key's six triads; a chord per half bar, smoothed.
     Settings from a 9-song test against hand Hookpad chords (2026-11-01):
@@ -194,8 +194,44 @@ def song_chords(a, band, beats, tonic, mode, proto, end):
     else:
         path = AC.best_path(band, beats, AC.diatonic(tonic, mode), change=0.05, bass_w=0.15, unit=2, treble='mid')
         how = f'chords: the six triads of {tonic} {mode} (no UG chart)'
-    out = [AC.to_hookpad(n, tonic, mode, proto, b, du) for n, b, du in path if b < end]
-    return out, how
+    return path, how
+
+
+def song_chords(a, band, beats, tonic, mode, proto, end):
+    import audio_chords as AC
+    path, how = song_path(a, band, beats, tonic, mode)
+    return [AC.to_hookpad(n, tonic, mode, proto, b, du) for n, b, du in path if b < end], how
+
+
+def chords_into(a, work, band, beats):
+    """--chords-only: keep the --base song as it is (melody, sections, lyrics,
+    key, tempo) and give it the record's chords. The record is lined up with the
+    file the way check_transcriptions does it (the sung line against the file's
+    melody: transposition, x2/x0.5 tempo, offset), so a file written in another
+    key or at double tempo still gets its chords in the right place, in its key."""
+    import audio_chords as AC, check_transcriptions as CT
+    al = CT.check(a.audio, a.base, work)
+    o, base = project(a.base, keep_chords=True)
+    k = (o.get('keys') or [{'tonic': 'C', 'scale': 'major'}])[0]
+    ftonic, fmode = k['tonic'], k.get('scale', 'major')
+    rtonic = NAMES[(PCS[ftonic] + al['shift']) % 12]
+    path, how = song_path(a, band, beats, rtonic, CT.MODE_SCALE.get(fmode, 'major'))
+    proto = (base.get('chords') or [{}])[0]
+    out = []
+    for n, b, du in path:
+        fb = round(((b - 1 - al['offset']) / al['tempo_factor'] + 1) * 2) / 2
+        fdu = round(du / al['tempo_factor'] * 2) / 2
+        if fb + fdu <= 1 or fb >= o['endBeat'] or fdu <= 0:
+            continue
+        if fb < 1:
+            fdu, fb = fdu - (1 - fb), 1
+        out.append(AC.to_hookpad(AC.transpose(n, -al['shift']), ftonic, fmode, proto, fb, fdu))
+    o['chords'] = out
+    print(how)
+    print(f"lined up with the file: record = file {'+' if al['shift'] <= 6 else '-'}"
+          f"{al['shift'] if al['shift'] <= 6 else 12 - al['shift']} semitones, tempo x{al['tempo_factor']}, "
+          f"offset {al['offset']:g} beats, melody match {al['match_shifted']:.0%}")
+    return o
 
 
 def project(base_path, keep_chords):
@@ -228,8 +264,12 @@ def main():
     ap.add_argument('--first-beat', type=float, help='seconds where bar 1 starts (default: first beat heard)')
     ap.add_argument('--ug', help='UG page to take the chord list from (default: found from --name)')
     ap.add_argument('--no-ug', action='store_true', help='ignore UG: choose among the key\'s six triads')
+    ap.add_argument('--chords-only', action='store_true',
+                    help='with --base: keep that song (melody and all) and only give it the record\'s chords')
     ap.add_argument('--upload', action='store_true', help='create it as a private Hookpad song')
     a = ap.parse_args()
+    if a.chords_only and not a.base:
+        ap.error('--chords-only needs --base')
 
     work = os.path.expanduser(f'~/Desktop/music/audio_work/{a.name}')
     os.makedirs(work, exist_ok=True)
@@ -241,6 +281,14 @@ def main():
     print('vocal -> notes (basic-pitch) ...')
     line = one_line(vocal_notes(vocals, work), vocals)
     beats, bpm, y, sr = beat_grid(band, a.first_beat)
+    if a.chords_only:
+        o = chords_into(a, work, band, beats)
+        out = os.path.join(work, 'song.json')
+        json.dump(o, open(out, 'w'))
+        print(f'{a.name}: {len(o["chords"])} chords into {os.path.basename(a.base)} -> {out}')
+        if a.upload:
+            upload(a.name, out)
+        return
     tonic, mode = a.key, a.mode
     if not tonic:
         tonic, guessed = guess_key(y, sr)
@@ -264,9 +312,13 @@ def main():
           f'-> {out}')
 
     if a.upload:
-        code = ('import json,sys; sys.path.insert(0,%r); import hookpad_upload_variants as U, hookpad_token; '
-                'r,e=U.upload(hookpad_token.read_saved(),%r,json.load(open(%r))); print(r or e)') % (HERE, a.name, out)
-        subprocess.run([MAIN_PY, '-c', code], check=True)
+        upload(a.name, out)
+
+
+def upload(name, path):
+    code = ('import json,sys; sys.path.insert(0,%r); import hookpad_upload_variants as U, hookpad_token; '
+            'r,e=U.upload(hookpad_token.read_saved(),%r,json.load(open(%r))); print(r or e)') % (HERE, name, path)
+    subprocess.run([MAIN_PY, '-c', code], check=True)
 
 
 if __name__ == '__main__':
