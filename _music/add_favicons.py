@@ -61,6 +61,7 @@ ICONS = {
     'strum-library.html': ('ST', 'rhythm'), 'drums.html': ('DR', 'rhythm'), 'drums_template.html': ('DR', 'rhythm'),
     # melody
     'melody-structures.html': ('MS', 'melody'),
+    'hold-patterns.html': ('HP', 'melody'), 'hold_patterns_template.html': ('HP', 'melody'),
     # beatles
     'Beatles-Study.html': ('B', 'beatles'), 'beatles_by_project.html': ('BP', 'beatles'),
     # songs / tools
