@@ -32,7 +32,9 @@ def main():
     best = {}
     for name, d, nb in C.songs():
         k = same(name)
-        rank = (name.lower() == k, len(d.get('notes') or []))
+        # a copy with chords beats one without (Talk-chords, -audiochords over a
+        # melody-only original), then the plain name, then the most melody
+        rank = (len(d.get('chords') or []) >= 4, name.lower() == k, len(d.get('notes') or []))
         if k not in best or rank > best[k][0]:
             best[k] = (rank, name, d, nb)
     index = {o: i for i, o in enumerate(ORDERS)}

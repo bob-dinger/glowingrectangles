@@ -239,16 +239,33 @@ def title_artist(stem):
     return tuple(stem.split('_', 1)[::-1]) if '_' in stem else (stem, '')
 
 
+GEN = re.compile(r'-(audiochords\d*|chords|auto\w*|fixed(-\w+)?)$', re.I)   # audio-tool copies
+
+
 def library_files(files, listed):
     """the songs the whole-library pages cover: not the user's own, the
     workbenches, or -variants (unless a guitar list names the variant)"""
+    # copies made by the audio tools (-audiochords1101, -chords, -auto, -fixed-notes
+    # ...) stand in for their song only when the original has no chords
+    gen = GEN
+    def has_chords(path):
+        try: return len(json.load(open(path, encoding='utf-8-sig')).get('chords') or []) >= 4
+        except Exception: return False
+    stems = {os.path.splitext(os.path.basename(p))[0].lower(): p for p in files}
+    chordless = {s for s in stems if not gen.search(s) and not has_chords(stems[s])}
+    stand_in = {}
+    for s, p in sorted(stems.items()):
+        if gen.search(s) and gen.sub('', s) in chordless and has_chords(p):
+            stand_in.setdefault(gen.sub('', s), p)
     out = []
     for path in sorted(files):
         stem = os.path.splitext(os.path.basename(path))[0]
         if SCRATCH.match(stem) or re.search(r'-(midi|pasted)$', stem): continue
-        if path not in listed and pp.split_variant(stem)[1]: continue
+        if gen.search(stem) and stand_in.get(gen.sub('', stem.lower())) != path: continue
+        if stem.lower() in stand_in and path not in listed: path = stand_in[stem.lower()]
+        elif path not in listed and pp.split_variant(stem)[1]: continue
         out.append(path)
-    return out
+    return sorted(set(out))
 
 
 def main():
@@ -263,7 +280,7 @@ def main():
     listed = listed_songs(wb, files)
     rows = []
     for path in library_files(files, listed):
-        stem = os.path.splitext(os.path.basename(path))[0]
+        stem = GEN.sub('', os.path.splitext(os.path.basename(path))[0])
         lst, title, artist = listed.get(path) or (None, *title_artist(stem))
         if title == title.lower(): title = Q.title_case(title)
         if artist == artist.lower(): artist = Q.title_case(artist)
