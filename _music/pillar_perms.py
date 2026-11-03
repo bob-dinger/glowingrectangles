@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-The 36 four-bar orders of the three pillars that use all three -> _music/pillar-perms.html
+The 36 four-bar orders of the three pillars (and of two pillars + vi or ii) that use all three -> _music/pillar-perms.html
 
     themap_venv/python pillar_perms.py
 
@@ -21,8 +21,15 @@ import corpus as C
 from same_progressions import same, plain, title_case, HASH
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-P = ('I', 'IV', 'V')
-ORDERS = [o for o in itertools.product(P, repeat=4) if set(o) == set(P)]
+# the pillars, then two pillars + one minor (vi or ii), with their palette words
+SETS = [(('I', 'IV', 'V'), 'HAGFISH'),
+        (('I', 'IV', 'vi'), 'FOX'), (('I', 'V', 'vi'), 'SCOTCH'), (('IV', 'V', 'vi'), 'SUNFISH'),
+        (('I', 'IV', 'ii'), 'GIFT'), (('I', 'V', 'ii'), 'JACKET'), (('IV', 'V', 'ii'), 'SHAFT')]
+ORDERS, ORDER_SET = [], []
+for si, (P, _) in enumerate(SETS):
+    for o in itertools.product(P, repeat=4):
+        if set(o) == set(P):
+            ORDERS.append(o); ORDER_SET.append(si)
 
 
 def main():
@@ -66,15 +73,18 @@ def main():
                           u=HASH.encode(ids[name.lower()]) if name.lower() in ids else ''))
         for o, (sec, bar) in found.items():
             hits.append([index[o], si, sec, bar])
-    data = dict(orders=[list(o) for o in ORDERS], songs=songs, hits=hits)
+    data = dict(orders=[list(o) for o in ORDERS], sets=[[list(p), w] for p, w in SETS], order_set=ORDER_SET, songs=songs, hits=hits)
     tpl = open(os.path.join(HERE, 'pillar_perms_template.html')).read()
     open(os.path.join(HERE, 'pillar-perms.html'), 'w').write(
         tpl.replace('__DATA__', json.dumps(data, ensure_ascii=False, separators=(',', ':'))))
     n = [0] * len(ORDERS)
     for o, *_ in hits: n[o] += 1
     print(f'{len(ORDERS)} orders, {sum(1 for x in n if x)} heard, {len(songs)} songs, {len(hits)} song-orders')
-    for i in sorted(range(len(ORDERS)), key=lambda i: -n[i])[:12]:
-        print(f'  {n[i]:4d}  {" ".join(ORDERS[i])}')
+    for si, (P, w) in enumerate(SETS):
+        mine = [i for i in range(len(ORDERS)) if ORDER_SET[i] == si]
+        sg = len({h[1] for h in hits if ORDER_SET[h[0]] == si})
+        print(f'  {w:8} {" ".join(P):10} {sum(1 for i in mine if n[i]):2}/36 heard, {sg:3} songs   top: ' +
+              ', '.join(f'{" ".join(ORDERS[i])} ({n[i]})' for i in sorted(mine, key=lambda i: -n[i])[:3]))
 
 
 if __name__ == '__main__':
