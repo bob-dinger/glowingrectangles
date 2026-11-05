@@ -6,15 +6,15 @@
 <style>
 :root{
   --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --soft:#f1efe8;
-  --d1:#d02828; --d4:#1f8a4c; --d5:#1663c7; --d6:#8e44ad; --d2:#c27c0e;
+  --d1:#d02828; --d4:#1f8a4c; --d5:#1663c7; --d6:#8e44ad; --d2:#c27c0e; --d3:#0f8b8d;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926;
-  --d1:#ff6b6b; --d4:#4cc27a; --d5:#5ea2ff; --d6:#c38ae0; --d2:#f0b54a;
+  --d1:#ff6b6b; --d4:#4cc27a; --d5:#5ea2ff; --d6:#c38ae0; --d2:#f0b54a; --d3:#3cc0c2;
 }}
 :root[data-theme="dark"]{
   --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926;
-  --d1:#ff6b6b; --d4:#4cc27a; --d5:#5ea2ff; --d6:#c38ae0; --d2:#f0b54a;
+  --d1:#ff6b6b; --d4:#4cc27a; --d5:#5ea2ff; --d6:#c38ae0; --d2:#f0b54a; --d3:#3cc0c2;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -47,19 +47,22 @@ header p b{color:var(--ink);font-weight:600}
 .cell.zero .n{color:var(--mute)}
 .bars{display:flex;gap:2px;position:relative}
 .bars span{flex:1;height:20px;border-radius:4px;color:#fff;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center}
-.c-I{background:var(--d1)} .c-IV{background:var(--d4)} .c-V{background:var(--d5)} .c-vi{background:var(--d6)} .c-ii{background:var(--d2)}
+.c-I{background:var(--d1)} .c-IV{background:var(--d4)} .c-V{background:var(--d5)} .c-vi{background:var(--d6)} .c-ii{background:var(--d2)} .c-iii{background:var(--d3)}
 .sets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.sets button{font:inherit;font-size:12.5px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:3px 10px;cursor:pointer}
+.sets .tg{margin-left:auto}
+.sets button{font:inherit;font-size:12px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:3px 10px;cursor:pointer}
 .sets button span{color:var(--mute);font-size:11.5px;margin-left:5px}
 .sets button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .sets button.on span{color:var(--bg);opacity:.7}
+.tg{font:inherit;font-size:12px;border:1px solid var(--line);background:transparent;color:var(--mute);border-radius:8px;padding:2px 9px;cursor:pointer}
+.tg.on{color:var(--ink);border-color:var(--mute)}
 .foot{font-size:12px;color:var(--mute)}
 .foot b{color:var(--ink)}
 /* side panel */
 #side{display:flex;flex-direction:column}
 .head{padding:14px 16px 12px;border-bottom:1px solid var(--line)}
 .head .top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.head .top b{font-size:22px;font-weight:750}
+.head .top b{font-size:20px;font-weight:750;white-space:nowrap}
 .head .top span{color:var(--mute);font-size:12.5px}
 .head .bars span{height:40px;font-size:16px}
 .head .sub{font-size:12.5px;color:var(--mute);margin-top:8px}
@@ -94,7 +97,7 @@ header p b{color:var(--ink);font-weight:600}
 <body>
 <header>
   <h1>Pillar Perms<a href="index.html">music index →</a></h1>
-  <p>Four bars of three chords, one chord a bar, all three used: <b>36</b> orders. One chord is always doubled, so every order is one of six <b>shapes</b> (columns, A = the first chord heard) with the three chords dealt to A, B and C (rows). The pillars <b>I IV V</b> first, then two pillars with <b>vi</b> or <b>ii</b>.</p>
+  <p>Four bars of three chords, one chord a bar, all three used: <b>36</b> orders. One chord is always doubled, so every order is one of six <b>shapes</b> (columns, A = the first chord heard) with the three chords dealt to A, B and C (rows). The pillars <b>I IV V</b> first, then every other set of three of <b>C Dm Em F G Am</b> (minor keys through their relative major).</p>
 </header>
 <div id="grid" class="box">
   <div class="sets" id="sets"></div>
@@ -105,16 +108,23 @@ header p b{color:var(--ink);font-weight:600}
 <aside id="side" class="box"></aside>
 <script>
 const DATA = __DATA__;
-const NOTES = {I: [0, 4, 7], IV: [5, 9, 12], V: [7, 11, 14], vi: [9, 12, 16], ii: [2, 5, 9]};
-const LETTER = {I: 'C', IV: 'F', V: 'G', vi: 'Am', ii: 'Dm'};
+const NOTES = {I: [0, 4, 7], IV: [5, 9, 12], V: [7, 11, 14], vi: [9, 12, 16], ii: [2, 5, 9], iii: [4, 7, 11]};
+const LETTER = {I: 'C', IV: 'F', V: 'G', vi: 'Am', ii: 'Dm', iii: 'Em'};
+const COL = {I: 1, IV: 4, V: 5, vi: 6, ii: 2, iii: 3};
+let half = true;                                  // count orders read at half-bar speed
 let cur = 0;                                     // which chord set
 const key = o => o.join(' ');
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 
 // order -> its songs
-const byOrder = DATA.orders.map(() => []);
-for (const [o, si, sec, bar] of DATA.hits) byOrder[o].push({s: DATA.songs[si], sec, bar});
-byOrder.forEach(l => l.sort((a, b) => a.s.t.localeCompare(b.s.t) || a.s.a.localeCompare(b.s.a)));
+let byOrder;
+const HITS = () => DATA.hits.filter(h => half || !h[4]);
+function build(){
+  byOrder = DATA.orders.map(() => []);
+  for (const [o, si, sec, bar] of HITS()) byOrder[o].push({s: DATA.songs[si], sec, bar});
+  byOrder.forEach(l => l.sort((a, b) => a.s.t.localeCompare(b.s.t) || a.s.a.localeCompare(b.s.a)));
+}
+build();
 const idx = {}; DATA.orders.forEach((o, i) => idx[key(o)] = i);
 const maxOf = si => Math.max(1, ...byOrder.filter((l, i) => DATA.order_set[i] === si).map(l => l.length));
 
@@ -136,11 +146,13 @@ document.getElementById('groups').innerHTML = `<div></div>
   <div></div>` + SHAPES.map(s => `<div class="g"><b>${s[1]}</b><i>${s[0]}</i></div>`).join('');
 
 let sel = idx['I V IV I'];
-const setHits = si => DATA.hits.filter(h => DATA.order_set[h[0]] === si);
+const setHits = si => HITS().filter(h => DATA.order_set[h[0]] === si);
 function drawSets(){
   document.getElementById('sets').innerHTML = DATA.sets.map(([p, w], si) =>
-    `<button data-s="${si}" class="${si === cur ? 'on' : ''}">${w} · ${p.map(c => LETTER[c]).join(' ')}<span>${new Set(setHits(si).map(h => h[1])).size}</span></button>`).join('');
-  document.querySelectorAll('.sets button').forEach(b => b.onclick = () => {
+    `<button data-s="${si}" class="${si === cur ? 'on' : ''}">${w} · ${p.map(c => LETTER[c]).join(' ')}<span>${new Set(setHits(si).map(h => h[1])).size}</span></button>`).join('') +
+    `<button class="tg${half ? ' on' : ''}" id="tg" title="also count a chord every two beats: It Ain't Me's Dm Am | Em is Dm Am Em Em">${half ? '✓' : '○'} half bars too</button>`;
+  document.getElementById('tg').onclick = () => { half = !half; build(); drawSets(); drawGrid(); side(); };
+  document.querySelectorAll('.sets button[data-s]').forEach(b => b.onclick = () => {
     cur = +b.dataset.s;
     const mine = DATA.orders.map((_, i) => i).filter(i => DATA.order_set[i] === cur);
     sel = mine.reduce((a, i) => byOrder[i].length > byOrder[a].length ? i : a, mine[0]);   // open on its most-played order
@@ -148,7 +160,7 @@ function drawSets(){
   });
 }
 function drawGrid(){
-  const col = c => `var(--d${({I: 1, IV: 4, V: 5, vi: 6, ii: 2})[c]})`;
+  const col = c => `var(--d${COL[c]})`;
   document.getElementById('rows').innerHTML = deals().map(d => `<div class="row">
     <div class="rl"><b>${d.map((c, j) => `<span style="color:${col(c)}">${c}</span>`).join(' ')}</b>as A B C</div>` +
     SHAPES.map(([sh]) => {
@@ -160,7 +172,7 @@ function drawGrid(){
   document.querySelectorAll('.cell').forEach(c => c.onclick = () => { sel = +c.dataset.i; drawGrid(); side(); });
   const songs = new Set(setHits(cur).map(h => h[1])).size;
   const heard = byOrder.filter((l, i) => l.length && DATA.order_set[i] === cur).length;
-  document.getElementById('foot').innerHTML = `<b>${heard}</b> of 36 heard in <b>${songs}</b> songs · major-key sections read in 4-bar blocks from their first bar · each song once per order · darker = more songs`;
+  document.getElementById('foot').innerHTML = `<b>${heard}</b> of 36 heard in <b>${songs}</b> songs · sections read in 4-bar blocks from their first bar${half ? ' (or 2-bar blocks of half bars)' : ''} · each song once per order · darker = more songs`;
 }
 
 function rotations(o){ const out = []; for (let i = 1; i < 4; i++) out.push(o.slice(i).concat(o.slice(0, i))); return out; }

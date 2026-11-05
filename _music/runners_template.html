@@ -6,15 +6,15 @@
 <style>
 :root{
   --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --soft:#f1efe8;
-  --d1:#d02828; --d4:#1f8a4c; --d5:#1663c7; --d6:#8e44ad; --d2:#c27c0e;
+  --d1:#d02828; --d4:#1f8a4c; --d5:#1663c7; --d6:#8e44ad; --d2:#c27c0e; --d3:#0f8b8d;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926;
-  --d1:#ff6b6b; --d4:#4cc27a; --d5:#5ea2ff; --d6:#c38ae0; --d2:#f0b54a;
+  --d1:#ff6b6b; --d4:#4cc27a; --d5:#5ea2ff; --d6:#c38ae0; --d2:#f0b54a; --d3:#3cc0c2;
 }}
 :root[data-theme="dark"]{
   --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926;
-  --d1:#ff6b6b; --d4:#4cc27a; --d5:#5ea2ff; --d6:#c38ae0; --d2:#f0b54a;
+  --d1:#ff6b6b; --d4:#4cc27a; --d5:#5ea2ff; --d6:#c38ae0; --d2:#f0b54a; --d3:#3cc0c2;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -33,23 +33,29 @@ header p b{color:var(--ink);font-weight:600}
 .cols .half{grid-column:span 6;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);border-bottom:2px solid var(--line);padding-bottom:3px}
 .cols .half b{color:var(--ink);letter-spacing:0;text-transform:none;font-size:12.5px;margin-right:6px}
 .cols .half i{font-style:normal;font-family:ui-monospace,Menlo,monospace;letter-spacing:.12em;margin-right:6px;color:var(--ink)}
-.rows{flex:1;display:grid;grid-template-rows:repeat(7,1fr);gap:6px;min-height:0}
+.rows{flex:1;display:grid;grid-template-rows:repeat(10,1fr);gap:6px;min-height:0}
 .row{min-height:0}
 .rl{display:flex;flex-direction:column;justify-content:center;font-size:11px;color:var(--mute);line-height:1.3}
 .rl b{font-size:12.5px;font-weight:750;color:var(--ink);letter-spacing:.02em}
 .rl .ch{font-size:12px;font-weight:650}
-.cell{border:1px solid var(--line);border-radius:9px;padding:5px 6px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;gap:3px;min-height:0;min-width:0;position:relative;background:var(--card)}
+.cell{border:1px solid var(--line);border-radius:9px;padding:5px 6px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-around;gap:3px;min-height:0;min-width:0;position:relative;background:var(--card)}
 .cell:hover{border-color:var(--mute)}
 .cell.sel{outline:2.5px solid var(--ink);outline-offset:-1px}
 .cell .heat{position:absolute;inset:0;border-radius:8px;background:var(--ink);pointer-events:none}
-.cell .n{font-size:18px;font-weight:750;position:relative;line-height:1}
-.cell .tp{font-size:10.5px;color:var(--mute);position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .tl{display:flex;align-items:baseline;gap:5px;min-width:0;position:relative}
+.cell .n{font-size:17px;font-weight:750;position:relative;line-height:1}
+.cell .tp{font-size:10.5px;color:var(--mute);position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .cell.zero{border-style:dashed;background:transparent}
 .cell.zero .n{color:var(--mute);font-weight:500}
 .cell.zero .bars{opacity:.35}
 .bars{display:flex;gap:2px;position:relative}
 .bars span{flex:1;min-width:0;height:20px;border-radius:4px;color:#fff;font-weight:700;font-size:10px;letter-spacing:-.04em;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.c-I{background:var(--d1)} .c-IV{background:var(--d4)} .c-V{background:var(--d5)} .c-vi{background:var(--d6)} .c-ii{background:var(--d2)}
+.c-I{background:var(--d1)} .c-IV{background:var(--d4)} .c-V{background:var(--d5)} .c-vi{background:var(--d6)} .c-ii{background:var(--d2)} .c-iii{background:var(--d3)}
+.sets{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.sets button{font:inherit;font-size:12.5px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:3px 10px;cursor:pointer}
+.sets button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.sets .tg{margin-left:auto;font-size:12px;color:var(--mute)}
+.sets .tg.on{background:transparent;color:var(--ink);border-color:var(--mute)}
 .foot{font-size:12px;color:var(--mute)}
 .foot b{color:var(--ink)}
 /* side panel */
@@ -90,9 +96,10 @@ header p b{color:var(--ink);font-weight:600}
 <body>
 <header>
   <h1>Runners<a href="pillar-perms.html">pillar perms →</a><a href="index.html">music index →</a></h1>
-  <p>Four bars, three chords, one held for two bars. Every runner of the <b>pillars</b> (C F G) and of two pillars with <b>Am</b> or <b>Dm</b>: 7 sets × 6 orders, front and back. Click a cell for its songs.</p>
+  <p>Four bars, three chords, one held for two bars. Every runner of every set of three of <b>C Dm Em F G Am</b> (minor keys through their relative major): 20 sets × 6 orders, front and back. Click a cell for its songs.</p>
 </header>
 <div id="grid" class="box">
+  <div class="sets" id="sets"></div>
   <div class="cols" id="cols"></div>
   <div class="rows" id="rows"></div>
   <div class="foot" id="foot"></div>
@@ -100,16 +107,24 @@ header p b{color:var(--ink);font-weight:600}
 <aside id="side" class="box"></aside>
 <script>
 const DATA = __DATA__;
-const NOTES = {I: [0, 4, 7], IV: [5, 9, 12], V: [7, 11, 14], vi: [9, 12, 16], ii: [2, 5, 9]};
-const LETTER = {I: 'C', IV: 'F', V: 'G', vi: 'Am', ii: 'Dm'};
+const NOTES = {I: [0, 4, 7], IV: [5, 9, 12], V: [7, 11, 14], vi: [9, 12, 16], ii: [2, 5, 9], iii: [4, 7, 11]};
+const LETTER = {I: 'C', IV: 'F', V: 'G', vi: 'Am', ii: 'Dm', iii: 'Em'};
+const COL = {I: 1, IV: 4, V: 5, vi: 6, ii: 2, iii: 3};
+let half = true;                                  // count orders read at half-bar speed
 const key = o => o.join(' ');
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 
-const byOrder = DATA.orders.map(() => []);
-for (const [o, si, sec, bar] of DATA.hits) byOrder[o].push({s: DATA.songs[si], sec, bar});
-byOrder.forEach(l => l.sort((a, b) => a.s.t.localeCompare(b.s.t) || a.s.a.localeCompare(b.s.a)));
+let byOrder;
+const HITS = () => DATA.hits.filter(h => half || !h[4]);
+function build(){
+  byOrder = DATA.orders.map(() => []);
+  for (const [o, si, sec, bar] of HITS()) byOrder[o].push({s: DATA.songs[si], sec, bar});
+  byOrder.forEach(l => l.sort((a, b) => a.s.t.localeCompare(b.s.t) || a.s.a.localeCompare(b.s.a)));
+}
+build();
 const idx = {}; DATA.orders.forEach((o, i) => idx[key(o)] = i);
-const MAX = Math.max(1, ...byOrder.map(l => l.length));
+let grp = 0;                                       // which group of ten sets
+const mine = () => DATA.sets.map((_, i) => i).slice(DATA.groups[grp][1], DATA.groups[grp][2]);
 
 // a runner: one chord held two bars, the other two a bar each. Front = held first (AABC), back = held last (ABCC).
 const SHAPES = [['AABC', 'front runner'], ['ABBC', 'valley'], ['ABCC', 'back runner'],
@@ -130,16 +145,22 @@ document.getElementById('cols').innerHTML = `<div></div>
   <div class="half"><b>Back runner</b><i>ABCC</i>held last: F G | C C</div>`;
 
 let sel = idx['IV V I I'];
+function drawSets(){
+  document.getElementById('sets').innerHTML = DATA.groups.map(([nm], g) => `<button data-g="${g}" class="${g === grp ? 'on' : ''}">${nm}</button>`).join('') +
+    `<button class="tg${half ? ' on' : ''}" id="tg" title="also count a chord every two beats: It Ain't Me's Dm Am | Em is Dm Am Em Em">${half ? '✓' : '○'} half bars too</button>`;
+  document.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { grp = +b.dataset.g; drawSets(); drawGrid(); });
+  document.getElementById('tg').onclick = () => { half = !half; build(); drawSets(); drawGrid(); side(); };
+}
 function drawGrid(){
-  const col = c => `var(--d${({I: 1, IV: 4, V: 5, vi: 6, ii: 2})[c]})`;
+  const MAX = Math.max(1, ...mine().flatMap(si => ['AABC', 'ABCC'].flatMap(sh => runners(si, sh).map(i => byOrder[i].length))));
+  const col = c => `var(--d${COL[c]})`;
   const cell = i => { const n = byOrder[i].length, top = byOrder[i].slice().sort((a, b) => a.bar - b.bar)[0];
     return `<div class="cell${n ? '' : ' zero'}${i === sel ? ' sel' : ''}" data-i="${i}"
       title="${esc(DATA.orders[i].map(c => LETTER[c]).join(' '))}: ${n} ${n === 1 ? 'song' : 'songs'}">
       <div class="heat" style="opacity:${n ? 0.03 + 0.17 * Math.sqrt(n / MAX) : 0}"></div>
-      <div class="n">${n || '–'}</div>${held(DATA.orders[i])}
-      <div class="tp">${n ? esc(byOrder[i][0].s.t) : 'never heard'}</div></div>`; };
+      <div class="tl"><span class="n">${n || '–'}</span><span class="tp">${n ? esc(byOrder[i][0].s.t) : 'never'}</span></div>${held(DATA.orders[i])}</div>`; };
   let tf = 0, tb = 0, hf = 0, hb = 0;
-  document.getElementById('rows').innerHTML = DATA.sets.map(([p, w], si) => {
+  document.getElementById('rows').innerHTML = mine().map(si => { const [p, w] = DATA.sets[si];
     const f = runners(si, 'AABC'), b = runners(si, 'ABCC');
     const heard = l => l.filter(i => byOrder[i].length).length;
     tf += 6; tb += 6; hf += heard(f); hb += heard(b);
@@ -148,7 +169,7 @@ function drawGrid(){
       front ${heard(f)}/6 · back ${heard(b)}/6</div>` + f.map(cell).join('') + '<div></div>' + b.map(cell).join('') + '</div>';
   }).join('');
   document.querySelectorAll('.cell').forEach(c => c.onclick = () => { sel = +c.dataset.i; drawGrid(); side(); });
-  document.getElementById('foot').innerHTML = `Front runners <b>${hf}</b> of ${tf} heard · back runners <b>${hb}</b> of ${tb} · in C · major-key sections read in 4-bar blocks from their first bar, one chord a bar · each song once per order · darker = more songs · dashed = no song in the library`;
+  document.getElementById('foot').innerHTML = `Front runners <b>${hf}</b> of ${tf} heard · back runners <b>${hb}</b> of ${tb} · in C · sections read in 4-bar blocks from their first bar, one chord a bar${half ? ' (or a half bar, 2-bar blocks)' : ''} · each song once per order · darker = more songs · dashed = no song in the library`;
 }
 
 function rotations(o){ const out = []; for (let i = 1; i < 4; i++) out.push(o.slice(i).concat(o.slice(0, i))); return out; }
@@ -196,6 +217,6 @@ function play(o, btn){
   stopT = setTimeout(stop, (t - ac.currentTime) * 1000 + 100);
 }
 
-drawGrid(); side();
+drawSets(); drawGrid(); side();
 </script>
 </body></html>
