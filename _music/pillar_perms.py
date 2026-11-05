@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 The 36 four-bar orders of the three pillars (and of two pillars + vi or ii) that use all three -> _music/pillar-perms.html
+and their runners (one chord held 2 bars, first or last) on one screen -> _music/runners.html
 
     themap_venv/python pillar_perms.py
 
@@ -74,9 +75,9 @@ def main():
         for o, (sec, bar) in found.items():
             hits.append([index[o], si, sec, bar])
     data = dict(orders=[list(o) for o in ORDERS], sets=[[list(p), w] for p, w in SETS], order_set=ORDER_SET, songs=songs, hits=hits)
-    tpl = open(os.path.join(HERE, 'pillar_perms_template.html')).read()
-    open(os.path.join(HERE, 'pillar-perms.html'), 'w').write(
-        tpl.replace('__DATA__', json.dumps(data, ensure_ascii=False, separators=(',', ':'))))
+    js = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
+    for tpl, out in (('pillar_perms_template.html', 'pillar-perms.html'), ('runners_template.html', 'runners.html')):
+        open(os.path.join(HERE, out), 'w').write(open(os.path.join(HERE, tpl)).read().replace('__DATA__', js))
     n = [0] * len(ORDERS)
     for o, *_ in hits: n[o] += 1
     print(f'{len(ORDERS)} orders, {sum(1 for x in n if x)} heard, {len(songs)} songs, {len(hits)} song-orders')

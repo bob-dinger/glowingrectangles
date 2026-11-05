@@ -25,6 +25,7 @@ ICONS = {
     'runners-map.html': ('RM', 'map'), 'runners_map_template.html': ('RM', 'map'),
     'same-progressions.html': ('SP', 'map'), 'same_progressions_template.html': ('SP', 'map'),
     'pillar-perms.html': ('PP', 'chord'), 'pillar_perms_template.html': ('PP', 'chord'),
+    'runners.html': ('RN', 'chord'), 'runners_template.html': ('RN', 'chord'),
     'tempo-map.html': ('TM', 'map'), 'tempo_map_template.html': ('TM', 'map'),
     'beatles-tempo-map.html': ('TM', 'beatles'), 'key-map.html': ('KM', 'map'),
     # quizzes
