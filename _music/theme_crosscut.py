@@ -13,7 +13,7 @@ is exactly what is in the library. Sections run shortest theme first.
 import json, os, glob, argparse
 import hp3   # pastes both Hookpads accept (no version, real fp)
 
-ROOT  = os.path.expanduser('~/Desktop/chord_perms')
+ROOT  = os.path.expanduser('~/Desktop/perms/chord')
 OUT   = os.path.join(ROOT, '_crosscuts')
 WORDS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'chord_words.json')
 

@@ -55,15 +55,20 @@ def _ctones(root):
     sds = [root, ((root - 1 + 2) % 7) + 1, ((root - 1 + 4) % 7) + 1]
     return sorted({t - 1 + 7*k for t in sds for k in range(-2, 3)})
 
-# Measured move distribution — melody_moves.py over 409,282 corpus transitions.
-# A melody almost never goes anywhere new: 88.9% of its moves circulate inside the
-# pitches the section has already claimed. So the walker picks a MOVE CLASS against
-# what it has used, rather than a step size in the abstract.
+# Measured move distribution — melody_moves.py over ~397,000 corpus transitions,
+# AFTER corpus.py rule 4 (dedupe identical notes) landed. A melody almost never goes
+# anywhere new: 88.5% of its moves circulate inside the pitches the section has
+# already claimed. So the walker picks a MOVE CLASS against what it has used, rather
+# than a step size in the abstract.
+#
+# These numbers replace an earlier set taken BEFORE dedupe, where 103 songs wrote
+# every note twice: a duplicate reads as an interval of 0, which inflated `repeat`
+# from its true 31.5% to 33.7%. Anything quoting 33.7% predates the fix.
 MOVES = {
-    'corpus':     {'repeat':.337, 'step-known':.303, 'step-new':.058,
-                   'vault':.026, 'reach':.027, 'return':.249},
-    'prechorus':  {'repeat':.364, 'step-known':.282, 'step-new':.080,
-                   'vault':.037, 'reach':.034, 'return':.202},
+    'corpus':     {'repeat':.315, 'step-known':.313, 'step-new':.060,
+                   'vault':.027, 'reach':.028, 'return':.257},
+    'prechorus':  {'repeat':.349, 'step-known':.289, 'step-new':.082,
+                   'vault':.037, 'reach':.035, 'return':.207},
 }
 FALLBACK = ('step-known', 'return', 'step-new', 'reach', 'repeat')
 # Melodies are NOT chord-tone machines: 40.3% of corpus melody notes sit off the
@@ -201,16 +206,29 @@ def label(spec):
 # of the time (1->1 21%, 5->5 11%, 3->3 9%), and bar 8 resolves harder: degree 1
 # in 33.7% vs bar 4's 26.8%. Everything between is transit — 51.8% of measures
 # run, and only 1.9% of those are literal quarters.
-LANDING_DEGREES = ((1, 0.34), (5, 0.20), (3, 0.14), (2, 0.13),
-                   (6, 0.09), (4, 0.07), (7, 0.05))
+# melody_landings.py, per break bar. Bar 8 resolves harder than bar 4: degree 1 in
+# 33.7% vs 26.8%, and the 3rd nearly halves. The two agree 56.5% of the time — so
+# the second landing is the SAME note more often than not, and when it differs it
+# leans to the tonic.
+BAR4 = {1:.268, 2:.136, 3:.199, 4:.068, 5:.175, 6:.106, 7:.048}
+BAR8 = {1:.337, 2:.128, 3:.131, 4:.066, 5:.192, 6:.091, 7:.056}
+P_SAME_LANDING = 0.565
 
 def pick_landing(rng):
-    """One degree, serving both breaks — the corpus's dominant choice."""
-    ds, ws = zip(*LANDING_DEGREES)
-    return rng.choices(ds, ws)[0]
+    """The bar-4 landing degree."""
+    return rng.choices(list(BAR4), list(BAR4.values()))[0]
+
+def pick_landings(rng):
+    """(bar-4 degree, bar-8 degree) — the same note 56.5% of the time, else a
+    fresh draw from bar 8's own distribution."""
+    a = pick_landing(rng)
+    if rng.random() < P_SAME_LANDING:
+        return a, a
+    rest = {k: v for k, v in BAR8.items() if k != a}
+    return a, rng.choices(list(rest), list(rest.values()))[0]
 
 def land_first(rhythm, root_at, phrase_beats, landing, register, rng,
-               mix='corpus', break_bars=(4, 8)):
+               mix='corpus', break_bars=(4, 8), landing2=None):
     """The fixed rhythm, pitched so the notes at the break bars ARE the landing.
 
     Bars are 1-indexed: break_bars=(4,8) means the last note starting inside bar 4
@@ -220,6 +238,7 @@ def land_first(rhythm, root_at, phrase_beats, landing, register, rng,
     weights = MOVES[mix]
     kinds = list(weights); probs = [weights[k] for k in kinds]
     home = register*7 + (landing - 1)
+    home2 = register*7 + ((landing2 or landing) - 1)
 
     # Which note index is the landing in each break bar: the last onset inside it.
     # Bars are measured on the RHYTHM's own timeline — the melodic phrase is often
@@ -235,7 +254,7 @@ def land_first(rhythm, root_at, phrase_beats, landing, register, rng,
             o, du = rhythm[i]
             nxt = rhythm[i+1][0] if i+1 < len(rhythm) else o + du
             if du >= 1 or (nxt - o) >= 1: held.append(i)
-        targets[(held or inside)[-1]] = home
+        targets[(held or inside)[-1]] = home if b == break_bars[0] else home2
 
     cur = home
     used, run, out = {cur}, 1, []

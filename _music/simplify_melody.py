@@ -20,7 +20,7 @@ Three reductions are written, coarse to fine:
 import json, os, argparse, collections
 import hp3   # pastes both Hookpads accept (no version, real fp)
 
-OUT = os.path.expanduser('~/Desktop/chord_perms/_simple')
+OUT = os.path.expanduser('~/Desktop/perms/melody/_simple')
 LET = 'CDEFGAB'
 BAR = 4
 

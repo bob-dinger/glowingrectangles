@@ -1,6 +1,7 @@
 """Every ordering of k-chords-from-6, poured into one chord rhythm.
 
-Layout: ~/Desktop/chord_perms/<k>/<rhythm>_<shape>[_<types>][_<song>]/ — k = how
+Layout: ~/Desktop/perms/<kind>/<k>/<rhythm>_<shape>[_<types>][_<song>]/ where kind is
+chord, or riff when a --climb figure rides on top. k = how
 many distinct chords. The folder name IS the spec, in three readable fields:
 
     rhythm   one group per CHORD, in SIXTEENTHS (Hookpad's smallest unit, so
@@ -30,10 +31,13 @@ import json, os, re, sys, itertools, argparse
 import hp3   # pastes both Hookpads accept (no version, real fp)
 from fractions import Fraction as F
 import perm_melody
+import perm_climb
 
 ROOTS   = {'C':1, 'Dm':2, 'Em':3, 'F':4, 'G':5, 'Am':6}
 POOL    = ['C','Dm','Em','F','G','Am']
-ROOT    = os.path.expanduser('~/Desktop/chord_perms')
+PERMS   = os.path.expanduser('~/Desktop/perms')
+CHORD   = os.path.join(PERMS, 'chord')
+RIFF    = os.path.join(PERMS, 'riff')
 WORDS   = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'chord_words.json')
 PER_BAR = 16                                   # sixteenths in a 4/4 bar
 SPEC    = re.compile(r'^(\d+(?:\+\d+)*(?:-\d+(?:\+\d+)*)*)(?:_([A-Z]+))?(?:_([57p]+))?$')
@@ -77,7 +81,7 @@ def chord(root, beat, duration, ctype, power):
             "suspensions":[], "substitutions":[], "pedal":None, "alternate":"", "borrowed":"",
             "isRest":False, "recordingEndBeat":None}
 
-def song(entries, slots, roles, phrase, reps, bpm, key='C', melody=None):
+def song(entries, slots, roles, phrase, reps, bpm, key='C', melody=None, climb=None):
     """entries: [(word, perm), ...] — perm assigns one chord to each role, in order."""
     span = phrase * reps
     tag = ''
@@ -97,6 +101,11 @@ def song(entries, slots, roles, phrase, reps, bpm, key='C', melody=None):
                 chords.append(chord(ROOTS[cast[role]], off + onset, dur, ctype, power))
             for n in mel:
                 notes.append(dict(n, beat=num(off + n['beat']), duration=num(n['duration'])))
+            if climb:
+                for onset, dur, role, ctype, power in slots:
+                    for n in perm_climb.notes_for(ROOTS[cast[role]], onset, dur, climb):
+                        notes.append(dict(n, beat=num(off + n['beat']),
+                                          duration=num(n['duration'])))
     return {"version":1, "chords":chords, "notes":notes,
             "keys":[{"beat":1, "scale":"major", "tonic":key}],
             "tempos":[{"beat":1, "bpm":bpm, "swingBeat":0.5, "swingFactor":0}],
@@ -114,28 +123,31 @@ def word_map(pick):
         m.setdefault(frozenset(sub), '-'.join(sub).upper())
     return m
 
-def build(spec, bpm, reps, name=None, quiet=False, melody=None):
+def build(spec, bpm, reps, name=None, quiet=False, melody=None, climb=None):
     slots, phrase, roles = parse_rhythm(spec)
     pick, bars = len(roles), int(phrase // 4)
     by_set = word_map(pick)
-    folder = spec + (f"_{perm_melody.label(melody)}" if melody else "") + (f"_{name}" if name else "")
-    out = os.path.join(ROOT, str(pick), folder); os.makedirs(out, exist_ok=True)
+    folder = (spec + (f"_{perm_melody.label(melody)}" if melody else "")
+              + (f"_{perm_climb.label(climb)}" if climb else "")
+              + (f"_{name}" if name else ""))
+    kind = RIFF if climb else CHORD          # a figure on top makes it a riff
+    out = os.path.join(kind, str(pick), folder); os.makedirs(out, exist_ok=True)
 
     if not quiet:
-        print(f"{pick}/{folder}  ({len(slots)} strikes over {int(phrase*4)} sixteenths = "
+        print(f"{os.path.basename(kind)}/{pick}/{folder}  ({len(slots)} strikes over {int(phrase*4)} sixteenths = "
               f"{bars} bars, x{reps} = {bars*reps} measures per perm, {bpm} bpm)")
     everything = []
     for subset in itertools.combinations(POOL, pick):
         word = by_set[frozenset(subset)]
         entries = [(word, p) for p in itertools.permutations(subset)]
         everything += entries
-        obj = song(entries, slots, roles, phrase, reps, bpm, melody=melody)
+        obj = song(entries, slots, roles, phrase, reps, bpm, melody=melody, climb=climb)
         path = os.path.join(out, f"{word.lower()}.txt")
         open(path, 'w').write(hp3.clipboard(obj))
         if not quiet:
             print(f"  {word.lower()+'.txt':18} {' '.join(subset):16} {len(entries):3} perms  "
                   f"{len(entries)*bars*reps:5} bars  {os.path.getsize(path)//1024}K")
-    obj = song(everything, slots, roles, phrase, reps, bpm, melody=melody)
+    obj = song(everything, slots, roles, phrase, reps, bpm, melody=melody, climb=climb)
     fname = f"all-{len(everything)}.txt"
     path = os.path.join(out, fname)
     open(path, 'w').write(hp3.clipboard(obj))
@@ -154,7 +166,9 @@ if __name__ == '__main__':
     ap.add_argument('--name', help="song the riff came from; appended to the folder name")
     ap.add_argument('--melody', help="add a phrase over every perm: "
                     "<focus>:<register>:<motion>:<cells>, e.g. 3:0:orbit:walk-hold")
+    ap.add_argument('--climb', help="a chord-relative figure, in scale steps above the "
+                    "chord root, spread evenly across each chord: e.g. 0,4,7,11")
     ap.add_argument('--quiet', action='store_true')
     a = ap.parse_args()
     for spec in a.rhythms:
-        build(spec, a.bpm, a.reps, a.name, a.quiet, a.melody)
+        build(spec, a.bpm, a.reps, a.name, a.quiet, a.melody, a.climb)

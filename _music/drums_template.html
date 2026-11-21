@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drum Kit</title>
+<link rel="icon" id="gg-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c02080'/%3E%3Ctext x='32' y='33' font-family='-apple-system,Helvetica,Arial,sans-serif' font-weight='800' font-size='30' fill='white' text-anchor='middle' dominant-baseline='central'%3EDR%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#fafaf7; --card:#fff; --ink:#151515; --mute:#8a8a85; --line:#e6e4dd; --soft:#f1efe8;
+  --shell:#d9d5ca; --head:#f4f2ec; --metal:#e2c46a; --metal2:#c9a845; --stand:#b9b5aa; --glow:#ff6a2b;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926;
+  --shell:#4a4740; --head:#2e2c28; --metal:#9c853f; --metal2:#7d6a30; --stand:#55524b; --glow:#ff7a3d;
+}}
+:root[data-theme="dark"]{
+  --bg:#161615; --card:#1f1f1d; --ink:#ecebe6; --mute:#8d8c86; --line:#33322e; --soft:#2a2926;
+  --shell:#4a4740; --head:#2e2c28; --metal:#9c853f; --metal2:#7d6a30; --stand:#55524b; --glow:#ff7a3d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:grid;grid-template-rows:auto 1fr auto;gap:10px;padding:14px 16px;height:100vh;overflow:hidden}
+header{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap}
+h1{font-size:17px;font-weight:700}
+h1 small{font-size:13px;font-weight:500;color:var(--mute);margin-left:6px}
+select{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:3px 6px}
+.btn{font:inherit;font-size:14px;font-weight:650;border:1px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:8px;padding:4px 16px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line);font-weight:500;font-size:13px}
+.now{margin-left:auto;font-size:15px;font-weight:650;text-align:right}
+.now small{display:block;font-size:12px;font-weight:500;color:var(--mute)}
+#stage{background:var(--card);border:1px solid var(--line);border-radius:12px;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
+#stage svg{width:100%;height:100%;max-width:1100px}
+.piece .face{transition:fill .18s ease-out}
+.piece text{font-size:13px;fill:var(--mute);text-anchor:middle;pointer-events:none;font-weight:600}
+.piece{cursor:pointer}
+.drum .face{fill:var(--head);stroke:var(--shell);stroke-width:7}
+.cym .face{fill:var(--metal);stroke:var(--metal2);stroke-width:2}
+.cym .bell{fill:var(--metal2)}
+.stand{stroke:var(--stand);stroke-width:4;fill:none}
+.piece.hit .face{fill:var(--glow);transition:none}
+.piece.hit text{fill:var(--ink)}
+.count{position:absolute;top:10px;left:14px;font-size:12px;color:var(--mute)}
+.beats{position:absolute;top:10px;right:14px;display:flex;gap:6px}
+.beats i{width:12px;height:12px;border-radius:50%;background:var(--soft);border:1px solid var(--line)}
+.beats i.on{background:var(--ink)}
+/* the song as a strip of sections; click to jump */
+.strip{display:flex;gap:2px;height:34px}
+.strip div{flex:1;border-radius:5px;background:var(--soft);font-size:11px;color:var(--mute);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;white-space:nowrap;border:1px solid var(--line)}
+.strip div.cur{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.strip div b{position:absolute;left:0;top:0;bottom:0;background:var(--glow);opacity:.35}
+.hint{font-size:12px;color:var(--mute)}
+@media (max-width:860px){ body{height:auto;overflow:auto} #stage{height:60vh} }
+</style></head>
+<body>
+<header>
+  <h1 id="h1"></h1>
+  <select id="song"></select>
+  <button class="btn" id="play">▶ Play</button>
+  <button class="btn ghost" id="snd">sound on</button>
+  <span class="hint" id="hint"></span>
+  <div class="now" id="now"></div>
+</header>
+<div id="stage">
+  <div class="count" id="count"></div>
+  <div class="beats" id="beats"></div>
+  <svg viewBox="0 0 1000 560" id="kit"></svg>
+</div>
+<div class="strip" id="strip"></div>
+<script>
+const DATA = __DATA__;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let S = DATA[0];
+try { const k = localStorage.getItem('drums:song'); const f = DATA.find(d => d.name === k); if (f) S = f; } catch (e) {}
+
+// ---- the kit, as seen from the drum stool ----
+// lane name -> piece id; side stick lights the snare, open hat the hi-hat
+const PIECE = { kick: 'kick', snare: 'snare', 'side stick': 'snare', 'hi-hat': 'hihat', 'open hat': 'hihat',
+                crash: 'crash', ride: 'ride', 'high tom': 'tom1', 'mid tom': 'tom2', 'floor tom': 'floor', perc: 'perc' };
+function drawKit() {
+  const used = new Set(S.used.map(l => PIECE[S.lanes[l]]));
+  const drum = (id, x, y, rx, ry, label) => `<g class="piece drum" id="p-${id}" data-p="${id}">
+      <ellipse class="face" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}"/>
+      <text x="${x}" y="${y + ry + 22}">${label}</text></g>`;
+  const cym = (id, x, y, r, label, standTo) => `<g class="piece cym" id="p-${id}" data-p="${id}">
+      <path class="stand" d="M${x},${y} L${standTo[0]},${standTo[1]}"/>
+      <ellipse class="face" cx="${x}" cy="${y}" rx="${r}" ry="${r * .32}"/>
+      <ellipse class="bell" cx="${x}" cy="${y - 2}" rx="${r * .18}" ry="${r * .07}"/>
+      <text x="${x}" y="${y - r * .32 - 10}">${label}</text></g>`;
+  let h = '';
+  // stands and kick first, so drums sit on top
+  h += `<g class="piece drum" id="p-kick" data-p="kick">
+      <rect x="395" y="300" width="210" height="190" rx="18" style="fill:var(--shell)"/>
+      <ellipse class="face" cx="500" cy="395" rx="92" ry="92"/>
+      <text x="500" y="520">kick</text></g>`;
+  h += cym('crash', 250, 130, 120, 'crash', [250, 470]);
+  h += cym('ride', 790, 150, 135, 'ride', [790, 470]);
+  h += cym('hihat', 150, 285, 82, 'hi-hat', [150, 500]);
+  h += drum('tom1', 420, 240, 58, 34, 'high tom');
+  h += drum('tom2', 585, 240, 64, 37, 'mid tom');
+  h += drum('snare', 300, 380, 82, 44, 'snare');
+  h += drum('floor', 720, 395, 90, 50, 'floor tom');
+  h += `<g class="piece cym" id="p-perc" data-p="perc">
+      <rect class="face" x="880" y="330" width="34" height="74" rx="12" style="stroke-width:2"/>
+      <text x="897" y="430">shaker</text></g>`;
+  const svg = document.getElementById('kit');
+  svg.innerHTML = h;
+  // pieces this song never uses are faded, so the eye goes to the ones that play
+  svg.querySelectorAll('.piece').forEach(g => g.style.opacity = used.has(g.dataset.p) ? 1 : .25);
+}
+function flash(piece, v, open) {
+  const g = document.getElementById('p-' + piece); if (!g) return;
+  g.classList.add('hit');
+  g.querySelector('.face').style.opacity = (.55 + .45 * v / 127).toFixed(2);
+  clearTimeout(g._t);
+  g._t = setTimeout(() => { g.classList.remove('hit'); g.querySelector('.face').style.opacity = ''; }, open ? 220 : 110);
+}
+
+// ---- sections and position ----
+function sections() {
+  // parts come from the drumming itself: same letter = the same drum part again
+  const secs = S.sections.length ? S.sections : [{ name: 'A', bar: 1 }];
+  return secs.map((s, i) => ({ name: s.name, a: s.bar, b: i + 1 < secs.length ? secs[i + 1].bar : S.bars.length + 1 })).filter(r => r.b > r.a);
+}
+let SECS = [], curBar = 1;
+function drawStrip() {
+  SECS = sections();
+  document.getElementById('strip').innerHTML = SECS.map((r, i) =>
+    `<div data-s="${i}" style="flex:${r.b - r.a}" title="${esc(r.name)} · bars ${r.a}-${r.b - 1}"><b></b>${esc(r.name)}</div>`).join('');
+}
+function showPos(bar, step) {
+  curBar = bar;
+  const i = SECS.findIndex(r => bar >= r.a && bar < r.b);
+  document.querySelectorAll('.strip div').forEach((d, k) => {
+    d.classList.toggle('cur', k === i);
+    d.querySelector('b').style.width = k === i ? `${100 * (bar - SECS[k].a + (step || 0) / S.steps) / (SECS[k].b - SECS[k].a)}%` : '0';
+  });
+  const r = SECS[i];
+  document.getElementById('now').innerHTML = r ? `part ${esc(r.name)}<small>bar ${bar - r.a + 1} of ${r.b - r.a} · song bar ${bar} of ${S.bars.length}</small>` : '';
+  const beat = Math.floor((step || 0) / 4);
+  document.getElementById('beats').innerHTML = Array.from({ length: S.steps / 4 }, (_, k) => `<i class="${k === beat && playing ? 'on' : ''}"></i>`).join('');
+}
+
+// ---- sound: a small synthesised kit ----
+let ctx = null, sound = true, playing = false, queue = [], raf, feeder;
+function kit(lane, t, v) {
+  if (!sound) return;
+  const g = ctx.createGain(); g.connect(ctx.destination);
+  const vol = .25 + .75 * v / 127;
+  const noise = (dur, f, type = 'highpass', q = 1) => {
+    const b = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur), ctx.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const s = ctx.createBufferSource(); s.buffer = b; const fl = ctx.createBiquadFilter(); fl.type = type; fl.frequency.value = f; fl.Q.value = q;
+    s.connect(fl); fl.connect(g); s.start(t);
+  };
+  const tone = (f0, f1, dur) => { const o = ctx.createOscillator(); o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur); o.connect(g); o.start(t); o.stop(t + dur); };
+  const env = (peak, dur) => { g.gain.setValueAtTime(peak * vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur); };
+  switch (lane) {
+    case 'kick': env(1, .35); tone(140, 40, .35); break;
+    case 'snare': env(.6, .2); noise(.2, 1500); tone(220, 160, .08); break;
+    case 'side stick': env(.5, .05); noise(.05, 3000, 'bandpass', 4); break;
+    case 'hi-hat': env(.22, .05); noise(.05, 8000); break;
+    case 'open hat': env(.22, .3); noise(.3, 7000); break;
+    case 'perc': env(.1, .06); noise(.06, 6000, 'bandpass', 2); break;
+    case 'ride': env(.16, .5); noise(.5, 9000, 'bandpass', 3); break;
+    case 'crash': env(.3, 1.2); noise(1.2, 5000); break;
+    case 'high tom': env(.6, .3); tone(260, 180, .3); break;
+    case 'mid tom': env(.6, .3); tone(200, 140, .3); break;
+    case 'floor tom': env(.7, .4); tone(140, 90, .4); break;
+  }
+}
+function play(from) {
+  stop();
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  playing = true; document.getElementById('play').textContent = '■ Stop';
+  const t0 = ctx.currentTime + .1, base = S.bt[from - 1];
+  const at = (i, s) => t0 + (S.bt[i] - base) + (S.bt[i + 1] - S.bt[i]) * s / S.steps;   // follows tempo changes
+  let i = from - 1;
+  // audio is scheduled a little ahead; the lights fire off the same clock
+  feeder = setInterval(() => {
+    while (i < S.bars.length && at(i, 0) < ctx.currentTime + .4) {
+      const bar = i + 1;
+      for (let s = 0; s < S.steps; s += 4) queue.push({ t: at(i, s), bar, step: s });
+      for (const [l, s, v] of S.bars[i][1]) {
+        const lane = S.lanes[l]; kit(lane, at(i, s), v);
+        queue.push({ t: at(i, s), piece: PIECE[lane], v, open: lane === 'open hat' || lane === 'crash' || lane === 'ride' });
+      }
+      i++;
+    }
+    if (i >= S.bars.length && !queue.length) stop();
+  }, 60);
+  const frame = () => {
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    queue.sort((a, b) => a.t - b.t);
+    while (queue.length && queue[0].t <= now) {
+      const e = queue.shift();
+      if (e.piece) flash(e.piece, e.v, e.open); else showPos(e.bar, e.step);
+    }
+    raf = requestAnimationFrame(frame);
+  };
+  raf = requestAnimationFrame(frame);
+}
+function stop() {
+  clearInterval(feeder); cancelAnimationFrame(raf); queue = [];
+  if (ctx) { ctx.close(); ctx = null; }
+  playing = false; document.getElementById('play').textContent = '▶ Play';
+  showPos(curBar, 0);
+}
+
+function load() {
+  document.getElementById('h1').innerHTML = `${esc(S.title)}<small>${esc(S.artist)} · ${S.bpm} bpm${S.tempos > 1 ? ' (tempo changes)' : ''}</small>`;
+  document.getElementById('hint').textContent = 'click a part below to start there · tap a drum to hear it · space = play / stop';
+  document.getElementById('count').textContent = `parts = where the drumming changes; a letter that comes back is that drum part again · from ${S.midi}`;
+  drawKit(); drawStrip(); curBar = SECS[0] ? SECS[0].a : 1; showPos(curBar, 0);
+}
+document.getElementById('song').innerHTML = DATA.map(d => `<option value="${esc(d.name)}" ${d === S ? 'selected' : ''}>${esc(d.artist)} — ${esc(d.title)}</option>`).join('');
+document.getElementById('song').onchange = e => { stop(); S = DATA.find(d => d.name === e.target.value); try { localStorage.setItem('drums:song', S.name); } catch (x) {} load(); };
+document.getElementById('play').onclick = () => playing ? stop() : play(curBar);
+document.getElementById('snd').onclick = e => { sound = !sound; e.target.textContent = sound ? 'sound on' : 'sound off'; };
+document.getElementById('strip').addEventListener('click', e => { const d = e.target.closest('[data-s]'); if (!d) return; play(SECS[+d.dataset.s].a); });
+document.getElementById('kit').addEventListener('click', e => {   // tap a piece to hear it
+  const g = e.target.closest('[data-p]'); if (!g) return;
+  const lane = Object.keys(PIECE).find(k => PIECE[k] === g.dataset.p);
+  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+  kit(lane, ctx.currentTime, 110); flash(g.dataset.p, 110, false);
+});
+document.addEventListener('keydown', e => { if (e.key === ' ' && e.target === document.body) { e.preventDefault(); document.getElementById('play').click(); } });
+load();
+</script>
+</body></html>

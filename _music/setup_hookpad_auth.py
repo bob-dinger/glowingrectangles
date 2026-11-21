@@ -8,7 +8,7 @@ future `open_in_hookpad.py` runs.
 This script uses a temporary in-memory context, so no lock files / profile state get
 left behind. Clean isolation from your Brave.
 """
-import os
+import os, sys, time
 from playwright.sync_api import sync_playwright
 
 STATE = os.path.expanduser("~/.hookpad_auth.json")
@@ -25,7 +25,21 @@ def main():
         ctx = browser.new_context(no_viewport=True)
         page = ctx.new_page()
         page.goto("https://hookpad.hooktheory.com")
-        input("[press Enter when you're logged in]")
+        if sys.stdin.isatty():
+            input("[press Enter when you're logged in]")
+        else:
+            # no keyboard (Claude Code's ! prompt, or run in the background): save
+            # the login every few seconds and log what the app asks the API, so
+            # whoever started this can test the saved login and stop it when good
+            def on_response(r):
+                if 'hooktheory.com' in r.url and r.request.resource_type in ('xhr', 'fetch'):
+                    print(f'  {r.status} {r.request.method} {r.url[:110]}', flush=True)
+            ctx.on('response', on_response)
+            print('[saving the login every 5s for 15 minutes]', flush=True)
+            end = time.time() + 900
+            while time.time() < end:
+                ctx.pages[0].wait_for_timeout(5000) if ctx.pages else time.sleep(5)
+                ctx.storage_state(path=STATE)
         ctx.storage_state(path=STATE)
         ctx.close()
         browser.close()

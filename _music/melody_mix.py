@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import perm_melody as pm
 from build_perm_pastes import parse_rhythm, chord, num, ROOTS, POOL, WORDS
 
-OUT   = os.path.expanduser('~/Desktop/chord_perms/_melody_mix')
+OUT   = os.path.expanduser('~/Desktop/perms/melody')
 RHYTHMS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'melody_rhythms')
 FOCI  = (1, 3, 5, 6)
 REGS  = (0, 0, -1)
@@ -67,8 +67,9 @@ def main():
         sub, perm = combos[i]
         word = words[frozenset(sub)]
         focus, reg, motion = FOCI[i % 4], REGS[i % 3], pm.MOTIONS[(i // 2) % 4]
+        land2 = None
         if a.landing:
-            focus = pm.pick_landing(random.Random(a.seed*7919 + i))
+            focus, land2 = pm.pick_landings(random.Random(a.seed*7919 + i))
         base = 1 + i*span
         cast = dict(zip(roles, perm))
         roots = {k: ROOTS[v] for k, v in cast.items()}
@@ -84,13 +85,14 @@ def main():
         rng = random.Random(a.seed*1000 + i)
         if a.landing:
             brk = tuple(int(x) for x in a.breaks.split(','))
-            gen = pm.land_first(rhythm, root_at, phrase, focus, reg, rng, a.mix, brk)
+            gen = pm.land_first(rhythm, root_at, phrase, focus, reg, rng, a.mix, brk, land2)
         else:
             gen = pm.walk(rhythm, root_at, phrase, focus, reg, motion, rng, a.mix)
         for n in gen:
             notes.append(dict(n, beat=num(base + n['beat']), duration=num(n['duration'])))
+        tag = f"lands {focus}->{land2}" if a.landing else f"focus {focus} {motion}"
         print(f"  {i+1:3}  bar {int((base-1)/4)+1:4}  {word:12} {'-'.join(perm):16} "
-              f"focus {focus} reg {reg:+d} {motion}")
+              f"reg {reg:+d}  {tag}")
 
     obj = {"version":1, "chords":chords, "notes":notes,
            "keys":[{"beat":1, "scale":"major", "tonic":"C"}],

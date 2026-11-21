@@ -16,6 +16,24 @@ that each got re-derived (and got wrong at least once) in a separate script:
      capitalisation leaves the old filename on this case-insensitive disk;
      exact matching both drops the song and counts its file as an orphan.
 
+  4. DEDUPE IDENTICAL NOTES. Hookpad has four melody voices (visibleMelodies
+     [0,1,2,3], lead1-lead4) but writes them all into ONE flat `notes` array with
+     no voice index, so a second voice doubling the lead in unison is
+     indistinguishable from an accidental duplicate — and the user cannot see
+     either in the UI. 103 songs (6.3%) contain exact duplicates, and where it
+     happens it is systematic: Love Me Do 50% of its notes, If I Fell 44%,
+     Tangled Up In Blue 42%. Left in, a duplicate reads as an interval of 0, so it
+     inflates the melodic repeat rate; and doubled bars read as twice as busy.
+     The user: "Remove any exactly duplicate notes. no reason to have them."
+     Extended 2026-09-29: identity is (beat, sd, octave) WITHOUT duration, keeping
+     the LONGER note, because the same note entered twice with a sloppier second
+     length is the same artifact — Yesterday's bridge had C4 at beat 92.5 twice,
+     0.5 and 1.25 beats, drawn as one note in the UI. That case is 0.31% of notes
+     across 81 songs, 78% of it in four: Anthem for the Year 2000 (389 groups in
+     778 notes), Never Let You Go, Beautiful Stranger, Too Bad. The durations are
+     not clean multiples (1,203 of 1,251 are arbitrary), so this is not a
+     deliberate second voice at half speed.
+
 Also: read the meter per song. 29 songs here are in 3 and 12 in 6, and
 hardcoding four beats to the bar silently skips all of them.
 """
@@ -23,7 +41,11 @@ import json, glob, os, re
 
 CORPUS = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 LIST = os.path.expanduser('~/Desktop/music/.hookpad_song_list.json')
-SCRATCH = re.compile(r'^(music_|perms_|mine|\d+-\d+-\d+)', re.I)
+# song_badger / song_falcon / song_zebra are GENERATED scaffolding, not songs:
+# every note is exactly one bar long and every note's scale degree equals its
+# chord root, across a full intro/verse/chorus/outro form. Found 2026-10-03
+# when all three turned up as 'HHHHHHHHHH' ten-bar verses.
+SCRATCH = re.compile(r'^(music_|perms_|mine|template|hp3test|song_(badger|falcon|zebra)$|\d+-\d+-\d+)', re.I)
 
 
 def is_scratch(name):
@@ -96,6 +118,88 @@ WHITE = ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'Bdim']
 MODE_OFFSET = {'major': 0, 'ionian': 0, 'dorian': 1, 'phrygian': 2, 'lydian': 3,
                'mixolydian': 4, 'minor': 5, 'aeolian': 5, 'locrian': 6,
                'harmonicMinor': 5, 'phrygianDominant': 2}
+
+
+def dedupe_notes(notes):
+    """Rule 4 above. Identity is (beat, sd, octave, isRest) — same note, same place.
+    Duration is deliberately NOT part of it: two copies with different lengths are
+    the same artifact, drawn as one note in the UI. The LONGER one is kept, since
+    that is how long the note you hear actually sounds."""
+    best = {}
+    for i, n in enumerate(notes):
+        k = (n.get('beat'), str(n.get('sd')), n.get('octave', 0), bool(n.get('isRest')))
+        prev = best.get(k)
+        if prev is None or (n.get('duration') or 0) > (prev[1].get('duration') or 0):
+            best[k] = (i if prev is None else prev[0], n)     # keep original order
+    return [n for _, n in sorted(best.values(), key=lambda t: t[0])]
+
+
+def section_phrase(notes, b0, end, look=2.0, join=1.0):
+    """The notes that actually BELONG to a section, pickups included.
+
+    Slicing on the section marker is wrong for melody: 47% of eight-bar sections
+    have notes in the two beats BEFORE their marker (a pickup), and 13% have their
+    last note ringing past the end (the NEXT section's pickup). Cutting on the
+    marker amputates a section's opening and staples on its neighbour's.
+
+    A run of notes just before a boundary is a pickup if it runs STRAIGHT INTO the
+    notes after it — gap under `join` beats. Otherwise it is the previous phrase's
+    tail and stays there. Returns the notes, and the (start, stop) actually used.
+    """
+    notes = sorted(notes, key=lambda n: n['beat'])
+    after = [n for n in notes if n['beat'] >= b0]
+    start = b0
+    if after:
+        lead = [n for n in notes if b0 - look <= n['beat'] < b0]
+        if lead and after[0]['beat'] - lead[-1]['beat'] <= join:
+            start = lead[0]['beat']                 # our own pickup: take it
+    stop = end
+    beyond = [n for n in notes if n['beat'] >= end]
+    if beyond:
+        tail = [n for n in notes if end - look <= n['beat'] < end]
+        if tail and beyond[0]['beat'] - tail[-1]['beat'] <= join:
+            stop = tail[0]['beat']                  # their pickup: leave it
+    return [n for n in notes if start <= n['beat'] < stop], start, stop
+
+
+def metric_offset(notes, bar=4.0, step=0.5):
+    """Where the melody's own downbeat sits, as an offset from the notated barline.
+
+    Some melodies run off the barline: Three Days Grace "Just Like You" is pure 4/4,
+    its Verse marker is at beat 21, and the vocal enters at beat 23 with three
+    eighths leading into a held note at 24.5 — so every phrase straddles a bar line
+    and reads as if the music ran backwards into the bar before.
+
+    Chosen by the standard heuristic: the offset that puts the most NOTE DURATION on
+    downbeats, since long notes land on strong beats. Returns the offset in beats
+    (0 means the notated barline is already right).
+    """
+    if not notes: return 0.0
+    base = min(n['beat'] for n in notes)
+    best, score = 0.0, -1.0
+    o = 0.0
+    while o < bar:
+        tot = sum(n.get('duration', 0) for n in notes
+                  if abs(((n['beat'] - base - o) % bar)) < 1e-6)
+        if tot > score: best, score = o, tot
+        o += step
+    return best
+
+
+def bar_starts(d, upto=None):
+    """Bar start beats, honouring MID-SONG METER CHANGES. 78 songs (4.7%) change
+    meter — `4-2-4` (one 2/4 bar) is the commonest — and a single 2/4 bar shifts
+    every bar after it by two beats. Reading only meters[0], as the scripts here
+    did, drifts the grid for 271 role sections."""
+    ms = sorted(d.get('meters') or [{'beat': 1, 'numBeats': 4}], key=lambda m: m.get('beat', 1))
+    end = upto or (d.get('endBeat') or 1)
+    out, beat, i = [], ms[0].get('beat', 1), 0
+    while beat < end:
+        while i + 1 < len(ms) and ms[i+1].get('beat', 1) <= beat:
+            i += 1
+        out.append(beat)
+        beat += ms[i].get('numBeats') or 4
+    return out
 
 
 def mode_of(d):
@@ -185,6 +289,8 @@ def songs(corpus=CORPUS, need_chords=True):
             continue
         if need_chords and not d.get('chords'):
             continue
+        if d.get('notes'):
+            d['notes'] = dedupe_notes(d['notes'])
         yield name, d, (d.get('meters') or [{}])[0].get('numBeats') or 4
 
 
