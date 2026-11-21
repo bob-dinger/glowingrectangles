@@ -15,6 +15,7 @@ so the ones worth hearing come first.
     python3 perms_ababab_cc.py --bpm 92
 """
 import argparse, itertools, json, os
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 SHAPE = 'ABABABCC'
 LET = {1:'C', 2:'Dm', 3:'Em', 4:'F', 5:'G', 6:'Am', 7:'A#'}
@@ -90,7 +91,7 @@ def main():
             'meters': [{'beat': 1, 'numBeats': 4, 'beatUnit': 1}],
             'breaks': [], 'sections': sections, 'audioTracks': [],
             'endBeat': beat}
-    open(a.out, 'w').write(json.dumps(song, separators=(',', ':')))
+    open(a.out, 'w').write(hp3.clipboard(song))
     bars = (beat - 1) // 4
     sets = {tuple(sorted(t)) for t in triples}
     print(f'{len(sections)} permutations over {len(sets)} chord sets')

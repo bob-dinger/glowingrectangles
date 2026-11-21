@@ -5,6 +5,7 @@
 Outputs a Hookpad paste per song to ~/Desktop/fused_songs/.
 """
 import os, re, glob, json, math, psycopg2
+import hp3   # pastes both Hookpads accept (no version, real fp)
 from dotenv import load_dotenv
 load_dotenv('/Users/robert/Desktop/themap/themap_claude/.env')
 import mido
@@ -130,11 +131,11 @@ def to_paste(b):
         if nm not in seen_sec:
             sections.append({'beat':round(bt+sh,3),'name':nm}); seen_sec.add(nm)
     end=int(max([c['beat']+c['duration'] for c in chords]+[n['beat']+n['duration'] for n in notes]))+1
-    return json.dumps({'notes':notes,'chords':chords,'audioTracks':[],
+    return hp3.clipboard({'notes':notes,'chords':chords,'audioTracks':[],
         'keys':[{'beat':1,'scale':b['mode'],'tonic':b['tonic']}],
         'tempos':[{'beat':1,'bpm':100,'swingFactor':0,'swingBeat':0.5}],
         'meters':[{'beat':1,'numBeats':4,'beatUnit':1}],
-        'sections':sorted(sections,key=lambda s:s['beat']),'endBeat':end,'version':1},separators=(',',':'))
+        'sections':sorted(sections,key=lambda s:s['beat']),'endBeat':end})
 
 def main():
     c=psycopg2.connect(host=os.environ['DB_HOST'],dbname=os.environ['DB_NAME'],user=os.environ['DB_USER'],

@@ -16,6 +16,7 @@ lands outside the chord. --no-snap gives strict parallel motion, which is
 the country/brother-duet sound.
 """
 import json, os, glob, argparse, sys
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 D = os.path.expanduser('~/Desktop/music/hookpad_songs_full')
 OUT = os.path.expanduser('~/Desktop/harmony_pastes')
@@ -133,7 +134,7 @@ if __name__ == '__main__':
     os.makedirs(a.out, exist_ok=True)
     # .txt because anything meant for pasting has to be .txt
     path = os.path.join(a.out, f"{name}__{a.interval}{'' if a.snap else '_strict'}.txt")
-    open(path, 'w').write(json.dumps(paste_blob(harm), separators=(',', ':')))
+    open(path, 'w').write(hp3.clipboard(paste_blob(harm)))
 
     moved = sum(1 for m, h in zip(mel, harm)
                 if abs_step(h) - abs_step(m) != STEPS[a.interval])

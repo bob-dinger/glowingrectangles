@@ -12,6 +12,7 @@ emotional move. Edit RECIPES at the bottom and re-run.
     themap_venv/python build_blocks.py        # writes pastes to ~/Desktop/blocks/
 """
 import json, os, math
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 # ---------------- chord blocks (8-measure root sequences; 4-cells auto-loop) ----------------
 CHORD_BLOCKS = {
@@ -115,6 +116,6 @@ if __name__=='__main__':
     out=os.path.expanduser('~/Desktop/blocks'); os.makedirs(out,exist_ok=True)
     for name,(blocks,form) in RECIPES.items():
         obj=build_song(blocks, form)
-        open(os.path.join(out,name+".txt"),'w').write(json.dumps(obj,separators=(',',':'),ensure_ascii=False))
+        open(os.path.join(out,name+".txt"),'w').write(hp3.clipboard(obj))
         print(f"  {name+'.txt':26} form={' '.join(form)}  ({len(obj['chords'])} bars)")
     print(f"\nwrote {len(RECIPES)} songs to {out}/")

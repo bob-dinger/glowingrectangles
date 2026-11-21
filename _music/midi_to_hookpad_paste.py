@@ -9,6 +9,7 @@ Usage:
     python midi_to_hookpad_paste.py <input.mid> [<output.txt>]
 """
 import os, sys, json, hashlib
+import hp3   # pastes both Hookpads accept (no version, real fp)
 from collections import Counter
 import mido
 
@@ -214,7 +215,7 @@ def main(in_path, out_path=None, force_tonic=None, force_scale='major'):
     obj['fp'] = hashlib.sha1(compact.encode('utf-8')).hexdigest()
 
     with open(out_path, 'w') as f:
-        json.dump(obj, f, separators=(',', ':'))
+        f.write(hp3.clipboard(obj))
     print(f"\nwrote {out_path}")
     print(f"  {len(chords)} chords ({len(set(c['root'] for c in chords))} unique roots), "
           f"{len(notes_out)} notes, endBeat={end_beat}")

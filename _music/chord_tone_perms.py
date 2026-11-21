@@ -20,6 +20,7 @@ G below middle C to the G above (Friday's range), so a pick never leaps further
 than it has to. Section 1 is always the recorded skeleton, for reference.
 """
 import argparse, hashlib, itertools, json, os, random
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 TONES = {'C': ['C', 'E', 'G'], 'Dm': ['D', 'F', 'A'], 'Em': ['E', 'G', 'B'],
          'F': ['F', 'A', 'C'], 'G': ['G', 'B', 'D'], 'Am': ['A', 'C', 'E']}
@@ -124,7 +125,7 @@ def main():
     obj["fp"] = hashlib.sha1(json.dumps({k: v for k, v in obj.items()},
                                         separators=(',', ':')).encode()).hexdigest()
     path = os.path.expanduser(f'~/Desktop/friday im in love/chord_tone_perms_{a.rule}_seed{seed}.txt')
-    open(path, 'w').write(json.dumps(obj, separators=(',', ':')))
+    open(path, 'w').write(hp3.clipboard(obj))
 
     # read it back: every note a tone of the chord under it, nothing past the end
     d = json.load(open(path))

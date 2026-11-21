@@ -13,6 +13,7 @@ sounds like the same phrase wearing different harmony.
     python3 block_perms.py --template fnb.json --shape XXYZ --n 40
 """
 import argparse, collections, itertools, json, os, sys
+import hp3   # pastes both Hookpads accept (no version, real fp)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bars as B
 import pao_pools as pp
@@ -120,7 +121,7 @@ def main():
             'meters': [{'beat': 1, 'numBeats': 4, 'beatUnit': 1}],
             'breaks': [], 'sections': sections, 'audioTracks': [],
             'endBeat': beat}
-    open(a.out, 'w').write(json.dumps(song, separators=(',', ':')))
+    open(a.out, 'w').write(hp3.clipboard(song))
     print(f'{len(cands)} variants x {a.repeat} passes = {(beat-1)//4} bars, '
           f'{len(chords)} chords, {len(notes)} notes')
     print(f'-> {a.out}\n')

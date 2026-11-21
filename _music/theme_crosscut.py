@@ -11,6 +11,7 @@ is exactly what is in the library. Sections run shortest theme first.
     themap_venv/python theme_crosscut.py C,F,G            # 3-chord themes
 """
 import json, os, glob, argparse
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 ROOT  = os.path.expanduser('~/Desktop/chord_perms')
 OUT   = os.path.join(ROOT, '_crosscuts')
@@ -74,7 +75,7 @@ def main():
 
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, f"{word.lower()}_{'-'.join(order)}.txt")
-    open(path, 'w').write(json.dumps(obj, separators=(',',':'), ensure_ascii=False))
+    open(path, 'w').write(hp3.clipboard(obj))
     print(f"{word} {'-'.join(order)} — {len(found)} themes, "
           f"{int((at-1)/4)} bars, {os.path.getsize(path)//1024}K")
     for span, name, cs in found:

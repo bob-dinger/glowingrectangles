@@ -13,6 +13,7 @@ Usage:
     python midi_ug_pipeline_v3.py <midi_path> [ug_path] [out.txt]
 """
 import os, sys, json, re, copy, mido, collections
+import hp3   # pastes both Hookpads accept (no version, real fp)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analyze_song_v2 import classify, harmonic_chord_track, lyric_word_count
 from parse_ug import parse_tab, chord_to_root_degree
@@ -339,7 +340,7 @@ def build_paste(midi_path, ug_path, out_path):
         'breaks': [], 'sections': hp_sections,
         'endBeat': int(final_end), 'audioTracks': [], 'version': 1,
     }
-    open(out_path, 'w').write(json.dumps(song, separators=(',', ':')))
+    open(out_path, 'w').write(hp3.clipboard(song))
     return {
         'tempo': tempo, 'midi_key': NAMES[midi_tonic], 'ug_key': ug_key,
         'dominant_length_bars': dominant,

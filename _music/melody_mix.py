@@ -15,6 +15,7 @@ music_doubling_variants.
     themap_venv/python melody_mix.py --takes 25
 """
 import json, os, random, re, sys, argparse, itertools
+import hp3   # pastes both Hookpads accept (no version, real fp)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import perm_melody as pm
 from build_perm_pastes import parse_rhythm, chord, num, ROOTS, POOL, WORDS
@@ -99,7 +100,7 @@ def main():
            "endBeat":num(1 + a.takes*span), "audioTracks":[]}
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, f"{a.rhythm}_{a.takes}takes.txt")
-    open(path, 'w').write(json.dumps(obj, separators=(',',':'), ensure_ascii=False))
+    open(path, 'w').write(hp3.clipboard(obj))
     print(f"\n{a.takes} takes, {int(a.takes*span/4)} bars, {len(notes)} notes, "
           f"{os.path.getsize(path)//1024}K\n-> {path}")
 

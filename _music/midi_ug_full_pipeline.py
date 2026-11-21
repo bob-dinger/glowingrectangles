@@ -11,6 +11,7 @@ Usage:
     python midi_ug_full_pipeline.py <midi_path> [ug_text_path] [out.txt]
 """
 import os, sys, json, re, copy, mido, collections
+import hp3   # pastes both Hookpads accept (no version, real fp)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analyze_song_v2 import classify, harmonic_chord_track, lyric_word_count, simplify_chord
 from parse_ug import parse_tab, chord_to_root_degree, parse_chord_name
@@ -265,7 +266,7 @@ def main():
         'endBeat': end_beat,
         'audioTracks': [], 'version': 1,
     }
-    open(out_path, 'w').write(json.dumps(song, separators=(',', ':')))
+    open(out_path, 'w').write(hp3.clipboard(song))
     print(f'\n{len(split_chords)} chord events, {len(mel_notes)} melody notes, {len(hp_sections)} sections')
     print(f'wrote → {out_path}')
 

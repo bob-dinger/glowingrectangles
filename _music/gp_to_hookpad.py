@@ -7,6 +7,7 @@ Usage:
     python gp_to_hookpad.py <file.gp[3-5]> [output.json]
 """
 import os, sys, json
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 from gp_extract import extract
 from chord_to_hookpad import chord_to_hookpad
@@ -134,7 +135,7 @@ def main():
     path = sys.argv[1]
     out = sys.argv[2] if len(sys.argv) > 2 else os.path.splitext(path)[0] + '_paste.txt'
     paste = gp_to_hookpad_paste(path)
-    open(out, 'w').write(json.dumps(paste, separators=(',', ':')))
+    open(out, 'w').write(hp3.clipboard(paste))
     # Summary
     print(f'  title: {os.path.basename(path)}')
     print(f'  endBeat: {paste["endBeat"]}, key: {paste["keys"][0]["tonic"]} {paste["keys"][0]["scale"]}')

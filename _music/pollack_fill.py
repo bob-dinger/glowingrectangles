@@ -11,6 +11,7 @@ Usage:
     python3 pollack_fill.py --all        # batch every target, print confidence
 """
 import os, sys, json, hashlib, re, itertools
+import hp3   # pastes both Hookpads accept (no version, real fp)
 import psycopg2
 from dotenv import load_dotenv
 from pollack_parse import parse_song
@@ -200,7 +201,7 @@ def run_one(cur, title, pol_slug, write=True, verbose=True):
     if write:
         os.makedirs(OUT_DIR, exist_ok=True)
         path = os.path.join(OUT_DIR, slugify(title) + '.txt')
-        json.dump(obj, open(path, 'w'), separators=(',', ':'))
+        open(path, 'w').write(hp3.clipboard(obj))
     return conf
 
 if __name__ == '__main__':

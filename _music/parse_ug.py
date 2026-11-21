@@ -18,6 +18,7 @@ Heuristics (v1):
   - Melody: chord root note at chord position (placeholder — user will refine in Hookpad)
 """
 import os, re, sys, json, subprocess
+import hp3   # pastes both Hookpads accept (no version, real fp)
 from collections import Counter
 
 UG_DIR = os.path.expanduser('~/Desktop/music/ug_tabs')
@@ -350,7 +351,7 @@ def parse_file(basename, paste=False):
     meta, sections = parse_tab(text)
     paste_json, summary = build_paste(meta, sections)
     out_path = os.path.join(UG_DIR, basename + '_paste.json')
-    open(out_path, 'w').write(json.dumps(paste_json, separators=(',', ':')))
+    open(out_path, 'w').write(hp3.clipboard(paste_json))
     print(f'  {basename}: {len(paste_json["sections"])} sections, {len(paste_json["chords"])} chords, '
           f'key {summary["inferred_key"][0]} {summary["inferred_key"][1]}, bpm {summary["bpm"]}')
     if paste:

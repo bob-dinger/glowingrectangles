@@ -2,6 +2,7 @@
 and emit a Hookpad paste-JSON. Monophonic reduction: top note of each beat.
 Key: E major (relative major of the riff's C#-minor center)."""
 import json, guitarpro
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 GP = '/Users/robert/Desktop/6-23-26/midi_files_gp5/nirvana_heart-shaped-box.gp4'
 OUT = '/Users/robert/Desktop/hsb_opening_riff_hookpad.txt'
@@ -60,7 +61,7 @@ song = {
 }
 
 with open(OUT, 'w') as f:
-    json.dump(song, f, separators=(',', ':'))
+    f.write(hp3.clipboard(song))
 
 # human-readable summary
 NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']

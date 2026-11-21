@@ -63,8 +63,16 @@ PAGE = f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 </header>
 <main>{''.join(cards)}</main>
 <script>
+// A paste both Hookpads accept: Hookpad 3 rejects the old `version: 1` bypass, so
+// no version and the real fp (SHA-1 of the compact JSON without fp, the check Hookpad makes).
+async function hpPaste(obj){{
+  const o = Object.assign({{}}, obj); delete o.version; delete o.fp;
+  const h = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(JSON.stringify(o)));
+  o.fp = Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return JSON.stringify(o);
+}}
 document.querySelectorAll('.cp').forEach(b=>b.addEventListener('click',async()=>{{
-  await navigator.clipboard.writeText(b.dataset.j);
+  await navigator.clipboard.writeText(await hpPaste(JSON.parse(b.dataset.j)));
   const t=b.textContent; b.textContent='copied ✓'; b.classList.add('ok');
   setTimeout(()=>{{b.textContent=t;b.classList.remove('ok')}},1200);
 }}));

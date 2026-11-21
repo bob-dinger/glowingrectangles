@@ -19,6 +19,7 @@ Layers (auto-separable from a paste):
   - a new chord landing off the beat  = a PUSH (anticipation)
 """
 import os, json
+import hp3   # pastes both Hookpads accept (no version, real fp)
 from fractions import Fraction
 
 LIB_PATH = os.path.join(os.path.dirname(__file__), 'strum_library.json')
@@ -120,8 +121,7 @@ def encode(pattern, progression, start=1, nb=4, type=5):
     return chords
 
 def paste(chords, path=None):
-    s = json.dumps({"notes": [], "chords": chords, "audioTracks": [], "version": 1},
-                   separators=(',', ':'))
+    s = hp3.clipboard({"notes": [], "chords": chords, "audioTracks": []})
     if path:
         open(os.path.expanduser(path), 'w').write(s)
     return s

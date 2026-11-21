@@ -12,6 +12,7 @@ Beat layout:
 version:1 bypasses Hookpad's fp check.
 """
 import json, os, sys, math
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 HERE = os.path.dirname(__file__)
 CORPUS = os.path.join(HERE, 'perfect_melodies.json')
@@ -64,7 +65,7 @@ def paste_json(phrases, chords):
     obj = {'notes': flatten(phrases, realign),
            'chords': [chord(c) for c in (chords or [])],
            'audioTracks': [], 'version': 1}
-    return json.dumps(obj, separators=(',', ':'))
+    return hp3.clipboard(obj)
 
 
 def main(names):

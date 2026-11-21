@@ -11,6 +11,7 @@ Each mashup:
 Outputs paste-JSON files to ~/Desktop/mashups/ — ready to paste into Hookpad.
 """
 import os, json, random, re, hashlib
+import hp3   # pastes both Hookpads accept (no version, real fp)
 from dotenv import load_dotenv
 load_dotenv('/Users/robert/Desktop/themap/themap_claude/.env')
 from supabase import create_client
@@ -354,7 +355,7 @@ def main():
         # Save paste-blob as .txt (user preference: paste content always .txt)
         out_path = os.path.join(OUT_DIR, f"mashup-{i+1:02d}.txt")
         with open(out_path, 'w') as fh:
-            json.dump(obj, fh, separators=(',',':'))
+            fh.write(hp3.clipboard(obj))
         # Save metadata (also .txt per user preference)
         meta_path = os.path.join(OUT_DIR, f"mashup-{i+1:02d}.meta.txt")
         with open(meta_path, 'w') as fh:

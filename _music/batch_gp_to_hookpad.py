@@ -4,6 +4,7 @@ Outputs to ~/Desktop/gp_pastes/{basename}.json
 Writes summary CSV with per-song stats.
 """
 import os, sys, glob, csv, traceback
+import hp3   # pastes both Hookpads accept (no version, real fp)
 sys.path.insert(0, os.path.dirname(__file__))
 
 from gp_to_hookpad import gp_to_hookpad_paste
@@ -39,7 +40,7 @@ def main():
                 'end_beat': paste['endBeat'],
             })
             if n_chords > 0 and n_sections > 0:
-                open(out, 'w').write(json.dumps(paste, separators=(',', ':')))
+                open(out, 'w').write(hp3.clipboard(paste))
         except Exception as e:
             row['status'] = 'error'
             row['error'] = f'{type(e).__name__}: {str(e)[:100]}'

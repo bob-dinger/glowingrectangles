@@ -18,6 +18,7 @@ Three reductions are written, coarse to fine:
     themap_venv/python simplify_melody.py <melody.json> --base 69 --name call-me
 """
 import json, os, argparse, collections
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 OUT = os.path.expanduser('~/Desktop/chord_perms/_simple')
 LET = 'CDEFGAB'
@@ -141,7 +142,7 @@ def main():
         red = fn(notes, chords, nbars) if label == 'chord' else fn(notes, nbars)
         obj = paste(red, chords, a.bpm)
         path = os.path.join(OUT, f"{a.name}-simple-{label}.txt")
-        open(path,'w').write(json.dumps(obj, separators=(',',':'), ensure_ascii=False))
+        open(path,'w').write(hp3.clipboard(obj))
         print(f"  {label:6} {len(red):3} notes  ->  {path}")
 
 if __name__ == '__main__':

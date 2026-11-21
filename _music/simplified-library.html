@@ -63,12 +63,20 @@ function secDoc(it,sh){   // one section's notes/chords shifted to start at beat
     chords: it.c.map(a=>({root:a[0],beat:a[1]+sh,duration:a[2],type:a[3],inversion:0,applied:a[5],adds:[],omits:[],
       alterations:[],suspensions:[],substitutions:[],pedal:null,alternate:"",borrowed:a[4]||null,isRest:false,recordingEndBeat:null}))};
 }
+// A paste both Hookpads accept: Hookpad 3 rejects the old `version: 1` bypass, so
+// no version and the real fp (SHA-1 of the compact JSON without fp, the check Hookpad makes).
+async function hpPaste(obj){
+  const o = Object.assign({}, obj); delete o.version; delete o.fp;
+  const h = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(JSON.stringify(o)));
+  o.fp = Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return JSON.stringify(o);
+}
 function pasteFor(it){
   const d=secDoc(it,0);
-  return JSON.stringify({notes:d.notes,chords:d.chords,keys:[{beat:1,tonic:it.kt,scale:it.ks}],
+  return hpPaste({notes:d.notes,chords:d.chords,keys:[{beat:1,tonic:it.kt,scale:it.ks}],
     tempos:[{beat:1,bpm:it.bpm,swingFactor:0,swingBeat:0.5}],meters:[{beat:1,numBeats:it.nb,beatUnit:1}],
     sections:[{beat:1,name:it.sec}],breaks:[],endBeat:Math.ceil(Math.max(...d.chords.map(c=>c.beat+c.duration))/it.nb)*it.nb+1,
-    audioTracks:[],version:1});
+    audioTracks:[]});
 }
 function buildPoolDoc(list){
   let cur=1, notes=[], chords=[], sections=[], keys=[];
@@ -99,7 +107,7 @@ function injectCopy(){
     const it=shown[+bl.dataset.sectionIdx]; const hdr=bl.querySelector('.section-header');
     if(!hdr||!it||hdr.querySelector('.copyhp'))return;
     const b=document.createElement('button'); b.className='copyhp'; b.textContent='⧉ Copy Hookpad txt';
-    b.onclick=async e=>{e.stopPropagation();await navigator.clipboard.writeText(pasteFor(it));
+    b.onclick=async e=>{e.stopPropagation();await navigator.clipboard.writeText(await pasteFor(it));
       b.textContent='copied ✓';b.classList.add('ok');setTimeout(()=>{b.textContent='⧉ Copy Hookpad txt';b.classList.remove('ok');},1200);};
     hdr.appendChild(b);
   });
@@ -114,7 +122,7 @@ document.getElementById('contours').onclick=e=>{const el=e.target.closest('.pill
 document.getElementById('q').addEventListener('input',e=>{q=e.target.value.toLowerCase().trim();refresh();});
 document.getElementById('seclist').addEventListener('click',async e=>{
   const cp=e.target.closest('.cp'); const si=e.target.closest('.si'); if(!si)return; const it=shown[+si.dataset.k];
-  if(cp){await navigator.clipboard.writeText(pasteFor(it));cp.textContent='✓';cp.classList.add('ok');setTimeout(()=>{cp.textContent='⧉';cp.classList.remove('ok');},1000);return;}
+  if(cp){await navigator.clipboard.writeText(await pasteFor(it));cp.textContent='✓';cp.classList.add('ok');setTimeout(()=>{cp.textContent='⧉';cp.classList.remove('ok');},1000);return;}
   document.querySelectorAll('.si.active').forEach(x=>x.classList.remove('active')); si.classList.add('active');
   const b=document.getElementById('sec-'+si.dataset.k); if(b)b.scrollIntoView({behavior:'smooth',block:'start'});});
 refresh();

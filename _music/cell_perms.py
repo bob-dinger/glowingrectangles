@@ -20,6 +20,7 @@ one lands on IV. So that is the default shape here, and --free drops it.
     python3 cell_perms.py --free --pool I,IV,V --landing IV
 """
 import argparse, itertools, json, os
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 DEG = {'I':1, 'ii':2, 'iii':3, 'IV':4, 'V':5, 'vi':6, 'bVII':7}
 BORROWED = {7: 'mixolydian'}
@@ -77,7 +78,7 @@ def main():
             'tempos': [{'beat': 1, 'bpm': a.bpm, 'swingFactor': 0, 'swingBeat': 0.5}],
             'meters': [{'beat': 1, 'numBeats': 4, 'beatUnit': 1}],
             'breaks': [], 'sections': sections, 'audioTracks': [], 'endBeat': beat}
-    open(a.out, 'w').write(json.dumps(song, separators=(',', ':')))
+    open(a.out, 'w').write(hp3.clipboard(song))
     print(f'{len(cells)} cells from {a.pool}'
           + (f' answering to {a.answer}' if a.answer else '')
           + f' -> {len(sections)} progressions, {(beat-1)//4} bars')

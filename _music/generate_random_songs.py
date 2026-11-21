@@ -11,6 +11,7 @@ Each song:
 Writes .txt pastes to ~/Desktop/random_songs/ plus a SUMMARY.txt.
 """
 import os, json, random, hashlib
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 OUT_DIR = os.path.expanduser('~/Desktop/random_songs')
 
@@ -196,7 +197,7 @@ def main():
         fname = f"{animal}.txt"
         path = os.path.join(OUT_DIR, fname)
         with open(path, 'w') as f:
-            json.dump(obj, f, separators=(',', ':'))
+            f.write(hp3.clipboard(obj))
         total_bars = (obj['endBeat'] - 1) // 4
         summary_lines.append(f"  {animal:<12}  {tempo:>3} BPM · {key_tonic} {key_scale} · {struct_label}")
         summary_lines.append(f"               sections: {' → '.join(s['name'] for s in obj['sections'])}")

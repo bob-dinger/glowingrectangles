@@ -9,6 +9,7 @@ on its own. 2-bar patterns are A + an answer-op on bar B (AA'/AB).
     python _music/build_strum_pastes.py
 """
 import json, os
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 # ---- cell -> onset offsets within a beat (in beats) --------------------------
 def cell_onsets(cell, i):
@@ -115,7 +116,7 @@ def main():
            'sections': sections, 'endBeat': int(cursor), 'version': 1}
     out = os.path.expanduser('~/Desktop/strums_to_try_hookpad.txt')
     with open(out, 'w') as f:
-        f.write(json.dumps(obj, separators=(',', ':')))
+        f.write(hp3.clipboard(obj))
     print(f'{len(ONES)} one-bar + {len(TWOS)} two-bar -> {out}')
     print(f'{len(chords)} chords, {len(sections)} sections, endBeat {int(cursor)}')
     print('\n1-BAR CORE:')

@@ -10,6 +10,7 @@ pitches as the chord changes. The basic pattern here is the user's:
   python travis_paste.py --key C --prog C G Am F --pattern A G D B --midi
 """
 import os, re, json, argparse
+import hp3   # pastes both Hookpads accept (no version, real fp)
 import mido
 
 # open-position chord voicings: MIDI note per guitar string, low->high [E A D G B e], None=muted.
@@ -95,7 +96,7 @@ def main():
              'sections': [{'beat': 1, 'name': 'travis'}], 'endBeat': end - 1, 'audioTracks': []}
     base = a.out or os.path.expanduser(f'~/Desktop/travis_{a.key}_{"".join(a.prog)}')
     txt = base + '.txt'                                 # .txt so it opens as plain text to copy
-    open(txt, 'w').write(json.dumps(paste, separators=(',', ':')))
+    open(txt, 'w').write(hp3.clipboard(paste))
     print(f'\nwrote {txt}  (paste into an empty Hookpad song)')
 
     if a.midi:

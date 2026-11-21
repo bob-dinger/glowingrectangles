@@ -6,6 +6,7 @@ actual sections -> chord_to_hookpad (absolute chord + key -> Hookpad dict) ->
 inject chords into the real song object -> recompute fp -> write .txt.
 """
 import os, json, hashlib
+import hp3   # pastes both Hookpads accept (no version, real fp)
 from pollack_parse import parse_song
 from pollack_assemble import expand_figure
 from chord_to_hookpad import chord_to_hookpad
@@ -114,7 +115,7 @@ def build():
 
     os.makedirs(OUT_DIR, exist_ok=True)
     path = os.path.join(OUT_DIR, 'do_you_want_to_know_a_secret.txt')
-    json.dump(obj, open(path, 'w'), separators=(',', ':'))
+    open(path, 'w').write(hp3.clipboard(obj))
     return path, obj, debug
 
 if __name__ == '__main__':

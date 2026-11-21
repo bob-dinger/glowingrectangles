@@ -7,6 +7,7 @@ Each section is labeled with its template (e.g. "8-44-AA").
 Format follows chord-chart-visualizer.html (verified working).
 """
 import os, json, hashlib
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 OUT_DIR = os.path.expanduser('~/Desktop/template_pastes')
 LETTERS = {'A': 1, 'B': 5, 'C': 6, 'D': 4, 'E': 2, 'F': 3, 'G': 7}
@@ -121,7 +122,7 @@ def main():
         obj = build_multi_section(spec)
         path = os.path.join(OUT_DIR, fname)
         with open(path, 'w') as f:
-            json.dump(obj, f, separators=(',', ':'))
+            f.write(hp3.clipboard(obj))
         total_chord_events = sum(len(s[1].replace(' ','')) for s in spec)
         print(f"  wrote {path}  ({len(spec)} sections, {total_chord_events} chord events, fp={obj['fp'][:8]}...)")
     summary = os.path.join(OUT_DIR, 'SUMMARY.txt')

@@ -329,7 +329,6 @@ function buildHookpadJson(sections, keyTonic, keyMode, bpm) {
     const endBeat = beat;
 
     return {
-        version: 1,   // bypasses fp validation; also we compute it for compatibility
         chords,
         notes: [],
         keys: [{ beat: 1, scale: keyMode, tonic: tonicName }],

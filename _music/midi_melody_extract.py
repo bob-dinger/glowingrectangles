@@ -8,6 +8,7 @@ Hookpad scale-degree/octave in a KNOWN key.
 Usage: python3 midi_melody_extract.py <midi> <tonic> [major|minor] [out.txt]
 """
 import os, sys, json, hashlib
+import hp3   # pastes both Hookpads accept (no version, real fp)
 import mido
 from collections import Counter, defaultdict
 from midi_to_hookpad_paste import extract_notes, melody_sd_octave
@@ -107,7 +108,7 @@ def build(midi_path, tonic, scale='major', out_path=None, quiet=False):
     obj['fp'] = hashlib.sha1(json.dumps(obj, separators=(',', ':')).encode()).hexdigest()
 
     if out_path:
-        json.dump(obj, open(out_path, 'w'), separators=(',', ':'))
+        open(out_path, 'w').write(hp3.clipboard(obj))
     hist = Counter(n['sd'] for n in hp_notes)
     named = any(kw in name.lower() for kw in ('vocal', 'melody', 'lead', 'voice', 'sing'))
     meta = {'track': name, 'score': round(s, 1), 'mono': round(monophony_ratio(notes), 2),

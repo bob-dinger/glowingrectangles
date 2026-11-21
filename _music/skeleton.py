@@ -19,6 +19,7 @@ passing / re-articulate / pickup). Ornament budget is TEMPO-SCALED (fast bpm ->
 fewer eighths): base = round(120/bpm * 3)  (=2 at 180 bpm).
 """
 import os, json, random
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 # ---------------- Skeletoner ----------------
 def skeletonize(notes, lo, hi):
@@ -200,7 +201,7 @@ def plain_chord(root, beat, dur):
 def write_paste(notes, chords, sections, endbeat, path):
     paste = {"notes": notes, "chords": chords, "sections": sections, "endBeat": round(endbeat),
              "audioTracks": [], "version": 1}
-    open(os.path.expanduser(path), 'w').write(json.dumps(paste, separators=(',', ':')))
+    open(os.path.expanduser(path), 'w').write(hp3.clipboard(paste))
     return path
 
 def _db():

@@ -141,6 +141,14 @@ function expandNote(n){
     isRest:false, recordingEndBeat:null};
 }
 
+// A paste both Hookpads accept: Hookpad 3 rejects the old `version: 1` bypass, so
+// no version and the real fp (SHA-1 of the compact JSON without fp, the check Hookpad makes).
+async function hpPaste(obj){
+  const o = Object.assign({}, obj); delete o.version; delete o.fp;
+  const h = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(JSON.stringify(o)));
+  o.fp = Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return JSON.stringify(o);
+}
 async function copySection(idx, btn){
   const p = _currentRows[idx] && _currentRows[idx].paste;
   if (!p){ btn.textContent = 'no data'; return; }
@@ -154,9 +162,8 @@ async function copySection(idx, btn){
     sections: [{beat: 1, name: p.section_name || 'Section'}],
     endBeat: p.endBeat,
     audioTracks: [],
-    version: 1,   // skip fp validation
   };
-  await navigator.clipboard.writeText(JSON.stringify(obj));
+  await navigator.clipboard.writeText(await hpPaste(obj));
   btn.textContent = '✓ copied';
   btn.classList.add('copied');
   setTimeout(() => { btn.textContent = 'copy hookpad'; btn.classList.remove('copied'); }, 2500);

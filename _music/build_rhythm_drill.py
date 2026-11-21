@@ -5,6 +5,7 @@ Data comes from window_types.py's census. Everything is inlined: Chromium
 refuses fetch() on file:// so a page opened off disk would come up blank.
 """
 import json, os, html, collections
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 src = open(os.path.join(HERE, 'window_types.py')).read().split('ranked = sorted')[0]
@@ -53,7 +54,7 @@ def paste(onsets, windows=4):
     return {"notes": [], "chords": chords, "audioTracks": [], "version": 1}
 
 for d in data:
-    d["paste"] = json.dumps(paste(d["onsets"]), separators=(',', ':'))
+    d["paste"] = hp3.clipboard(paste(d["onsets"]))
 
 tot = len(set().union(*pat_songs.values()))
 OUT = os.path.join(HERE, 'rhythm-slots.html')
@@ -134,8 +135,16 @@ function show(i){
     <button onclick='copyPaste(${i})'>Copy 8 bars as Hookpad paste</button>
     <div class="songs">${d.songs.map(s=>'<div>'+s+'</div>').join('')}</div>`;
 }
-function copyPaste(i){
-  navigator.clipboard.writeText(DATA[i].paste).then(()=>{
+// A paste both Hookpads accept: Hookpad 3 rejects the old `version: 1` bypass, so
+// no version and the real fp (SHA-1 of the compact JSON without fp, the check Hookpad makes).
+async function hpPaste(obj){
+  const o = Object.assign({}, obj); delete o.version; delete o.fp;
+  const h = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(JSON.stringify(o)));
+  o.fp = Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return JSON.stringify(o);
+}
+async function copyPaste(i){
+  navigator.clipboard.writeText(await hpPaste(JSON.parse(DATA[i].paste))).then(()=>{
     const b=document.querySelector('button'); const t=b.textContent;
     b.textContent='copied \\u2014 paste into Hookpad'; setTimeout(()=>b.textContent=t,1800);
   });

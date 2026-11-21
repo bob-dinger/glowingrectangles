@@ -354,3 +354,30 @@ if __name__ == '__main__':
     o = to_hp2(d)
     print(f"hp3={is_hp3(d)}  notes {len(o['notes'])}  chords {len(o['chords'])}  endBeat {o.get('endBeat')}  "
           f"sections {[(s['beat'], s['name']) for s in o.get('sections') or []][:8]}")
+
+
+# --- clipboard: paste JSON that both Hookpads accept ---------------------------
+
+def _jsnum(o):
+    """Numbers as JavaScript's JSON.stringify prints them (2.0 -> 2), so the
+    checksum Hookpad recomputes in the browser matches ours."""
+    if isinstance(o, float) and o.is_integer():
+        return int(o)
+    if isinstance(o, dict):
+        return {k: _jsnum(v) for k, v in o.items()}
+    if isinstance(o, list):
+        return [_jsnum(v) for v in o]
+    return o
+
+
+def clipboard(obj):
+    """A Hookpad 2-shaped paste object (notes, chords, keys, tempos, meters,
+    sections, breaks) -> the paste text. No `version` key: Hookpad 3 rejects any
+    version but its own ('hooktheory-clipboard-v1'), so the old `version: 1`
+    bypass is dead there. Instead the real fp: SHA-1 of the compact JSON without
+    fp, the check both Hookpad 2 and Hookpad 3's legacy paste make."""
+    import hashlib
+    o = _jsnum({k: v for k, v in obj.items() if k not in ('fp', 'version')})
+    s = json.dumps(o, separators=(',', ':'), ensure_ascii=False)
+    o['fp'] = hashlib.sha1(s.encode('utf-8')).hexdigest()
+    return json.dumps(o, separators=(',', ':'), ensure_ascii=False)

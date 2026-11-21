@@ -13,6 +13,7 @@ Usage:
     python midi_ug_to_hookpad.py 10         # first 10
 """
 import os, sys, csv, json, re, mido, collections
+import hp3   # pastes both Hookpads accept (no version, real fp)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from parse_ug import parse_tab, build_paste
 
@@ -203,7 +204,7 @@ def main():
             continue
         try:
             paste, info = process(midi_path, ug_path)
-            open(out_path, 'w').write(json.dumps(paste, separators=(',',':')))
+            open(out_path, 'w').write(hp3.clipboard(paste))
             rows.append({'midi_file': r['midi_file'], 'status': 'ok', 'title': r['title'], 'artist': r['artist'], **info})
             if i <= 3 or i % 25 == 0:
                 print(f'  [{i:3}/{len(unique)}] ✓ {bn}: bpm={info["bpm"]} mel={info["melody_notes"]} secs={info["sections"]} chords={info["chords"]}')

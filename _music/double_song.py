@@ -11,6 +11,7 @@ Beat coordinates are 1-INDEXED in Hookpad, so scaling is (beat-1)*F+1, not beat*
   python double_song.py --candidates                        # find songs worth doubling
 """
 import os, re, json, argparse
+import hp3   # pastes both Hookpads accept (no version, real fp)
 import psycopg2
 from dotenv import load_dotenv
 load_dotenv('/Users/robert/Desktop/themap/themap_claude/.env')
@@ -122,7 +123,7 @@ def main():
     slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
     # .txt so it opens as plain text for copying — never .json
     path = os.path.join(OUTDIR, f'{slug}-{tag}.txt')
-    open(path, 'w').write(json.dumps(new, separators=(',', ':')))
+    open(path, 'w').write(hp3.clipboard(new))
     print(f'\nwrote {path}\n  paste into an empty Hookpad song, save as "{title}-{tag}"')
 
 if __name__ == '__main__':

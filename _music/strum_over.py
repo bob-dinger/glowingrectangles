@@ -21,6 +21,7 @@ reported, because a strum that needs many of them is not really the strum you
 chose.
 """
 import argparse, itertools, json, os
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT = ['simple-kind-of-life', 'folk-DDU-UDU', 'wonderwall',
@@ -105,7 +106,7 @@ def main():
             'tempos': [{'beat': 1, 'bpm': a.bpm, 'swingFactor': 0, 'swingBeat': 0.5}],
             'meters': [{'beat': 1, 'numBeats': 4, 'beatUnit': 1}],
             'breaks': [], 'sections': sections, 'audioTracks': [], 'endBeat': beat}
-    open(a.out, 'w').write(json.dumps(song, separators=(',', ':')))
+    open(a.out, 'w').write(hp3.clipboard(song))
     uni = sum(1 for s in sections if s['name'].startswith('= '))
     print(f'{nbars}-bar progression, strum per {a.per}: {len(sections)} assignments '
           f'({uni} uniform, {len(sections)-uni} mixed)')

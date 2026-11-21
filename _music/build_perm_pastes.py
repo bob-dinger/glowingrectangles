@@ -27,6 +27,7 @@ word, plus all-<n>.txt with the whole tour. Section = "<WORD> <A>-<B>-<C>".
     themap_venv/python build_perm_pastes.py 10-6-10-6_ABCD_p --reps 1
 """
 import json, os, re, sys, itertools, argparse
+import hp3   # pastes both Hookpads accept (no version, real fp)
 from fractions import Fraction as F
 import perm_melody
 
@@ -130,14 +131,14 @@ def build(spec, bpm, reps, name=None, quiet=False, melody=None):
         everything += entries
         obj = song(entries, slots, roles, phrase, reps, bpm, melody=melody)
         path = os.path.join(out, f"{word.lower()}.txt")
-        open(path, 'w').write(json.dumps(obj, separators=(',',':'), ensure_ascii=False))
+        open(path, 'w').write(hp3.clipboard(obj))
         if not quiet:
             print(f"  {word.lower()+'.txt':18} {' '.join(subset):16} {len(entries):3} perms  "
                   f"{len(entries)*bars*reps:5} bars  {os.path.getsize(path)//1024}K")
     obj = song(everything, slots, roles, phrase, reps, bpm, melody=melody)
     fname = f"all-{len(everything)}.txt"
     path = os.path.join(out, fname)
-    open(path, 'w').write(json.dumps(obj, separators=(',',':'), ensure_ascii=False))
+    open(path, 'w').write(hp3.clipboard(obj))
     if not quiet:
         print(f"  {fname:18} {'every word':16} {len(everything):3} perms  "
               f"{len(everything)*bars*reps:5} bars  {os.path.getsize(path)//1024}K")

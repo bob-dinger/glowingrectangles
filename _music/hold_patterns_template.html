@@ -226,7 +226,16 @@ function list(){
   if (m) m.onclick = () => { shown += PAGE; list(); };
 }
 
-// a Hookpad paste of the section's first 8 bars (version 1 skips the fingerprint check)
+// A paste both Hookpads accept: Hookpad 3 rejects the old `version: 1` bypass, so
+// no version and the real fp (SHA-1 of the compact JSON without fp, the check Hookpad makes).
+async function hpPaste(obj){
+  const o = Object.assign({}, obj); delete o.version; delete o.fp;
+  const h = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(JSON.stringify(o)));
+  o.fp = Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return JSON.stringify(o);
+}
+
+// a Hookpad paste of the section's first 8 bars
 const num = x => Math.round(x * 1000) / 1000;
 async function copy(i, holdsOnly, btn){
   const x = DATA.secs[i], s = DATA.songs[x[0]], roll = x[6];
@@ -237,14 +246,14 @@ async function copy(i, holdsOnly, btn){
   const chords = holdsOnly ? [] : x[7].map(([t, d, , root, type, inversion, applied, borrowed, adds, omits, alterations, suspensions]) =>
     ({root, beat: at(t), duration: num(d), type, inversion, applied, adds, omits, alterations, suspensions,
       substitutions: [], pedal: null, alternate: '', borrowed, isRest: false, recordingEndBeat: null}));
-  const obj = {version: 1, chords, notes,
+  const obj = {chords, notes,
     keys: [{beat: 1, scale: x[10][1], tonic: x[10][0]}],
     tempos: [{beat: 1, bpm: s.bpm || 100, swingFactor: 0, swingBeat: 0.5}],
     meters: [{beat: 1, numBeats: 4, beatUnit: 1}], breaks: [],
     sections: [{beat: 1 + lead, name: `${s.t} ${x[2]}${holdsOnly ? ' holds' : ''}`.slice(0, 60)}],
     endBeat: 1 + lead + 32, audioTracks: []};
   const label = btn.textContent;
-  try { await navigator.clipboard.writeText(JSON.stringify(obj)); btn.textContent = '✓ copied, paste in Hookpad'; }
+  try { await navigator.clipboard.writeText(await hpPaste(obj)); btn.textContent = '✓ copied, paste in Hookpad'; }
   catch (e) { btn.textContent = 'copy failed'; }
   btn.classList.add('ok');
   setTimeout(() => { btn.textContent = label; btn.classList.remove('ok'); }, 2200);
@@ -367,11 +376,11 @@ async function copyRemix(i, btn){
       notes.push(note(md(n.step, 7) + 1, Math.floor(n.step / 7), at + lead + n.t, n.d)));
     at += block;
   });
-  const obj = {version: 1, chords, notes, keys,
+  const obj = {chords, notes, keys,
     tempos: [{beat: 1, bpm: s.bpm || 100, swingFactor: 0, swingBeat: 0.5}],
     meters: [{beat: 1, numBeats: 4, beatUnit: 1}], breaks: [], sections, endBeat: at, audioTracks: []};
   const label = btn.textContent;
-  try { await navigator.clipboard.writeText(JSON.stringify(obj)); btn.textContent = '✓ 8 takes copied'; }
+  try { await navigator.clipboard.writeText(await hpPaste(obj)); btn.textContent = '✓ 8 takes copied'; }
   catch (e) { btn.textContent = 'copy failed'; }
   btn.classList.add('ok');
   setTimeout(() => { btn.textContent = label; btn.classList.remove('ok'); }, 2200);

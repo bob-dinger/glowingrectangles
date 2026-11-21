@@ -14,6 +14,7 @@ Four chords make two pushed pairs, so a section is four bars and there are
     python3 push_perms.py --chords Dmadd9,Dm,Cadd9,C --key C
 """
 import argparse, itertools, json, os
+import hp3   # pastes both Hookpads accept (no version, real fp)
 
 MAJOR = ['A','A#','B','C','C#','D','D#','E','F','F#','G','G#']
 STEPS = [0, 2, 4, 5, 7, 9, 11]           # degrees 1..7 of a major scale
@@ -84,7 +85,7 @@ def main():
             'tempos': [{'beat': 1, 'bpm': a.bpm, 'swingFactor': 0, 'swingBeat': 0.5}],
             'meters': [{'beat': 1, 'numBeats': 4, 'beatUnit': 1}],
             'breaks': [], 'sections': sections, 'audioTracks': [], 'endBeat': beat}
-    open(a.out, 'w').write(json.dumps(song, separators=(',', ':')))
+    open(a.out, 'w').write(hp3.clipboard(song))
     print(f'{len(sections)} orderings of {", ".join(toks)} in {a.key} major')
     print(f'{(beat-1)//4} bars, {len(chords)} chords -> {a.out}\n')
     for s in sections[:8]:
