@@ -60,6 +60,17 @@ This unlocks **programmatic song import**: chord-chart parser → paste-compatib
 
 `hookpad_upload_variants.upload(tok, name, obj)` creates a private song (POST /v1/songs, then PATCH isPrivate). The object must be the WHOLE saved project, built with `tempo_variant_pastes.full_json(d, 1)` from a downloaded file, then edited. A paste-style object (notes/chords/keys/tempos/sections only) saves fine but Hookpad refuses to open it ("can't be opened by this version of hookpad"): it needs `version`, `bands`, `settings`, etc. An existing song can be overwritten with `PATCH /v1/songs/{ID} {jsonData: json_data(obj)}`. Never empty `inactiveNotes` (the melody layers): `activeMelodyIndex` points into it, and a song whose active layer is gone gives the same "can't be opened" error by URL and hangs in the UI (Talk, 2026-11-01).
 
+## Hookpad 3 (released 2026-11-18, VERIFIED 2026-11-20)
+
+hookpad.hooktheory.com is now Hookpad 3; Hookpad 2 keeps working. Same API (`api.hooktheory.com/v1/songs`, same fields; the app itself calls `www.hooktheory.com/v1`), and our token grab, reads, POST uploads and PATCHes all still work. Songs we upload open in 3. But:
+
+- **Saving in 3 makes a NEW song with the same name** (list entry `madeInHookpad3: true`); the Hookpad 2 original is left untouched.
+- **New format** (`version: "3.x"`, `ppqn: 480`, `score.sections[]` each holding its own notes/chords/keys/tempos/meters/swings/lyrics in ticks, `score.arrangement[]` = section order, note `voice` 1-4). Applied chords are flipped (3: root = target, applied = function). A note crossing a section boundary is split, second half has an `n_` id.
+- `hp3.py` converts 3 → the Hookpad 2 shape (verified exact on Tangled Up in Blue: 1254 notes, 172 chords, sections, lyrics, corpus analyses identical). `sync_hookpad`, `download_one`, `update_songs`, `pull_by_pattern` save Hookpad 3 songs converted (raw kept in `~/Desktop/music/hookpad_songs_hp3/`) and keep the newest copy per name. Converted files carry `hp3: true`.
+- **Writing works both ways (VERIFIED in the Hookpad 3 UI 2026-11-20)**: scripts keep editing the Hookpad 2 shape; `hp3.from_hp2(edited, live)` puts it back into the live Hookpad 3 song (instruments, mixer, section ids kept; resized sections get their regions and drum markers rebuilt; boundary-crossing notes re-split with `n_` ids). `hookpad_upload_variants.call` does this automatically for any PATCH of a Hookpad 3 song; `lyrics_run`, `fill_repeat_chords`, `three_way_fill` read live copies through `hp3.to_hp2`. Round trips on Tangled are exact. New uploads still POST the Hookpad 2 format (3 opens them fine).
+- `hp3test-write1120` (two copies, Hookpad 2 + 3) are kept as test fixtures; `corpus.is_scratch` ignores `hp3test*`.
+- Login: the saved auth must be from a Hookpad 3 sign-in (`setup_hookpad_auth.py`); the Hookpad 2-era one gave "Sign in to use Hookpad 3" and no token.
+
 ## Chord data quirks (very important)
 
 Inside a Hookpad JSON, each chord has:

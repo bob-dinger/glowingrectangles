@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 import requests
 from hashids import Hashids
 import hookpad_token
+import hp3
 
 API = 'https://api.hooktheory.com/v1'
 HASHIDS = Hashids(
@@ -106,6 +107,9 @@ def main():
     print('listing songs...')
     songs = list_all_songs(args.token)
     print(f'  {len(songs)} songs in account')
+    # a Hookpad 3 save is a new song with the same name: keep the newest per file name
+    songs = hp3.newest_per_name(songs, key=lambda s: safe_filename(s['song']))
+    print(f'  {len(songs)} after keeping the newest copy of each name')
 
     # Decide which to fetch
     todo = []
@@ -139,9 +143,7 @@ def main():
             if not json_data_str:
                 errors.append((s['ID'], s['song'], 'empty jsonData'))
                 continue
-            parsed = json.loads(json_data_str)
-            with open(fname, 'w', encoding='utf-8') as fh:
-                json.dump(parsed, fh, ensure_ascii=False)
+            hp3.save(json.loads(json_data_str), fname)   # Hookpad 3 songs land converted
             fetched += 1
             if i % 25 == 0 or i == len(todo):
                 elapsed = time.time() - start

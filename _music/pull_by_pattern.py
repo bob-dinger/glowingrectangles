@@ -7,6 +7,7 @@ calls). Throttled with 429 backoff. Reusable as the user keeps adding variants.
 import argparse, json, os, sys, time, requests
 from hashids import Hashids
 import hookpad_token
+import hp3
 
 API = 'https://api.hooktheory.com/v1'
 HASHIDS = Hashids(salt='XI0Y4UFrK6EPLnarrI4y', min_length=11,
@@ -46,7 +47,7 @@ def main():
     if not a.token:
         sys.exit("no token: run hookpad_token.py, or pass --token")
 
-    cache = json.load(open(CACHE))
+    cache = hp3.newest_per_name(json.load(open(CACHE)))
     def match(nm):
         nm = nm.lower().rstrip()
         if a.suffix: return nm.endswith(a.suffix.lower())
@@ -64,7 +65,7 @@ def main():
                 print(f'  [{i+1}/{len(hits)}] EMPTY {s["song"]}'); continue
             parsed = json.loads(data['jsonData'])
             fn = os.path.join(OUT, data['song'].replace('/', '_') + '.json')
-            json.dump(parsed, open(fn, 'w'), ensure_ascii=False)
+            hp3.save(parsed, fn)
             ok += 1
             print(f'  [{i+1}/{len(hits)}] {s["song"]}')
         except Exception as e:

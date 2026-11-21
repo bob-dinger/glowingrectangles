@@ -18,6 +18,7 @@ import time
 import requests
 from hashids import Hashids
 import hookpad_token
+import hp3
 
 API = 'https://api.hooktheory.com/v1'
 HASHIDS = Hashids(
@@ -94,8 +95,7 @@ def save_song(data, out_dir):
     parsed = json.loads(json_data_str)
     os.makedirs(out_dir, exist_ok=True)
     fname = os.path.join(out_dir, safe_filename(data['song']) + '.json')
-    with open(fname, 'w', encoding='utf-8') as fh:
-        json.dump(parsed, fh, ensure_ascii=False)
+    hp3.save(parsed, fname)          # a Hookpad 3 song lands converted, raw kept aside
     return fname
 
 

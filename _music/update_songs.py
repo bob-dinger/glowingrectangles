@@ -20,6 +20,7 @@ import requests
 from hashids import Hashids
 from dotenv import load_dotenv
 import hookpad_token
+import hp3
 load_dotenv('/Users/robert/Desktop/themap/themap_claude/.env')
 
 API = 'https://api.hooktheory.com/v1'
@@ -204,7 +205,7 @@ def main():
         sys.exit("no token: run hookpad_token.py, or pass --token")
 
     # --hooktab needs a fresh list (a stale cache would miss just-added songs) and always writes to Supabase
-    catalog = load_list(a.token, refresh=a.refresh_list or a.hooktab)
+    catalog = hp3.newest_per_name(load_list(a.token, refresh=a.refresh_list or a.hooktab))
 
     if a.hooktab:
         a.supabase = True
@@ -233,7 +234,7 @@ def main():
             data = fetch(a.token, s['ID'])
             parsed = json.loads(data['jsonData'])
             fname = os.path.join(OUT_DIR, safe(s['song']) + '.json')
-            json.dump(parsed, open(fname, 'w'), ensure_ascii=False)
+            parsed = hp3.save(parsed, fname)
             hp_url = f"https://hookpad.hooktheory.com/?idOfUserSong={HASHIDS.encode(s['ID'])}"
             fetched.append((s['song'], strip(parsed), hp_url))
             sj = fetched[-1][1]
