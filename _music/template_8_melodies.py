@@ -1,8 +1,9 @@
 """template_8-melodies: the rest notes of an 8-bar melody over a template_8 progression.
 
     template_8_melodies.py            # writes ~/Desktop/music/template_8-melodies.json
-    template_8_melodies.py --upload   # also creates it in Hookpad (private)
-    template_8_melodies.py --upload --id N   # overwrite the existing one
+    template_8_melodies.py --upload   # also creates it in Hookpad (private), as a Hookpad 3 song
+    template_8_melodies.py --upload --id N   # overwrite an existing one (either Hookpad)
+    template_8_melodies.py --upload --hp2    # create it in the Hookpad 2 format instead
 
 A melody is its rest notes (the notes it sits on) and the rest fits around them, so
 each section is one progression x one REST PATTERN: the bars holding a note that
@@ -77,5 +78,5 @@ if __name__ == '__main__':
             r = call('PATCH', f'{API}/songs/{sid}', tok, json={'jsonData': json_data(o), 'song': NAME})
             print('PATCH', r.status_code, r.text[:120])
         else:
-            r, err = upload(tok, NAME, o)
+            r, err = upload(tok, NAME, o, hp3_base=None if '--hp2' in sys.argv else True)
             print(err or r)
