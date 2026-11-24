@@ -7,6 +7,8 @@
     mixer.py --melody "muse_starlight/Verse"
     mixer.py --same-notes          # melodies keep their own scale degrees instead of following the chords
     mixer.py --upload [--id N]     # create (or overwrite) it in Hookpad 3, private
+    mixer.py --tempo 92 --rhythm "halver push" --alt --upload
+                                   # the user's writing session: dated, on the second account
 
 Each section is one 8-bar combo of three independent picks:
   tempo        a bpm drawn from the library's songs (70-160)
@@ -16,6 +18,13 @@ Each section is one 8-bar combo of three independent picks:
                intro/outro/solo), its notes moved onto the new chords so each keeps
                its place against the chord under it (template_8_full.move)
 The section name says all three, so a keeper can be rebuilt or pinned.
+With --tempo pinned, melodies come from sections written near that tempo (+-12%),
+so their rhythms sit the way they were meant to.
+
+The user's workflow (2026-11-23): start with a tempo, maybe a chord rhythm, mix in
+melodic ideas, sections only (not whole songs). Sessions are dated M-D-YY like their
+own files (6-30-26-mine) and saved on the second Hookpad account (--alt,
+~/.hookpad_token_alt). Dated names are corpus scratch, so they never enter analyses.
 The user finishes the good ones by hand.
 """
 import argparse, copy, json, os, random, time
@@ -50,7 +59,9 @@ def build(a):
         bpm = a.tempo or rnd.choice(bpms)
         loop = loop_pin or rnd.choice(LOOPS)
         rname = a.rhythm or rnd.choice(sorted(RHYTHMS))
-        src = mel_pin[0] if mel_pin else rnd.choice([s for s in lib if same(s['song']) not in used] or lib)
+        pool = [s for s in lib if not a.tempo or abs(s['bpm'] - a.tempo) <= a.tempo * 0.12]
+        if len(pool) < 10: pool = lib
+        src = mel_pin[0] if mel_pin else rnd.choice([s for s in pool if same(s['song']) not in used] or pool)
         used.add(same(src['song']))
         ch = chords_for(loop, RHYTHMS[rname])
         mel = src['notes'] if a.same_notes else move(src['notes'], src['chords'], [(r, b) for r, b, _ in ch])
@@ -86,10 +97,15 @@ if __name__ == '__main__':
     ap.add_argument('--rhythm', choices=sorted(RHYTHMS))
     ap.add_argument('--melody', help='"<song file>/<section>"')
     ap.add_argument('--same-notes', action='store_true')
-    ap.add_argument('--name', default='template_mix-' + time.strftime('%m%d'))
+    ap.add_argument('--name')
+    ap.add_argument('--alt', action='store_true', help='upload to the second account (~/.hookpad_token_alt)')
     ap.add_argument('--upload', action='store_true')
     ap.add_argument('--id')
     a = ap.parse_args()
+    if not a.name:
+        t = time.localtime()
+        a.name = (f'{t.tm_mon}-{t.tm_mday}-{t.tm_year % 100}' + (f'-{a.tempo}bpm' if a.tempo else '')
+                  + (f'-{a.rhythm}' if a.rhythm else '')) if a.alt else 'template_mix-' + time.strftime('%m%d')
     if a.seed is None:
         a.seed = random.randrange(1000)
     o = build(a)
@@ -99,7 +115,7 @@ if __name__ == '__main__':
     print(f'seed {a.seed}: {len(o["sections"])} combos, {len(o["notes"])} notes -> {out}')
     if a.upload:
         from hookpad_upload_variants import upload, call, json_data, API
-        tok = open(os.path.expanduser('~/.hookpad_token')).read().strip()
+        tok = open(os.path.expanduser('~/.hookpad_token_alt' if a.alt else '~/.hookpad_token')).read().strip()
         if a.id:
             r = call('PATCH', f'{API}/songs/{a.id}', tok, json={'jsonData': json_data(o), 'song': a.name})
             print('PATCH', r.status_code, r.text[:120])
