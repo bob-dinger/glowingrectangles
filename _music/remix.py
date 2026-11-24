@@ -1,8 +1,13 @@
 """Remix one song section: same section, one thing changed at a time.
 
-    remix.py --song "muse_starlight" --section Verse            # build locally, list the sections
-    remix.py --song "muse_starlight" --section Verse --upload   # dated, onto the second account
-    remix.py ... --tempos 70,90,110,130,150 --no-loops --no-strums
+    remix.py 90 --song "muse_starlight" --section Verse            # the whole session at 90 bpm
+    remix.py 90 --song "muse_starlight" --section Verse --upload   # dated, onto the second account
+    remix.py 0 --song ... --tempos 70,90,110,130,150               # 0 = no session tempo: a tempo sweep instead
+    remix.py ... --no-loops --no-strums
+
+THE TEMPO COMES FIRST (the user, 2026-11-23: "I wanted to pick 1 tempo
+immediately"): every section plays at the session tempo, whatever the source
+song's own tempo, so a 120 song is heard at 90. Pass 0 for the old tempo sweep.
 
 Every section of the output is the source section with ONE thing swapped, so you
 hear what that one thing does. The melody is always the original notes.
@@ -67,8 +72,10 @@ def build(a):
     from tempo_variant_pastes import full_json
     s = source(a.song, a.section)
     L, own = s['length'], s['bpm']
+    if a.tempo:
+        own = a.tempo
     plan = [('as written', own, s['raw'])]
-    for t in a.tempos:
+    for t in ([] if a.tempo else a.tempos):
         if abs(t - own) > 8:
             plan.append((f'tempo {t}', t, s['raw']))
     m = s['merged']
@@ -104,6 +111,7 @@ def build(a):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
+    ap.add_argument('tempo', type=int, help='session bpm, every section; 0 = the song\'s own, plus a sweep')
     ap.add_argument('--song', required=True, help='file name in hookpad_songs_full, no .json')
     ap.add_argument('--section', required=True)
     ap.add_argument('--tempos', default='70,90,110,130,150', type=lambda x: [int(t) for t in x.split(',') if t])
@@ -115,7 +123,7 @@ if __name__ == '__main__':
     a = ap.parse_args()
     t = time.localtime()
     title = a.song.split('_', 1)[-1]
-    a.name = a.name or f'{t.tm_mon}-{t.tm_mday}-{t.tm_year % 100}-{title}-{a.section.lower()}-remix'
+    a.name = a.name or f'{t.tm_mon}-{t.tm_mday}-{t.tm_year % 100}-{title}-{a.section.lower()}' + (f'-{a.tempo}bpm' if a.tempo else '') + '-remix'
     o = build(a)
     out = os.path.expanduser(f'~/Desktop/music/{a.name}.json')
     json.dump(o, open(out, 'w'), indent=1)

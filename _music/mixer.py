@@ -18,8 +18,8 @@ Each section is one 8-bar combo of three independent picks:
                intro/outro/solo), its notes moved onto the new chords so each keeps
                its place against the chord under it (template_8_full.move)
 The section name says all three, so a keeper can be rebuilt or pinned.
-With --tempo pinned, melodies come from sections written near that tempo (+-12%),
-so their rhythms sit the way they were meant to.
+With --tempo pinned, every section plays at it, whatever tempo its melody was
+written at (the user wants a 120 song heard at 90).
 
 The user's workflow (2026-11-23): start with a tempo, maybe a chord rhythm, mix in
 melodic ideas, sections only (not whole songs). Sessions are dated M-D-YY like their
@@ -59,8 +59,7 @@ def build(a):
         bpm = a.tempo or rnd.choice(bpms)
         loop = loop_pin or rnd.choice(LOOPS)
         rname = a.rhythm or rnd.choice(sorted(RHYTHMS))
-        pool = [s for s in lib if not a.tempo or abs(s['bpm'] - a.tempo) <= a.tempo * 0.12]
-        if len(pool) < 10: pool = lib
+        pool = lib      # any song's melody, played at the session tempo
         src = mel_pin[0] if mel_pin else rnd.choice([s for s in pool if same(s['song']) not in used] or pool)
         used.add(same(src['song']))
         ch = chords_for(loop, RHYTHMS[rname])
