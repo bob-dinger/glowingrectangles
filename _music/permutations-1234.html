@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1234 Permutations</title>
+<style>
+:root{--bg:#fafaf7;--card:#fff;--ink:#151515;--mute:#8a8a85;--line:#e6e4dd;--hi:#c0392b;--done:#f1efe8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#161615;--card:#1f1f1d;--ink:#ecebe6;--mute:#8d8c86;--line:#33322e;--hi:#ff6b5b;--done:#2a2926}}
+:root[data-theme="dark"]{--bg:#161615;--card:#1f1f1d;--ink:#ecebe6;--mute:#8d8c86;--line:#33322e;--hi:#ff6b5b;--done:#2a2926}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:14px 16px;max-width:1100px;margin:0 auto}
+header{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-size:17px;font-weight:700}
+h1 a{font-size:12px;font-weight:500;color:var(--mute);margin-left:8px;text-decoration:none}
+h1 a:hover{color:var(--ink)}
+header p{font-size:12.5px;color:var(--mute)}
+.ctl{margin-left:auto;display:flex;gap:6px}
+button{font:inherit;font-size:13px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:4px 12px;cursor:pointer}
+button:hover{border-color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.p{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 0;text-align:center;cursor:pointer;user-select:none;
+   font:600 34px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em}
+.p.done{background:var(--done);color:var(--mute)}
+.p.hi{border-color:var(--hi);box-shadow:0 0 0 2px var(--hi)}
+.row{grid-column:1/-1;font-size:12px;color:var(--mute);margin-top:4px}
+@media (max-width:640px){.grid{grid-template-columns:repeat(3,1fr)}.p{font-size:26px}}
+</style></head><body>
+<header>
+  <h1>1234 Permutations<a href="index.html">music index →</a></h1>
+  <p>All 24 orders of four notes, for scale practice. Play each group up the scale (1 2 3 4, then 2 3 4 5, …), then back down. Click a card to mark it done.</p>
+  <div class="ctl"><button id="pick">Random</button><button id="clear">Clear</button></div>
+</header>
+<div class="grid" id="g"></div>
+<script>
+const perms = [];
+(function go(pre, rest){ if(!rest.length){perms.push(pre);return}
+  rest.forEach((d,i)=>go(pre+d, rest.slice(0,i)+rest.slice(i+1))); })('', '1234');
+let done = new Set();
+try{ done = new Set(JSON.parse(localStorage.getItem('perm1234') || '[]')) }catch(e){}
+const save = () => { try{ localStorage.setItem('perm1234', JSON.stringify([...done])) }catch(e){} };
+const g = document.getElementById('g');
+perms.forEach((p,i) => {
+  if(i % 6 === 0){ const r = document.createElement('div'); r.className = 'row'; r.textContent = 'starting on ' + p[0]; g.appendChild(r); }
+  const c = document.createElement('div');
+  c.className = 'p' + (done.has(p) ? ' done' : ''); c.textContent = p.split('').join(' '); c.dataset.p = p;
+  c.onclick = () => { done.has(p) ? done.delete(p) : done.add(p); c.classList.toggle('done'); save(); };
+  g.appendChild(c);
+});
+document.getElementById('pick').onclick = () => {
+  const cards = [...g.querySelectorAll('.p')], left = cards.filter(c => !c.classList.contains('done'));
+  const pool = left.length ? left : cards;
+  cards.forEach(c => c.classList.remove('hi'));
+  pool[Math.floor(Math.random() * pool.length)].classList.add('hi');
+};
+document.getElementById('clear').onclick = () => {
+  done.clear(); save(); g.querySelectorAll('.p').forEach(c => c.classList.remove('done', 'hi'));
+};
+</script>
+</body></html>
