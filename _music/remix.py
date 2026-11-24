@@ -55,7 +55,7 @@ def restrum(merged, length, pattern, nb):
     hits = sorted(hits)
     out = []
     for i, b in enumerate(hits):
-        c = [c for c, cb, _ in merged if cb <= b + 1e-6][-1]
+        c = ([c for c, cb, _ in merged if cb <= b + 1e-6] or [merged[0][0]])[-1]
         end = hits[i + 1] if i + 1 < len(hits) else length
         out.append(dict(copy.deepcopy(c), beat=b, duration=end - b))
     return out
