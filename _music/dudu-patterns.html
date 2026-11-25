@@ -3,20 +3,24 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DUDU Patterns</title>
 <style>
-:root{--bg:#fafaf7;--ink:#151515;--mute:#8a8a85;--faint:#d2d0c8}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#161615;--ink:#ecebe6;--mute:#8d8c86;--faint:#45443f}}
-:root[data-theme="dark"]{--bg:#161615;--ink:#ecebe6;--mute:#8d8c86;--faint:#45443f}
+:root{--bg:#fafaf7;--ink:#151515;--mute:#8a8a85;--faint:#d2d0c8;--hl:#fbe7a6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#161615;--ink:#ecebe6;--mute:#8d8c86;--faint:#45443f;--hl:#4a3f1a}}
+:root[data-theme="dark"]{--bg:#161615;--ink:#ecebe6;--mute:#8d8c86;--faint:#45443f;--hl:#4a3f1a}
 body{background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;padding:14px 16px}
 h1{font-size:17px;margin:0 0 12px}
 h1 a{font-size:12px;font-weight:500;color:var(--mute);margin-left:8px;text-decoration:none}
-ol{margin:0;padding-left:2.4em;columns:5 13em;column-gap:2em;font:16px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
+ol{margin:0;padding-left:2.4em;columns:4 16em;column-gap:2em;font:16px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
 li::marker{color:var(--faint);font-size:12px;font-weight:400}
-li{font-weight:600}
+li{font-weight:600;color:var(--mute)}
+li.top{color:var(--ink);background:var(--hl);border-radius:4px;padding:0 4px;margin-left:-4px}
+li .n{font:400 11px -apple-system,sans-serif;color:var(--mute);margin-left:8px}
+li .nm{font:italic 400 11px -apple-system,sans-serif;color:var(--mute);margin-left:8px}
+.key{background:var(--hl);color:var(--ink);padding:0 4px;border-radius:4px;font-weight:600}
 </style></head><body>
 <h1>DUDU Patterns<a href="index.html">music index →</a></h1>
-<p style="color:var(--mute);margin:-6px 0 12px">One bar of eighths, one pair per beat. The hand never stops: down on the beat, up on the &ldquo;and&rdquo;; a dot is a stroke that misses the strings. All 255, busiest first.</p>
+<p style="color:var(--mute);margin:-6px 0 12px">One bar of eighths starting with a down, one pair per beat; the hand never stops (down on the beat, up on the &ldquo;and&rdquo;), a dot is a miss. All 128. <b class="key">Highlighted</b>: the 20 most used in the library, with how many songs play them (it counts chord strikes, so sparse patterns lead). Names: patterns in the strum library.</p>
 <ol>
-<li>DU DU DU DU</li>
+<li class="top">DU DU DU DU<span class="n">11</span><span class="nm">eighths</span></li>
 <li>DU DU DU D·</li>
 <li>DU DU DU ·U</li>
 <li>DU DU D· DU</li>
@@ -24,7 +28,6 @@ li{font-weight:600}
 <li>DU D· DU DU</li>
 <li>DU ·U DU DU</li>
 <li>D· DU DU DU</li>
-<li>·U DU DU DU</li>
 <li>DU DU DU ··</li>
 <li>DU DU D· D·</li>
 <li>DU DU D· ·U</li>
@@ -36,23 +39,16 @@ li{font-weight:600}
 <li>DU D· D· DU</li>
 <li>DU D· ·U DU</li>
 <li>DU ·U DU D·</li>
-<li>DU ·U DU ·U</li>
+<li>DU ·U DU ·U<span class="nm">driving-DU-UDU-U</span></li>
 <li>DU ·U D· DU</li>
 <li>DU ·U ·U DU</li>
 <li>DU ·· DU DU</li>
 <li>D· DU DU D·</li>
 <li>D· DU DU ·U</li>
 <li>D· DU D· DU</li>
-<li>D· DU ·U DU</li>
-<li>D· D· DU DU</li>
+<li>D· DU ·U DU<span class="nm">folk-DDU-UDU</span></li>
+<li>D· D· DU DU<span class="nm">simple-kind-of-life</span></li>
 <li>D· ·U DU DU</li>
-<li>·U DU DU D·</li>
-<li>·U DU DU ·U</li>
-<li>·U DU D· DU</li>
-<li>·U DU ·U DU</li>
-<li>·U D· DU DU</li>
-<li>·U ·U DU DU</li>
-<li>·· DU DU DU</li>
 <li>DU DU D· ··</li>
 <li>DU DU ·U ··</li>
 <li>DU DU ·· D·</li>
@@ -79,7 +75,7 @@ li{font-weight:600}
 <li>D· DU ·U D·</li>
 <li>D· DU ·U ·U</li>
 <li>D· DU ·· DU</li>
-<li>D· D· DU D·</li>
+<li>D· D· DU D·<span class="nm">wonderwall</span></li>
 <li>D· D· DU ·U</li>
 <li>D· D· D· DU</li>
 <li>D· D· ·U DU</li>
@@ -88,27 +84,6 @@ li{font-weight:600}
 <li>D· ·U D· DU</li>
 <li>D· ·U ·U DU</li>
 <li>D· ·· DU DU</li>
-<li>·U DU DU ··</li>
-<li>·U DU D· D·</li>
-<li>·U DU D· ·U</li>
-<li>·U DU ·U D·</li>
-<li>·U DU ·U ·U</li>
-<li>·U DU ·· DU</li>
-<li>·U D· DU D·</li>
-<li>·U D· DU ·U</li>
-<li>·U D· D· DU</li>
-<li>·U D· ·U DU</li>
-<li>·U ·U DU D·</li>
-<li>·U ·U DU ·U</li>
-<li>·U ·U D· DU</li>
-<li>·U ·U ·U DU</li>
-<li>·U ·· DU DU</li>
-<li>·· DU DU D·</li>
-<li>·· DU DU ·U</li>
-<li>·· DU D· DU</li>
-<li>·· DU ·U DU</li>
-<li>·· D· DU DU</li>
-<li>·· ·U DU DU</li>
 <li>DU DU ·· ··</li>
 <li>DU D· D· ··</li>
 <li>DU D· ·U ··</li>
@@ -129,14 +104,14 @@ li{font-weight:600}
 <li>D· DU ·· D·</li>
 <li>D· DU ·· ·U</li>
 <li>D· D· DU ··</li>
-<li>D· D· D· D·</li>
-<li>D· D· D· ·U</li>
+<li class="top">D· D· D· D·<span class="n">67</span><span class="nm">quarters</span></li>
+<li class="top">D· D· D· ·U<span class="n">9</span></li>
 <li>D· D· ·U D·</li>
 <li>D· D· ·U ·U</li>
 <li>D· D· ·· DU</li>
 <li>D· ·U DU ··</li>
 <li>D· ·U D· D·</li>
-<li>D· ·U D· ·U</li>
+<li class="top">D· ·U D· ·U<span class="n">9</span></li>
 <li>D· ·U ·U D·</li>
 <li>D· ·U ·U ·U</li>
 <li>D· ·U ·· DU</li>
@@ -144,41 +119,6 @@ li{font-weight:600}
 <li>D· ·· DU ·U</li>
 <li>D· ·· D· DU</li>
 <li>D· ·· ·U DU</li>
-<li>·U DU D· ··</li>
-<li>·U DU ·U ··</li>
-<li>·U DU ·· D·</li>
-<li>·U DU ·· ·U</li>
-<li>·U D· DU ··</li>
-<li>·U D· D· D·</li>
-<li>·U D· D· ·U</li>
-<li>·U D· ·U D·</li>
-<li>·U D· ·U ·U</li>
-<li>·U D· ·· DU</li>
-<li>·U ·U DU ··</li>
-<li>·U ·U D· D·</li>
-<li>·U ·U D· ·U</li>
-<li>·U ·U ·U D·</li>
-<li>·U ·U ·U ·U</li>
-<li>·U ·U ·· DU</li>
-<li>·U ·· DU D·</li>
-<li>·U ·· DU ·U</li>
-<li>·U ·· D· DU</li>
-<li>·U ·· ·U DU</li>
-<li>·· DU DU ··</li>
-<li>·· DU D· D·</li>
-<li>·· DU D· ·U</li>
-<li>·· DU ·U D·</li>
-<li>·· DU ·U ·U</li>
-<li>·· DU ·· DU</li>
-<li>·· D· DU D·</li>
-<li>·· D· DU ·U</li>
-<li>·· D· D· DU</li>
-<li>·· D· ·U DU</li>
-<li>·· ·U DU D·</li>
-<li>·· ·U DU ·U</li>
-<li>·· ·U D· DU</li>
-<li>·· ·U ·U DU</li>
-<li>·· ·· DU DU</li>
 <li>DU D· ·· ··</li>
 <li>DU ·U ·· ··</li>
 <li>DU ·· D· ··</li>
@@ -186,90 +126,27 @@ li{font-weight:600}
 <li>DU ·· ·· D·</li>
 <li>DU ·· ·· ·U</li>
 <li>D· DU ·· ··</li>
-<li>D· D· D· ··</li>
+<li class="top">D· D· D· ··<span class="n">45</span></li>
 <li>D· D· ·U ··</li>
-<li>D· D· ·· D·</li>
+<li class="top">D· D· ·· D·<span class="n">12</span></li>
 <li>D· D· ·· ·U</li>
 <li>D· ·U D· ··</li>
-<li>D· ·U ·U ··</li>
-<li>D· ·U ·· D·</li>
-<li>D· ·U ·· ·U</li>
+<li class="top">D· ·U ·U ··<span class="n">14</span></li>
+<li class="top">D· ·U ·· D·<span class="n">29</span></li>
+<li class="top">D· ·U ·· ·U<span class="n">23</span></li>
 <li>D· ·· DU ··</li>
-<li>D· ·· D· D·</li>
-<li>D· ·· D· ·U</li>
+<li class="top">D· ·· D· D·<span class="n">90</span></li>
+<li class="top">D· ·· D· ·U<span class="n">34</span></li>
 <li>D· ·· ·U D·</li>
-<li>D· ·· ·U ·U</li>
+<li class="top">D· ·· ·U ·U<span class="n">13</span></li>
 <li>D· ·· ·· DU</li>
-<li>·U DU ·· ··</li>
-<li>·U D· D· ··</li>
-<li>·U D· ·U ··</li>
-<li>·U D· ·· D·</li>
-<li>·U D· ·· ·U</li>
-<li>·U ·U D· ··</li>
-<li>·U ·U ·U ··</li>
-<li>·U ·U ·· D·</li>
-<li>·U ·U ·· ·U</li>
-<li>·U ·· DU ··</li>
-<li>·U ·· D· D·</li>
-<li>·U ·· D· ·U</li>
-<li>·U ·· ·U D·</li>
-<li>·U ·· ·U ·U</li>
-<li>·U ·· ·· DU</li>
-<li>·· DU D· ··</li>
-<li>·· DU ·U ··</li>
-<li>·· DU ·· D·</li>
-<li>·· DU ·· ·U</li>
-<li>·· D· DU ··</li>
-<li>·· D· D· D·</li>
-<li>·· D· D· ·U</li>
-<li>·· D· ·U D·</li>
-<li>·· D· ·U ·U</li>
-<li>·· D· ·· DU</li>
-<li>·· ·U DU ··</li>
-<li>·· ·U D· D·</li>
-<li>·· ·U D· ·U</li>
-<li>·· ·U ·U D·</li>
-<li>·· ·U ·U ·U</li>
-<li>·· ·U ·· DU</li>
-<li>·· ·· DU D·</li>
-<li>·· ·· DU ·U</li>
-<li>·· ·· D· DU</li>
-<li>·· ·· ·U DU</li>
-<li>DU ·· ·· ··</li>
-<li>D· D· ·· ··</li>
-<li>D· ·U ·· ··</li>
-<li>D· ·· D· ··</li>
-<li>D· ·· ·U ··</li>
-<li>D· ·· ·· D·</li>
-<li>D· ·· ·· ·U</li>
-<li>·U D· ·· ··</li>
-<li>·U ·U ·· ··</li>
-<li>·U ·· D· ··</li>
-<li>·U ·· ·U ··</li>
-<li>·U ·· ·· D·</li>
-<li>·U ·· ·· ·U</li>
-<li>·· DU ·· ··</li>
-<li>·· D· D· ··</li>
-<li>·· D· ·U ··</li>
-<li>·· D· ·· D·</li>
-<li>·· D· ·· ·U</li>
-<li>·· ·U D· ··</li>
-<li>·· ·U ·U ··</li>
-<li>·· ·U ·· D·</li>
-<li>·· ·U ·· ·U</li>
-<li>·· ·· DU ··</li>
-<li>·· ·· D· D·</li>
-<li>·· ·· D· ·U</li>
-<li>·· ·· ·U D·</li>
-<li>·· ·· ·U ·U</li>
-<li>·· ·· ·· DU</li>
-<li>D· ·· ·· ··</li>
-<li>·U ·· ·· ··</li>
-<li>·· D· ·· ··</li>
-<li>·· ·U ·· ··</li>
-<li>·· ·· D· ··</li>
-<li>·· ·· ·U ··</li>
-<li>·· ·· ·· D·</li>
-<li>·· ·· ·· ·U</li>
+<li class="top">DU ·· ·· ··<span class="n">11</span></li>
+<li class="top">D· D· ·· ··<span class="n">12</span></li>
+<li class="top">D· ·U ·· ··<span class="n">107</span></li>
+<li class="top">D· ·· D· ··<span class="n">687</span></li>
+<li class="top">D· ·· ·U ··<span class="n">33</span></li>
+<li class="top">D· ·· ·· D·<span class="n">88</span></li>
+<li class="top">D· ·· ·· ·U<span class="n">78</span></li>
+<li class="top">D· ·· ·· ··<span class="n">1046</span></li>
 </ol>
 </body></html>
